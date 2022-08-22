@@ -1,0 +1,195 @@
+
+<div class="roomListRoom" style="background-color:var(--color-dark-medium);"">
+      <div class="roomListRoom__header" style="padding: 0.4rem; color:var(--color-main); font-weight:600;">
+            <span style="width: 16%; text-align: center;">경주번호</span>
+            <span style="width: 44%; text-align: center;">프로그램 예상순위</span>
+            <span style="width: 30%; text-align: center;">실제순위</span>
+            <span style="width: 10%; text-align: right;">배당율</span>
+      </div>
+</div>
+
+<!-- <a href="{% url 'home' %}" onclick="window.open(this.href, '_blank', 'width=800, height=600, location=no, status=no'); return false;">
+      클릭 시 팝업 창으로 이동합니다
+</a> -->
+<button onclick=popup()>popup naver</button>
+
+{% for r in r_results %}
+<div class="roomListRoom">
+
+      <div class="roomListRoom__header">
+
+            <span style="width: 16%; text-align: justify; font-family: Arial;">
+                  <a href="{% url 'prediction_race' r.rcity r.rdate r.rno 0 0 %}" style="text-align: right;">
+                        {% if r.rcity == '부산' %}
+                        <span
+                              style="font-size: 1.4rem; font-weight: 500; color: var(--color-main);">'{{r.rdate|slice:"4:6"}}.{{r.rdate|slice:"6:8"}}</span>
+                        <span style="font-size: 1.3rem; font-weight: 500; color: var(--color-main);">{{r.rcity}}</span>
+                        <span style="font-size: 1.3rem; font-weight: 500; color: var(--color-main); ">{% if r.rno < 10 %}&nbsp;{%else%}{%endif%}{{r.rno}}R</span>
+                        {% else %}
+                        <span
+                              style="font-size: 1.4rem; font-weight: 500; color: var(--color-light-gray);">'{{r.rdate|slice:"4:6"}}.{{r.rdate|slice:"6:8"}}</span>
+                        <span
+                              style="font-size: 1.3rem; font-weight: 500; color: var(--color-light-gray);">{{r.rcity}}</span>
+                        <span style="font-size: 1.3rem; font-weight: 500; color: var(--color-light-gray); ">{% if r.rno < 10 %}&nbsp;{%else%}{%endif%}{{r.rno}}R</span>
+                        {% endif %}
+                  </a>
+            </span>
+
+            {% if r.r_r01 == 0 %} {# 경주결과 입력전일때 #}
+
+                  <p class="roomListRoom__topic" style="font-size: 1.5rem; font-weight: 600;"><span class="tooltip"
+                              style="color:var(--color-r1);">{% if r.r01 > 0 %}{{r.r01}}{%elif r.r01 == 0 and r.r_cnt >= 1 %}🫥{%else%}{%endif%}<span class="tooltip-text">실제
+                                    1위</span></span></p>
+                  <p class="roomListRoom__topic" style="font-size: 1.4rem; font-weight: 500;"><span class="tooltip"
+                              style="color:var(--color-r2);">{% if r.r02 > 0 %}{{r.r02}}{%elif r.r02 == 0 and r.r_cnt >= 2 %}🫥{%else%}{%endif%}<span class="tooltip-text">실제
+                                    2위</span></span></p>
+                  <p class="roomListRoom__topic" style="font-size: 1.3rem; font-weight: 400;"><span class="tooltip"
+                              style="color:var(--color-r3)">{% if r.r03 > 0 %}{{r.r03}}{%elif r.r03 == 0 and r.r_cnt >= 3 %}🫥{%else%}{%endif%}<span class="tooltip-text">실제 3위</span></span></p>
+                  <p class="roomListRoom__topic" style="font-size: 1.3rem; font-weight: 400;"><span class="tooltip">{% if r.r04 > 0 %}{{r.r04}}{%elif r.r04 == 0 and r.r_cnt >= 4  %}🫥{%else%}{%endif%}<span class="tooltip-text">실제 4위</span></span></p>
+                  <p class="roomListRoom__topic" style="font-size: 1.3rem; font-weight: 400;"><span class="tooltip">{% if r.r05 > 0 %}{{r.r05}}{%elif r.r05 == 0 and r.r_cnt >= 5  %}🫥{%else%}{%endif%}<span class="tooltip-text">실제 5위</span></span></p>
+                  <p class="roomListRoom__topic" style="font-size: 1.3rem; font-weight: 400;"><span class="tooltip">{% if r.r06 > 0 %}{{r.r06}}{%elif r.r06 == 0 and r.r_cnt >= 6  %}🫥{%else%}{%endif%}<span class="tooltip-text">실제 6위</span></span></p>
+                  <p class="roomListRoom__topic" style="font-size: 1.3rem; font-weight: 400;"><span class="tooltip">{% if r.r07 > 0 %}{{r.r07}}{%elif r.r07 == 0 and r.r_cnt >= 7  %}🫥{%else%}{%endif%}<span class="tooltip-text">실제 7위</span></span></p>
+                  <p class="roomListRoom__topic" style="font-size: 1.3rem; font-weight: 400;"><span class="tooltip">{% if r.r08 > 0 %}{{r.r08}}{%elif r.r08 == 0 and r.r_cnt >= 8  %}🫥{%else%}{%endif%}<span class="tooltip-text">실제 8위</span></span></p>
+                  <p class="roomListRoom__topic" style="font-size: 1.3rem; font-weight: 400;"><span class="tooltip">{% if r.r09 > 0 %}{{r.r09}}{%elif r.r09 == 0 and r.r_cnt >= 9  %}🫥{%else%}{%endif%}<span class="tooltip-text">실제 9위</span></span></p>
+                  <p class="roomListRoom__topic" style="font-size: 1.3rem; font-weight: 400;"><span class="tooltip">{% if r.r10 > 0 %}{{r.r10}}{%elif r.r10 == 0 and r.r_cnt >= 10  %}🫥{%else%}{%endif%}<span class="tooltip-text">실제 10위</span></span></p>
+
+
+            {% else %}
+
+                  {% if r.r01 == r.r_r01 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.5rem; font-weight: 600;"><span class="tooltip"
+                              style="color:var(--color-r1);">{% if r.r01 > 0 %}{{r.r01}}{%else%}✘{%endif%}<span class="tooltip-text">예상
+                                    1위</span></span></p>
+                  {% elif r.r01 == r.r_r02 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.4rem; font-weight: 500;"><span class="tooltip"
+                              style="color:var(--color-r2);">{% if r.r01 > 0 %}{{r.r01}}{%else%}✘{%endif%}<span
+                                    class="tooltip-text">예상 1위</span></span></p>
+                  {% elif r.r01 == r.r_r03 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.3rem; font-weight: 400;"><span class="tooltip"
+                              style="color:var(--color-r3);">{% if r.r01 > 0 %}{{r.r01}}{%else%}✘{%endif%}<span
+                                    class="tooltip-text">예상 1위</span></span></p>
+                  {% else %}
+                  <p class="roomListRoom__topic" style="font-size: 1.0rem; font-weight: 400;"><span class="tooltip">{% if r.r01 > 0 %}{{r.r01}}{%else%}✘{%endif%}<span class="tooltip-text">예상 1위</span></span></p>
+                  {% endif %}
+
+                  {% if r.r02 == r.r_r01 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.5rem; font-weight: 600;"><span class="tooltip"
+                              style="color:var(--color-r1);">{% if r.r02 > 0 %}{{r.r02}}{%else%}✘{%endif%}<span class="tooltip-text">예상
+                                    2위</span></span></p>
+                  {% elif r.r02 == r.r_r02 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.4rem; font-weight: 500;"><span class="tooltip"
+                              style="color:var(--color-r2);">{% if r.r02 > 0 %}{{r.r02}}{%else%}✘{%endif%}<span
+                                    class="tooltip-text">예상 2위</span></span></p>
+                  {% elif r.r02 == r.r_r03 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.3rem; font-weight: 400;"><span class="tooltip"
+                              style="color:var(--color-r3);">{% if r.r02 > 0 %}{{r.r02}}{%else%}✘{%endif%}<span
+                                    class="tooltip-text">예상 2위</span></span></p>
+                  {% else %}
+                  <p class="roomListRoom__topic" style="font-size: 1.0rem; font-weight: 400;"><span class="tooltip">{% if r.r02 > 0 %}{{r.r02}}{%else%}✘{%endif%}<span class="tooltip-text">예상 2위</span></span></p>
+                  {% endif %}
+
+                  {% if r.r03 == r.r_r01 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.5rem; font-weight: 600;"><span class="tooltip"
+                              style="color:var(--color-r1);">{% if r.r03 > 0 %}{{r.r03}}{%else%}✘{%endif%}<span class="tooltip-text">예상
+                                    3위</span></span></p>
+                  {% elif r.r03 == r.r_r02 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.4rem; font-weight: 500;"><span class="tooltip"
+                              style="color:var(--color-r2);">{% if r.r03 > 0 %}{{r.r03}}{%else%}✘{%endif%}<span
+                                    class="tooltip-text">예상 3위</span></span></p>
+                  {% elif r.r03 == r.r_r03 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.3rem; font-weight: 400;"><span class="tooltip"
+                              style="color:var(--color-r3);">{% if r.r03 > 0 %}{{r.r03}}{%else%}✘{%endif%}<span
+                                    class="tooltip-text">예상 3위</span></span></p>
+                  {% else %}
+                  <p class="roomListRoom__topic" style="font-size: 1.0rem; font-weight: 400;"><span class="tooltip">{% if r.r03 > 0 %}{{r.r03}}{%else%}✘{%endif%}<span class="tooltip-text">예상 3위</span></span></p>
+                  {% endif %}
+
+                  {% if r.r04 == r.r_r01 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.5rem; font-weight: 600;"><span class="tooltip"
+                              style="color:var(--color-r1);">{% if r.r04 > 0 %}{{r.r04}}{%else%}✘{%endif%}<span class="tooltip-text">예상
+                                    4위</span></span></p>
+                  {% elif r.r04 == r.r_r02 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.4rem; font-weight: 500;"><span class="tooltip"
+                              style="color:var(--color-r2);">{% if r.r04 > 0 %}{{r.r04}}{%else%}✘{%endif%}<span
+                                    class="tooltip-text">예상 4위</span></span></p>
+                  {% elif r.r04 == r.r_r03 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.3rem; font-weight: 400;"><span class="tooltip"
+                              style="color:var(--color-r3);">{% if r.r04 > 0 %}{{r.r04}}{%else%}✘{%endif%}<span
+                                    class="tooltip-text">예상 4위</span></span></p>
+                  {% else %}
+                  <p class="roomListRoom__topic" style="font-size: 1.0rem; font-weight: 400;"><span class="tooltip">{% if r.r04 > 0 %}{{r.r04}}{%else%}✘{%endif%}<span class="tooltip-text">예상 4위</span></span></p>
+                  {% endif %}
+
+                  {% if r.r05 == r.r_r01 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.5rem; font-weight: 600;"><span class="tooltip"
+                              style="color:var(--color-r1);">{% if r.r05 > 0 %}{{r.r05}}{%else%}✘{%endif%}<span class="tooltip-text">예상
+                                    5위</span></span></p>
+                  {% elif r.r05 == r.r_r02 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.4rem; font-weight: 500;"><span class="tooltip"
+                              style="color:var(--color-r2);">{% if r.r05 > 0 %}{{r.r05}}{%else%}✘{%endif%}<span
+                                    class="tooltip-text">예상 5위</span></span></p>
+                  {% elif r.r05 == r.r_r03 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.3rem; font-weight: 400;"><span class="tooltip"
+                              style="color:var(--color-r3);">{% if r.r05 > 0 %}{{r.r05}}{%else%}✘{%endif%}<span
+                                    class="tooltip-text">예상 5위</span></span></p>
+                  {% else %}
+                  <p class="roomListRoom__topic" style="font-size: 1.0rem; font-weight: 400;"><span class="tooltip">{% if r.r05 > 0 %}{{r.r05}}{%else%}✘{%endif%}<span class="tooltip-text">예상 5위</span></span></p>
+                  {% endif %}
+
+                  {% if r.r06 == r.r_r01 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.5rem; font-weight: 600;"><span class="tooltip"
+                              style="color:var(--color-r1);">{% if r.r06 > 0 %}{{r.r06}}{%else%}✘{%endif%}<span class="tooltip-text">예상
+                                    5위</span></span></p>
+                  {% elif r.r06 == r.r_r02 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.4rem; font-weight: 500;"><span class="tooltip"
+                              style="color:var(--color-r2);">{% if r.r06 > 0 %}{{r.r06}}{%else%}✘{%endif%}<span
+                                    class="tooltip-text">예상 5위</span></span></p>
+                  {% elif r.r06 == r.r_r03 %}
+                  <p class="roomListRoom__topic" style="font-size: 1.3rem; font-weight: 400;"><span class="tooltip"
+                              style="color:var(--color-r3);">{% if r.r06 > 0 %}{{r.r06}}{%else%}✘{%endif%}<span
+                                    class="tooltip-text">예상 5위</span></span></p>
+                  {% else %}
+                  <p class="roomListRoom__topic" style="font-size: 1.0rem; font-weight: 400;"><span class="tooltip">{% if r.r06 > 0 %}{{r.r06}}{%else%}✘{%endif%}<span class="tooltip-text">예상 6위</span></span></p>
+                  {% endif %}
+
+                  <span class="tooltip">🚦<span class="tooltip-text">🚦예상순위 계속: {{r.r07}}-{{r.r08}}-{{r.r09}}-{{r.r10}}</span></span>
+
+
+                  <p class="roomListRoom__topic" style="font-size: 1.5rem; font-weight: 600;"><span class="tooltip"
+                              style="color:var(--color-r1);">{% if r.r_r01 > 0 %}{{r.r_r01}}{%else%}✘{%endif%}<span
+                                    class="tooltip-text">실제 1위</span></span></p>
+                  <p class="roomListRoom__topic" style="font-size: 1.4rem; font-weight: 500;"><span class="tooltip"
+                              style="color:var(--color-r2);">{% if r.r_r02 > 0 %}{{r.r_r02}}{%else%}✘{%endif%}<span
+                                    class="tooltip-text">실제 2위</span></span></p>
+                  <p class="roomListRoom__topic" style="font-size: 1.3rem; font-weight: 400;"><span class="tooltip"
+                              style="color:var(--color-r3);">{% if r.r_r03 > 0 %}{{r.r_r03}}{%else%}✘{%endif%}<span
+                                    class="tooltip-text">실제 3위</span></span></p>
+                  <p class="roomListRoom__topic" style="font-size: 1.0rem; font-weight: 400;"><span class="tooltip">{% if r.r_r04 > 0 %}{{r.r_r04}}{%else%}✘{%endif%}<span class="tooltip-text">실제 4위</span></span></p>
+
+                  <span class="tooltip" style="font-size:1.3rem; font-weight: 500; color:tomato; font-family: Arial;">{% for alloc in allocs %}
+                  {% if r.rcity == alloc.rcity and r.rdate == alloc.rdate and r.rno == alloc.rno %}
+                  {{alloc.r2alloc|slice:"2:10"|rjust:10}}
+                  
+                  {% endif %}
+                  {% endfor %}
+                        
+                        
+                        <span class="tooltip-text" style="font-weight: 600; color:tomato">
+
+                              {% for alloc in allocs %}
+                              {% if r.rcity == alloc.rcity and r.rdate == alloc.rdate and r.rno == alloc.rno %}
+                              복승💰 {{alloc.r2alloc|slice:"2:10"|rjust:10}} <br>
+                              삼복💰 {{alloc.r333alloc|slice:"3:10"|rjust:10}}<br>
+                              삼쌍💰 {{alloc.r123alloc|slice:"3:10"|rjust:10}}
+                              {% endif %}
+                              {% endfor %}
+
+                  </span></span>
+
+            {% endif %}
+
+      </div>
+
+</div>
+
+{% endfor%}

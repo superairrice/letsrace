@@ -1,0 +1,110 @@
+{% load humanize %}
+{% load mathfilters %}
+
+<!--   Start -->
+<div class="participants">
+  <h3 class="participants__top">Recent Rank<span style="font-size: 1.5rem; font-weight: 600;"> 🐴
+      {{horse.gate|rjust:"2"}}번
+      <span class="blink" style="font-size: 1.5rem; font-weight: 800;">{{horse.horse|ljust:"8"}}</span></span></h3>
+  <div class="activities__header scroll">
+    {% for h_record in h_records %}
+    <div class="activities__box">
+
+      <div class="activities__boxHeader roomListRoom__header">
+        <a href="{% url 'prediction_race' h_record.rcity h_record.rdate h_record.rno h_record.horse %}"
+          class="roomListRoom__author">
+          <div class="avatar avatar--small">
+            <img src="/images/icons/{{h_record.rank}}.jpeg" />
+          </div>
+          <p style="font-size:1.3rem; font-weight: 600; color:azure;">
+            <span>`{{h_record.rdate|slice:"2:4" }}.{{h_record.rdate|slice:"4:6" }}.{{h_record.rdate|slice:"6:8" }}
+              {{h_record.grade|slice:"0:2"}} {{h_record.dividing}} {{h_record.weather}} {{h_record.rstate}}
+              {{h_record.rmoisture}}</span>
+
+            <span style="font-size:1.3rem; font-weight: 600; color:var(main-color);">{{h_record.jockey}} ﹅
+              {{h_record.handycap}}㎏ ﹅ {{h_record.trainer}}</span>
+          </p>
+        </a>
+      </div>
+
+      <div class="activities__boxContent" style="margin-left: 1.2rem;">
+        {% if r_condition.distance == h_record.distance %}
+        <span class="tooltip" style="font-size:1.5rem;"><span class="blink">{{h_record.distance}}𝓂</span><span
+            class="tooltip-text">경주거리</span></span>
+        {%else%}
+        <span class="tooltip" style="font-size:1.5rem;">{{h_record.distance}}𝓂<span
+            class="tooltip-text">경주거리</span></span>
+        {%endif%}
+
+        <span class="tooltip" style="font-size:1.5rem; font-weight: 700; color:tomato;">{{h_record.gate}}<span
+            class="tooltip-text">발주 gate</span></span>﹅
+        <span class="tooltip">{{h_record.corners}}<span class="tooltip-text">코너별 전개</span></span>﹅
+
+        {% if h_record.rank <= 3 %} <span class="tooltip_a" style="color:tomato; font-size:1.7rem; font-weight: 700;">
+          <span class="blink">{{h_record.rank}}</span><span class="tooltip_a-text">최종순위</span></span>
+          {% else %}
+          <span class="tooltip_a" style="font-size:1.6rem; font-weight: 600;">{{h_record.rank}}<span
+              class="tooltip_a-text">최종순위</span></span>
+          {% endif %}
+          <span class="tooltip" style="font-size:1.4rem; font-weight: 700;">﹆{{h_record.gap}}<span
+              class="tooltip_a-text">착차</span></span>
+
+          <div class="activities__boxRoomContent" style="margin-left: -1.2rem;">
+            <p>
+              <span class="tooltip">{{h_record.rs1f|slice:"-4:"}}<span class="tooltip-text">초반 200m</span></span>﹅
+              <span class="tooltip">{{h_record.rg3f|slice:"-4:"}}<span class="tooltip-text">종반 600m</span></span>﹅
+              <span class="tooltip">{{h_record.rg2f|slice:"-4:"}}<span class="tooltip-text">종반 직선주로 400m</span></span>﹅
+              <span class="tooltip">{{h_record.rg1f|slice:"-4:"}}<span class="tooltip-text">최종 200m</span></span>﹅
+              <span class="tooltip_a" style="font-size:1.4rem; font-weight: 800">{{h_record.record}}<span
+                  class="tooltip_a-text">경주기록</span></span>
+            </p>
+          </div>
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+<!--  End -->
+
+
+<div class="activities">
+  <div class="activities__header">
+    <h2>👲상금현황(당월﹆전월﹆전전월)</h2>
+  </div>
+
+  <div class="roomListRoom">
+    {% for gate, jockey, rcnt, rcity, rmonth1, rmonth2, rmonth3 in awards %}
+
+    <div class="roomListRoom__header" style="padding: 0.2rem;">
+      {%if rcity == '서울'%}
+      <span class="tooltip" style="width:7%; font-size: 0.9rem;">🐳{{gate}}<span class="tooltip-text">서울</span></span>
+      {%else%}
+      <span class="tooltip" style="width:7%; font-size: 0.9rem;">🐋{{gate}}<span class="tooltip-text">부산</span></span>
+      {%endif%}
+      {%if rmonth2|add:rmonth3 > 300000 and rmonth2 < rmonth3%}
+      <span class="tooltip" style="font-size:1.5rem; width:16%; color:tomato">{{jockey}}<span class="tooltip-text">총상금 : {{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</span></span>
+      {%else%}
+      <span class="tooltip" style="font-size:1.5rem; width:16%;">{{jockey|slice:"0:3"}}<span class="tooltip-text">총상금 : {{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</span></span>
+      {%endif%}
+      <span class="tooltip" style="width: 5%; text-align: right; font-family: Arial; font-size: 1.2rem;">{{rcnt}}<span class="tooltip-text">출주횟수</span></span>
+      <span class="tooltip" style="width:24%; text-align: right; font-family: Arial;">{{rmonth1|intcomma}}<span class="tooltip-text">당월 수득상금</span></span>
+      {%if rmonth2 < rmonth3%}
+      <span class="tooltip" style="width:24%; text-align: right; font-family: Arial; color:tomato">{{rmonth2|intcomma}}<span class="tooltip-text">전월 수득상금</span></span>
+      {%else%}
+      <span class="tooltip" style="width:24%; text-align: right; font-family: Arial;">{{rmonth2|intcomma}}<span class="tooltip-text">전월 수득상금</span></span>
+      {%endif%}
+      <span class="tooltip" style="width:24%; text-align: right; font-family: Arial;">{{rmonth3|intcomma}}<span class="tooltip-text">전전월 수득상금</span></span>
+
+      
+
+    </div>
+
+    {% if forloop.counter|mod:5 == 0 %}
+    <hr style="border: solid 1px black;">
+    {%else%}
+    {%endif%}
+
+    {% endfor %}
+  </div>
+</div>

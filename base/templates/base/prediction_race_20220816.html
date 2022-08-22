@@ -1,0 +1,383 @@
+{% extends 'main.html' %}
+{% load mathfilters %}
+{% load humanize %}
+
+{% block content %}
+    <main class="profile-page layout layout--2">
+      <div class="container">
+
+        <!-- Room Start -->
+        <div class="room">
+          <div class="room__top">
+            <div class="room__topLeft">
+
+              <a href="{% url 'prediction_race' r_condition.rcity r_condition.rdate r_condition.rno|add:-1  0 %}">
+                <span class="tooltip" style="color:blue; font-size: 1.5rem;">⬅️
+                  <span class="tooltip-text" style="font-size:1.4rem; text-align: right; font-family: Arial;">
+                    이전 경주
+                  </span>
+                </span>
+              </a>
+              <span class="tooltip" style="font-size: 1.5rem;">🏇</span>
+              <a href="{% url 'prediction_race' r_condition.rcity r_condition.rdate r_condition.rno|add:1  0 %}">
+                <span class="tooltip" style="color:blue; font-size: 1.5rem;">➡️
+                  <span class="tooltip-text" style="font-size:1.4rem; text-align: right; font-family: Arial;">
+                    다음 경주
+                  </span>
+                </span>
+              </a>
+              
+            </div>
+
+            <div class="room__topRight" style="color: var(--color-main); font-weight: 600;">
+              <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{r_condition.rcity}}</span>
+              <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{r_condition.rdate|slice:"0:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}</span>
+              
+              <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;"><span class="blink">{{r_condition.rno}}R</span></span>
+              <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{r_condition.grade|slice:"0:2"}}</span>
+              <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{r_condition.dividing}}</span>
+              <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{r_condition.rname}} </span>
+              <span class="tooltip_a" style="color:blue">순위상금
+                <span class="tooltip_a-text" style="text-align: right; font-family: Arial;">
+                  {{r_condition.r1award|intcomma}}<br>
+                  {{r_condition.r2award|intcomma}}<br>
+                  {{r_condition.r3award|intcomma}}<br>
+                  {{r_condition.r4award|intcomma}}<br>
+                  {{r_condition.r5award|intcomma}}
+                </span>
+              </span>
+              <span class="tooltip_a" style="color:tomato">💰 복승 {{alloc.r2alloc|slice:"2:10"|rjust:10}}
+                <span class="tooltip_a-text" style="text-align: left; font-family: Arial;">
+                  복승💰 {{alloc.r2alloc|slice:"2:10"|rjust:10}} <br>
+                  삼복💰 {{alloc.r333alloc|slice:"3:10"|rjust:10}}<br>
+                  삼쌍💰 {{alloc.r123alloc|slice:"3:10"|rjust:10}}
+                </span>
+              </span>
+              <br>
+              <!-- {{r_condition.r1award}}﹅{{r_condition.r2award}}﹅{{r_condition.r3award}}﹅{{r_condition.r4award}}﹅{{r_condition.r5award}} -->
+              <!-- <br>
+              {{r_condition.sub1award}}﹅{{r_condition.sub2award}}﹅{{r_condition.sub3award}}﹅ -->
+              
+            </div>
+
+            <div>
+              <span style="color: var(--color-main-light); font-size: 1.5rem ;">{{r_condition.distance}}𝓂</span> 
+            </div>
+            <a href="{% url 'prediction_race' r_condition.rcity r_condition.rdate r_condition.rno 0 %}">
+              <span class="tooltip" style="font-size: 1.5rem;">기수
+                <span class="tooltip-text">
+                  기수 상금현황
+                </span>
+              </span>
+            </a>
+            <a href="{% url 'prediction_race' r_condition.rcity r_condition.rdate r_condition.rno 0 %}">
+              <span class="tooltip" style="font-size: 1.5rem;">조교사
+                <span class="tooltip-text">
+                  조교사 상금현황
+                </span>
+              </span>
+            </a>
+            <a href="{% url 'prediction_race' r_condition.rcity r_condition.rdate r_condition.rno 0 %}">
+              <span class="tooltip" style="font-size: 1.5rem;">마주
+                <span class="tooltip-text">
+                  마주 상금현황
+                </span>
+              </span>
+            </a>
+
+            <div>
+              <H2 style="color: var(--color-main);">⏰  {{r_condition.rtime}}</H2> 
+            </div>
+         
+          </div>
+
+
+
+          <div class="room__box scroll">
+            <hr style="border: solid 1px black;">
+
+            {% for exp011 in exp011s %}
+            <div class="roomListRoom">
+              <div class="roomListRoom__header">
+                <a href="{% url 'prediction_race' exp011.rcity exp011.rdate exp011.rno exp011.horse %}" class="roomListRoom__author">
+
+                  <div class="roomListRoom__header">
+                    {% if exp011.rank <= 5 %}
+                    <span class="tooltip" style="font-style: italic; color:tomato; font-size: 2.5rem; font-family: Arial, Helvetica, sans-serif;">
+                      {% if exp011.rank < 10 %}&nbsp;{{exp011.rank}} {% elif exp011.rank > 20 %}신{% else %} {{exp011.rank}} {% endif %}
+                      <span class="tooltip-text" style="font-size: 1.4rem; font-style: normal; ">예상 순위</span></span>
+                    <span style="font-style: italic; font-size: 1.5rem; font-family: Arial, Helvetica, sans-serif;">&nbsp;r</span>
+                    {% else %}
+                    <span class="tooltip" style="font-style: italic; font-size: 2.5rem; font-family: Arial, Helvetica, sans-serif;">
+                      {% if exp011.rank < 10 %}&nbsp;{{exp011.rank}} {% elif exp011.rank > 20 %}신{% else %} {{exp011.rank}} {% endif %}
+                      <span class="tooltip-text" style="font-size: 1.4rem; font-style: normal; ">예상 순위</span></span>
+                    <span style="font-style: italic; font-size: 1.5rem; font-family: Arial, Helvetica, sans-serif;">&nbsp;r</span>
+                    {% endif %}
+                  </div>
+
+                  <div class="avatar avatar--small">
+                    <img src="/images/icons/{{exp011.gate}}.jpeg" />
+                  </div>
+
+                  {% if exp011.horse == horse.horse %}
+                  <div class="roomListRoom__header">
+                    <span class="tooltip_a" style="font-size: 1.5rem; font-weight: 700; font-style: italic;"><span class="blink">{{exp011.horse|rjust:"8"}}</span><span class="tooltip_a-text">출주마 이름</span></span>
+                  </div>
+                  {%else%}
+                  <div class="roomListRoom__header">
+                    <span class="tooltip">{{exp011.horse|rjust:"8"}}<span class="tooltip-text">출주마 이름</span></span>
+                  </div>
+                  {%endif%}
+
+                  
+                  <div style="font-size: 1.4rem; font-weight: 400;">
+
+                    {% if compare_r.handycap__max == exp011.handycap %}
+                    <span class="tooltip_a" style="color:tomato">{{exp011.handycap}}<span class="tooltip_a-text">부담중량</span></span>
+                    {% else %}
+                    <span class="tooltip_a">{{exp011.handycap}}<span class="tooltip_a-text">부담중량</span></span>
+                    {% endif %}
+                  </div>
+
+                  <div>
+
+                    {% if exp011.handycap|sub:exp011.i_prehandy > 0 %}
+                    <span class="tooltip_a" style="color: var(--color-main-light)">+{{exp011.handycap|sub:exp011.i_prehandy}}<span
+                        class="tooltip_a-text">직전경주 대비 부담중량 차이</span></span>
+                    {% elif exp011.handycap|sub:exp011.i_prehandy == 0 %}
+                    <span style="color: var(--color-gray);"> ±0 </span>
+                    {% else %}
+                    <span class="tooltip_a" style="color:tomato;">{{exp011.handycap|sub:exp011.i_prehandy}}<span
+                        class="tooltip_a-text">직전경주 대비 부담중량 차이</span></span>
+                    {% endif %}
+                  </div>
+
+                  <div style="font-size: 1.4rem; font-weight: 400; color:var(--color-main)">
+                    <span style="color:var(--color-main)">{{exp011.h_weight}}㎏ </span>
+                    ({% if exp011.rank >= 20 %}
+                      <span>주행검사</span>
+                    {% else %}
+                      {% if exp011.i_cycle > 50 or exp011.i_cycle <= 15 %}
+                      <span style="color:tomato; font-weight: 500;">{{exp011.i_cycle}} 일전</span>
+                      {% else %}
+                      <span style="color:var(--color-main)">{{exp011.i_cycle}} 일전</span>
+                      {% endif %}
+                    {% endif %})
+                  </div>
+
+                  <div style="font-size: 1.4rem; font-weight: 400;">
+                    <span>🐴 {{exp011.h_age}}세﹅{{exp011.h_sex}}﹅{{exp011.birthplace}}﹅</span>
+                    <span class="tooltip">{{exp011.remark}}<span class="tooltip-text">최근 경주 순위</span></span>
+                  </div>
+                  
+                </a>
+
+              <div>
+                
+            </div>
+
+            
+
+            <div class="roomListRoom__header">
+              
+              {% if exp011.r_record == None %}
+                <span class="tooltip_a" style="font-size: 1.5rem">🌈<span class="tooltip_a-text" style="font-size: 1.3rem">실제 기록 입력전</span></span>
+              {% else %}
+                <span class="tooltip_a" style="font-size: 1.5rem">🌈<span class="tooltip_a-text" style="font-size: 1.3rem">실제 기록</span></span>
+                <span class="tooltip_a" style="color:greenyellow; font-family: Arial, Helvetica, sans-serif;">{{exp011.r_record}}<span class="tooltip_a-text">경주기록</span></span>
+                
+                <!-- <div class="avatar avatar--small">
+                  <img src="/images/icons/{{exp011.r_rank}}.jpeg" />
+                </div> -->
+
+                {% if exp011.r_rank <= 3 %}
+                <span class="tooltip" style="font-weight:700; color:tomato; font-style: italic; font-size: 2.5rem; font-family: Arial, Helvetica, sans-serif;">
+                  {% if exp011.r_rank < 10 %}&nbsp;{{exp011.r_rank}} {% elif exp011.r_rank > 20 %}취{% else %} {{exp011.r_rank}} {% endif %}
+                <span class="tooltip-text" style="font-size: 1.3rem; font-style: normal;">실제 순위</span></span>
+                <span style="font-style: italic; font-size: 1.5rem; font-family: Arial, Helvetica, sans-serif;">&nbsp;r</span>
+                {% else %}
+                <span class="tooltip" style="font-weight:700; font-style: italic; font-size: 2.5rem; font-family: Arial, Helvetica, sans-serif;">
+                  {% if exp011.r_rank < 10 %}&nbsp;{{exp011.r_rank}} {% elif exp011.r_rank > 20 %}취{% else %} {{exp011.r_rank}} {% endif %}
+                <span class="tooltip-text" style="font-size: 1.3rem; font-style: normal;">실제 순위</span></span>
+                <span style="font-style: italic; font-size: 1.5rem; font-family: Arial, Helvetica, sans-serif;">&nbsp;r</span>
+                {% endif %}
+              {% endif %}
+             
+
+
+             
+            </div>
+
+            
+          
+              </div>
+
+              
+
+              <div class="roomListRoom__header">
+                <div class="roomListRoom__header" style="width:3%; ">
+                  <!-- 💎 -->
+                </div>
+
+                <div class="roomListRoom__header" style="width: 37%; text-align: left; ">
+                  
+                  {% if compare_r.i_s1f__min == exp011.i_s1f %}
+                  <span class="tooltip" style="color:tomato;"><span class="blink">{{exp011.cs1f}}</span><span class="tooltip-text">초반 200m</span></span>﹅
+                  {% else %}
+                  <span class="tooltip" style="color:var(--color-gray);">{{exp011.cs1f}}<span class="tooltip-text">초반 200m</span></span>﹅
+                  {% endif %}
+                  
+                  {% if compare_r.i_g3f__min == exp011.i_g3f %}
+                  <span class="tooltip" style="color:tomato;"><span class="blink">{{exp011.cg3f}}</span><span class="tooltip-text">종반 600m</span></span>﹅
+                  {% else %}
+                  <span class="tooltip" style="color:var(--color-gray);">{{exp011.cg3f}}<span class="tooltip-text">종반 600m</span></span>﹅
+                  {% endif %}
+                  
+                  {% if compare_r.i_g2f__min == exp011.i_g2f %}
+                  <span class="tooltip" style="color:tomato;"><span class="blink">{{exp011.cg2f}}</span><span class="tooltip-text">종반 직선주로 400m</span></span>﹅
+                  {% else %}
+                  <span class="tooltip" style="color:var(--color-gray);">{{exp011.cg2f}}<span class="tooltip-text">종반 직선주로 400m</span></span>﹅
+                  {% endif %}
+                  
+                  {% if compare_r.i_g1f__min == exp011.i_g1f %}
+                  <span class="tooltip" style="color:tomato;"><span class="blink">{{exp011.cg1f}}</span><span class="tooltip-text">최종 200m</span></span>﹅
+                  {% else %}
+                  <span class="tooltip" style="color:var(--color-gray);">{{exp011.cg1f}}<span class="tooltip-text">최종 200m</span></span>﹅
+                  {% endif %}
+                  
+                  {% if exp011.rank == 1 %}
+                  <span class="tooltip" style="font-size: 1.5rem; font-family: Arial, Helvetica, sans-serif; color:tomato; font-weight:800; ">{{exp011.complex}}<span class="tooltip-text">프로그램 예상기록</span></span>﹅
+                  {% elif exp011.rank == 2 %}
+                  <span class="tooltip" style="font-size: 1.5rem; font-family: Arial, Helvetica, sans-serif; color:#ff9900; font-weight:800;">{{exp011.complex}}<span class="tooltip-text">프로그램 예상기록</span></span>﹅
+                  {% elif exp011.rank == 3 %}
+                  <span class="tooltip" style="font-size: 1.5rem; font-family: Arial, Helvetica, sans-serif; color:#ff6699; font-weight:800;">{{exp011.complex}}<span class="tooltip-text">프로그램 예상기록</span></span>﹅
+                  {% else %}
+                  <span class="tooltip" style="font-size: 1.5rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-gray); font-weight:800;">{{exp011.complex}}<span class="tooltip-text">프로그램 예상기록</span></span>﹅
+                  {% endif %}
+                </div>
+                
+                <div class="roomListRoom__header" style="width:14%; text-align: justify;"> 
+
+                  <span class="tooltip">{{exp011.jockey}}<span class="tooltip-text">기수 이름</span></span>
+                  <span class="tooltip_a">{{exp011.j_per|rjust:"5"}}%<span class="tooltip_a-text">기수 최근1년 복승률</span></span>﹅
+
+                </div>
+                <div class="roomListRoom__header" style="width:18%; text-align: center; font-size: 1.5rem;">
+                    
+                    {% if exp011.jt_per > exp011.j_per and exp011.jt_per > exp011.t_per %}
+                    <span class="tooltip" style="color: tomato ">{{exp011.jt_per|rjust:"5"}}%<span class="tooltip-text">기수 조교사 연대률</span></span>
+                    {% elif exp011.jt_per > exp011.j_per and exp011.jt_per <= exp011.t_per %}
+                    <span class="tooltip" style="color: greenyellow ">{{exp011.jt_per|rjust:"5"}}%<span class="tooltip-text">기수 조교사 연대률</span></span>
+                    {% else %}
+                    <span class="tooltip">{{exp011.jt_per|rjust:"5"}}%<span class="tooltip-text">기수 조교사 연대률</span></span>
+                    {% endif %}
+
+                    <span class="tooltip_a" style="font-size: 1.0rem">🧩<span class="tooltip_a-text" style="font-size: 1.3rem">기수 조교사 연대율 산출근거</span></span>
+                    <span class="tooltip_a">{{exp011.jt_1st}}<span class="tooltip_a-text">1위</span></span>
+                    <span class="tooltip_a">{{exp011.jt_2nd}}<span class="tooltip_a-text">2위권</span></span>
+                    <span class="tooltip_a">{{exp011.jt_3rd}}<span class="tooltip_a-text">3위권</span></span>
+                    <span class="tooltip_a">{{exp011.jt_cnt}}<span class="tooltip_a-text">총출주</span></span>
+
+
+                </div>
+
+                <div class="roomListRoom__header" style="width:15%; text-align: right;">
+                  ﹅<span class="tooltip" style="color:var(--color-gray);">{{exp011.trainer}}<span class="tooltip-text">조교사</span></span>
+                  {% if exp011.t_per > exp011.jt_per %}
+                  <span class="tooltip" style="color:tomato">{{exp011.t_per}}%<span class="tooltip-text">조교사 복승률</span></span>﹅
+                  {% else %}
+                  <span class="tooltip">{{exp011.t_per}}%<span class="tooltip-text">조교사 복승률</span></span>﹅
+                  {% endif %}
+                </div>
+
+
+                <div class="roomListRoom__header" style="width:13%; text-align: left;">
+
+                  <span class="tooltip" style="color:var(--color-gray);">{{exp011.host|slice:"0:3"}}<span class="tooltip-text">{{exp011.host}}</span></span>
+                  <p class="roomListRoom__topic">
+                    {% if compare_r.rating__max == exp011.rating and exp011.rating != 0  %}
+                    <span class="tooltip"  style="color:tomato; font-weight: 700;">R {{exp011.rating}}<span class="tooltip-text">레이팅</span></span>
+                    {% else %}
+                    <span class="tooltip">R {{exp011.rating}}<span class="tooltip-text">레이팅</span></span>
+                    {% endif %}
+                  </p>
+                </div>
+
+                <br>                
+
+              </div>
+              
+              <hr style="border: solid 1px black;">
+
+
+            </div>
+            {% endfor%}
+
+          </div>
+
+        </div>
+        <!-- Room End -->
+        
+        <!--   Start -->
+        <div class="participants">
+          <h3 class="participants__top">Recent Rank<span style="font-size: 1.5rem; font-weight: 600;"> 🐴 {{horse.gate|rjust:"2"}}번 
+            <span class="blink" style="font-size: 1.5rem; font-weight: 800;">{{horse.horse|ljust:"8"}}</span></span></h3>
+          <div class="activities__header scroll">
+            {% for h_record in h_records %}
+            <div class="activities__box">
+
+              <div class="activities__boxHeader roomListRoom__header">
+                <a href="{% url 'prediction_race' h_record.rcity h_record.rdate h_record.rno h_record.horse %}"
+                  class="roomListRoom__author">
+                  <div class="avatar avatar--small">
+                    <img src="/images/icons/{{h_record.rank}}.jpeg" />
+                  </div>
+                  <p style="font-size:1.3rem; font-weight: 600; color:azure;">
+                    <span>`{{h_record.rdate|slice:"2:4" }}.{{h_record.rdate|slice:"4:6" }}.{{h_record.rdate|slice:"6:8" }}
+                    {{h_record.grade|slice:"0:2"}} {{h_record.dividing}} {{h_record.weather}} {{h_record.rstate}}
+                    {{h_record.rmoisture}}</span>
+
+                    <span  style="font-size:1.3rem; font-weight: 600; color:var(main-color);">{{h_record.jockey}} ﹅ {{h_record.handycap}}㎏ ﹅ {{h_record.trainer}}</span>
+                  </p>
+                </a>
+              </div>
+
+              <div class="activities__boxContent" style="margin-left: 1.2rem;" >
+                {% if r_condition.distance == h_record.distance %}
+                <span class="tooltip" style="font-size:1.5rem;"><span class="blink">{{h_record.distance}}𝓂</span><span class="tooltip-text">경주거리</span></span>
+                {%else%}
+                <span class="tooltip" style="font-size:1.5rem;">{{h_record.distance}}𝓂<span class="tooltip-text">경주거리</span></span>
+                {%endif%}
+
+                <span class="tooltip" style="font-size:1.5rem; font-weight: 700; color:tomato;">{{h_record.gate}}<span class="tooltip-text">발주 gate</span></span>﹅
+                <span class="tooltip">{{h_record.corners}}<span class="tooltip-text">코너별 전개</span></span>﹅
+
+                {% if h_record.rank <= 3 %}
+                
+                <span class="tooltip_a" style="color:tomato; font-size:1.7rem; font-weight: 700;"><span class="blink">{{h_record.rank}}</span><span class="tooltip_a-text">최종순위</span></span>
+                {% else %}
+                <span class="tooltip_a" style="font-size:1.6rem; font-weight: 600;">{{h_record.rank}}<span class="tooltip_a-text">최종순위</span></span>
+                {% endif %}
+                <span class="tooltip" style="font-size:1.4rem; font-weight: 700;">﹆{{h_record.gap}}<span class="tooltip_a-text">착차</span></span>
+
+                <div class="activities__boxRoomContent" style="margin-left: -1.2rem;">
+                  <p>
+                    <span class="tooltip">{{h_record.rs1f|slice:"-4:"}}<span class="tooltip-text">초반 200m</span></span>﹅
+                    <span class="tooltip">{{h_record.rg3f|slice:"-4:"}}<span class="tooltip-text">종반 600m</span></span>﹅
+                    <span class="tooltip">{{h_record.rg2f|slice:"-4:"}}<span class="tooltip-text">종반 직선주로 400m</span></span>﹅
+                    <span class="tooltip">{{h_record.rg1f|slice:"-4:"}}<span class="tooltip-text">최종 200m</span></span>﹅
+                    <span class="tooltip_a" style="font-size:1.4rem; font-weight: 800">{{h_record.record}}<span class="tooltip_a-text">경주기록</span></span>
+                  </p>
+                </div>
+
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <!--  End -->
+      
+      </div>
+
+    </main>
+{% endblock %}

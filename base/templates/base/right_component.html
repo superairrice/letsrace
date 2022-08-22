@@ -1,0 +1,44 @@
+{% load humanize %}
+{% load mathfilters %}
+
+
+<div class="activities">
+  <div class="activities__header">
+    <h2>👲상금현황(당월﹆전월﹆전전월)</h2>
+  </div>
+
+  <div class="roomListRoom">
+    {% for gate, jockey, rcnt, rcity, rmonth1, rmonth2, rmonth3 in awards %}
+
+    <div class="roomListRoom__header" style="padding: 0.2rem;">
+      {%if rcity == '서울'%}
+      <span class="tooltip" style="width:7%; font-size: 0.9rem;">🐳{{gate}}<span class="tooltip-text">서울</span></span>
+      {%else%}
+      <span class="tooltip" style="width:7%; font-size: 0.9rem;">🐋{{gate}}<span class="tooltip-text">부산</span></span>
+      {%endif%}
+      {%if rmonth2|add:rmonth3 > 300000 and rmonth2 < rmonth3%}
+      <span class="tooltip" style="font-size:1.5rem; width:16%; color:tomato">{{jockey}}<span class="tooltip-text">총상금 : {{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</span></span>
+      {%else%}
+      <span class="tooltip" style="font-size:1.5rem; width:16%;">{{jockey|slice:"0:3"}}<span class="tooltip-text">총상금 : {{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</span></span>
+      {%endif%}
+      <span class="tooltip" style="width: 5%; text-align: right; font-family: Arial; font-size: 1.2rem;">{{rcnt}}<span class="tooltip-text">출주횟수</span></span>
+      <span class="tooltip" style="width:24%; text-align: right; font-family: Arial;">{{rmonth1|intcomma}}<span class="tooltip-text">당월 수득상금</span></span>
+      {%if rmonth2 < rmonth3%}
+      <span class="tooltip" style="width:24%; text-align: right; font-family: Arial; color:tomato">{{rmonth2|intcomma}}<span class="tooltip-text">전월 수득상금</span></span>
+      {%else%}
+      <span class="tooltip" style="width:24%; text-align: right; font-family: Arial;">{{rmonth2|intcomma}}<span class="tooltip-text">전월 수득상금</span></span>
+      {%endif%}
+      <span class="tooltip" style="width:24%; text-align: right; font-family: Arial;">{{rmonth3|intcomma}}<span class="tooltip-text">전전월 수득상금</span></span>
+
+      
+
+    </div>
+
+    {% if forloop.counter|mod:5 == 0 %}
+    <hr style="border: solid 1px black;">
+    {%else%}
+    {%endif%}
+
+    {% endfor %}
+  </div>
+</div>
