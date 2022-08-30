@@ -12,6 +12,7 @@ from pymysql import ROWID
 from .models import Award, Exp010, Exp011, JockeyW, JtRate, RaceResult, Racing, Rec010, RecordS, Room, Topic, Message, User
 from .forms import RoomForm, UserForm, MyUserCreationForm
 
+
 from datetime import datetime, date
 
 from django_pivot import pivot
@@ -21,6 +22,8 @@ from django.db import connection
 from django.shortcuts import get_object_or_404
 
 # from django_pivot.histogram import histogram
+
+from django.http.request import QueryDict
 
 
 def loginPage(request):
@@ -304,17 +307,17 @@ def home(request):
         'rdate', flat=True)).order_by('rdate', 'rcity', 'rno')
 
     context = {'rooms': rooms,
-            'racings': racings,
-            'room_count': room_count,
-            'room_messages': room_messages,
-            'first_race': first_race,
-            'exp011s': exp011s,
-            'horse': horse,
-            'rdate': rdate,
-            'r_results': r_results,
-            'allocs': allocs,
-            'awards': awards,
-            'h_records': h_records}
+               'racings': racings,
+               'room_count': room_count,
+               'room_messages': room_messages,
+               'first_race': first_race,
+               'exp011s': exp011s,
+               'horse': horse,
+               'rdate': rdate,
+               'r_results': r_results,
+               'allocs': allocs,
+               'awards': awards,
+               'h_records': h_records}
 
     return render(request, 'base/home.html', context)
 
@@ -395,13 +398,12 @@ def prediction_race(request, rcity, rdate, rno, hname, awardee):
         rdate__lt=rdate, horse=horse.horse).order_by('-rdate')
 
     compare_r = exp011s.aggregate(Min('i_s1f'), Min(
-        'i_g1f'), Min('i_g2f'), Min('i_g3f'), Max('handycap'), Max('rating'))
+        'i_g1f'), Min('i_g2f'), Min('i_g3f'), Max('handycap'), Max('rating'), Max('r_pop'))
 
     try:
         alloc = Rec010.objects.get(rcity=rcity, rdate=rdate, rno=rno)
     except:
         alloc = None
-
 
     # # awards = get_award_race(i_rcity=rcity, i_rdate=rdate, i_rno=rno, i_awardee=awardee)
     # print(alloc.query)
@@ -585,3 +587,49 @@ def awards(request):
                'h_records': h_records}
 
     return render(request, 'base/awards.html', context)
+
+
+def update_popularity(request, rcity, rdate, rno):
+
+    exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno)
+    context = {'rcity': rcity, 'exp011s': exp011s}
+
+    # user = request.user
+    # form = UserForm(instance=user)
+
+    if request.method == 'POST':
+
+        myDict = dict(request.POST)
+        print(myDict['pop_1'][0])
+
+        for race in exp011s:
+            pop = 'pop_' + str(race.gate)
+
+            try:
+                cursor = connection.cursor()
+
+                strSql = """ update exp011 set r_pop = """ + myDict[pop][0] + """
+                            where rdate = '""" + rdate + """' and rcity = '""" + rcity + """' and rno = """ + str(rno) + """ and gate = """ + str(race.gate) + """
+                        ; """
+
+                print(strSql)
+                r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                awards = cursor.fetchall()
+
+                connection.commit()
+                connection.close()
+
+                # return render(request, 'base/update_popularity.html', context)
+                # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+
+            except:
+                connection.rollback()
+                print("Failed selecting in BookListView")
+
+        # form = Exp011(request.POST, request.FILES, rcity=rcity, rdate=rdate, rno=rno, instance=pop_1)
+        # if form.is_valid():
+        #     form.save()
+        #     redirect('user-profile', pk=rdate)
+
+    # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+    return render(request, 'base/update_popularity.html', context)

@@ -13,12 +13,13 @@
         <li class="topics__header">
           {% for race in racings %}
           {% if race.rcity == '서울' %}
+          {% if race.rno == 1 %}<span style="color: var(--color-main);background-color: var(--color-dark); font-style: italic; font-weight: 600; padding:0.7rem; border-radius: 0.7rem;">
+            {{race.rdate|slice:"0:4" }}.{{race.rdate|slice:"4:6" }}.{{race.rdate|slice:"6:8" }} {{race.rday}}요일</span>
+          {% endif %}
           <a href="{% url 'prediction_race' race.rcity race.rdate race.rno 0 0 %}">
-            <!-- <span>{{race.rdate|slice:"0:4" }}.{{race.rdate|slice:"4:6" }}.{{race.rdate|slice:"6:8" }}</span> -->
-            <span>{{race.rday}}</span>
-            <span>{{race.rno}}R</span>
+            <span style="background-color: var(--color-dark)">{{race.rno}}R</span>
             {{race.grade|slice:"0:2"}}﹅{{race.dividing}}﹅{{race.rname}} 
-            <span>{{race.rcount}}</span>
+            <span style="background-color: var(--color-dark)">{{race.rcount}}</span>
           </a>
           {% endif %}
           {% endfor %}
@@ -26,28 +27,31 @@
       </div>
     </div>
   </ul>
-  <ul>
-        <div class="dropDown">
-          <button class="dropDown-btn">🐋 부산 경마.</button>
-          <div class="subMenu">
-            <li class="topics__header">
-              {% for race in racings %}
-              {% if race.rcity == '부산' %}
-              <a href="{% url 'prediction_race' race.rcity race.rdate race.rno 0 0 %}">
-                <!-- <span>{{race.rdate|slice:"0:4" }}.{{race.rdate|slice:"4:6" }}.{{race.rdate|slice:"6:8" }}</span> -->
-                <span>{{race.rday}}</span>
-                <span>{{race.rno}}R</span>
-                {{race.grade|slice:"0:2"}}﹅{{race.dividing}}﹅{{race.rname}}
-                <span>{{race.rcount}}</span>
-              </a>
-              {% endif %}
-              {% endfor %}
-            </li>
-          </div>
-        </div>
+
+  <ul class="topics__list">
+    <div class="dropDown">
+      <button class="dropDown-btn">🐋 부산 경마.</button>
+      <div class="subMenu">
+        <li class="topics__header">
+          {% for race in racings %}
+          {% if race.rcity == '부산' %}
+          {% if race.rno == 1 %}<span style="color: var(--color-main);background-color: var(--color-dark); font-style: italic; font-weight: 600; padding:0.7rem; border-radius: 0.7rem;">
+            {{race.rdate|slice:"0:4"}}.{{race.rdate|slice:"4:6" }}.{{race.rdate|slice:"6:8" }} {{race.rday}}요일</span>
+          {% endif %}
+          <a href="{% url 'prediction_race' race.rcity race.rdate race.rno 0 0 %}">
+            <span style="background-color: var(--color-dark)">{{race.rno}}R</span>
+            {{race.grade|slice:"0:2"}}﹅{{race.dividing}}﹅{{race.rname}}
+            <span style="background-color: var(--color-dark)">{{race.rcount}}</span>
+          </a>
+          {% endif %}
+          {% endfor %}
+        </li>
+      </div>
+    </div>
   </ul>
 
   <br>
+
   <ul class="topics__list">
     <li>
     <a class="btn btn--link" href="{% url 'race' %}?q=서울">
@@ -73,6 +77,7 @@
     </a>
     </li>
   </ul>
+
 <br>
   <a class="btn btn--link" href="{% url 'race' %}?q=서울">
     ◀︎ 지난주
@@ -81,6 +86,69 @@
       <path d="M16 21l-13-13h-3l16 16 16-16h-3l-13 13z"></path>
     </svg>
   </a>
+  
+  {% if request.user.username == 'admin' %}
+  <ul class="topics__list">
+    <li>
+      <a class="btn btn--link" href="{% url 'update_popularity' '서울' '20220820' 6 %}">
+        ﹅경주별 인기도 입력
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+          <title>chevron-down</title>
+          <path d="M16 21l-13-13h-3l16 16 16-16h-3l-13 13z"></path>
+        </svg>
+      </a>
+    </li>
+
+    <ul class="topics__list">
+    
+      <div class="dropDown">
+        <button class="dropDown-btn">🐳 서울 경마.</button>
+        <div class="subMenu">
+          <li class="topics__header">
+            {% for race in racings %}
+            {% if race.rcity == '서울' %}
+            {% if race.rno == 1 %}<span
+              style="color: var(--color-main);background-color: var(--color-dark); font-style: italic; font-weight: 600; padding:0.7rem; border-radius: 0.7rem;">
+              {{race.rdate|slice:"0:4" }}.{{race.rdate|slice:"4:6" }}.{{race.rdate|slice:"6:8" }} {{race.rday}}요일</span>
+            {% endif %}
+            <a href="{% url 'update_popularity' race.rcity race.rdate race.rno %}">
+              <span style="background-color: var(--color-dark)">{{race.rno}}R</span>
+              {{race.grade|slice:"0:2"}}﹅{{race.dividing}}﹅{{race.rname}}
+              <span style="background-color: var(--color-dark)">{{race.rcount}}</span>
+            </a>
+            {% endif %}
+            {% endfor %}
+          </li>
+        </div>
+      </div>
+    </ul>
+    
+    <ul class="topics__list">
+      <div class="dropDown">
+        <button class="dropDown-btn">🐋 부산 경마.</button>
+        <div class="subMenu">
+          <li class="topics__header">
+            {% for race in racings %}
+            {% if race.rcity == '부산' %}
+            {% if race.rno == 1 %}<span
+              style="color: var(--color-main);background-color: var(--color-dark); font-style: italic; font-weight: 600; padding:0.7rem; border-radius: 0.7rem;">
+              {{race.rdate|slice:"0:4"}}.{{race.rdate|slice:"4:6" }}.{{race.rdate|slice:"6:8" }} {{race.rday}}요일</span>
+            {% endif %}
+            <a href="{% url 'update_popularity' race.rcity race.rdate race.rno %}">
+              <span style="background-color: var(--color-dark)">{{race.rno}}R</span>
+              {{race.grade|slice:"0:2"}}﹅{{race.dividing}}﹅{{race.rname}}
+              <span style="background-color: var(--color-dark)">{{race.rcount}}</span>
+            </a>
+            {% endif %}
+            {% endfor %}
+          </li>
+        </div>
+      </div>
+    </ul>
+  </ul>
+
+  
+  {% endif %}
   
 </div>
 

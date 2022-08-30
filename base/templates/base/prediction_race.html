@@ -74,19 +74,26 @@
             </a>
             
 
+            <!-- <a href="{% url 'home' %}" onclick="window.open(this.href, '_blank', 'width=800, height=600, location=no, status=no'); return false;">
+                  클릭 시 팝업 창으로 이동합니다
+            </a> -->
+            <!-- <button style="background-color:var(--color-main-light)" onclick=popup("https://www.gumvit.com/statv40/train_view.html?m_date=2022-08-28&race_no=10&type=7&loc=S")>조교현황</button> -->
+
             <div>
               <H2 style="color: var(--color-main);">⏰  {{r_condition.rtime}}</H2> 
             </div>
          
           </div>
 
-
-
           <div class="room__box scroll">
             <hr style="border: solid 1px black;">
 
             {% for exp011 in exp011s %}
+            {% if exp011.horse == horse.horse %}
+            <div class="roomListRoom" style="background-color:var(--color-bg)">
+            {% else %}
             <div class="roomListRoom">
+            {% endif %}
               <div class="roomListRoom__header">
                 <a href="{% url 'prediction_race' exp011.rcity exp011.rdate exp011.rno exp011.horse 0 %}" class="roomListRoom__author">
 
@@ -133,11 +140,11 @@
 
                   {% if exp011.horse == horse.horse %}
                   <div class="roomListRoom__header">
-                    <span class="tooltip_a" style="font-size: 1.5rem; font-weight: 700; font-style: italic;"><span class="blink">{{exp011.horse|rjust:"8"}}</span><span class="tooltip_a-text">출주마 이름</span></span>
+                    <span style="color:var(--color-main); font-size: 1.5rem; font-weight: 700; ">{{exp011.horse}}</span>
                   </div>
                   {%else%}
                   <div class="roomListRoom__header">
-                    <span class="tooltip">{{exp011.horse|rjust:"8"}}<span class="tooltip-text">출주마 이름</span></span>
+                    <span style="color:var(--color-light-gray);">{{exp011.horse}}</span>
                   </div>
                   {%endif%}
 
@@ -308,7 +315,7 @@
 
                 <div class="roomListRoom__header" style="width:15%; text-align: right;">
                   ﹅<span class="tooltip" style="color:var(--color-gray);">{{exp011.trainer}}<span class="tooltip-text">조교사</span></span>
-                  {% if exp011.t_per > exp011.jt_per %}
+                  {% if exp011.t_per > exp011.jt_per %} 
                   <span class="tooltip" style="color:tomato">{{exp011.t_per}}%<span class="tooltip-text">조교사 복승률</span></span>﹅
                   {% else %}
                   <span class="tooltip" style="color:var(--color-gray);">{{exp011.t_per}}%<span class="tooltip-text">조교사 복승률</span></span>﹅
@@ -316,14 +323,20 @@
                 </div>
 
 
-                <div class="roomListRoom__header" style="width:13%; text-align: left;">
+                <div class="roomListRoom__header" style="width:6%; text-align: right; font-size: 2.0rem;">
+                  {% if compare_r.r_pop__max > 50 %}
+                  <progress value={{exp011.r_pop}} max="100"></progress>
+                  {% else %}
+                  <progress value={{exp011.r_pop|mul:2}} max="100"></progress>
+                  {% endif %}
+                </div>
 
-                  <span class="tooltip" style="color:var(--color-gray);">{{exp011.host|slice:"0:3"}}<span class="tooltip-text">{{exp011.host}}</span></span>
+                <div class="roomListRoom__header" style="width:7%; text-align: right;">
                   <p class="roomListRoom__topic">
                     {% if compare_r.rating__max == exp011.rating and exp011.rating != 0  %}
-                    <span class="tooltip"  style="color:tomato; font-weight: 700;">R {{exp011.rating}}<span class="tooltip-text">레이팅</span></span>
+                    <span class="tooltip"  style="color:tomato; font-weight: 600;">r {{exp011.rating}}<span class="tooltip-text">레이팅</span></span>
                     {% else %}
-                    <span class="tooltip">R {{exp011.rating}}<span class="tooltip-text">레이팅</span></span>
+                    <span class="tooltip">r {{exp011.rating}}<span class="tooltip-text">{{exp011.r_pop}}</span></span>
                     {% endif %}
                   </p>
                 </div>
@@ -485,7 +498,11 @@
           </h3>
           <div class="activities__header scroll">
             {% for h_record in h_records %}
+            {% if h_record.grade == '주행검사'%}
+            <div class="activities__box" style="background-color: black;">
+            {% else %}
             <div class="activities__box">
+            {% endif %}
 
               <div class="activities__boxHeader roomListRoom__header">
                 <a href="{% url 'prediction_race' h_record.rcity h_record.rdate h_record.rno h_record.horse 0 %}"
