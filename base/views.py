@@ -299,9 +299,12 @@ def home(request):
 
     i_rdate = rdate[0]['rdate']
     # awards = get_award_race('서울', i_rdate, 3, i_awardee='jockey')
+    weeks = get_weeks(i_rdate, i_awardee='jockey')
+    race = get_race(i_rdate, i_awardee='jockey')
 
     r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
     # .filter( rdate__in=rdate.values_list('rdate', flat=True))
+    print(r_results)
 
     allocs = Rec010.objects.filter(rdate__in=rdate.values_list(
         'rdate', flat=True)).order_by('rdate', 'rcity', 'rno')
@@ -316,6 +319,8 @@ def home(request):
                'rdate': rdate,
                'r_results': r_results,
                'allocs': allocs,
+               'weeks': weeks,
+               'race': race,
                'h_records': h_records}
 
     return render(request, 'base/home.html', context)
@@ -632,3 +637,78 @@ def update_popularity(request, rcity, rdate, rno):
 
     # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
     return render(request, 'base/update_popularity.html', context)
+
+def get_weeks(i_rdate, i_awardee):
+  
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+            select b.rcity, a.rcity rcity_in, b.""" + i_awardee + """, rcnt, r1cnt, r2cnt, r3cnt, r4cnt, r5cnt,rmonth1, rmonth2, rmonth3, rdate1, rdate2, rdate3
+              from
+              (
+                select """ + i_awardee + """, sum(r_cnt) rcnt, sum(r1_cnt) r1cnt, sum(r2_cnt) r2cnt, sum(r3_cnt) r3cnt, sum(r4_cnt) r4cnt, sum(r5_cnt) r5cnt,
+                              (select max(rcity) from """ + i_awardee + """  where a.""" + i_awardee + """ = """ + i_awardee + """ ) rcity,
+                              sum( if( rmonth = substr( '""" + i_rdate + """', 1, 6), award, 0 )) rmonth1,
+                              sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -1 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth2,
+                              sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -2 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth3
+                      from award a
+                      where rmonth between substr(date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 MONTH), '%Y%m%d'), 1, 6) and substr('""" + i_rdate + """', 1, 6)
+                        and """ + i_awardee + """ in (  select distinct """ + i_awardee + """ from exp011 a where rdate in ( select distinct rdate from racing ) )
+                      group by """ + i_awardee + """
+        	    ) a right outer join 
+              (
+                select rcity,""" + i_awardee + """, 
+                        sum(if( rdate = '""" + i_rdate + """', 1, 0 )) rdate1, 
+                        sum(if( rdate = DATE_FORMAT(CAST('""" + i_rdate + """' AS DATE) + INTERVAL 1 DAY,'%Y%m%d'), 1, 0 )) rdate2, 
+                        sum(if( rdate = DATE_FORMAT(CAST('""" + i_rdate + """' AS DATE) + INTERVAL 2 DAY,'%Y%m%d'), 1, 0 )) rdate3
+                  from exp011
+                where rdate in ( select distinct rdate from racing )
+                group by rcity, """ + i_awardee + """
+              ) b on a.""" + i_awardee + """ = b.""" + i_awardee + """
+              order by rcity desc, rmonth1 + rmonth2 + rmonth3 desc
+                ; """
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        weeks = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in BookListView")
+
+    # print(r_cnt)
+    # print(weeks)
+
+
+    return weeks
+
+
+def get_race(i_rdate, i_awardee):
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+                select rcity,""" + i_awardee + """ j_name, rdate, rday, rno, gate, rank, r_rank, horse, remark, trainer t_name, host h_name, r_pop
+                  from expect
+                where rdate in ( select distinct rdate from racing )
+                ; """
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        weeks = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in BookListView")
+
+    print(r_cnt)
+    print(type(weeks[0]))
+
+
+    return weeks

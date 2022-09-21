@@ -327,6 +327,7 @@ class RaceResult(models.Model):
     r_r09 = models.IntegerField(blank=True, null=True)
     r_r10 = models.IntegerField(blank=True, null=True)
     r_cnt = models.IntegerField(blank=True, null=True)
+    rday = models.CharField(max_length=1)
 
     class Meta:
         managed = False
