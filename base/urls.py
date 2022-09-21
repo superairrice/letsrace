@@ -44,8 +44,7 @@ urlpatterns = [
 
     path('exp011/<str:pk>/', views.exp011, name="exp011"),  # id 전달
 
-    path('update_popularity/<str:rcity>/<str:rdate>/<int:rno>',
-         views.update_popularity, name="update_popularity"),
+    path('update_popularity/<str:rcity>/<str:rdate>/<int:rno>', views.update_popularity, name="update_popularity"),
     
 ]
 

@@ -3,42 +3,130 @@
 
 
 <div class="activities">
-  <div class="activities__header">
-    <h2>👲상금현황(당월﹆전월﹆전전월)</h2>
-  </div>
 
-  <div class="roomListRoom">
-    {% for gate, jockey, rcnt, rcity, rmonth1, rmonth2, rmonth3 in awards %}
+  <table class="rwd-table">
+    <tbody>
+      <tr style="font-size: 1.4rem; font-weight:900; color:var(--color-main); font-style: italic;">
+  
+        <th><p class="roomListRoom__topic">예상순위</p></th>
+        
+        <th>1</th>
+        <th>2</th>
+        <th>3</th>
+        <th>4</th>
+        <th>5</th>
+        <th>6</th>
+        <th>7</th>
+        
+      </tr>
+      <tr></tr>
+  
+      {% for r in r_results %}
+      <tr align="middle">
+        <td>
+          <a href="{% url 'prediction_race' r.rcity r.rdate r.rno 0 0 %}" style="text-align: right;">
+            <span class="tooltip" style="font-size: 1.2rem;">{{r.rdate|slice:"4:6"}}.{{r.rdate|slice:"6:8"}} {{r.rcity}} {{r.rno}}R
+              <span class="tooltip-text" style="font-size: 1.3rem; color:var(--color-light-gray)">
 
-    <div class="roomListRoom__header" style="padding: 0.2rem;">
-      {%if rcity == '서울'%}
-      <span class="tooltip" style="width:7%; font-size: 0.9rem;">🐳{{gate}}<span class="tooltip-text">서울</span></span>
-      {%else%}
-      <span class="tooltip" style="width:7%; font-size: 0.9rem;">🐋{{gate}}<span class="tooltip-text">부산</span></span>
-      {%endif%}
-      {%if rmonth2|add:rmonth3 > 300000 and rmonth2 < rmonth3%}
-      <span class="tooltip" style="font-size:1.5rem; width:16%; color:tomato">{{jockey}}<span class="tooltip-text">총상금 : {{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</span></span>
-      {%else%}
-      <span class="tooltip" style="font-size:1.5rem; width:16%;">{{jockey|slice:"0:3"}}<span class="tooltip-text">총상금 : {{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</span></span>
-      {%endif%}
-      <span class="tooltip" style="width: 5%; text-align: right; font-family: Arial; font-size: 1.2rem;">{{rcnt}}<span class="tooltip-text">출주횟수</span></span>
-      <span class="tooltip" style="width:24%; text-align: right; font-family: Arial;">{{rmonth1|intcomma}}<span class="tooltip-text">당월 수득상금</span></span>
-      {%if rmonth2 < rmonth3%}
-      <span class="tooltip" style="width:24%; text-align: right; font-family: Arial; color:tomato">{{rmonth2|intcomma}}<span class="tooltip-text">전월 수득상금</span></span>
-      {%else%}
-      <span class="tooltip" style="width:24%; text-align: right; font-family: Arial;">{{rmonth2|intcomma}}<span class="tooltip-text">전월 수득상금</span></span>
-      {%endif%}
-      <span class="tooltip" style="width:24%; text-align: right; font-family: Arial;">{{rmonth3|intcomma}}<span class="tooltip-text">전전월 수득상금</span></span>
+                {% if r.r_r01 == 0 %}
+                  <span>경주결과 입력전입니다.</span>
+                {% else %}
+                  <span>🌈 경주결과</span><br>
+                  <span>🐴 순위&nbsp;</span>
 
-      
+                    {% if r.r_r01 == r.r01 %}<span style="color:var(--color-r1); font-size: 1.4rem;">
+                    {% elif r.r_r01 == r.r02 %}<span style="color:var(--color-r2); font-size: 1.4rem;">
+                    {% elif r.r_r01 == r.r03 %}<span style="color:var(--color-r3); font-size: 1.4rem;">
+                    {% elif r.r_r01 == r.r04 %}<span style="color:var(--color-r4); font-size: 1.4rem;">
+                    {% elif r.r_r01 == r.r05 %}<span style="color:var(--color-r5); font-size: 1.4rem;">
+                    {% else %}<span style="color:var(--color-gray); font-size: 1.4rem;">{% endif %}
+                    {{r.r_r01}}</span>&nbsp;▪︎&nbsp;
 
-    </div>
+                    {% if r.r_r02 == r.r01 %}<span style="color:var(--color-r1); font-size: 1.4rem;">
+                    {% elif r.r_r02 == r.r02 %}<span style="color:var(--color-r2); font-size: 1.4rem;">
+                    {% elif r.r_r02 == r.r03 %}<span style="color:var(--color-r3); font-size: 1.4rem;">
+                    {% elif r.r_r02 == r.r04 %}<span style="color:var(--color-r4); font-size: 1.4rem;">
+                    {% elif r.r_r02 == r.r05 %}<span style="color:var(--color-r5); font-size: 1.4rem;">
+                    {% else %}<span style="color:var(--color-gray); font-size: 1.4rem;">{% endif %}
+                    {{r.r_r02}}</span>&nbsp;▪︎&nbsp;
 
-    {% if forloop.counter|mod:5 == 0 %}
-    <hr style="border: solid 1px black;">
-    {%else%}
-    {%endif%}
+                    {% if r.r_r03 == r.r01 %}<span style="color:var(--color-r1);">
+                    {% elif r.r_r03 == r.r02 %}<span style="color:var(--color-r2)">
+                    {% elif r.r_r03 == r.r03 %}<span style="color:var(--color-r3)">
+                    {% elif r.r_r03 == r.r04 %}<span style="color:var(--color-r4)">
+                    {% elif r.r_r03 == r.r05 %}<span style="color:var(--color-r5)">
+                    {% else %}<span style="color:var(--color-gray)">{% endif %}
+                    {{r.r_r03}}</span>&nbsp;▪︎&nbsp;
 
-    {% endfor %}
-  </div>
+                    {% if r.r_r04 == r.r01 %}<span style="color:var(--color-r1);">
+                    {% elif r.r_r04 == r.r02 %}<span style="color:var(--color-r2)">
+                    {% elif r.r_r04 == r.r03 %}<span style="color:var(--color-r3)">
+                    {% elif r.r_r04 == r.r04 %}<span style="color:var(--color-r4)">
+                    {% elif r.r_r04 == r.r05 %}<span style="color:var(--color-r5)">
+                    {% else %}<span style="color:var(--color-gray)">{% endif %}
+                    {{r.r_r04}}</span>&nbsp;▪︎&nbsp;
+
+                    {% if r.r_r05 == r.r01 %}<span style="color:var(--color-r1);">
+                    {% elif r.r_r05 == r.r02 %}<span style="color:var(--color-r2)">
+                    {% elif r.r_r05 == r.r03 %}<span style="color:var(--color-r3)">
+                    {% elif r.r_r05 == r.r04 %}<span style="color:var(--color-r4)">
+                    {% elif r.r_r05 == r.r05 %}<span style="color:var(--color-r5)">
+                    {% else %}<span style="color:var(--color-gray)">{% endif %}
+                    {{r.r_r05}}</span>&nbsp;▪︎&nbsp;
+
+                    {% if r.r_r06 == r.r01 %}<span style="color:var(--color-r1);">
+                    {% elif r.r_r06 == r.r02 %}<span style="color:var(--color-r2)">
+                    {% elif r.r_r06 == r.r03 %}<span style="color:var(--color-r3)">
+                    {% elif r.r_r06 == r.r04 %}<span style="color:var(--color-r4)">
+                    {% elif r.r_r06 == r.r05 %}<span style="color:var(--color-r5)">
+                    {% else %}<span style="color:var(--color-gray)">{% endif %}
+                    {{r.r_r06}}</span>
+
+                  <br>
+
+                  {% for alloc in allocs %}
+                    {% if r.rcity == alloc.rcity and r.rdate == alloc.rdate and r.rno == alloc.rno %}
+                    <span style="text-align: left">﹆복승💰 {{alloc.r2alloc|slice:"2:10"|rjust:10}}</span><br>
+                    <span style="text-align: left">﹆삼복💰 {{alloc.r333alloc|slice:"3:10"|rjust:10}}</span><br>
+                    <span style="text-align: left">﹆삼쌍💰 {{alloc.r123alloc|slice:"3:10"|rjust:10}}</span>
+                    {% endif %}
+                  {% endfor %}
+
+                {% endif %}
+
+
+              
+              </span>
+            </span>
+          </a>
+        </td>
+
+        <td>
+          <span style="font-size: 1.4rem; font-weight: 600; width: 10%; color:var(--color-r1)">{% if r.r01 > 0 %}{{r.r01}}{%elif r.r01 == 0 and r.r_cnt >= 1 %}🫥{%else%}{%endif%}</span>
+        </td>
+        <td>
+          <span style="font-size: 1.4rem; font-weight: 500; width: 10%; color:var(--color-r2)">{% if r.r02 > 0 %}{{r.r02}}{%elif r.r02 == 0 and r.r_cnt >= 1 %}🫥{%else%}{%endif%}</span>
+        </td>
+        <td>
+          <span style="font-size: 1.3rem; font-weight: 400; width: 10%; color:var(--color-r3)">{% if r.r03 > 0 %}{{r.r03}}{%elif r.r03 == 0 and r.r_cnt >= 1 %}🫥{%else%}{%endif%}</span>
+        </td>
+        <td>
+          <span style="font-size: 1.2rem; font-weight: 300; width: 10%; color:var(--color-r4)">{% if r.r04 > 0 %}{{r.r04}}{%elif r.r04 == 0 and r.r_cnt >= 1 %}🫥{%else%}{%endif%}</span>
+        </td>
+        <td>
+          <span style="font-size: 1.2rem; font-weight: 300; width: 10%; color:var(--color-r5)">{% if r.r05 > 0 %}{{r.r05}}{%elif r.r05 == 0 and r.r_cnt >= 1 %}🫥{%else%}{%endif%}</span>
+        </td>
+        <td>
+          <span style="font-size: 1.2rem;">{% if r.r06 > 0 %}{{r.r06}}{%elif r.r06 == 0 and r.r_cnt >= 1 %}🫥{%else%}{%endif%}</span>
+        </td>
+        <td>
+          <span style="font-size: 1.2rem;">{% if r.r07 > 0 %}{{r.r07}}{%elif r.r07 == 0 and r.r_cnt >= 1 %}🫥{%else%}{%endif%}</span>
+        </td>
+        
+      </tr>
+      {% endfor %}
+  
+    </tbody>
+  </table>
+
 </div>

@@ -298,7 +298,7 @@ def home(request):
     rdate = Racing.objects.values('rdate').distinct()
 
     i_rdate = rdate[0]['rdate']
-    awards = get_award_race('서울', i_rdate, 3, i_awardee='jockey')
+    # awards = get_award_race('서울', i_rdate, 3, i_awardee='jockey')
 
     r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
     # .filter( rdate__in=rdate.values_list('rdate', flat=True))
@@ -316,7 +316,6 @@ def home(request):
                'rdate': rdate,
                'r_results': r_results,
                'allocs': allocs,
-               'awards': awards,
                'h_records': h_records}
 
     return render(request, 'base/home.html', context)

@@ -30,10 +30,12 @@
             </div>
 
             <div class="room__topRight" style="color: var(--color-main); font-weight: 600;">
-              <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{r_condition.rcity}}</span>
-              <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{r_condition.rdate|slice:"0:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}</span>
-              
-              <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;"><span class="blink">{{r_condition.rno}}R</span></span>
+              <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">
+                {{r_condition.rdate|slice:"0:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}({{r_condition.rday}})
+              </span>
+
+              <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;"><span class="blink">{{r_condition.rcity}}&nbsp;{{r_condition.rno}}R</span></span>
+
               <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{r_condition.grade|slice:"0:2"}}</span>
               <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{r_condition.dividing}}</span>
               <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{r_condition.rname}} </span>
@@ -247,7 +249,7 @@
                   <!-- 💎 -->
                 </div>
 
-                <div class="roomListRoom__header" style="width: 37%; text-align: left; ">
+                <div class="roomListRoom__header" style="width: 37%; text-align: left;">
                   
                   {% if compare_r.i_s1f__min == exp011.i_s1f %}
                   <span class="tooltip" style="color:tomato;"><span class="blink">{{exp011.cs1f}}</span><span class="tooltip-text">초반 200m</span></span>﹅
@@ -284,14 +286,19 @@
                   {% elif exp011.rank == 5 %}
                   <span class="tooltip" style="font-size: 1.5rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r5); font-weight:800;">{{exp011.complex}}<span class="tooltip-text">프로그램 예상기록</span></span>﹅
                   {% else %}
-                  <span class="tooltip" style="font-size: 1.5rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-gray); font-weight:800;">{{exp011.complex}}<span class="tooltip-text">프로그램 예상기록</span></span>﹅
+                  <span class="tooltip" style="font-size: 1.5rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-main); font-weight:800;">{{exp011.complex}}<span class="tooltip-text">프로그램 예상기록</span></span>﹅
                   {% endif %}
                 </div>
                 
                 <div class="roomListRoom__header" style="width:14%; text-align: justify;"> 
 
                   <span class="tooltip" style="color:var(--color-gray);">{{exp011.jockey}}<span class="tooltip-text">기수 이름</span></span>
+                  {% if exp011.j_per >= 25.0 %}
+                  <span class="tooltip" style="color:var(--color-r2);">{{exp011.j_per|rjust:"5"}}%<span class="tooltip-text">기수 최근1년 복승률</span></span>﹅
+                  {% else %}
                   <span class="tooltip" style="color:var(--color-gray);">{{exp011.j_per|rjust:"5"}}%<span class="tooltip-text">기수 최근1년 복승률</span></span>﹅
+                  {% endif %}
+                  
 
                 </div>
                 <div class="roomListRoom__header" style="width:18%; text-align: center; font-size: 1.5rem;">
@@ -351,9 +358,9 @@
             </div>
             {% endfor%}
 
-          </div>
+            </div>
 
-        </div>
+          </div>
         <!-- Room End -->
         
         <!--   Start -->
