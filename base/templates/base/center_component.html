@@ -1,34 +1,7 @@
 {% load mathfilters %}
 {% load humanize %}
 
-<h1 id="clock" style="color:black;">clock</h1>
-
 <script>
-  var Target = document.getElementById("clock");
-  function clock() {
-    var time = new Date();
-
-    var month = time.getMonth();
-    var date = time.getDate();
-    var day = time.getDay();
-    var week = ['일', '월', '화', '수', '목', '금', '토'];
-
-    var hours = time.getHours();
-    var minutes = time.getMinutes();
-    var seconds = time.getSeconds();
-
-    Target.innerText =
-      `${month + 1}월 ${date}일 ${week[day]}요일 ` +
-      `${hours < 10 ? `0${hours}` : hours}:${minutes < 10 ? `0${minutes}` : minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
-
-  }
-  clock();
-  setInterval(clock, 1000); // 1초마다 실행
-</script>
-
-<script>
-
-
   $(function () {
     $(".fold-table tr.view").on("click", function () {
       if ($(this).hasClass("open")) {
@@ -58,8 +31,8 @@
     })
 </script>
 
-<div class="roomListRoom">
-
+<!-- <div class="roomListRoom"> -->
+<div>
   <ul class="tabs">
     <li class="tab-link current" data-tab="tab-1">서울</li>
     <li class="tab-link" data-tab="tab-2">부산</li>
@@ -73,8 +46,8 @@
         <tr>
           <th rowspan="2"><span class="visible-small" title="Jockey">Jockey.</span><span class="visible-big">Jockey</span></th>
           <th colspan="2" align="center"><span class="visible-small" title="rmonth1">출주.</span><span class="visible-big">출주횟수</span></th>
-          <th colspan="3"><span class="visible-small" title="rmonth1">상금현황.</span><span class="visible-big">최근3개월 상금현황(천원)</span></th>
-          <th colspan="6">최근3개월 상금수득 총출주횟수/순위별 횟수 </th>
+          <th colspan="3"><span class="visible-small" title="rmonth1">상금현황.</span><span class="visible-big">최근 3개월 상금현황(천원)</span></th>
+          <th colspan="6"><span class="visible-small" title="rmonth1">최근 3개월 상금수득 순위별 횟수.</span><span class="visible-big">최근 3개월 상금수득 순위별 횟수</span></th>
         </tr>
         <tr>
           <th><span class="visible-small" title="rmonth2">토.</span><span class="visible-big">토.</span></th>
@@ -96,20 +69,29 @@
         {% for rcity, rcity_in, jockey, rcnt, r1cnt, r2cnt, r3cnt, r4cnt, r5cnt, rmonth1, rmonth2, rmonth3, rdate1, rdate2, rdate3 in weeks %}
         {% if rcity == '서울' %}
         <tr class="view">
-          {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 9000 and rmonth1|add:rmonth2 < rmonth3 %}
+          {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 10000 and rmonth1 < rmonth2|add:rmonth3|div:2 %}
           <td style="font-size:1.4rem; color:tomato; font-weight: 700;" >{{jockey}}</td>
           {% else %}
           <td style="font-size:1.4rem;" >{{jockey}}</td>
           {% endif %}
           <td align="center" style="font-family: Arial; font-size: 1.4rem;">{{rdate2}}</td>
           <td align="center" style="font-family: Arial; font-size: 1.4rem;">{{rdate3}}</td>
-          <td class="cur" align="right" style="font-family: Arial; font-size: 1.4rem;">{{rmonth1|intcomma}}</td>
-          {% if rmonth2|add:rmonth3 > 300000 and rmonth2 < rmonth3 %}
-          <td class="cur" align="right" style="font-family: Arial; font-size: 1.4rem; color:tomato; font-weight: 700;">{{rmonth2|intcomma}}</td>
+
+          {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 10000 and rmonth1 > rmonth2|add:rmonth3|div:2 %}
+          <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|intcomma}}</td>
           {% else %}
-          <td class="cur" align="right" style="font-family: Arial; font-size: 1.4rem;">{{rmonth2|intcomma}}</td>
+          <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem;">{{rmonth1|intcomma}}</td>
           {% endif %}
-          <td class="cur" align="right" style="font-family: Arial; font-size: 1.4rem;">{{rmonth3|intcomma}}</td>
+          {% if rmonth2|add:rmonth3|div:2 > 200000 and rmonth2 > 200000 %}
+          <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:tomato; font-weight: 700;">{{rmonth2|intcomma}}</td>
+          {% else %}
+          <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem;">{{rmonth2|intcomma}}</td>
+          {% endif %}
+          {% if rmonth2|add:rmonth3|div:2 > 200000 and rmonth3 > 200000 %}
+          <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:tomato; font-weight: 700;">{{rmonth3|intcomma}}</td>
+          {% else %}
+          <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem;">{{rmonth3|intcomma}}</td>
+          {% endif %}
 
           {% if rcnt == None %}
           <td align="center" style="font-family: Arial; font-size: 1.4rem ">0</td>
@@ -119,7 +101,7 @@
           <td align="center" style="font-family: Arial; font-size: 1.4rem ">0</td>
           <td align="center" style="font-family: Arial; font-size: 1.4rem ">0</td>
           {%else%}
-          <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{rcnt}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem; color:var(--color-main-light) ">{{rcnt}}</td>
           <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{r1cnt}}</td>
           <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{r2cnt}}</td>
           <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{r3cnt}}</td>
@@ -153,10 +135,14 @@
                   {% if jockey == j_name %}
                   
                   <tr>
-                    <td align="center" data-th="경주 요일" style="font-size: 1.2rem">{{rday}}</td>
+                    {% if rday == '일' %}
+                    <td align="center" data-th="경주 요일" style="font-size: 1.2rem; color:blue">{{rday}}</td>
+                    {%else%}
+                    <td align="center" data-th="경주 요일" style="font-size: 1.2rem; color:darkslateblue">{{rday}}</td>
+                    {%endif%}
                     
                     <td align="center" data-th="경주 번호"  style="font-size: 1.2rem">
-                      <a href="{% url 'prediction_race' rcity rdate rno horse 0 %}">{{rno}}ᴿ</a>
+                      <a href="{% url 'prediction_race' rcity rdate rno horse 'awardee' %}">{{rno}}ᴿ</a>
                     </td>
                     <td align="center" data-th="Gate" style="font-size: 1.2rem">{{gate}}</td>
                     <td data-th="경주마" style="font-size: 1.2rem">{{horse}}</td>
@@ -176,7 +162,7 @@
                     </td>
 
                     <td align="center" data-th="예상" style="font-size: 1.2rem"><span class="cur">{% if rank == 98 %}New{%else%}{{rank}}{%endif%}</span></td>
-                    <td align="center" data-th="결과" style="font-size: 1.2rem"><span class="cur">{% if r_rank == None %}{% else %}{{r_rank}}{%endif%}</span></td>
+                    <td align="center" data-th="결과" style="font-size: 1.2rem"><span class="cur">{% if r_rank == 0 %}-{% else %}{{r_rank}}{%endif%}</span></td>
 
 
                     
@@ -291,7 +277,7 @@
                     <td align="center" data-th="경주 요일" style="font-size: 1.2rem">{{rday}}</td>
     
                     <td align="center" data-th="경주 번호" style="font-size: 1.2rem">
-                      <a href="{% url 'prediction_race' rcity rdate rno horse 0 %}">{{rno}}ᴿ</a>
+                      <a href="{% url 'prediction_race' rcity rdate rno horse 'awardee' %}">{{rno}}ᴿ</a>
                     </td>
                     <td align="center" data-th="Gate" style="font-size: 1.2rem">{{gate}}</td>
                     <td data-th="경주마" style="font-size: 1.2rem">{{horse}}</td>

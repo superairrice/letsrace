@@ -174,8 +174,27 @@ class Exp011(models.Model):
     def count(self):
         if self._result_cache is not None:
             return len(self._result_cache)
-            
+
         return self.query.get_count(using=self.db)
+
+
+class Exp012(models.Model):
+    rcity = models.CharField(primary_key=True, max_length=4)
+    rdate = models.CharField(max_length=8)
+    rno = models.IntegerField()
+    gate = models.IntegerField()
+    horse = models.CharField(max_length=20, blank=True, null=True)
+    gear1 = models.CharField(max_length=20, blank=True, null=True)
+    gear2 = models.CharField(max_length=20, blank=True, null=True)
+    blood1 = models.CharField(max_length=20, blank=True, null=True)
+    blood2 = models.CharField(max_length=20, blank=True, null=True)
+    treat1 = models.CharField(max_length=100, blank=True, null=True)
+    treat2 = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'exp012'
+        unique_together = (('rcity', 'rdate', 'rno', 'gate'),)
 
 
 class Racing(models.Model):
@@ -192,52 +211,92 @@ class Racing(models.Model):
     rcon1 = models.CharField(max_length=20, blank=True, null=True)
     rcon2 = models.CharField(max_length=20, blank=True, null=True)
     rtime = models.CharField(max_length=5, blank=True, null=True)
+    r1award = models.CharField(max_length=8, blank=True, null=True)
+    r2award = models.CharField(max_length=8, blank=True, null=True)
+    r3award = models.CharField(max_length=8, blank=True, null=True)
+    r4award = models.CharField(max_length=8, blank=True, null=True)
+    r5award = models.CharField(max_length=8, blank=True, null=True)
+    sub1award = models.CharField(max_length=8, blank=True, null=True)
+    sub2award = models.CharField(max_length=8, blank=True, null=True)
+    sub3award = models.CharField(max_length=8, blank=True, null=True)
 
     class Meta:
         managed = True
         db_table = 'racing'
 
+
 class RecordS(models.Model):
-    rcity = models.CharField(primary_key=True, max_length=4, db_collation='euckr_korean_ci')
+    rcity = models.CharField(
+        primary_key=True, max_length=4, db_collation='euckr_korean_ci')
     rdate = models.CharField(max_length=8, db_collation='euckr_korean_ci')
     rno = models.IntegerField()
-    rday = models.CharField(max_length=2, db_collation='euckr_korean_ci', blank=True, null=True)
+    rday = models.CharField(
+        max_length=2, db_collation='euckr_korean_ci', blank=True, null=True)
     rseq = models.IntegerField(blank=True, null=True)
     distance = models.IntegerField(blank=True, null=True)
-    grade = models.CharField(max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
-    dividing = models.CharField(max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
-    rname = models.CharField(max_length=40, db_collation='euckr_korean_ci', blank=True, null=True)
-    rcon1 = models.CharField(max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
-    rcon2 = models.CharField(max_length=20, db_collation='euckr_korean_ci', blank=True, null=True)
-    weather = models.CharField(max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
-    rstate = models.CharField(max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
-    rmoisture = models.CharField(max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
-    rtime = models.CharField(max_length=5, db_collation='euckr_korean_ci', blank=True, null=True)
+    grade = models.CharField(
+        max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
+    dividing = models.CharField(
+        max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
+    rname = models.CharField(
+        max_length=40, db_collation='euckr_korean_ci', blank=True, null=True)
+    rcon1 = models.CharField(
+        max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
+    rcon2 = models.CharField(
+        max_length=20, db_collation='euckr_korean_ci', blank=True, null=True)
+    weather = models.CharField(
+        max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
+    rstate = models.CharField(
+        max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
+    rmoisture = models.CharField(
+        max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
+    rtime = models.CharField(
+        max_length=5, db_collation='euckr_korean_ci', blank=True, null=True)
     gate = models.IntegerField()
     rank = models.IntegerField(blank=True, null=True)
-    horse = models.CharField(max_length=20, db_collation='euckr_korean_ci', blank=True, null=True)
-    birthplace = models.CharField(max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
-    h_sex = models.CharField(max_length=2, db_collation='euckr_korean_ci', blank=True, null=True)
+    horse = models.CharField(
+        max_length=20, db_collation='euckr_korean_ci', blank=True, null=True)
+    birthplace = models.CharField(
+        max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
+    h_sex = models.CharField(
+        max_length=2, db_collation='euckr_korean_ci', blank=True, null=True)
     h_age = models.IntegerField(blank=True, null=True)
-    handycap = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
-    jockey = models.CharField(max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
-    joc_adv = models.CharField(max_length=4, db_collation='euckr_korean_ci', blank=True, null=True)
-    trainer = models.CharField(max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
-    host = models.CharField(max_length=20, db_collation='euckr_korean_ci', blank=True, null=True)
+    handycap = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True)
+    jockey = models.CharField(
+        max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
+    joc_adv = models.CharField(
+        max_length=4, db_collation='euckr_korean_ci', blank=True, null=True)
+    trainer = models.CharField(
+        max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
+    host = models.CharField(
+        max_length=20, db_collation='euckr_korean_ci', blank=True, null=True)
     rating = models.IntegerField(blank=True, null=True)
     h_weight = models.IntegerField(blank=True, null=True)
-    w_change = models.CharField(max_length=4, db_collation='euckr_korean_ci', blank=True, null=True)
-    record = models.CharField(max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
-    gap = models.CharField(max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
-    corners = models.CharField(max_length=20, db_collation='euckr_korean_ci', blank=True, null=True)
-    rs1f = models.CharField(max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
-    r1c = models.CharField(max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
-    r2c = models.CharField(max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
-    r3c = models.CharField(max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
-    r4c = models.CharField(max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
-    rg3f = models.CharField(max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
-    rg2f = models.CharField(max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
-    rg1f = models.CharField(max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
+    w_change = models.CharField(
+        max_length=4, db_collation='euckr_korean_ci', blank=True, null=True)
+    record = models.CharField(
+        max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
+    gap = models.CharField(
+        max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
+    corners = models.CharField(
+        max_length=20, db_collation='euckr_korean_ci', blank=True, null=True)
+    rs1f = models.CharField(
+        max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
+    r1c = models.CharField(
+        max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
+    r2c = models.CharField(
+        max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
+    r3c = models.CharField(
+        max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
+    r4c = models.CharField(
+        max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
+    rg3f = models.CharField(
+        max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
+    rg2f = models.CharField(
+        max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
+    rg1f = models.CharField(
+        max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
     i_s1f = models.IntegerField(blank=True, null=True)
     i_r1c = models.IntegerField(blank=True, null=True)
     i_r2c = models.IntegerField(blank=True, null=True)
@@ -247,17 +306,40 @@ class RecordS(models.Model):
     i_g2f = models.IntegerField(blank=True, null=True)
     i_g1f = models.IntegerField(blank=True, null=True)
     i_record = models.IntegerField(blank=True, null=True)
-    jockey_w = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
-    burden_w = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
-    adv_jockey = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
-    adv_track = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
-    i_convert = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
+    jockey_w = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True)
+    burden_w = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True)
+    adv_jockey = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True)
+    adv_track = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True)
+    i_convert = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True)
+    alloc1r = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True)
+    alloc3r = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True)
+    p_rank = models.IntegerField(blank=True, null=True)
+    p_record = models.CharField(
+        max_length=6, db_collation='euckr_korean_ci', blank=True, null=True)
+    pop_rank = models.IntegerField(blank=True, null=True)
+    gear1 = models.CharField(
+        max_length=20, db_collation='euckr_korean_ci', blank=True, null=True)
+    gear2 = models.CharField(
+        max_length=20, db_collation='euckr_korean_ci', blank=True, null=True)
+    treat1 = models.CharField(
+        max_length=40, db_collation='euckr_korean_ci', blank=True, null=True)
+    treat2 = models.CharField(
+        max_length=40, db_collation='euckr_korean_ci', blank=True, null=True)
+
     # flag = models.CharField(max_length=1, blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'record'
-        unique_together = (('rcity', 'rdate', 'rno', 'gate'), ('horse', 'rdate', 'distance'),)
+        unique_together = (('rcity', 'rdate', 'rno', 'gate'),
+                           ('horse', 'rdate', 'distance'),)
 
 
 class JockeyW(models.Model):
@@ -278,7 +360,8 @@ class JockeyW(models.Model):
     year_1st = models.IntegerField(blank=True, null=True)
     year_2nd = models.IntegerField(blank=True, null=True)
     year_3rd = models.IntegerField(blank=True, null=True)
-    year_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    year_per = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True)
 
     class Meta:
         managed = False
@@ -296,14 +379,14 @@ class JtRate(models.Model):
     r_per = models.DecimalField(
         max_digits=4, decimal_places=1, blank=True, null=True)
 
-
     class Meta:
         managed = False
         db_table = 'jt_rate'
 
 
 class RaceResult(models.Model):
-    rcity = models.CharField(primary_key=True, max_length=4, db_collation='euckr_korean_ci')
+    rcity = models.CharField(
+        primary_key=True, max_length=4, db_collation='euckr_korean_ci')
     rdate = models.CharField(max_length=8, db_collation='euckr_korean_ci')
     rno = models.IntegerField()
     r01 = models.IntegerField(blank=True, null=True)

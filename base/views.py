@@ -8,8 +8,10 @@ from django.db.models import Q, Count, Min, Max
 # from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from pymysql import ROWID
+
+from base.mysqls import get_award, get_award_race, get_paternal, get_paternal_dist, get_pedigree, get_race, get_training, get_weeks
 # from django.contrib.auth.forms import UserCreationForm
-from .models import Award, Exp010, Exp011, JockeyW, JtRate, RaceResult, Racing, Rec010, RecordS, Room, Topic, Message, User
+from .models import Award, Exp010, Exp011, Exp012, JockeyW, JtRate, RaceResult, Racing, Rec010, RecordS, Room, Topic, Message, User
 from .forms import RoomForm, UserForm, MyUserCreationForm
 
 
@@ -237,6 +239,30 @@ def racingPage(request):
     return render(request, 'base/race.html', {'racings': racings})
 
 
+def leftPage(request):
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    # racings = Racing.objects.filter(rdate__icontains=q)
+    racings = Racing.objects.filter(
+        Q(rcity__icontains=q) |
+        Q(rdate__icontains=q) |
+        Q(rday__icontains=q)
+    )
+    return render(request, 'base/left.html', {'racings': racings})
+
+
+def rightPage(request):
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    # racings = Racing.objects.filter(rdate__icontains=q)
+    racings = Racing.objects.filter(
+        Q(rcity__icontains=q) |
+        Q(rdate__icontains=q) |
+        Q(rday__icontains=q)
+    )
+
+    r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
+    return render(request, 'base/right.html', {'r_results': r_results})
+
+
 def exp011(request, pk):
     room = Exp011.objects.get(rdate=pk)
     print(room.key())
@@ -281,15 +307,15 @@ def home(request):
 
     exp011s = Exp011.objects.filter(rcity=first_race.rcity,
                                     rdate=first_race.rdate,
-                                    rno=first_race.rno).order_by('rank')
+                                    rno=first_race.rno).order_by('rank')[0:2]
 
     horse = Exp011.objects.filter(rcity=first_race.rcity,
                                   rdate=first_race.rdate,
                                   rno=first_race.rno,
                                   rank=1).get()
 
-    print(datetime.today().weekday())
-    # print(seoul)
+    # print(datetime.today().weekday())
+    # print(exp011s.count)
 
     h_records = RecordS.objects.filter(horse=horse.horse).order_by('-rdate')
 
@@ -304,7 +330,7 @@ def home(request):
 
     r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
     # .filter( rdate__in=rdate.values_list('rdate', flat=True))
-    print(r_results)
+    # print(r_results)
 
     allocs = Rec010.objects.filter(rdate__in=rdate.values_list(
         'rdate', flat=True)).order_by('rdate', 'rcity', 'rno')
@@ -361,137 +387,76 @@ def activityComponentPage_a(request, hname):
     return render(request, 'base/activity_component_a.html', context)
 
 
-def leftPage(request):
-    q = request.GET.get('q') if request.GET.get('q') != None else ''
-    # racings = Racing.objects.filter(rdate__icontains=q)
-    racings = Racing.objects.filter(
-        Q(rcity__icontains=q) |
-        Q(rdate__icontains=q) |
-        Q(rday__icontains=q)
-    )
-    return render(request, 'base/left_component.html', {'racings': racings})
-
-
-def prediction_race(request, rcity, rdate, rno, hname, awardee):
+def predictionRace(request, rcity, rdate, rno, hname, awardee):
 
     exp011s = Exp011.objects.filter(rcity=rcity,
                                     rdate=rdate,
                                     rno=rno).order_by('rank', 'gate')
-    print(exp011s.count())
-
     if exp011s:
         pass
     else:
         return render(request, 'base/home.html')
 
-    if hname == '0':
-        horse = Exp011.objects.filter(rcity=rcity,
-                                      rdate=rdate,
-                                      rno=rno,
-                                      rank=1).get()
+
+    if (exp011s.values("rank")[4].get('rank') > 90):  # 신마일경우 skip 
+        complex5 = '0:00.0'
     else:
-        horse = Exp011.objects.filter(rcity=rcity,
-                                      rdate=rdate,
-                                      rno=rno,
-                                      horse=hname).get()
+        complex5 = exp011s.values("complex")[4]
+
+        if complex5:
+            pass
+        else:
+            return render(request, 'base/home.html')
 
     r_condition = Exp010.objects.filter(
         rcity=rcity, rdate=rdate, rno=rno).get()
 
-    h_records = RecordS.objects.filter(
-        rdate__lt=rdate, horse=horse.horse).order_by('-rdate')
+    # h_records = RecordS.objects.filter(
+    #     rdate__lt=rdate, horse=horse.horse).order_by('-rdate')
 
-    compare_r = exp011s.aggregate(Min('i_s1f'), Min(
-        'i_g1f'), Min('i_g2f'), Min('i_g3f'), Max('handycap'), Max('rating'), Max('r_pop'))
+    hr_records = RecordS.objects.filter(
+        rdate__lt=rdate, horse__in=exp011s.values("horse")).order_by('horse', '-rdate')
+
+    hr_pedigree = Exp012.objects.filter(
+        rdate__lt=rdate, horse__in=exp011s.values("horse")).order_by('-rdate')
+
+    print(hr_records.query)
+
+    training = get_training(rcity, rdate, rno)
+    race = get_race(rdate, i_awardee='jockey')
+
+    compare_r = exp011s.aggregate(Min('i_s1f'), Min('i_g1f'), Min('i_g2f'), Min('i_g3f'), Max(
+        'handycap'), Max('rating'), Max('r_pop'), Max('j_per'), Max('t_per'), Max('jt_per'))
 
     try:
         alloc = Rec010.objects.get(rcity=rcity, rdate=rdate, rno=rno)
     except:
         alloc = None
 
-    # # awards = get_award_race(i_rcity=rcity, i_rdate=rdate, i_rno=rno, i_awardee=awardee)
-    # print(alloc.query)
+    pedigree = get_pedigree(rcity, rdate, rno)
+    paternal = get_paternal(rcity, rdate, rno, r_condition.distance)
+    paternal_dist = get_paternal_dist(rcity, rdate, rno)
 
-    if awardee == '0':
-        awards_j = None
-        awards_t = None
-        awards_h = None
-    else:
-        awards_j = get_award_race(rcity, rdate, rno, i_awardee='jockey')
-        awards_t = get_award_race(rcity, rdate, rno, i_awardee='trainer')
-        awards_h = get_award_race(rcity, rdate, rno, i_awardee='host')
+    print(paternal_dist)
 
-    context = {'exp011s': exp011s, 'r_condition': r_condition, 'h_records': h_records, 'compare_r': compare_r, 'alloc': alloc,
+    awards_j = get_award_race(rcity, rdate, rno, i_awardee='jockey')
+
+    context = {'exp011s': exp011s, 'r_condition': r_condition,
+               'complex5': complex5,
+               'hr_records': hr_records, 'compare_r': compare_r, 'alloc': alloc,
                'awards_j': awards_j,
-               'awards_t': awards_t,
-               'awards_h': awards_h,
-               'horse': horse}
+               'race': race,
+               'pedigree': pedigree,
+               'paternal': paternal,
+               'paternal_dist': paternal_dist,
+               'hr_pedigree': hr_pedigree,
+
+               #    'horse': horse,
+               'training': training,
+
+               }
 
     return render(request, 'base/prediction_race.html', context)
-
-
-def get_award(i_rdate, i_awardee):
-    try:
-        cursor = connection.cursor()
-
-        strSql = """ select """ + i_awardee + """, count(0) rcnt, (select max(rcity) from """ + i_awardee + """  where a.""" + i_awardee + """ = """ + i_awardee + """ ) rcity,
-                            sum( if( rmonth = substr( '""" + i_rdate + """', 1, 6), award, 0 )) rmonth1,
-                            sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -1 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth2,
-                            sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -2 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth3
-                    from award a
-                    where rmonth between substr(date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 MONTH), '%Y%m%d'), 1, 6) and substr('""" + i_rdate + """', 1, 6)
-                    and """ + i_awardee + """ in ( select """ + i_awardee + """ from exp011 where rdate = '""" + i_rdate + """')
-                    group by """ + i_awardee + """
-                    order by sum( if( rmonth = substr( '""" + i_rdate + """', 1, 6), award, 0 )) +
-                             sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -1 MONTH) , '%Y%m%d'), 1, 6), award, 0)) +
-                             sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -2 MONTH) , '%Y%m%d'), 1, 6), award, 0)) desc
-                ; """
-
-        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
-        awards = cursor.fetchall()
-
-        connection.commit()
-        connection.close()
-
-    except:
-        connection.rollback()
-        print("Failed selecting in BookListView")
-
-    print(strSql)
-
-    return awards
-
-
-def get_award_race(i_rcity, i_rdate, i_rno, i_awardee):
-
-    try:
-        cursor = connection.cursor()
-
-        strSql = """ select ( select min(gate) from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ and """ + i_awardee + """ = a.""" + i_awardee + """) gate,
-                            """ + i_awardee + """, count(0) rcnt, (select max(rcity) from """ + i_awardee + """  where a.""" + i_awardee + """ = """ + i_awardee + """ ) rcity,
-                            sum( if( rmonth = substr( '""" + i_rdate + """', 1, 6), award, 0 )) rmonth1,
-                            sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -1 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth2,
-                            sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -2 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth3
-                    from award a
-                    where rmonth between substr(date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 MONTH), '%Y%m%d'), 1, 6) and substr('""" + i_rdate + """', 1, 6)
-                    and """ + i_awardee + """ in ( select """ + i_awardee + """ from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """)
-                    group by """ + i_awardee + """
-                    order by gate
-                ; """
-
-        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
-        awards = cursor.fetchall()
-
-        connection.commit()
-        connection.close()
-
-    except:
-        connection.rollback()
-        print("Failed selecting in BookListView")
-
-    print(strSql)
-
-    return awards
 
 
 def awards(request):
@@ -612,7 +577,7 @@ def update_popularity(request, rcity, rdate, rno):
             try:
                 cursor = connection.cursor()
 
-                strSql = """ update exp011 set r_pop = """ + myDict[pop][0] + """
+                strSql = """ update exp011 set r_pop = """ + myDict[pop][0] + """, r_rank = """ + myDict[pop][1] + """
                             where rdate = '""" + rdate + """' and rcity = '""" + rcity + """' and rno = """ + str(rno) + """ and gate = """ + str(race.gate) + """
                         ; """
 
@@ -638,77 +603,30 @@ def update_popularity(request, rcity, rdate, rno):
     # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
     return render(request, 'base/update_popularity.html', context)
 
-def get_weeks(i_rdate, i_awardee):
-  
-    try:
-        cursor = connection.cursor()
 
-        strSql = """ 
-            select b.rcity, a.rcity rcity_in, b.""" + i_awardee + """, rcnt, r1cnt, r2cnt, r3cnt, r4cnt, r5cnt,rmonth1, rmonth2, rmonth3, rdate1, rdate2, rdate3
-              from
-              (
-                select """ + i_awardee + """, sum(r_cnt) rcnt, sum(r1_cnt) r1cnt, sum(r2_cnt) r2cnt, sum(r3_cnt) r3cnt, sum(r4_cnt) r4cnt, sum(r5_cnt) r5cnt,
-                              (select max(rcity) from """ + i_awardee + """  where a.""" + i_awardee + """ = """ + i_awardee + """ ) rcity,
-                              sum( if( rmonth = substr( '""" + i_rdate + """', 1, 6), award, 0 )) rmonth1,
-                              sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -1 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth2,
-                              sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -2 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth3
-                      from award a
-                      where rmonth between substr(date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 MONTH), '%Y%m%d'), 1, 6) and substr('""" + i_rdate + """', 1, 6)
-                        and """ + i_awardee + """ in (  select distinct """ + i_awardee + """ from exp011 a where rdate in ( select distinct rdate from racing ) )
-                      group by """ + i_awardee + """
-        	    ) a right outer join 
-              (
-                select rcity,""" + i_awardee + """, 
-                        sum(if( rdate = '""" + i_rdate + """', 1, 0 )) rdate1, 
-                        sum(if( rdate = DATE_FORMAT(CAST('""" + i_rdate + """' AS DATE) + INTERVAL 1 DAY,'%Y%m%d'), 1, 0 )) rdate2, 
-                        sum(if( rdate = DATE_FORMAT(CAST('""" + i_rdate + """' AS DATE) + INTERVAL 2 DAY,'%Y%m%d'), 1, 0 )) rdate3
-                  from exp011
-                where rdate in ( select distinct rdate from racing )
-                group by rcity, """ + i_awardee + """
-              ) b on a.""" + i_awardee + """ = b.""" + i_awardee + """
-              order by rcity desc, rmonth1 + rmonth2 + rmonth3 desc
-                ; """
+def raceResult(request, rcity, rdate, rno, hname, awardee):
 
-        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
-        weeks = cursor.fetchall()
+    records = RecordS.objects.filter(rcity=rcity,
+                                    rdate=rdate,
+                                    rno=rno).order_by('rank', 'gate')
+    if records:
+        pass
+    else:
+        return render(request, 'base/home.html')
 
-        connection.commit()
-        connection.close()
+    r_condition = Rec010.objects.filter(
+        rcity=rcity, rdate=rdate, rno=rno).get()
 
-    except:
-        connection.rollback()
-        print("Failed selecting in BookListView")
+    hr_records = RecordS.objects.filter(
+        rdate__lt=rdate, horse__in=records.values("horse")).order_by('horse', '-rdate')
 
-    # print(r_cnt)
-    # print(weeks)
+    compare_r = records.aggregate(Min('i_s1f'), Min('i_g1f'), Min('i_g2f'), Min('i_g3f'), Max(
+        'handycap'), Max('rating'))
 
 
-    return weeks
+    context = {'records': records, 'r_condition': r_condition,
+               'hr_records': hr_records, 'compare_r': compare_r, 'hname': hname
 
+							}
 
-def get_race(i_rdate, i_awardee):
-
-    try:
-        cursor = connection.cursor()
-
-        strSql = """ 
-                select rcity,""" + i_awardee + """ j_name, rdate, rday, rno, gate, rank, r_rank, horse, remark, trainer t_name, host h_name, r_pop
-                  from expect
-                where rdate in ( select distinct rdate from racing )
-                ; """
-
-        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
-        weeks = cursor.fetchall()
-
-        connection.commit()
-        connection.close()
-
-    except:
-        connection.rollback()
-        print("Failed selecting in BookListView")
-
-    print(r_cnt)
-    print(type(weeks[0]))
-
-
-    return weeks
+    return render(request, 'base/race_result.html', context)

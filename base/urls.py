@@ -29,16 +29,18 @@ urlpatterns = [
     # path('center-page/', views.centerPage, name="center-page"),         # 메인화면 가운데 view 
     # path('right-page/', views.rightPage, name="right-page"),            # 메인화면 오른쪽 view 
 
-
-
     path('race/', views.racingPage, name="race"),
+
+    path('left/', views.leftPage, name="left"),
+    path('right/', views.rightPage, name="right"),
 
     path('activity_a/<str:hname>', views.activityPage_a, name="activity_a"),
     path('activityComponent_a/<str:hname>', views.activityComponentPage_a, name="activityComponent_a"),
 
     path('home_a/<str:rcity>/<str:rdate>', views.homePage_a, name="home_a"),
 
-    path('prediction_race/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>', views.prediction_race, name="prediction_race"),  # id 전달
+    path('prediction_race/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>', views.predictionRace, name="prediction_race"),  # id 전달
+    path('race_result/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>', views.raceResult, name="race_result"),  # id 전달
 
 
 
