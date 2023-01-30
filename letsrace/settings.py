@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -25,7 +24,9 @@ SECRET_KEY = 'django-insecure-#5avbtnbsu4-))u-lddtuvxhnf#%2p9x*cvjr3pmna^tvk7_6^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.compute.amazonaws.com', '127.0.0.1',
+                 'localhost', '43.201.100.201', '0.0.0.0']
+
 
 
 # Application definition
@@ -123,6 +124,19 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',   # [1]
+#         'NAME': 'The1',                         # [2]
+#         'USER': 'letslove',                     # [3]
+#         'PASSWORD': 'Ruddksp!23',               # [4]
+#         # [5]
+#         'HOST': 'database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
+#         # 'HOST': 'thethe9-aws.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
+#         'PORT': '3306',                         # [6]
+#     }
+# }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -146,8 +160,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-# LANGUAGE_CODE = 'ko-KR'
+# LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ko-KR'
 
 TIME_ZONE = 'Asia/Seoul'
 
@@ -158,15 +172,18 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
-
+STATIC_ROOT = '/tmp/.static_root'       # EC2 폴더권한문제 방지 nginx
 STATIC_URL = 'static/'
 MEDIA_URL = '/images/'
+
+# MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 STATICFILES_DIRS = [
     BASE_DIR / 'static'
 ]
 
 MEDIA_ROOT = BASE_DIR / 'static/images'
+KRAFILE_ROOT = BASE_DIR / 'kradata'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field

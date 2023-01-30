@@ -12,13 +12,13 @@
             </div>
           </div>
           <div class="layout__body">
-            <h2 class="auth__tagline">Find your study partner</h2>
+            <h2 class="auth__tagline">Let's Enjoy! 프로그램 경마!</h2>
 
             <form class="form" action="" method="POST">
               {% csrf_token %}
               <div class="form__group form__group">
                 <label for="room_name">Username</label>
-                <input id="username" name="username" type="text" placeholder="e.g. dennis_ivy" />
+                <input id="username" name="username" type="text" placeholder="아이디" />
               </div>
               <div class="form__group">
                 <label for="password">Password</label>
@@ -26,7 +26,7 @@
                   id="password"
                   name="password"
                   type="password"
-                  placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;"
+                  placeholder="비밀번호"
                 />
               </div>
 
@@ -49,11 +49,16 @@
 
                 Login
               </button>
+              {% for message in messages %}
+                {{ message.tag }}
+                {{ message.message }}
+              {% endfor %}
+
             </form>
 
             <div class="auth__action">
               <p>Haven't signed up yet?</p>
-              <a href="{% url 'register' %}" class="btn btn--link">Sign Up</a>
+              <a href="{% url 'register' %}" class="btn btn--link">회원 가입</a>
             </div>
           </div>
         </div>
@@ -63,22 +68,22 @@
         <div class="layout__box">
           <div class="layout__boxHeader">
             <div class="layout__boxTitle">
-              <h3>Register</h3>
+              <h3>회원 등록</h3>
             </div>
           </div>
           <div class="layout__body">
-            <h2 class="auth__tagline">Find your study partner</h2>
+            <h3 class="auth__tagline">회원가입 정보를 등록하십시오.</h3>
       
             <form class="form" action="" method="POST">
               {% csrf_token %}
-
               {% for field in form %}
               <div class="form__group form__group">
                 <label for="room_name">{{field.label}}</label>
                 {{field}}
               </div>
+                
               {% endfor %}
-      
+
               <button class="btn btn--main" type="submit">
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
                   <title>lock</title>
@@ -92,11 +97,18 @@
       
                 Register
               </button>
+              {% for message in messages %}
+                {{ message.tag }}
+                {{ message.message }}
+              {% endfor %}
             </form>
+
+           
       
             <div class="auth__action">
               <p>Already signed up yet?</p>
-              <a href="{% url 'login' %}" class="btn btn--link">Sign Up</a>
+              <a href="{% url 'login' %}" class="btn btn--link">Log in</a>
+              
             </div>
           </div>
         </div>

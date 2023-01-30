@@ -1,11 +1,18 @@
 {% load humanize %}
 {% load mathfilters %}
-
-
+{% load static %}
 
 <div class="topics">
   <div class="topics__header">
-    <h2>This Week's Race </h2>
+    <span style="text-transform: uppercase; font-weight: 500; color: var(--color-dark-light);">This Week's Race</span>
+    <span class="tooltip" style="text-align:right; width: 90px;">
+      <a href="{% url 'print_prediction' %}"
+        onclick="window.open(this.href, '_blank', 'width=1000, height=1200, toolbars=no, scrollbars=yes'); return false;">🖨️
+      </a>
+      <span class="tooltip-text">
+        프로그램 예상순위 출력
+      </span>
+    </span>
     <!-- <i color='white'>➲ Total {{racings.count}}R</i> -->
   </div>
 
@@ -37,7 +44,7 @@
       <thead>
     
         <tr>
-          <th rowspan="2" colspan="2"><span class="visible-small" title="Jockey">경주.</span><span class="visible-big">경주</span></th>
+          <th rowspan="2" colspan="2">Race No.</th>
           <th rowspan="2"><span class="visible-small" title="rmonth1">등급.</span><span class="visible-big">등급</span></th>
           <th colspan="1"><span class="visible-small" title="rmonth1">거리.</span><span class="visible-big">거리</span></th>
           <th colspan="1"><span class="visible-small" title="rmonth1">출주.</span><span class="visible-big">출주</span></th>
@@ -53,66 +60,72 @@
         
         <tr class="view">
           <td align="center" style="font-family: Arial; font-size: 0.5rem ">{{r.rcity|slice:"0:1"}}<br>{{r.rcity|slice:"1:2"}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem; font-weight: 500;"><a href="{% url 'prediction_race' r.rcity r.rdate r.rno 0 'awardee' %}">{{r.rno}}ʳ</a></td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem ">{{r.grade|slice:"0:2"}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem ">{{r.distance}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem ">{{r.rcount}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem ">{{r.rtime}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem; font-weight: 500;"><a href="{% url 'prediction_race' r.rcity r.rdate r.rno 0 'awardee' %}">{{r.rno}}ʳ</a></td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{r.grade|slice:"0:2"}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{r.distance}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{r.rcount}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{r.rtime}}</td>
 
 
         </tr>
         <tr class="fold">
           <td colspan="6">
             
-            <div class="fold-content" style="font-size: 1.2rem; font-weight: 500;">
+            <div class="fold-content" style="font-size: 1.3rem; font-weight: 500;">
               
               <ul>
                 <li>
                   {% if request.user.username == 'admin' %}
-                  <a href="{% url 'update_popularity' r.rcity r.rdate r.rno %}">인기도 or 경주결과 입력</a>
+                  <!-- <a href="{% url 'update_popularity' r.rcity r.rdate r.rno %}">인기도 or 경주결과 입력</a> -->
+                  <a href="{% url 'update_popularity' r.rcity r.rdate r.rno %}"
+                    onclick="window.open(this.href, '_blank', 'width=900, height=800, toolbars=no, scrollbars=yes'); return false;">
+                    <span class="tooltip" style="font-size: 1.3rem; font-weight: 400;">🔏&nbsp;
+                      <span class="tooltip-text" style="text-align: left; width: 100px; z-index: 1;">인기도 & 경주결과(순위) 입력</span></span>
+                  </a>
                   {% endif %}
                   <a href="{% url 'prediction_race' r.rcity r.rdate r.rno 0 'awardee' %}">{{r.rcity}}﹆{{r.dividing}}﹆{{r.rname}}</a>
                   
-               </li>
+                </li>
               </ul>
             </div>
 
             <div class="fold-content">
               <table class="small-friendly">
                 <thead>
-                  <tr style="font-size: 1.2rem;">
+                  <tr style="font-size: 1.3rem;">
                     <th><span class="visible-small">Rank</span><span class="visible-big">Rank</span></th>
-                    <th><span class="visible-small">부가상금</span><span class="visible-big">부가상금</span></th>
-
                     <th><span class="visible-small">순위상금</span><span class="visible-big">순위상금</span></th>
+                    <th><span class="visible-small">부가상금</span><span class="visible-big">부가상금</span></th>
                   </tr>
                 </thead>
                 <tbody>
     
                   <tr>
                     <td align="center" style="font-family: Arial; font-size: 1.2rem ">1</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.2rem ">{%if r.sub1award != None %}{{r.sub1award|intcomma}}{%endif%}</td>
                     <td align="right" style="font-family: Arial; font-size: 1.2rem ">{{r.r1award|intcomma}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.2rem ">{%if r.sub1award != None %}{{r.sub1award|intcomma}}{%endif%}</td>
                   </tr>
                   <tr>
                     <td align="center" style="font-family: Arial; font-size: 1.2rem ">2</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.2rem ">{%if r.sub1award != None %}{{r.sub2award|intcomma}}{%endif%}</td>
                     <td align="right" style="font-family: Arial; font-size: 1.2rem ">{{r.r2award|intcomma}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.2rem ">{%if r.sub1award != None %}{{r.sub2award|intcomma}}{%endif%}</td>
                   </tr>
                   <tr>
                     <td align="center" style="font-family: Arial; font-size: 1.2rem ">3</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.2rem ">{%if r.sub1award != None %}{{r.sub3award|intcomma}}{%endif%}</td>
                     <td align="right" style="font-family: Arial; font-size: 1.2rem ">{{r.r3award|intcomma}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.2rem ">{%if r.sub1award != None %}{{r.sub3award|intcomma}}{%endif%}</td>
+
                   </tr>
                   <tr>
                     <td align="center" style="font-family: Arial; font-size: 1.2rem ">4</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.2rem "></td>
                     <td align="right" style="font-family: Arial; font-size: 1.2rem ">{{r.r4award|intcomma}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.2rem "></td>
                   </tr>
                   <tr>
                     <td align="center" style="font-family: Arial; font-size: 1.2rem ">5</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.2rem "></td>
                     <td align="right" style="font-family: Arial; font-size: 1.2rem ">{{r.r5award|intcomma}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.2rem "></td>
+
                   </tr>
     
                 </tbody>
@@ -155,24 +168,24 @@
         <tr class="view">
           {% if r.rcity == '서울' %}
           <td align="center" style="font-family: Arial; font-size: 0.5rem ">{{r.rcity|slice:"0:1"}}<br>{{r.rcity|slice:"1:2"}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem; font-weight: 500;"><a href="{% url 'prediction_race' r.rcity r.rdate r.rno 0 'awardee' %}">{{r.rno}}ʳ</a></td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem ">{{r.grade|slice:"0:2"}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem ">{{r.distance}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem ">{{r.rcount}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem ">{{r.rtime}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem; font-weight: 500;"><a href="{% url 'prediction_race' r.rcity r.rdate r.rno 0 'awardee' %}">{{r.rno}}ʳ</a></td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{r.grade|slice:"0:2"}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{r.distance}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{r.rcount}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{r.rtime}}</td>
           {%else%}
           <td align="center" style="color:gold; font-family: Arial; font-size: 0.5rem ">{{r.rcity|slice:"0:1"}}<br>{{r.rcity|slice:"1:2"}}</td>
-          <td align="center" style="color:gold; font-family: Arial; font-size: 1.3rem; font-weight: 500;"><a href="{% url 'prediction_race' r.rcity r.rdate r.rno 0 'awardee' %}">{{r.rno}}ʳ</a></td>
-          <td align="center" style="color:gold; font-family: Arial; font-size: 1.3rem ">{{r.grade|slice:"0:2"}}</td>
-          <td align="center" style="color:gold; font-family: Arial; font-size: 1.3rem ">{{r.distance}}</td>
-          <td align="center" style="color:gold; font-family: Arial; font-size: 1.3rem ">{{r.rcount}}</td>
-          <td align="center" style="color:gold; font-family: Arial; font-size: 1.3rem ">{{r.rtime}}</td>
+          <td align="center" style="color:gold; font-family: Arial; font-size: 1.4rem; font-weight: 500;"><a href="{% url 'prediction_race' r.rcity r.rdate r.rno 0 'awardee' %}">{{r.rno}}ʳ</a></td>
+          <td align="center" style="color:gold; font-family: Arial; font-size: 1.4rem ">{{r.grade|slice:"0:2"}}</td>
+          <td align="center" style="color:gold; font-family: Arial; font-size: 1.4rem ">{{r.distance}}</td>
+          <td align="center" style="color:gold; font-family: Arial; font-size: 1.4rem ">{{r.rcount}}</td>
+          <td align="center" style="color:gold; font-family: Arial; font-size: 1.4rem ">{{r.rtime}}</td>
           {%endif%}
 
         </tr>
         <tr class="fold">
           <td colspan="6">
-            <div class="fold-content" style="font-size: 1.3rem; font-weight: 700;">
+            <div class="fold-content" style="font-size: 1.4rem; font-weight: 700;">
               {% if request.user.username == 'admin' %}
               <a href="{% url 'update_popularity' r.rcity r.rdate r.rno %}">인기도 or 경주결과 입력</a>
               {% endif %}
@@ -250,25 +263,25 @@
         <tr class="view">
           {% if r.rcity == '서울' %}
           <td align="center" style="font-family: Arial; font-size: 0.5rem ">{{r.rcity|slice:"0:1"}}<br>{{r.rcity|slice:"1:2"}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem; font-weight: 500;"><a href="{% url 'prediction_race' r.rcity r.rdate r.rno 0 'awardee' %}">{{r.rno}}ʳ</a></td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem ">{{r.grade|slice:"0:2"}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem ">{{r.distance}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem ">{{r.rcount}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem ">{{r.rtime}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem; font-weight: 500;"><a href="{% url 'prediction_race' r.rcity r.rdate r.rno 0 'awardee' %}">{{r.rno}}ʳ</a></td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{r.grade|slice:"0:2"}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{r.distance}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{r.rcount}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem ">{{r.rtime}}</td>
           {%else%}
           <td align="center" style="color:rgb(0, 192, 255); font-family: Arial; font-size: 0.5rem ">{{r.rcity|slice:"0:1"}}<br>{{r.rcity|slice:"1:2"}}</td>
-          <td align="center" style="color:rgb(0, 192, 255); font-family: Arial; font-size: 1.3rem; font-weight: 500;"><a href="{% url 'prediction_race' r.rcity r.rdate r.rno 0 'awardee' %}">{{r.rno}}ʳ</a></td>
-          <td align="center" style="color:rgb(0, 192, 255); font-family: Arial; font-size: 1.3rem ">{{r.grade|slice:"0:2"}}</td>
-          <td align="center" style="color:rgb(0, 192, 255); font-family: Arial; font-size: 1.3rem ">{{r.distance}}</td>
-          <td align="center" style="color:rgb(0, 192, 255); font-family: Arial; font-size: 1.3rem ">{{r.rcount}}</td>
-          <td align="center" style="color:rgb(0, 192, 255); font-family: Arial; font-size: 1.3rem ">{{r.rtime}}</td>
+          <td align="center" style="color:rgb(0, 192, 255); font-family: Arial; font-size: 1.4rem; font-weight: 500;"><a href="{% url 'prediction_race' r.rcity r.rdate r.rno 0 'awardee' %}">{{r.rno}}ʳ</a></td>
+          <td align="center" style="color:rgb(0, 192, 255); font-family: Arial; font-size: 1.4rem ">{{r.grade|slice:"0:2"}}</td>
+          <td align="center" style="color:rgb(0, 192, 255); font-family: Arial; font-size: 1.4rem ">{{r.distance}}</td>
+          <td align="center" style="color:rgb(0, 192, 255); font-family: Arial; font-size: 1.4rem ">{{r.rcount}}</td>
+          <td align="center" style="color:rgb(0, 192, 255); font-family: Arial; font-size: 1.4rem ">{{r.rtime}}</td>
           {%endif%}
 
         </tr>
         <tr class="fold">
           <td colspan="6">
             
-            <div class="fold-content" style="font-size: 1.3rem; font-weight: 700;">
+            <div class="fold-content" style="font-size: 1.4rem; font-weight: 700;">
               {% if request.user.username == 'admin' %}
                   <a href="{% url 'update_popularity' r.rcity r.rdate r.rno %}">인기도 or 경주결과 입력</a>
                   {% endif %}
@@ -328,32 +341,48 @@
 
   <ul class="topics__list">
     <li>
-    <a class="btn btn--link" href="{% url 'race' %}?q=서울">
+    <a class="btn btn--link" href="{% url 'award_status_jockey' %}"
+      onclick="window.open(this.href, '_blank', 'width=970, height=1000, toolbars=no, scrollbars=yes'); return false;">
       ﹅기수 출주현황
       <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
         <title>chevron-down</title>
         <path d="M16 21l-13-13h-3l16 16 16-16h-3l-13 13z"></path>
       </svg>
     </a>
-    <a class="btn btn--link" href="{% url 'race' %}?q=부산">
+
+    <a class="btn btn--link" href="{% url 'award_status_trainer' %}"
+      onclick="window.open(this.href, '_blank', 'width=970, height=1000, toolbars=no, scrollbars=yes'); return false;">
       ﹅마방 출주현황
       <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
         <title>chevron-down</title>
         <path d="M16 21l-13-13h-3l16 16 16-16h-3l-13 13z"></path>
       </svg>
     </a>
-    <a class="btn btn--link" href="{% url 'awards' %}">
-      ﹅상금 수득현황
+
+    {% if request.user.username == 'admin' %}
+    <a class="btn btn--link" href="{% url 'data_management' %}">
+      ﹅데이터 입력
       <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
         <title>chevron-down</title>
         <path d="M16 21l-13-13h-3l16 16 16-16h-3l-13 13z"></path>
       </svg>
     </a>
+    {%endif%}
+    {% if request.user.username == 'admin' %}
+    <a class="btn btn--link" href="{% url 'pyscript_test' %}">
+      ﹅데이터 입력
+      <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+        <title>chevron-down</title>
+        <path d="M16 21l-13-13h-3l16 16 16-16h-3l-13 13z"></path>
+      </svg>
+    </a>
+    {%endif%}
+
     </li>
   </ul>
 
   <br>
-
+{% if request.user.username == 'admin' %}
   <a class="btn btn--link" href="{% url 'race' %}?q=서울">
     ◀︎ 지난주
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
@@ -361,8 +390,9 @@
       <path d="M16 21l-13-13h-3l16 16 16-16h-3l-13 13z"></path>
     </svg>
   </a>
-  
+{%endif%}
   
 </div>
+
 
 

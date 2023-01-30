@@ -1,31 +1,33 @@
-from ast import Pass
-from django.db import connection
-from django.http import HttpResponse
-from django.shortcuts import redirect, render
+from datetime import date, datetime
+import os
+
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Count, Min, Max
 # from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.db import connection
+from django.db.models import Count, Max, Min, Q
+from django.http import HttpResponse
+from django.http.request import QueryDict
+from django.shortcuts import get_object_or_404, redirect, render
+from django_pivot import pivot
 from pymysql import ROWID
 
-from base.mysqls import get_award, get_award_race, get_paternal, get_paternal_dist, get_pedigree, get_race, get_training, get_weeks
+from base.data_management import get_file_contents, get_kradata, get_krafile
+
+from base.mysqls import (get_award, get_award_race, get_judged, get_judged_horse, get_judged_jockey, get_paternal,
+                         get_paternal_dist, get_pedigree, get_popularity_rate, get_print_prediction, get_race, get_race_center_detail_view,
+                         get_training, get_status_training, get_weeks, get_last2weeks)
+from letsrace.settings import KRAFILE_ROOT
+
+# import base.mysqls
+
+from .forms import MyUserCreationForm, RoomForm, UserForm
 # from django.contrib.auth.forms import UserCreationForm
-from .models import Award, Exp010, Exp011, Exp012, JockeyW, JtRate, RaceResult, Racing, Rec010, RecordS, Room, Topic, Message, User
-from .forms import RoomForm, UserForm, MyUserCreationForm
+from .models import (Award, Exp010, Exp011, Exp012, JockeyW, JtRate, Message,
+                     RaceResult, Racing, Rec010, RecordS, Room, Topic, User)
 
-
-from datetime import datetime, date
-
-from django_pivot import pivot
-
-from django.db import connection
-
-from django.shortcuts import get_object_or_404
-
-# from django_pivot.histogram import histogram
-
-from django.http.request import QueryDict
+from django.core.files.storage import FileSystemStorage  # 파일저장
 
 
 def loginPage(request):
@@ -48,7 +50,7 @@ def loginPage(request):
             login(request, user)
             return redirect('home')
         else:
-            messages.error(request, 'Username or password does not exist')
+            messages.error(request, messages.warning)
 
     context = {'page': page}
     return render(request, 'base/login_register.html', context)
@@ -67,7 +69,10 @@ def registerPage(request):
             login(request, user)
             return redirect('home')
         else:
-            messages.error(request, 'An error occurred during registration')
+            messages.warning(request, form.errors)
+
+            print(form.errors)
+            print(form.non_field_errors())
 
     return render(request, 'base/login_register.html', {'form': form})
 
@@ -184,10 +189,24 @@ def updateUser(request):
     user = request.user
     form = UserForm(instance=user)
 
+    # print(user)
+
     if request.method == 'POST':
         form = UserForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
             form.save()
+
+            request_file = request.FILES['filename[]'] if 'filename[]' in request.FILES else None
+            if request_file:
+                # save attached file
+                # create a new instance of FileSystemStorage
+                fs = FileSystemStorage()
+                file = fs.save(request_file.name, request_file)
+                # the fileurl variable now contains the url to the file. This can be used to serve the file when needed.
+                fileurl = fs.url(file)
+
+                print(fileurl)
+
             redirect('user-profile', pk=user.id)
 
     return render(request, 'base/update-user.html', {'form': form})
@@ -247,7 +266,7 @@ def leftPage(request):
         Q(rdate__icontains=q) |
         Q(rday__icontains=q)
     )
-    return render(request, 'base/left.html', {'racings': racings})
+    return render(request, 'base/left_component.html', {'racings': racings})
 
 
 def rightPage(request):
@@ -260,7 +279,7 @@ def rightPage(request):
     )
 
     r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
-    return render(request, 'base/right.html', {'r_results': r_results})
+    return render(request, 'base/right_component.html', {'r_results': r_results})
 
 
 def exp011(request, pk):
@@ -286,68 +305,30 @@ def exp011(request, pk):
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
 
-    rooms = Room.objects.filter(
-        Q(topic__name__icontains=q) |
-        Q(name__icontains=q) |
-        Q(description__icontains=q)
-    )
-
     racings = Racing.objects.filter(
         Q(rcity__icontains=q) |
         Q(rdate__icontains=q) |
         Q(rday__icontains=q)
     )
 
-    room_count = Exp011.objects.all().count()
-    room_messages = Message.objects.filter(Q(room__name__icontains=q))
-
-    # print(room_count)
-
-    first_race = racings[0]         # 첫번째 경주 조건
-
-    exp011s = Exp011.objects.filter(rcity=first_race.rcity,
-                                    rdate=first_race.rdate,
-                                    rno=first_race.rno).order_by('rank')[0:2]
-
-    horse = Exp011.objects.filter(rcity=first_race.rcity,
-                                  rdate=first_race.rdate,
-                                  rno=first_race.rno,
-                                  rank=1).get()
-
-    # print(datetime.today().weekday())
-    # print(exp011s.count)
-
-    h_records = RecordS.objects.filter(horse=horse.horse).order_by('-rdate')
-
-    # 금주 경주예상 종합
-
     rdate = Racing.objects.values('rdate').distinct()
-
     i_rdate = rdate[0]['rdate']
-    # awards = get_award_race('서울', i_rdate, 3, i_awardee='jockey')
-    weeks = get_weeks(i_rdate, i_awardee='jockey')
-    race = get_race(i_rdate, i_awardee='jockey')
 
-    r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
-    # .filter( rdate__in=rdate.values_list('rdate', flat=True))
-    # print(r_results)
+    # race = get_race(i_rdate, i_awardee='jockey')
+    race = get_race_center_detail_view(i_rdate, i_awardee='jockey')
 
-    allocs = Rec010.objects.filter(rdate__in=rdate.values_list(
-        'rdate', flat=True)).order_by('rdate', 'rcity', 'rno')
+    # r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
+    r_results = RaceResult.objects.filter(
+        Q(jockey1__icontains=q) |
+        Q(jockey2__icontains=q) |
+        Q(jockey3__icontains=q) |
+        Q(jockey4__icontains=q) |
+        Q(jockey5__icontains=q) |
+        Q(jockey6__icontains=q) |
+        Q(jockey7__icontains=q)).order_by('rdate', 'rcity', 'rno')
 
-    context = {'rooms': rooms,
-               'racings': racings,
-               'room_count': room_count,
-               'room_messages': room_messages,
-               'first_race': first_race,
-               'exp011s': exp011s,
-               'horse': horse,
-               'rdate': rdate,
-               'r_results': r_results,
-               'allocs': allocs,
-               'weeks': weeks,
-               'race': race,
-               'h_records': h_records}
+    context = {'racings': racings,
+               'r_results': r_results, 'race': race, 'q': q}
 
     return render(request, 'base/home.html', context)
 
@@ -397,8 +378,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     else:
         return render(request, 'base/home.html')
 
-
-    if (exp011s.values("rank")[4].get('rank') > 90):  # 신마일경우 skip 
+    if (exp011s.values("rank")[4].get('rank') > 90):  # 신마일경우 skip
         complex5 = '0:00.0'
     else:
         complex5 = exp011s.values("complex")[4]
@@ -417,12 +397,13 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     hr_records = RecordS.objects.filter(
         rdate__lt=rdate, horse__in=exp011s.values("horse")).order_by('horse', '-rdate')
 
-    hr_pedigree = Exp012.objects.filter(
-        rdate__lt=rdate, horse__in=exp011s.values("horse")).order_by('-rdate')
+    # hr_pedigree = Exp012.objects.filter(
+    #     rdate__lt=rdate, horse__in=exp011s.values("horse")).order_by('-rdate')
 
-    print(hr_records.query)
+    # print(hr_records.query)
 
-    training = get_training(rcity, rdate, rno)
+    # training_team = get_training_team(rcity, rdate, rno)
+
     race = get_race(rdate, i_awardee='jockey')
 
     compare_r = exp011s.aggregate(Min('i_s1f'), Min('i_g1f'), Min('i_g2f'), Min('i_g3f'), Max(
@@ -433,27 +414,40 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     except:
         alloc = None
 
-    pedigree = get_pedigree(rcity, rdate, rno)
-    paternal = get_paternal(rcity, rdate, rno, r_condition.distance)
-    paternal_dist = get_paternal_dist(rcity, rdate, rno)
+    paternal = get_paternal(
+        rcity, rdate, rno, r_condition.distance)    # 부마 3착 성적
+    paternal_dist = get_paternal_dist(
+        rcity, rdate, rno)                # 부마 거리별 3착 성적
 
-    print(paternal_dist)
+    pedigree = get_pedigree(rcity, rdate, rno)                          # 병력
+    training = get_training(rcity, rdate, rno)
 
-    awards_j = get_award_race(rcity, rdate, rno, i_awardee='jockey')
+    popularity_rate = get_popularity_rate(
+        rcity, rdate, rno)            # 인기순위별 승률
 
-    context = {'exp011s': exp011s, 'r_condition': r_condition,
+    judged = get_judged(rcity, rdate, rno)
+    judged_horse = get_judged_horse(rcity, rdate, rno)
+    judged_jockey = get_judged_jockey(rcity, rdate, rno)
+
+    # awards_j = get_award_race(rcity, rdate, rno, i_awardee='jockey')
+
+    context = {'exp011s': exp011s,
+               'r_condition': r_condition,
                'complex5': complex5,
-               'hr_records': hr_records, 'compare_r': compare_r, 'alloc': alloc,
-               'awards_j': awards_j,
+               'hr_records': hr_records,
+               'compare_r': compare_r,
+               'alloc': alloc,
+               'judged': judged,
+               'judged_horse': judged_horse,
+               'judged_jockey': judged_jockey,
                'race': race,
                'pedigree': pedigree,
                'paternal': paternal,
                'paternal_dist': paternal_dist,
-               'hr_pedigree': hr_pedigree,
+               # 'hr_pedigree': hr_pedigree,
 
-               #    'horse': horse,
+               'popularity_rate': popularity_rate,
                'training': training,
-
                }
 
     return render(request, 'base/prediction_race.html', context)
@@ -558,7 +552,7 @@ def awards(request):
     return render(request, 'base/awards.html', context)
 
 
-def update_popularity(request, rcity, rdate, rno):
+def updatePopularity(request, rcity, rdate, rno):
 
     exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno)
     context = {'rcity': rcity, 'exp011s': exp011s}
@@ -607,8 +601,8 @@ def update_popularity(request, rcity, rdate, rno):
 def raceResult(request, rcity, rdate, rno, hname, awardee):
 
     records = RecordS.objects.filter(rcity=rcity,
-                                    rdate=rdate,
-                                    rno=rno).order_by('rank', 'gate')
+                                     rdate=rdate,
+                                     rno=rno).order_by('rank', 'gate')
     if records:
         pass
     else:
@@ -620,13 +614,317 @@ def raceResult(request, rcity, rdate, rno, hname, awardee):
     hr_records = RecordS.objects.filter(
         rdate__lt=rdate, horse__in=records.values("horse")).order_by('horse', '-rdate')
 
-    compare_r = records.aggregate(Min('i_s1f'), Min('i_g1f'), Min('i_g2f'), Min('i_g3f'), Max(
-        'handycap'), Max('rating'))
+    compare_r = records.aggregate(Min('i_s1f'), Min('i_g1f'), Min(
+        'i_g2f'), Min('i_g3f'), Max('handycap'), Max('rating'))
 
+    judged = get_judged(rcity, rdate, rno)
 
-    context = {'records': records, 'r_condition': r_condition,
-               'hr_records': hr_records, 'compare_r': compare_r, 'hname': hname
+    training = get_training(rcity, rdate, rno)
 
-							}
+    context = {'records': records,
+               'r_condition': r_condition,
+               'training': training,
+               'hr_records': hr_records,
+               'compare_r': compare_r, 'hname': hname,
+               'judged': judged
+               }
 
     return render(request, 'base/race_result.html', context)
+
+
+def printPrediction(request):
+
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+
+    if q == '':
+        rdate = Racing.objects.values('rdate').distinct()[
+            0]['rdate']          # 초기값은 금요일
+        fdate = rdate[0:4] + '-' + rdate[4:6] + '-' + rdate[6:8]
+
+    else:
+        rdate = q[0:4] + q[5:7] + q[8:10]
+        fdate = q
+
+    rcity = request.GET.get('rcity') if request.GET.get(
+        'rcity') != None else '부산'
+
+    jname1 = request.GET.get('j1') if request.GET.get('j1') != None else ''
+    jname2 = request.GET.get('j2') if request.GET.get('j2') != None else ''
+    jname3 = request.GET.get('j3') if request.GET.get('j3') != None else ''
+
+    race, expects = get_print_prediction(rcity, rdate)
+
+    if race:
+        context = {'expects': expects, 'race': race, 'fdate': fdate,
+                   'jname1': jname1, 'jname2': jname2, 'jname3': jname3}
+    else:
+        messages.warning(request, fdate + " " + rcity + " 경마 데이터가 없습니다.")
+        context = {'expects': expects, 'race': race, 'fdate': fdate,
+                   'jname1': jname1, 'jname2': jname2, 'jname3': jname3}
+
+    return render(request, 'base/print_prediction.html', context)
+
+
+def awardStatusTrainer(request):
+
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+
+    if q == '':
+
+        today = datetime.today()
+        if today.weekday() == 5:  # {0:월, 1:화, 2:수, 3:목, 4:금, 5:토, 6:일}
+            rdate = Racing.objects.values('rdate').distinct()[1]['rdate']
+        elif today.weekday() == 6:
+            rdate = Racing.objects.values('rdate').distinct()[2]['rdate']
+        else:
+            rdate = Racing.objects.values('rdate').distinct()[0]['rdate']
+
+        friday = Racing.objects.values('rdate').distinct()[
+            0]['rdate']          # weeks 기준일
+        fdate = friday[0:4] + '-' + friday[4:6] + '-' + friday[6:8]
+
+    else:
+
+        print(q[5:7] + '-' + q[8:10] + '-' + q[0:4])
+        today = datetime.strptime(
+            q[5:7] + '-' + q[8:10] + '-' + q[0:4], '%m-%d-%Y')
+        # friday =
+        print(today)
+
+        if today.weekday() == 4:
+            rdate = q[0:4] + q[5:7] + q[8:10]
+            friday = rdate
+            fdate = friday[0:4] + '-' + friday[4:6] + '-' + friday[6:8]
+
+        else:
+
+            rdate = q[0:4] + q[5:7] + q[8:10]
+
+            friday = rdate
+            fdate = q
+
+            messages.warning(request, "선택된 날짜가 금요일이 아닙니다.")
+
+    weeks = get_last2weeks(friday, i_awardee='trainer')
+    status = get_status_training(rdate)
+
+    context = {'weeks': weeks, 'status': status, 'fdate': fdate}
+
+    return render(request, 'base/award_status_trainer.html', context)
+
+
+def awardStatusJockey(request):
+
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    jname1 = request.GET.get('j1') if request.GET.get('j1') != None else ''
+    jname2 = request.GET.get('j2') if request.GET.get('j2') != None else ''
+    jname3 = request.GET.get('j3') if request.GET.get('j3') != None else ''
+
+    if q == '':
+
+        today = datetime.today()
+        if today.weekday() == 5:  # {0:월, 1:화, 2:수, 3:목, 4:금, 5:토, 6:일}
+            rdate = Racing.objects.values('rdate').distinct()[1]['rdate']
+        elif today.weekday() == 6:
+            rdate = Racing.objects.values('rdate').distinct()[2]['rdate']
+        else:
+            rdate = Racing.objects.values('rdate').distinct()[0]['rdate']
+
+        friday = Racing.objects.values('rdate').distinct()[
+            0]['rdate']          # weeks 기준일
+        fdate = friday[0:4] + '-' + friday[4:6] + '-' + friday[6:8]
+
+    else:
+
+        print(q[5:7] + '-' + q[8:10] + '-' + q[0:4])
+        today = datetime.strptime(
+            q[5:7] + '-' + q[8:10] + '-' + q[0:4], '%m-%d-%Y')
+        # friday =
+        print(today)
+
+        if today.weekday() == 4:
+            rdate = q[0:4] + q[5:7] + q[8:10]
+            friday = rdate
+            fdate = friday[0:4] + '-' + friday[4:6] + '-' + friday[6:8]
+
+        else:
+
+            rdate = q[0:4] + q[5:7] + q[8:10]
+
+            friday = rdate
+            fdate = q
+
+            messages.warning(request, "선택된 날짜가 금요일이 아닙니다.")
+
+    weeks = get_last2weeks(friday, i_awardee='jockey')
+    status = get_status_training(rdate)
+
+
+    print(fdate)
+
+    context = {'weeks': weeks, 'status': status, 'fdate': fdate,
+               'jname1': jname1, 'jname2': jname2, 'jname3': jname3}
+
+    return render(request, 'base/award_status_jockey.html', context)
+
+
+def dataManagement(request):
+
+    rcity = request.GET.get('rcity') if request.GET.get(
+        'rcity') != None else ''
+    q1 = request.GET.get('q1') if request.GET.get('q1') != None else ''
+    q2 = request.GET.get('q2') if request.GET.get('q2') != None else ''
+    fcode = request.GET.get('fcode') if request.GET.get(
+        'fcode') != None else ''
+    fstatus = request.GET.get('fstatus') if request.GET.get(
+        'fstatus') != None else ''
+
+    if q1 == '':
+
+        friday = Racing.objects.values('rdate').distinct()[
+            0]['rdate']          # weeks 기준일
+        sunday = Racing.objects.values('rdate').distinct()[
+            2]['rdate']          # weeks 기준일
+
+        rdate1 = friday[0:4] + friday[4:6] + friday[6:8]
+        rdate2 = sunday[0:4] + sunday[4:6] + sunday[6:8]
+
+        fdate1 = friday[0:4] + '-' + friday[4:6] + '-' + friday[6:8]
+        fdate2 = sunday[0:4] + '-' + sunday[4:6] + '-' + sunday[6:8]
+
+    else:
+
+        rdate1 = q1[0:4] + q1[5:7] + q1[8:10]
+        rdate2 = q2[0:4] + q2[5:7] + q2[8:10]
+
+        fdate1 = q1[0:4] + '-' + q1[5:7] + '-' + q1[8:10]
+        fdate2 = q2[0:4] + '-' + q2[5:7] + '-' + q2[8:10]
+
+    krafile = get_krafile(rcity, rdate1, rdate2, fcode, fstatus)
+    if krafile:
+        messages.warning(request, '총 ' + str(len(krafile)) + '건이 검색되었습니다.')
+    else:
+        messages.warning(request, "검색된 결과가 없습니다.")
+    # kradata = get_kradata(rcity, rdate1, rdate2, fcode, fstatus)
+
+    # print(krafile)
+    # print(kradata)
+
+    if request.method == 'POST':
+        myDict = dict(request.POST)
+        print((myDict['rcheck']))
+
+        for fname in myDict['rcheck']:
+            if fname[-12:-10] == '11':
+                print(fname[-12:-10])
+
+            # file = open(fname, "r")
+            # while True:
+            #     line = file.readline()
+            #     if not line:
+            #         break
+            #     print(line.strip())
+            # file.close()
+
+    context = {'q1': q1, 'q2': q2, 'fcode': fcode, 'fstatus': fstatus,
+               'krafile': krafile,
+               #    'kradata': kradata,
+               'fdate1': fdate1, 'fdate2': fdate2}
+
+    return render(request, 'base/data_management.html', context)
+
+
+def krafileInput(request):
+    request_files = request.FILES.getlist(
+        'filename[]') if 'filename[]' in request.FILES else None
+
+    if request_files:
+        # save attached file
+        for request_file in request_files:
+            # create a new instance of FileSystemStorage
+            fs = FileSystemStorage()
+            fname = request_file.name
+
+            if fname[0:4] < '2018':
+                os.makedirs(KRAFILE_ROOT / '2022이전', exist_ok=True)
+                fs.location = KRAFILE_ROOT / '2022이전'
+            else:
+                os.makedirs(KRAFILE_ROOT /
+                            fname[0:4], exist_ok=True)
+                fs.location = KRAFILE_ROOT / fname[0:4]
+
+            print(str(fs.location) + '/' + fname)
+
+            if fs.exists(fname):
+                fs.delete(fname)
+
+                try:
+                    cursor = connection.cursor()
+
+                    strSql = """
+                            DELETE FROM krafile
+                            WHERE fname = '""" + fname + """'
+                            ; """
+
+                    # print(strSql)
+
+                    r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                    result = cursor.fetchone()
+                    # result = cursor.fetchall()
+
+                    connection.commit()
+                    connection.close()
+
+                except:
+                    connection.rollback()
+                    print("Failed deleting in krafile")
+
+            # file = fs.save(request_file.name, request_file)
+            # # the fileurl variable now contains the url to the file. This can be used to serve the file when needed.
+            # fileurl = fs.url(file)
+
+            fcontent = request_file.read().decode(
+                'euc-kr', errors='strict')       # 한글 decode
+
+            letter = open(str(fs.location) + '/' +
+                          fname, 'w')           # 새 파일 열기
+            letter.write(fcontent)
+            letter.close()                                    # 닫기
+
+            try:
+                cursor = connection.cursor()
+
+                strSql = """
+                        INSERT INTO krafile
+                        ( fname, fpath, rdate, fcode, fstatus, in_date )
+                        VALUES
+                        ( '""" + fname + """',
+                        '""" + str(fs.location) + '/' + fname + """',
+                        '""" + fname[0:8] + """',
+                        '""" + fname[-12:-10] + """',
+                        'I',
+                        """ + 'NOW()' + """
+                        ) ; """
+
+                # print(strSql)
+                print(fname[-12:-10])
+                r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                result = cursor.fetchone()
+                # result = cursor.fetchall()
+
+                connection.commit()
+                connection.close()
+
+            except:
+                connection.rollback()
+                print("Failed inserting in krafile")
+
+    context = {'request_files': request_files}
+
+    return render(request, 'base/krafile_input.html', context)
+
+
+def pyscriptTest(request):
+    pass
+
+    return render(request, 'base/pyscript_test.html')

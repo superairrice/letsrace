@@ -1,27 +1,30 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
+  <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
+
+  <script src="{% static 'js/script.js' %}"></script>
+
+  <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
+
+  <title>Let's Enjoy! 인기도 입력</title>
 
 
-{% extends 'main.html' %}
-
+</head>
 
 {% block content %}
+<br>
+<br>
 
-{% load static %}
-<main class="update-account layout">
   <div class="container">
-    <div class="layout__box">
-      <div class="layout__boxHeader">
-        <div class="layout__boxTitle">
-          <a href="{% url 'home' %}">
-            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-              <title>arrow-left</title>
-              <path
-                d="M13.723 2.286l-13.723 13.714 13.719 13.714 1.616-1.611-10.96-10.96h27.625v-2.286h-27.625l10.965-10.965-1.616-1.607z">
-              </path>
-            </svg>
-          </a>
-          <h3>Edit Race Popularity</h3>
-        </div>
-      </div>
+    <div>
       
       {% for race in exp011s %}
         {% if forloop.counter == 1 %}
@@ -30,34 +33,40 @@
           <div class="room__topLeft">
         
             <a href="{% url 'update_popularity' race.rcity race.rdate race.rno|add:-1 %}">
-              <span class="tooltip" style="color:blue; font-size: 1.5rem;">⬅️
-                <span class="tooltip-text" style="font-size:1.4rem; text-align: right; font-family: Arial;">
+              <span class="tooltip" style="color:var(--color-main); font-size: 1.5rem;">◀︎
+                <span class="tooltip-text" style="font-size:1.4rem; text-align: right; font-family: Arial; z-index: 3;">
                   이전 경주
                 </span>
               </span>
             </a>
             <span class="tooltip" style="font-size: 1.5rem;">🏇</span>
             <a href="{% url 'update_popularity' race.rcity race.rdate race.rno|add:1 %}">
-              <span class="tooltip" style="color:blue; font-size: 1.5rem;">➡️
-                <span class="tooltip-text" style="font-size:1.4rem; text-align: right; font-family: Arial;">
+              <span class="tooltip" style="color:var(--color-main); font-size: 1.5rem;">▶︎
+                <span class="tooltip-text" style="font-size:1.4rem; text-align: right; font-family: Arial; z-index: 3;">
                   다음 경주
                 </span>
               </span>
             </a>
-        
-          </div>
-        
-          <div class="room__topRight" style="color: var(--color-main); font-weight: 600;">
+
             <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{race.rcity}}</span>
             <span
               style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{race.rdate|slice:"0:4"}}.{{race.rdate|slice:"4:6"}}.{{race.rdate|slice:"6:8"}}</span>
-        
+            
             <span style="font-size:1.7rem; color: var(--color-main); font-weight: 600;">{{race.rno}}R</span>
             <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{race.grade|slice:"0:2"}}</span>
             <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{race.dividing}}</span>
             <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{race.rname}} </span>
         
+          </div>
         
+          <div class="room__topRight" style="color: var(--color-main); font-weight: 600;">
+            <a href="{% url 'update_popularity' race.rcity race.rdate race.rno|add:1 %}">
+              <span class="tooltip" style="color:var(--color-main); font-size: 1.5rem;">▶︎
+                <span class="tooltip-text" style="font-size:1.4rem; text-align: right; font-family: Arial; z-index: 3;">
+                  다음 경주
+                </span>
+              </span>
+            </a>
           </div>
         
         
@@ -68,52 +77,46 @@
 
 
 
-      <div class="layout__body">
+      <div>
         <form class="form" action="" method="POST" enctype="multipart/form-data">
           
-          <table class="rwd-table" width="100%">
-            <tbody>
-              <tr align="center">
-        
-                <th>마번</th>
-                <th>마명</th>
-                <th>예상순위</th>
-                <th>예상기록</th>
-                <th>조교사</th>
-                <th>기수</th>
-                <th>출주마<br>인기도</th>
-                <th>경주순위</th>
-        
+          <table class="rwd-table">
+
+            <thead>
+              <tr>
+                              <th>마번</th>
+                              <th>마명</th>
+                              <th>예상순위</th>
+                              <th>예상기록</th>
+                              <th>조교사</th>
+                              <th>기수</th>
+                              <th>출주마 인기도</th>
+                              <th>경주순위</th>
               </tr>
-              <tr></tr>
+                              
+            </thead>
+            <tbody>
         
               {% csrf_token %}
               {% for race in exp011s %}
-              <tr align="middle">
-                <td height="25">{{race.gate}}</td>
-                <td align="right">
-                  &nbsp;&nbsp;{{race.horse}}
-                </td>
-                <td>
-                  {{race.rank}}
-                </td>
-                <td>
-                  {{race.complex}}
-                </td>
+              <tr>
+                <td style="text-align:right; font-family:Arial">{{race.gate}}</td>
+                <td style="text-align:left;">{{race.horse}}</td>
+                <td style="text-align:center; font-family:Arial">{{race.rank}}</td>
+                <td style="font-family:Arial;">{{race.complex|slice:"0:1"}}&nbsp;{{race.complex|slice:"1:"}}</td>
 
-                <td align="left" height="26">
-                  &nbsp;&nbsp;{{race.trainer}}
+                <td>{{race.trainer}}</td>
         
-                </td>
-        
-                <td align="left">&nbsp;&nbsp;{{race.jockey}}</td>
-        
+                <td>{{race.jockey}}</td>
         
                 <td>
-                  <input name="pop_{{race.gate}}" type="number" min="0" max="99" value="{{race.r_pop}}" />
+                  <div>
+                    <input name="pop_{{race.gate}}" style="text-align:right; font-family:Arial; padding: 0.1rem;" type="number" min="0" max="1000" value="{{race.r_pop}}" />
+                  </div>
                 </td>
                 <td>
-                  <input name="pop_{{race.gate}}" type="number" min="0" max="99" value="{{race.r_rank}}" />
+                  <div>
+                    <input name="pop_{{race.gate}}" style="text-align:right; font-family:Arial; padding: 0.1rem;" type="number" min="0" max="1000" value="{{race.r_rank}}" /></div>
                 </td>
         
               </tr>
@@ -125,8 +128,11 @@
           <br>
 
           <div class="form__action">
-            <a class="btn btn--dark" href="{% url 'home' %}">Cancel</a>
+            <!-- <a class="btn btn--dark" href="{% url 'home' %}">Cancel</a> -->
+            <a class="btn btn--dark" onclick="window.close()">Cancel</a>
             <button class="btn btn--main" type="submit">Update</button>
+            
+            <!-- <button class="btn btn--dark" onclick="window.close()">새창 닫기</button> -->
           </div>
         </form>
       </div>
@@ -135,6 +141,6 @@
 
   </div>
 
-</div>
-</main>
+
+
 {% endblock content %}

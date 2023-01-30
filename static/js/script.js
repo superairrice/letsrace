@@ -57,6 +57,7 @@ if (dropdownButton) {
   });
 }
 
+
 // Upload Image
 const photoInput = document.querySelector("#avatar");
 const photoPreview = document.querySelector("#preview-avatar");
@@ -71,13 +72,4 @@ if (photoInput)
 // Scroll to Bottom
 const conversationThread = document.querySelector(".room__box");
 if (conversationThread) conversationThread.scrollTop = conversationThread.scrollHeight;
-
-// function popup(rcity, rdate, rno){
-//   let options = "toolbar=no,scrollbars=no,resizable=yes,status=no,menubar=no,width=1200, height=800, top=0,left=0";
-
-//   addr = rdate
-
-//   window.open(addr,"_blank", options);
-// }
-
 

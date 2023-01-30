@@ -389,6 +389,29 @@ class RaceResult(models.Model):
         primary_key=True, max_length=4, db_collation='euckr_korean_ci')
     rdate = models.CharField(max_length=8, db_collation='euckr_korean_ci')
     rno = models.IntegerField()
+    r2alloc = models.CharField(max_length=20, db_collation='euckr_korean_ci')
+    r333alloc = models.CharField(max_length=20, db_collation='euckr_korean_ci')
+    r123alloc = models.CharField(max_length=20, db_collation='euckr_korean_ci')
+    jockey1 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    jockey2 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    jockey3 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    jockey4 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    jockey5 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    jockey6 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    jockey7 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    trainer1 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    trainer2 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    trainer3 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    r_jockey1 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    r_jockey2 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    r_jockey3 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    r_jockey4 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    r_jockey5 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    r_jockey6 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    r_jockey7 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    r_trainer1 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    r_trainer2 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
+    r_trainer3 = models.CharField(max_length=8, db_collation='euckr_korean_ci')
     r01 = models.IntegerField(blank=True, null=True)
     r02 = models.IntegerField(blank=True, null=True)
     r03 = models.IntegerField(blank=True, null=True)
@@ -399,6 +422,12 @@ class RaceResult(models.Model):
     r08 = models.IntegerField(blank=True, null=True)
     r09 = models.IntegerField(blank=True, null=True)
     r10 = models.IntegerField(blank=True, null=True)
+    r11 = models.IntegerField(blank=True, null=True)
+    r12 = models.IntegerField(blank=True, null=True)
+    r13 = models.IntegerField(blank=True, null=True)
+    r14 = models.IntegerField(blank=True, null=True)
+    r15 = models.IntegerField(blank=True, null=True)
+    r16 = models.IntegerField(blank=True, null=True)
     r_r01 = models.IntegerField(blank=True, null=True)
     r_r02 = models.IntegerField(blank=True, null=True)
     r_r03 = models.IntegerField(blank=True, null=True)
@@ -487,3 +516,16 @@ class Rec010(models.Model):
         managed = False
         db_table = 'rec010'
         unique_together = (('rcity', 'rdate', 'rno'),)
+
+
+class Krafile(models.Model):
+    fname = models.CharField(primary_key=True, max_length=40)
+    fcontents = models.TextField(blank=True, null=True)
+    rdate = models.CharField(max_length=8, blank=True, null=True)
+    fcode = models.CharField(max_length=2, blank=True, null=True)
+    fstatus = models.CharField(max_length=1, blank=True, null=True)
+    in_date = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'krafile'
