@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+{% load static %}
+{% load my_custom_tags %}
+
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon" /> -->
+  <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
+  <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
+
+  <script src="{% static 'js/script.js' %}"></script>
+
+  <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
+
+
+  <title>Let's Enjoy! - 프로그램 경마! 더더구나?!</title>
+
+
+  <form class="header__search" method="GET" action="{% url 'data_management' %}">
+    <label> 
+      <a href="{% url 'home' %}" class="header__logo">
+        <img src="{% static 'images/number-9.png' %}" />
+      </a>
+      <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+        <title>search</title>
+        <path
+          d="M32 30.586l-10.845-10.845c1.771-2.092 2.845-4.791 2.845-7.741 0-6.617-5.383-12-12-12s-12 5.383-12 12c0 6.617 5.383 12 12 12 2.949 0 5.649-1.074 7.741-2.845l10.845 10.845 1.414-1.414zM12 22c-5.514 0-10-4.486-10-10s4.486-10 10-10c5.514 0 10 4.486 10 10s-4.486 10-10 10z">
+        </path>
+      </svg>
+      검색조건 :
+      <fieldset align="center" style="width: 19rem;">
+        
+        전체<input style="width: 3rem;" type="radio" name="rcity" value="%" checked />
+        서울<input style="width: 3rem;" type="radio" name="rcity" value="서울" />
+        부산<input style="width: 3rem;" type="radio" name="rcity" value="부산" />
+        
+      </fieldset>
+      <input style="width: 12rem;" type="date" value={{fdate1}} name="q1" >
+      <input style="width: 12rem;" type="date" value={{fdate2}} name="q2" >
+
+      파일상태 :
+      <select name="fstatus">  
+        <option value="%">&nbsp;All</option>
+        <option value="E">Error</option>
+        <option value="F">Finish</option>
+        <option value="I">Input</option>
+        <option value="S">Start</option>
+      </select>
+
+      입력 데이터 :
+      <select name="fcode">  
+        <option value="%">&nbsp;All</option>
+        <option value="01">01 출마표</option>
+        <option value="11">11 경주결과</option>
+        <option value="13">13 출마표변경</option>
+        <option value="23">23 능력검사</option>
+        <option value="55">55 주로조교</option>
+        <option value="71">71 출주장구</option>
+        <option value="72">72 마필병력</option>
+        <option value="b1">b1 경주마정보</option>
+        <option value="b2">b2 기수정보</option>
+        <option value="b3">b3 조교사정보</option>
+        <option value="b6">b6 마주정보</option>
+        <option value="b4">b4 출발심사</option>
+        <option value="b5">b5 출발조교</option>
+        <option value="c1">c1 주로조교(별)</option>
+        <option value="c2">c2 수영조교(별)</option>
+      </select>
+
+      <button class="btn" style="background: var(--color-main);">Search</button>
+
+      {% for message in messages %}
+      {{ message.tag }}
+      {{ message }}
+      {% endfor %}
+
+    </label>
+  </form>
+
+  
+  
+
+</head>
+
+{% load mathfilters %}
+{% load humanize %}
+{% block content %}
+
+{# fold-table #}
+<script>
+  $(function () {
+    $(".fold-table tr.view").on("click", function () {
+      if ($(this).hasClass("open")) {
+        $(this).removeClass("open").next(".fold").removeClass("open");
+      } else {
+        $(".fold-table tr.view").removeClass("open").next(".fold").removeClass("open");
+        $(this).addClass("open").next(".fold").addClass("open");
+      }
+    });
+  });
+</script>
+
+{# tabs #}
+<script>
+  $(document).ready(function () {
+
+    $('ul.tabs li').click(function () {
+      var tab_id = $(this).attr('data-tab');
+
+      $('ul.tabs li').removeClass('current');
+      $('.tab-content').removeClass('current');
+
+      $(this).addClass('current');
+      $("#" + tab_id).addClass('current');
+    })
+  })
+</script>
+
+
+
+<!-- <div class="roomListRoom"> -->
+<div style="width:800px">
+  <ul class="tabs">
+    <li class="tab-link current" data-tab="tab-1">File Dir. Management</li>
+    <li class="tab-link" data-tab="tab-2">The1 DATABASE Query</li>
+    <li class="tab-link" data-tab="tab-3">세번째 메뉴</li>
+  </ul>
+
+  <div id="tab-1" class="tab-content current">
+
+    <table class="fold-table">
+      <thead>
+    
+        <tr>
+          <th><span class="visible-small" title="rmonth2">선택.</span><span class="visible-big">선택</span></th>
+          <th><span class="visible-small" title="rmonth3">No.</span><span class="visible-big">No</span></th>
+          
+          <th><span class="visible-small" title="rmonth1">파일이름.</span><span class="visible-big">파일이름</span></th>
+          <th><span class="visible-small" title="rmonth2">날짜.</span><span class="visible-big">날짜</span></th>
+          <th><span class="visible-small" title="rmonth3">구분</span><span class="visible-big">구분</span></th>
+          <th><span class="visible-small" title="rmonth3">상태</span><span class="visible-big">상태</span></th>
+          <th><span class="visible-small" title="rmonth3">입력일시</span><span class="visible-big">입력일시</span></th>
+
+        </tr>
+    
+      </thead>
+
+
+      <form method="POST" enctype="multipart/form-data" action="{% url 'data_management' %}">
+        {% csrf_token %}
+        <style>
+          .btn {
+            background-color: #87CEEB;
+            padding: 5px 10px;
+            margin: 5px;
+            border: none;
+            color: black;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1.4rem;
+            display: inline-block;
+            cursor: pointer;
+            -webkit-transition-duration: 0.4s;
+            transition-duration: 0.4s;
+          }
+        
+          .btn1,
+          .btn2:hover {
+            box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+          }
+        </style>
+        <button class="btn btn1" type="submit">선택파일 Database 변환</button>
+
+        <tbody>
+          {% for fname, num, rcheck, fpath, rdate, fcode, fstatus, in_date in krafile %}
+          <tr class="view">
+            <td align="center" style="font-family: Arial; font-size: 1.4rem;">
+              <input style="width: 2rem;" type="checkbox" name="rcheck" value={{fpath}} checked>
+            </td>
+            <td align="right" style="font-family: Arial; font-size: 1.4rem;">{{num|floatformat:0}}</td>
+            <td align="left" style="font-family: Arial; font-size: 1.4rem;">
+              <div>{{fname}}</div>            
+            </td>
+            <td align="center" style="font-family: Arial; font-size: 1.4rem;">{{rdate}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.4rem;">
+
+              {% if fcode == '01' %}출마표
+              {% elif fcode == '11' %}경주결과
+              {% elif fcode == '13' %}출마표변경
+              {% elif fcode == '23' %}능력검사
+              {% elif fcode == '55' %}주로조교
+              {% elif fcode == '71' %}출주장구
+              {% elif fcode == '72' %}마필병력
+              {% elif fcode == 'b1' %}경주마정보
+              {% elif fcode == 'b2' %}기수정보
+              {% elif fcode == 'b3' %}조교사정보
+              {% elif fcode == 'b6' %}마주정보
+              {% elif fcode == 'b4' %}출발심사
+              {% elif fcode == 'b5' %}출발조교
+              {% elif fcode == 'b7' %}-
+              {% elif fcode == 'c1' %}주로조교(별)
+              {% elif fcode == 'c2' %}수영조교(별)
+              {% else %}{{fcode}}
+              {% endif %}
+
+            </td>
+            <td align="center" style="font-family: Arial; font-size: 1.4rem;">
+              {% if fstatus == 'E' %}Error
+              {% elif fstatus == 'F' %}Finish
+              {% elif fstatus == 'I' %}Input
+              {% elif fstatus == 'S' %}Start
+              {%else%}{{fstatus}}
+              {%endif%}
+            </td>
+
+            <td align="center" style="font-family: Arial; font-size: 1.4rem;">{{in_date}}</td>
+
+            
+          </tr>
+          <tr class="fold">
+            
+          </tr>
+          {% endfor %}
+      
+      
+        </tbody>
+
+      </form>
+
+      <a class="btn btn2" 
+        href="{% url 'krafile_input' %}"
+        style="background-color:gold" 
+        onclick="window.open(this.href, '_blank', 'width=801, height=500, toolbars=no, scrollbars=yes'); return false;">
+        KRA File Upload
+      </a>
+
+    </table>
+  </div>
+
+  <div id="tab-2" class="tab-content">
+    <table class="fold-table">
+      <thead>
+    
+        <tr>
+          <th><span class="visible-small" title="rmonth2">토.</span><span class="visible-big">토.</span></th>
+          <th><span class="visible-small" title="rmonth3">일.</span><span class="visible-big">일.</span></th>
+          
+          <th><span class="visible-small" title="rmonth1">당월.</span><span class="visible-big">당월</span></th>
+          <th><span class="visible-small" title="rmonth2">전월.</span><span class="visible-big">전월</span></th>
+          <th><span class="visible-small" title="rmonth3">전전월</span><span class="visible-big">전전월</span></th>
+
+        </tr>
+    
+      </thead>
+
+
+      <tbody>
+        {% for fname, num, rcheck, rdate, fcode, fstatus, in_date in kradata %}
+        <tr class="view">
+          <td align="center" style="font-family: Arial; font-size: 1.4rem;">
+            <input style="width: 3rem;" type="checkbox" name="rcheck" value={{rcheck}} />
+          </td>
+          <td align="right" style="font-family: Arial; font-size: 1.4rem;">{{num|floatformat:0}}</td>
+          <td align="left" style="font-family: Arial; font-size: 1.4rem;">
+            <div>{{fname}}</div>
+
+            
+            
+          </td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem;">{{rdate}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem;">{{fcode}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.4rem;">
+            {% if fstatus == 'E' %}Error
+            {% elif fstatus == 'F' %}Finish
+            {% elif fstatus == 'I' %}Input
+            {% elif fstatus == 'S' %}Start
+            {%else%}{{fstatus}}
+            {%endif%}
+          </td>
+
+          <td align="center" style="font-family: Arial; font-size: 1.4rem;">{{in_date}}</td>
+          
+        </tr>
+        <tr class="fold">
+          <td colspan="7">
+            <div class="fold-content">
+              <table class="small-friendly">
+                <thead>
+                  <tr>
+                    <th colspan="2"><span class="visible-small" title="Jockey">Race</span><span class="visible-big">Race</span></th>
+                    <th><span class="visible-small" title="Jockey">마<br>번</span><span class="visible-big">마<br>번</span></th>
+                    
+                  </tr>
+                </thead>
+                <tbody>
+                  
+                  {% get_file_contents fname %}
+    
+                </tbody>
+              </table>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+    
+    
+      </tbody>
+    </table>
+  </div>
+  
+  <div id="tab-3" class="tab-content">
+    2023/01/28 (토) ~ 2023/01/29 (일)
+    말취소내용을 구분, 경주일자, 경주번호, 출전번호, 마명, 조교사, 기수명, 사유, 공지시각 순으로 제공하는 표
+    구분 경주일자 경주
+    번호 출전
+    번호 마명 조교사 기수명 사유 공지시각
+    출전취소 2023/01/28 (토) 2 1 파이팅케이 강환민 장추열 왼 앞다리 절음 01/28 10:00
+    출전제외 2023/01/28 (토) 7 7 런던명가 배휴준 박을운 진입불량 01/28 15:48
+    출전제외 2023/01/29 (일) 3 9 파토스 박윤규 이동진 오른 앞다리 절음 01/29 11:45
+    출전제외 2023/01/29 (일) 3 11 그린스펙터 구자흥 김혜선 왼 앞다리 절음 01/29 11:46
+    출전제외 2023/01/29 (일) 3 12 걸작투어 박윤규 정정희 마체이상 01/29 12:31
+    출전취소 2023/01/29 (일) 4 3 원더풀슬루 리카디 이동진 왼 앞다리 절음 01/28 10:22
+    출전취소 2023/01/29 (일) 10 3 러블리케이 우창구 문성혁 오른 앞다리 질병(우전지 봉와직염) 01/29 10:47
+    기수변경
+    2023/01/28 (토) ~ 2023/01/29 (일)
+    기수변경내용을 경주일자, 경주번호, 출전번호, 마명, 변경전, 변경후, 사유, 공지시각 순으로 제공하는 표
+    경주일자 경주
+    번호 출전
+    번호 마명 변경전 변경후 사유 공지시각
+    2023/01/29 (일) 6 9 그린스파크 이혁 55.5 박태종 55.5 복통 01/29 14:47
+    2023/01/29 (일) 7 8 아이스크림 이혁 52 이동하 52 복통 01/29 14:55
+    2023/01/29 (일) 9 3 논스톱기상 이혁 56 유승완 56 복통 01/29 15:09
+    2023/01/29 (일) 10 5 정문볼트 이혁 52 김용근 52 복통 01/29 15:30
+    2023/01/29 (일) 11 2 그린드래건 이혁 52 김혜선 52 복통 01/29 15:30
+    출발시각 변경
+    2023/01/28 (토) ~ 2023/01/29 (일)
+    출발시각변경 내용을 경주일자, 경주번호, 변경전, 변경후, 사유 순으로 제공하는 표
+    경주일자 경주번호 변경전 변경후 사유
+    2023/01/29 (일) 3 12:35 12:38 12번마 출전제외
+    부상기수 현황
+    2023/01/28 (토) ~ 2023/01/29 (일)
+    부상기수 현황을 기수명, 부상일자, 부상부위, 비고 순으로 제공하는 표
+    기수명 부상일자 부상부위 비고
+    박현우 2023/01/08 늑골 골절 경주 중 부상
+    이상규 2022/11/27 좌측 발목인대 파열 경주 중 부상
+    임다빈 2022/12/25 우측 쇄골 골절 경주 중 부상
+  </div>
+
+</div>
+
+
+</main>
+{% endblock %}
+
+</html>

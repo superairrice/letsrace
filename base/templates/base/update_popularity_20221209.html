@@ -1,0 +1,138 @@
+{% extends 'main.html' %}
+
+
+{% block content %}
+
+{% load static %}
+<main class="update-account layout">
+  <div class="container">
+    <div class="layout__box">
+      <div class="layout__boxHeader">
+        <div class="layout__boxTitle">
+          <a href="{% url 'home' %}">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+              <title>arrow-left</title>
+              <path
+                d="M13.723 2.286l-13.723 13.714 13.719 13.714 1.616-1.611-10.96-10.96h27.625v-2.286h-27.625l10.965-10.965-1.616-1.607z">
+              </path>
+            </svg>
+          </a>
+          <h3>Edit Race Popularity</h3>
+        </div>
+      </div>
+
+      {% for race in exp011s %}
+      {% if forloop.counter == 1 %}
+
+      <div class="room__top">
+        <div class="room__topLeft">
+
+          <a href="{% url 'update_popularity' race.rcity race.rdate race.rno|add:-1 %}">
+            <span class="tooltip" style="color:blue; font-size: 1.5rem;">⬅️
+              <span class="tooltip-text" style="font-size:1.4rem; text-align: right; font-family: Arial;">
+                이전 경주
+              </span>
+            </span>
+          </a>
+          <span class="tooltip" style="font-size: 1.5rem;">🏇</span>
+          <a href="{% url 'update_popularity' race.rcity race.rdate race.rno|add:1 %}">
+            <span class="tooltip" style="color:blue; font-size: 1.5rem;">➡️
+              <span class="tooltip-text" style="font-size:1.4rem; text-align: right; font-family: Arial;">
+                다음 경주
+              </span>
+            </span>
+          </a>
+
+        </div>
+
+        <div class="room__topRight" style="color: var(--color-main); font-weight: 600;">
+          <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{race.rcity}}</span>
+          <span
+            style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{race.rdate|slice:"0:4"}}.{{race.rdate|slice:"4:6"}}.{{race.rdate|slice:"6:8"}}</span>
+
+          <span style="font-size:1.7rem; color: var(--color-main); font-weight: 600;">{{race.rno}}R</span>
+          <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{race.grade|slice:"0:2"}}</span>
+          <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{race.dividing}}</span>
+          <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">{{race.rname}} </span>
+
+
+        </div>
+
+
+      </div>
+
+      {% endif %}
+      {% endfor %}
+
+
+
+      <div class="layout__body">
+        <form class="form" action="" method="POST" enctype="multipart/form-data">
+
+          <table class="rwd-table" width="100%">
+            <tbody>
+              <tr align="center">
+
+                <th>마번</th>
+                <th>마명</th>
+                <th>예상순위</th>
+                <th>예상기록</th>
+                <th>조교사</th>
+                <th>기수</th>
+                <th>출주마<br>인기도</th>
+                <th>경주순위</th>
+
+              </tr>
+              <tr></tr>
+
+              {% csrf_token %}
+              {% for race in exp011s %}
+              <tr align="middle">
+                <td height="25">{{race.gate}}</td>
+                <td align="right">
+                  &nbsp;&nbsp;{{race.horse}}
+                </td>
+                <td>
+                  {{race.rank}}
+                </td>
+                <td>
+                  {{race.complex}}
+                </td>
+
+                <td align="left" height="26">
+                  &nbsp;&nbsp;{{race.trainer}}
+
+                </td>
+
+                <td align="left">&nbsp;&nbsp;{{race.jockey}}</td>
+
+
+                <td>
+                  <input name="pop_{{race.gate}}" type="number" min="0" max="99" value="{{race.r_pop}}" />
+                </td>
+                <td>
+                  <input name="pop_{{race.gate}}" type="number" min="0" max="99" value="{{race.r_rank}}" />
+                </td>
+
+              </tr>
+              {% endfor %}
+
+            </tbody>
+          </table>
+
+          <br>
+
+          <div class="form__action">
+            <a class="btn btn--dark" href="{% url 'home' %}">Cancel</a>
+            <button class="btn btn--main" type="submit">Update</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+
+  </div>
+
+  </div>
+</main>
+{% endblock content %}
