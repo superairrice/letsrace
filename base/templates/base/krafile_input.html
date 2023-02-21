@@ -1,81 +1,177 @@
 <!DOCTYPE html>
-{% load static %}
-{% load my_custom_tags %}
 
-<html lang="en">
+{% load static %}
+
+<html lang="en-us">
 
 <head>
+
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
   <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
 
-  <script src="{% static 'js/script.js' %}"></script>
-
-  <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
-
+  
   <title>Let's Enjoy! - 프로그램 경마! 더더구나?!</title>
+
+  <style>
+
+    form {
+      width: 600px;
+      
+      background: #ccc;
+      color:black;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid black;
+
+    }
+
+    form ol {
+      padding-left: 0;
+    }
+
+    form li,
+    div>p {
+      background: #eee;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      list-style-type: none;
+      border: 1px solid black;
+
+      font-size: 1.3rem;
+    }
+
+    form img {
+      height: 64px;
+      order: 1;
+    }
+
+    form p {
+      line-height: 32px;
+      padding-left: 10px;
+    }
+
+    form label,
+    form button {
+      background-color: #7F9CCB;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: 1px ridge black;
+      font-size: 1.3rem;
+      height: auto;
+    }
+
+    form label:hover,
+    form button:hover {
+      background-color: #2D5BA3;
+      color: white;
+    }
+
+    form label:active,
+    form button:active {
+      background-color: #0D3F8F;
+      color: white;
+    }
+  </style>
 </head>
 
-{% load mathfilters %}
-{% load humanize %}
-{% block content %}
-
-{# fold-table #}
 
 
+<body>
+  <form method="POST" enctype="multipart/form-data" action="{% url 'krafile_input' %}">
+    <div>
+      <label class="btn btn--main" for="image_uploads">Choose Files to upload (txt, rpt, csv, xlsx)</label>
+     
+      <input type="file" id="image_uploads" name="image_uploads" accept=".txt,.rpt,.csv, .xlsx" multiple>
+    </div>
+    <div class="preview">
+      <p>No files currently selected for upload</p>
+    </div>
+    <div>
+      <button class="btn btn--main" type="submit">Save</button>
+      <a class="btn btn--dark" onclick="window.close()">Close</a>
 
-<!-- <div class="roomListRoom"> -->
-<div style="width:500px">
+    </div>
+  </form>
 
+  <script>
 
-  <div id="tab-1" class="tab-content current">
+    const input = document.querySelector('input');
+    const preview = document.querySelector('.preview');
 
-    <form method="POST" enctype="multipart/form-data" action="{% url 'krafile_input' %}">
-      {% csrf_token %}
-      <input type="file" id="files" name="filename[]" accept=".txt,.rpt" multiple>
-      <button type="submit">파일 저장</button>
-      <!-- <input type="submit" class ="btn btn-primary" value="POST1"> -->
-    </form>
+    input.style.opacity = 0;
 
-    <table class="fold-table">
-      <thead>
-    
-        <tr>
-          <th><span class="visible-small" title="rmonth3">No.</span><span class="visible-big">No</span></th>
-          
-          <th><span class="visible-small" title="rmonth1">파일이름.</span><span class="visible-big">파일이름</span></th>
+    input.addEventListener('change', updateImageDisplay);
 
-        </tr>
-    
-      </thead>
-      <tbody>
-        {% for fname in request_files %}
-        <tr class="view">
-          
-          <td align="right" style="font-family: Arial; font-size: 1.4rem;">{{forloop.counter}}</td>
-          <td align="left" style="font-family: Arial; font-size: 1.4rem;">
-            <div>{{fname}}</div>            
-          </td>
+    function updateImageDisplay() {
+      while (preview.firstChild) {
+        preview.removeChild(preview.firstChild);
+      }
 
-        </tr>
-        <tr class="fold">
-          
-        </tr>
-        {% endfor %}
-    
-    
-      </tbody>
+      const curFiles = input.files;
+      if (curFiles.length === 0) {
+        const para = document.createElement('p');
+        para.textContent = 'No files currently selected for upload';
+        preview.appendChild(para);
+      } else {
+        const list = document.createElement('ol');
+        preview.appendChild(list);
 
-    </table>
-  </div>
+        for (const file of curFiles) {
+          const listItem = document.createElement('li');
+          const para = document.createElement('p');
 
+          // if (validFileType(file)) {
+            para.textContent = `파일이름 : ${file.name}, file size ${returnFileSize(file.size)}.`;
+            const image = document.createElement('img');
+            image.src = URL.createObjectURL(file);
 
-</div>
+            // listItem.appendChild(image);
+            listItem.appendChild(para);
+          // } else {
+          //   para.textContent = `File name ${file.name}: Not a valid file type.`;
+          //   listItem.appendChild(para);
+          // }
 
+          list.appendChild(listItem);
+        }
+      }
+    }
 
-</main>
-{% endblock %}
+    // https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types
+    const fileTypes = [
+      'image/apng',
+      'image/bmp',
+      'image/gif',
+      'image/jpeg',
+      'image/pjpeg',
+      'image/png',
+      'image/svg+xml',
+      'image/tiff',
+      'image/webp',
+      'image/x-icon',
+      'text/plain',
+      'text/.rpt'
+
+    ];
+
+    function validFileType(file) {
+      return fileTypes.includes(file.type);
+    }
+
+    function returnFileSize(number) {
+      if (number < 1024) {
+        return number + 'bytes';
+      } else if (number > 1024 && number < 1048576) {
+        return (number / 1024).toFixed(1) + 'KB';
+      } else if (number > 1048576) {
+        return (number / 1048576).toFixed(1) + 'MB';
+      }
+    }
+  </script>
+</body>
 
 </html>

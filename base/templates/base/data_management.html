@@ -34,9 +34,9 @@
       검색조건 :
       <fieldset align="center" style="width: 19rem;">
         
-        전체<input style="width: 3rem;" type="radio" name="rcity" value="%" checked />
-        서울<input style="width: 3rem;" type="radio" name="rcity" value="서울" />
-        부산<input style="width: 3rem;" type="radio" name="rcity" value="부산" />
+        전체<input style="width: 3rem;" type="radio" name="rcity" value="%" checked>
+        서울<input style="width: 3rem;" type="radio" name="rcity" value="서울" {% if rcity == "서울" %} checked {% endif %}>
+        부산<input style="width: 3rem;" type="radio" name="rcity" value="부산" {% if rcity == "부산" %} checked {% endif %}>
         
       </fieldset>
       <input style="width: 12rem;" type="date" value={{fdate1}} name="q1" >
@@ -44,31 +44,31 @@
 
       파일상태 :
       <select name="fstatus">  
-        <option value="%">&nbsp;All</option>
-        <option value="E">Error</option>
-        <option value="F">Finish</option>
-        <option value="I">Input</option>
-        <option value="S">Start</option>
+        <option value="%" {% if fstatus == '%' %} selected {% endif %}>&nbsp;All</option>
+        <option value="E" {% if fstatus == 'E' %} selected {% endif %}>Error</option>
+        <option value="F" {% if fstatus == 'F' %} selected {% endif %}>Finish</option>
+        <option value="I" {% if fstatus == 'I' %} selected {% endif %}>Input</option>
+        <option value="S" {% if fstatus == 'S' %} selected {% endif %}>Start</option>
       </select>
 
       입력 데이터 :
       <select name="fcode">  
         <option value="%">&nbsp;All</option>
-        <option value="01">01 출마표</option>
-        <option value="11">11 경주결과</option>
-        <option value="13">13 출마표변경</option>
-        <option value="23">23 능력검사</option>
-        <option value="55">55 주로조교</option>
-        <option value="71">71 출주장구</option>
-        <option value="72">72 마필병력</option>
-        <option value="b1">b1 경주마정보</option>
-        <option value="b2">b2 기수정보</option>
-        <option value="b3">b3 조교사정보</option>
-        <option value="b6">b6 마주정보</option>
-        <option value="b4">b4 출발심사</option>
-        <option value="b5">b5 출발조교</option>
-        <option value="c1">c1 주로조교(별)</option>
-        <option value="c2">c2 수영조교(별)</option>
+        <option value="01" {% if fcode == '01' %} selected {% endif %}>01 출마표</option>
+        <option value="11" {% if fcode == '11' %} selected {% endif %}>11 경주결과</option>
+        <option value="13" {% if fcode == '13' %} selected {% endif %}>13 출마표변경</option>
+        <option value="23" {% if fcode == '23' %} selected {% endif %}>23 능력검사</option>
+        <option value="55" {% if fcode == '55' %} selected {% endif %}>55 주로조교</option>
+        <option value="71" {% if fcode == '71' %} selected {% endif %}>71 출주장구</option>
+        <option value="72" {% if fcode == '72' %} selected {% endif %}>72 마필병력</option>
+        <option value="b1" {% if fcode == 'b1' %} selected {% endif %}>b1 경주마정보</option>
+        <option value="b2" {% if fcode == 'b2' %} selected {% endif %}>b2 기수정보</option>
+        <option value="b3" {% if fcode == 'b3' %} selected {% endif %}>b3 조교사정보</option>
+        <option value="b6" {% if fcode == 'b6' %} selected {% endif %}>b6 마주정보</option>
+        <option value="b4" {% if fcode == 'b4' %} selected {% endif %}>b4 출발심사</option>
+        <option value="b5" {% if fcode == 'b5' %} selected {% endif %}>b5 출발조교</option>
+        <option value="c1" {% if fcode == 'c1' %} selected {% endif %}>c1 주로조교(별)</option>
+        <option value="c2" {% if fcode == 'c2' %} selected {% endif %}>c2 수영조교(별)</option>
       </select>
 
       <button class="btn" style="background: var(--color-main);">Search</button>
@@ -80,9 +80,6 @@
 
     </label>
   </form>
-
-  
-  
 
 </head>
 
@@ -119,8 +116,6 @@
     })
   })
 </script>
-
-
 
 <!-- <div class="roomListRoom"> -->
 <div style="width:800px">
@@ -173,7 +168,7 @@
             box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
           }
         </style>
-        <button class="btn btn1" type="submit">선택파일 Database 변환</button>
+        <button class="btn btn1" type="submit">선택된 파일 Database 변환 입력</button>
 
         <tbody>
           {% for fname, num, rcheck, fpath, rdate, fcode, fstatus, in_date in krafile %}
@@ -218,10 +213,12 @@
             </td>
 
             <td align="center" style="font-family: Arial; font-size: 1.4rem;">{{in_date}}</td>
-
             
           </tr>
           <tr class="fold">
+            <td colspan="7">
+              {{fpath}}
+            </td>
             
           </tr>
           {% endfor %}
@@ -234,8 +231,8 @@
       <a class="btn btn2" 
         href="{% url 'krafile_input' %}"
         style="background-color:gold" 
-        onclick="window.open(this.href, '_blank', 'width=801, height=500, toolbars=no, scrollbars=yes'); return false;">
-        KRA File Upload
+        onclick="window.open(this.href, '_blank', 'width=801, height=800, toolbars=no, scrollbars=yes'); return false;">
+        KRA New File Upload
       </a>
 
     </table>

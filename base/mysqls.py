@@ -123,12 +123,12 @@ def get_judged_horse(rcity, rdate, rno):
                 FROM The1.exp011     a,
                       The1.rec015     b
                 where a.horse = b.horse 
-         
-         
                 AND b.rdate between date_format(DATE_ADD('""" + rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and '""" + rdate + """'
                 AND a.rcity = '""" + rcity + """'
                 AND a.rdate = '""" + rdate + """'
                 AND a.rno = """ + str(rno) + """
+                AND b.rdate < '""" + rdate + """'
+
               order by a.rank, b.rdate desc
             ; """
 
@@ -183,15 +183,15 @@ def get_pedigree(rcity, rdate, rno):
         cursor = connection.cursor()
 
         strSql = """ 
-              SELECT a.gate, a.rank, a.horse, a.jockey, a.trainer,	a.host,
+              SELECT a.gate, a.rank, a.r_rank, a.horse, a.jockey, a.trainer,	a.host,
                     ( a.year_1st + a.year_2nd + a.year_3rd )*100/a.year_race h_3rd, 
                     a.year_race h_tot, 
                     b.paternal, 
                     b.maternal,
                     (	select sum( year_race ) from horse where paternal = b.paternal ) p_tot,
-                    (	select sum( year_1st + year_2nd ) from horse where paternal = b.paternal ) p_3rd,
+                    (	select sum( year_1st + year_2nd + year_3rd ) from horse where paternal = b.paternal ) p_3rd,
                     (	select sum( year_race ) from horse where maternal = b.maternal ) m_tot,
-                    (	select sum( year_1st + year_2nd ) from horse where maternal = b.maternal ) m_3rd,
+                    (	select sum( year_1st + year_2nd + year_3rd ) from horse where maternal = b.maternal ) m_3rd,
                     gear1, gear2, blood1, blood2, treat1, treat2
                 FROM exp011	a,
                     horse		b,
@@ -398,6 +398,264 @@ def get_training(i_rcity, i_rdate, i_rno):
     # print(training)
 
     return training
+
+
+def get_train(i_rcity, i_rdate, i_rno):
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ select gate, rank, horse, jockey, trainer,
+                                              max(r1), max(d1), max(c1), max(s1) , 
+                                              max(r2), max(d2), max(c2), max(s2) , 
+                                              max(r3), max(d3), max(c3), max(s3) , 
+                                              max(r4), max(d4), max(c4), max(s4) , 
+                                              max(r5), max(d5), max(c5), max(s5) , 
+                                              max(r6), max(d6), max(c6), max(s6) , 
+                                              max(r7), max(d7), max(c7), max(s7) , 
+                                              max(r8), max(d8), max(c8), max(s8) , 
+                                              max(r9), max(d9), max(c9), max(s9) , 
+                                              max(r10), max(d10), max(c10), max(s10) , 
+                                              max(r11), max(d11), max(c11), max(s11) , 
+                                              max(r12), max(d12), max(c12), max(s12) , 
+                                              max(r13), max(d13), max(c13), max(s13) , 
+                                              max(r14), max(d14), max(c14), max(s14) 
+                      from
+                      (
+                        select gate, b.rank, a.horse, b.jockey, b.trainer,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 1 DAY), '%Y%m%d'), rider, '' ) r1,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 DAY), '%Y%m%d'), rider, '' ) r2,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d'), rider, '' ) r3,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 4 DAY), '%Y%m%d'), rider, '' ) r4,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 5 DAY), '%Y%m%d'), rider, '' ) r5,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 6 DAY), '%Y%m%d'), rider, '' ) r6,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 7 DAY), '%Y%m%d'), rider, '' ) r7,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 8 DAY), '%Y%m%d'), rider, '' ) r8,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 9 DAY), '%Y%m%d'), rider, '' ) r9,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 10 DAY), '%Y%m%d'), rider, '' ) r10,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 11 DAY), '%Y%m%d'), rider, '' ) r11,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 12 DAY), '%Y%m%d'), rider, '' ) r12,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 13 DAY), '%Y%m%d'), rider, '' ) r13,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d'), rider, '' ) r14,
+                          
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 1 DAY), '%Y%m%d'), t_time, 0 ) d1,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 DAY), '%Y%m%d'), t_time, 0 ) d2,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d'), t_time, 0 ) d3,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 4 DAY), '%Y%m%d'), t_time, 0 ) d4,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 5 DAY), '%Y%m%d'), t_time, 0 ) d5,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 6 DAY), '%Y%m%d'), t_time, 0 ) d6,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 7 DAY), '%Y%m%d'), t_time, 0 ) d7,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 8 DAY), '%Y%m%d'), t_time, 0 ) d8,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 9 DAY), '%Y%m%d'), t_time, 0 ) d9,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 10 DAY), '%Y%m%d'), t_time, 0 ) d10,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 11 DAY), '%Y%m%d'), t_time, 0 ) d11,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 12 DAY), '%Y%m%d'), t_time, 0 ) d12,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 13 DAY), '%Y%m%d'), t_time, 0 ) d13,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d'), t_time, 0 ) d14,
+
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 1 DAY), '%Y%m%d'), canter, 0 ) c1,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 DAY), '%Y%m%d'), canter, 0 ) c2,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d'), canter, 0 ) c3,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 4 DAY), '%Y%m%d'), canter, 0 ) c4,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 5 DAY), '%Y%m%d'), canter, 0 ) c5,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 6 DAY), '%Y%m%d'), canter, 0 ) c6,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 7 DAY), '%Y%m%d'), canter, 0 ) c7,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 8 DAY), '%Y%m%d'), canter, 0 ) c8,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 9 DAY), '%Y%m%d'), canter, 0 ) c9,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 10 DAY), '%Y%m%d'), canter, 0 ) c10,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 11 DAY), '%Y%m%d'), canter, 0 ) c11,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 12 DAY), '%Y%m%d'), canter, 0 ) c12,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 13 DAY), '%Y%m%d'), canter, 0 ) c13,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d'), canter, 0 ) c14,
+
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 1 DAY), '%Y%m%d'), strong, 0 ) s1,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 DAY), '%Y%m%d'), strong, 0 ) s2,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d'), strong, 0 ) s3,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 4 DAY), '%Y%m%d'), strong, 0 ) s4,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 5 DAY), '%Y%m%d'), strong, 0 ) s5,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 6 DAY), '%Y%m%d'), strong, 0 ) s6,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 7 DAY), '%Y%m%d'), strong, 0 ) s7,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 8 DAY), '%Y%m%d'), strong, 0 ) s8,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 9 DAY), '%Y%m%d'), strong, 0 ) s9,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 10 DAY), '%Y%m%d'), strong, 0 ) s10,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 11 DAY), '%Y%m%d'), strong, 0 ) s11,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 12 DAY), '%Y%m%d'), strong, 0 ) s12,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 13 DAY), '%Y%m%d'), strong, 0 ) s13,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d'), strong, 0 ) s14
+                        from train a right outer join  ( select gate, rank, horse, jockey, trainer from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.horse = b.horse
+                        and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                      ) a
+                      group by gate, rank, horse, jockey, trainer
+                      order by rank, gate
+                        ;"""
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        training = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+        print(strSql)
+
+    except:
+        connection.rollback()
+        print("Failed selecting in BookListView")
+
+    # print(training)
+
+    return training
+
+
+def get_train_audit(i_rcity, i_rdate, i_rno):
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ select gate, rank, r_rank, b.horse, jockey, trainer, s_audit, rider, rider_k, judge, tdate
+                                              
+                      from
+                      (
+                          select '출발조교'		s_audit,
+                                horse		horse, 
+                                rider		rider, 
+                                rider_k		rider_k,
+                                judge		judge, 
+                                tdate		tdate
+                            from The1.start_train
+                          where tdate between DATE_FORMAT( subdate( str_to_date( '""" + i_rdate + """', '%Y%m%d' ) , 100 ),'%Y%m%d')  and '""" + i_rdate + """' 
+                          union all
+                          select '발주심사'		s_audit,
+                                horse		horse, 
+                                rider		rider, 
+                                rider_k		rider_k,
+                                judge		judge, 
+                                rdate		tdate
+                            from The1.start_audit
+                          where rdate between DATE_FORMAT( subdate( str_to_date( '""" + i_rdate + """', '%Y%m%d' ) , 100 ),'%Y%m%d')  and '""" + i_rdate + """' 
+                        ) a right outer join  ( select gate, rank, r_rank, horse, jockey, trainer from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.horse = b.horse
+                      order by rank, tdate desc
+                        ;"""
+
+        print(strSql)
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        training = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in Train audit")
+
+    # print(training)
+
+    return training
+
+
+def get_train_horse(i_rcity, i_rdate, i_rno):
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per,
+                                              max(r1), max(d1), max(c1), max(s1) , 
+                                              max(r2), max(d2), max(c2), max(s2) , 
+                                              max(r3), max(d3), max(c3), max(s3) , 
+                                              max(r4), max(d4), max(c4), max(s4) , 
+                                              max(r5), max(d5), max(c5), max(s5) , 
+                                              max(r6), max(d6), max(c6), max(s6) , 
+                                              max(r7), max(d7), max(c7), max(s7) , 
+                                              max(r8), max(d8), max(c8), max(s8) , 
+                                              max(r9), max(d9), max(c9), max(s9) , 
+                                              max(r10), max(d10), max(c10), max(s10) , 
+                                              max(r11), max(d11), max(c11), max(s11) , 
+                                              max(r12), max(d12), max(c12), max(s12) , 
+                                              max(r13), max(d13), max(c13), max(s13) , 
+                                              max(r14), max(d14), max(c14), max(s14) 
+                      from
+                      (
+                        select rdate, gate, b.rank, r_rank, r_pop, a.horse, b.jockey, b.trainer, b.rcity, rno, j_per, t_per, jt_per,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 1 DAY), '%Y%m%d'), rider, '' ) r1,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 2 DAY), '%Y%m%d'), rider, '' ) r2,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 3 DAY), '%Y%m%d'), rider, '' ) r3,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 4 DAY), '%Y%m%d'), rider, '' ) r4,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 5 DAY), '%Y%m%d'), rider, '' ) r5,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 6 DAY), '%Y%m%d'), rider, '' ) r6,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 7 DAY), '%Y%m%d'), rider, '' ) r7,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 8 DAY), '%Y%m%d'), rider, '' ) r8,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 9 DAY), '%Y%m%d'), rider, '' ) r9,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 10 DAY), '%Y%m%d'), rider, '' ) r10,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 11 DAY), '%Y%m%d'), rider, '' ) r11,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 12 DAY), '%Y%m%d'), rider, '' ) r12,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 13 DAY), '%Y%m%d'), rider, '' ) r13,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), rider, '' ) r14,
+                          
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 1 DAY), '%Y%m%d'), t_time, 0 ) d1,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 2 DAY), '%Y%m%d'), t_time, 0 ) d2,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 3 DAY), '%Y%m%d'), t_time, 0 ) d3,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 4 DAY), '%Y%m%d'), t_time, 0 ) d4,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 5 DAY), '%Y%m%d'), t_time, 0 ) d5,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 6 DAY), '%Y%m%d'), t_time, 0 ) d6,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 7 DAY), '%Y%m%d'), t_time, 0 ) d7,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 8 DAY), '%Y%m%d'), t_time, 0 ) d8,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 9 DAY), '%Y%m%d'), t_time, 0 ) d9,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 10 DAY), '%Y%m%d'), t_time, 0 ) d10,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 11 DAY), '%Y%m%d'), t_time, 0 ) d11,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 12 DAY), '%Y%m%d'), t_time, 0 ) d12,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 13 DAY), '%Y%m%d'), t_time, 0 ) d13,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), t_time, 0 ) d14,
+
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 1 DAY), '%Y%m%d'), canter, 0 ) c1,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 2 DAY), '%Y%m%d'), canter, 0 ) c2,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 3 DAY), '%Y%m%d'), canter, 0 ) c3,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 4 DAY), '%Y%m%d'), canter, 0 ) c4,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 5 DAY), '%Y%m%d'), canter, 0 ) c5,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 6 DAY), '%Y%m%d'), canter, 0 ) c6,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 7 DAY), '%Y%m%d'), canter, 0 ) c7,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 8 DAY), '%Y%m%d'), canter, 0 ) c8,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 9 DAY), '%Y%m%d'), canter, 0 ) c9,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 10 DAY), '%Y%m%d'), canter, 0 ) c10,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 11 DAY), '%Y%m%d'), canter, 0 ) c11,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 12 DAY), '%Y%m%d'), canter, 0 ) c12,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 13 DAY), '%Y%m%d'), canter, 0 ) c13,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), canter, 0 ) c14,
+
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 1 DAY), '%Y%m%d'), strong, 0 ) s1,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 2 DAY), '%Y%m%d'), strong, 0 ) s2,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 3 DAY), '%Y%m%d'), strong, 0 ) s3,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 4 DAY), '%Y%m%d'), strong, 0 ) s4,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 5 DAY), '%Y%m%d'), strong, 0 ) s5,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 6 DAY), '%Y%m%d'), strong, 0 ) s6,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 7 DAY), '%Y%m%d'), strong, 0 ) s7,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 8 DAY), '%Y%m%d'), strong, 0 ) s8,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 9 DAY), '%Y%m%d'), strong, 0 ) s9,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 10 DAY), '%Y%m%d'), strong, 0 ) s10,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 11 DAY), '%Y%m%d'), strong, 0 ) s11,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 12 DAY), '%Y%m%d'), strong, 0 ) s12,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 13 DAY), '%Y%m%d'), strong, 0 ) s13,
+                          if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), strong, 0 ) s14
+                        from train a ,
+                            ( select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per from The1.exp011 
+                              where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) ) b 
+                        where a.horse = b.horse
+                        and tdate between date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d') and rdate
+                      ) a
+                      group by rdate, gate, rank, r_rank, r_pop, horse, jockey, trainer
+                      order by rdate desc, rank, gate
+                        ;"""
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in BookListView")
+
+    # print(result)
+
+    return result
 
 
 def get_award(i_rdate, i_awardee):
@@ -635,6 +893,34 @@ def get_last2weeks(i_rdate, i_awardee):
     return weeks
 
 
+def get_last2weeks_loadin(i_rdate):
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+                  select 'J' flag, jockey, cast(load_in as decimal) from jockey_w 
+                  where wdate = ( select max(wdate) from jockey_w where wdate <= '""" + i_rdate + """' ) 
+                  union all 
+                  select 'T', trainer, year_1st from trainer_w 
+                  where wdate = ( select max(wdate) from trainer_w where wdate <= '""" + i_rdate + """' ) 
+                ; """
+
+        print(strSql)
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        results = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in 기승가능중량")
+
+    return results
+
+
 def get_status_training(i_rdate):
     try:
         cursor = connection.cursor()
@@ -687,6 +973,114 @@ def get_status_training(i_rdate):
                           if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 13 DAY), '%Y%m%d'), substr(t_time,3,2), 0 ) d13,
                           if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d'), substr(t_time,3,2), 0 ) d14
                         from training a right outer join  
+                        ( 
+                          select rcity, rdate, rday, rno, trainer, jockey, jt_per, gate, rank, r_rank, r_pop, horse, handycap
+                            from The1.expect 
+                          where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
+                        ) b on a.horse = b.horse
+                        and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                      ) a
+                      group by rcity, rdate, rday, rno, gate, rank, horse
+                      order by rcity, rdate, rday, rno, gate
+                        ;"""
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        training = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in BookListView")
+
+    # print(training)
+
+    return training
+
+
+def get_status_train(i_rdate):
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ select rcity, rdate, rno, rday, gate, rank, r_rank, r_pop, horse, trainer, jockey, jt_per, handycap,
+                                              max(r1), max(d1), max(c1), max(s1), 
+                                              max(r2), max(d2), max(c2), max(s2), 
+                                              max(r3), max(d3), max(c3), max(s3), 
+                                              max(r4), max(d4), max(c4), max(s4), 
+                                              max(r5), max(d5), max(c5), max(s5), 
+                                              max(r6), max(d6), max(c6), max(s6), 
+                                              max(r7), max(d7), max(c7), max(s7), 
+                                              max(r8), max(d8), max(c8), max(s8), 
+                                              max(r9), max(d9), max(c9), max(s9), 
+                                              max(r10), max(d10), max(c10), max(s10), 
+                                              max(r11), max(d11), max(c11), max(s11), 
+                                              max(r12), max(d12), max(c12), max(s12), 
+                                              max(r13), max(d13), max(c13), max(s13), 
+                                              max(r14), max(d14), max(c14), max(s14)
+                      from
+                      (
+                        select b.rcity, b.rdate, b.rday, b.rno, b.gate, b.rank, b.r_rank, b.r_pop, a.horse, b.trainer, b.jockey, b.jt_per, b.handycap,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 1 DAY), '%Y%m%d'), rider, '' ) r1,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 DAY), '%Y%m%d'), rider, '' ) r2,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d'), rider, '' ) r3,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 4 DAY), '%Y%m%d'), rider, '' ) r4,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 5 DAY), '%Y%m%d'), rider, '' ) r5,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 6 DAY), '%Y%m%d'), rider, '' ) r6,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 7 DAY), '%Y%m%d'), rider, '' ) r7,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 8 DAY), '%Y%m%d'), rider, '' ) r8,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 9 DAY), '%Y%m%d'), rider, '' ) r9,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 10 DAY), '%Y%m%d'), rider, '' ) r10,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 11 DAY), '%Y%m%d'), rider, '' ) r11,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 12 DAY), '%Y%m%d'), rider, '' ) r12,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 13 DAY), '%Y%m%d'), rider, '' ) r13,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d'), rider, '' ) r14,
+                          
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 1 DAY), '%Y%m%d'), t_time, 0 ) d1,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 DAY), '%Y%m%d'), t_time, 0 ) d2,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d'), t_time, 0 ) d3,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 4 DAY), '%Y%m%d'), t_time, 0 ) d4,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 5 DAY), '%Y%m%d'), t_time, 0 ) d5,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 6 DAY), '%Y%m%d'), t_time, 0 ) d6,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 7 DAY), '%Y%m%d'), t_time, 0 ) d7,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 8 DAY), '%Y%m%d'), t_time, 0 ) d8,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 9 DAY), '%Y%m%d'), t_time, 0 ) d9,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 10 DAY), '%Y%m%d'), t_time, 0 ) d10,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 11 DAY), '%Y%m%d'), t_time, 0 ) d11,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 12 DAY), '%Y%m%d'), t_time, 0 ) d12,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 13 DAY), '%Y%m%d'), t_time, 0 ) d13,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d'), t_time, 0 ) d14,
+
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 1 DAY), '%Y%m%d'), canter, 0 ) c1,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 DAY), '%Y%m%d'), canter, 0 ) c2,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d'), canter, 0 ) c3,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 4 DAY), '%Y%m%d'), canter, 0 ) c4,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 5 DAY), '%Y%m%d'), canter, 0 ) c5,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 6 DAY), '%Y%m%d'), canter, 0 ) c6,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 7 DAY), '%Y%m%d'), canter, 0 ) c7,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 8 DAY), '%Y%m%d'), canter, 0 ) c8,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 9 DAY), '%Y%m%d'), canter, 0 ) c9,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 10 DAY), '%Y%m%d'), canter, 0 ) c10,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 11 DAY), '%Y%m%d'), canter, 0 ) c11,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 12 DAY), '%Y%m%d'), canter, 0 ) c12,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 13 DAY), '%Y%m%d'), canter, 0 ) c13,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d'), canter, 0 ) c14,
+                          
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 1 DAY), '%Y%m%d'), strong, 0 ) s1,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 DAY), '%Y%m%d'), strong, 0 ) s2,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d'), strong, 0 ) s3,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 4 DAY), '%Y%m%d'), strong, 0 ) s4,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 5 DAY), '%Y%m%d'), strong, 0 ) s5,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 6 DAY), '%Y%m%d'), strong, 0 ) s6,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 7 DAY), '%Y%m%d'), strong, 0 ) s7,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 8 DAY), '%Y%m%d'), strong, 0 ) s8,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 9 DAY), '%Y%m%d'), strong, 0 ) s9,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 10 DAY), '%Y%m%d'), strong, 0 ) s10,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 11 DAY), '%Y%m%d'), strong, 0 ) s11,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 12 DAY), '%Y%m%d'), strong, 0 ) s12,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 13 DAY), '%Y%m%d'), strong, 0 ) s13,
+                          if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d'), strong, 0 ) s14
+                        from train a right outer join  
                         ( 
                           select rcity, rdate, rday, rno, trainer, jockey, jt_per, gate, rank, r_rank, r_pop, horse, handycap
                             from The1.expect 
@@ -810,7 +1204,7 @@ def get_print_prediction(i_rcity, i_rdate):
         strSql = """
                 select rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex,
                       ( select complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = 5 ) complex5, 
-                      ( select i_complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = a.rank + 1 ) - i_complex
+                      ( select i_complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = a.rank + 1 ) - i_complex, cast(jt_per as decimal) jt_per
                   from expect a
                 where rcity = '""" + i_rcity + """'
                   and rdate = '""" + i_rdate + """' 
@@ -830,3 +1224,59 @@ def get_print_prediction(i_rcity, i_rdate):
     # print(type(weeks[0]))
 
     return race, expects
+
+
+def get_jockey_trend(i_rcity, i_rdate, i_rno):
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+              select distinct wdate
+              from
+              (
+                SELECT wdate, jockey, year_per
+                FROM The1.jockey_w 
+                where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 100 DAY), '%Y%m%d') and '""" + i_rdate + """'
+              ) a  right outer join  The1.expect b  on a.jockey = b.jockey 
+              where b.rdate = '""" + i_rdate + """' and b.rcity = '""" + i_rcity + """' and b.rno = """ + str(i_rno) + """
+              order by  a.wdate desc
+              ; """
+
+        print(strSql)
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        wdates = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in Jockey Trend Weekend")
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+              select b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, a.wdate, a.year_per
+              from
+              (
+                SELECT wdate, jockey, year_per
+                FROM The1.jockey_w 
+                where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 100 DAY), '%Y%m%d') and '""" + i_rdate + """'
+              ) a  right outer join  The1.expect b  on a.jockey = b.jockey 
+              where b.rdate = '""" + i_rdate + """' and b.rcity = '""" + i_rcity + """' and b.rno = """ + str(i_rno) + """
+              order by b.rank, a.wdate desc
+              ; """
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in Jockey Trend")
+
+    return wdates, result

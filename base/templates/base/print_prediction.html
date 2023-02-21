@@ -198,22 +198,22 @@
             </td>
 
 
-            {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex in expects %}  
+            {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex, jt_per in expects %}  
             {% if r_rcity == rcity and r_rdate == rdate and r_rno == rno %}
             
             <td align="center" style="font-family: Arial; color: var(--color-main);">
 
-              {% if r_pop >= 70 %}
-              <div style="font-size:x-small; font-family: Arial; color:var(--color-r1); font-weight: 550;">{{r_pop}}</div>
-              {% elif r_pop >= 10 and r_pop < 80 %}
-              <div style="font-size:x-small; font-family: Arial; color:var(--color-r2); font-weight: 550;">{{r_pop}}</div>
-              {% elif r_pop >= 1 and r_pop < 10 %}
-              <div style="font-size:x-small; font-family: Arial; color:var(--color-r3); font-weight: 550;">{{r_pop}}</div>
+              {% if jockey|slice:"-2:" == jname1|slice:"-2:" %}
+              <div style="font-size:x-small; color: var(--color-r1); font-weight: 550;">{{jockey|slice:"-2:"}}</div>
+              {% elif jockey|slice:"-2:" == jname2|slice:"-2:" %}
+              <div style="font-size:x-small; color: var(--color-r2); font-weight: 550;">{{jockey|slice:"-2:"}}</div>
+              {% elif jockey|slice:"-2:" == jname3|slice:"-2:" %}
+              <div style="font-size:x-small; color: var(--color-r3); font-weight: 550;">{{jockey|slice:"-2:"}}</div>
               {% else %}
-              <div style="font-size:x-small; font-family: Arial; color:var(--color-gray);">{{r_pop}}</div>
+              <div style="font-size:x-small; color: var(--color-dark)">{{jockey|slice:"-2:"}}</div>
               {% endif %}
 
-              <div align="center" style="font-size: x-large ">
+              <div align="center" style="font-size: x-large; padding:0rem ">
                 {% if rank == 1 %}
                 <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550;">
                   {{gate}}
@@ -246,16 +246,6 @@
             </td>
             <td align="center">
               
-              {% if jockey|slice:"-2:" == jname1|slice:"-2:" %}
-                <div style="font-size:x-small; color: var(--color-r1); font-weight: 550;">{{jockey|slice:"-2:"}}</div>
-              {% elif jockey|slice:"-2:" == jname2|slice:"-2:" %}
-                <div style="font-size:x-small; color: var(--color-r2); font-weight: 550;">{{jockey|slice:"-2:"}}</div>
-              {% elif jockey|slice:"-2:" == jname3|slice:"-2:" %}
-                <div style="font-size:x-small; color: var(--color-r3); font-weight: 550;">{{jockey|slice:"-2:"}}</div>
-              {% else %}
-                <div style="font-size:x-small; color: var(--color-gray)">{{jockey|slice:"-2:"}}</div>
-              {% endif %}
-
               {% if handycap|sub:i_prehandy >= 10 %}
                 <div style="font-size:x-small;">-</div>
               {% elif handycap|sub:i_prehandy > 0 and handycap|sub:i_prehandy < 10 %}
@@ -266,21 +256,36 @@
                 <div style="font-size:x-small; font-family: Arial; color:red; font-weight: 550;">{{handycap|sub:i_prehandy|mul:-1}}</div>
               {% endif %}
 
+              {% if jt_per >= 50 %}
+              <div style="font-size:x-small; font-family: Arial; color:var(--color-r1); font-weight: 400;">{{jt_per}}</div>
+              {% elif jt_per >= 30 and jt_per < 50 %}
+              <div style="font-size:x-small; font-family: Arial; color:var(--color-r2); font-weight: 400;">{{jt_per}}</div>
+              {% elif jt_per >= 10 and jt_per < 30 %}
+              <div style="font-size:x-small; font-family: Arial; color:var(--color-r5); font-weight: 400;">{{jt_per}}</div>
+              {% else %}
+              <div style="font-size:x-small; font-family: Arial; color:var(--color-gray);">{{jt_per}}</div>
+              {% endif %}
+              <!-- {% if r_pop >= 70 %}
+              <div style="font-size:x-small; font-family: Arial; color:var(--color-r1); font-weight: 550;">{{r_pop}}</div>
+              {% elif r_pop >= 10 and r_pop < 80 %}
+              <div style="font-size:x-small; font-family: Arial; color:var(--color-r2); font-weight: 550;">{{r_pop}}</div>
+              {% elif r_pop >= 1 and r_pop < 10 %}
+              <div style="font-size:x-small; font-family: Arial; color:var(--color-r3); font-weight: 550;">{{r_pop}}</div>
+              {% else %}
+              <div style="font-size:x-small; font-family: Arial; color:var(--color-gray);">{{r_pop}}</div>
+              {% endif %} -->
+
               {% if rank > 90 %}
                 <div style="font-size:x-small">(신)</div>
               {% else %}
                 {% if i_complex == None %}
                 <div style="font-size:x-small">&nbsp;</div>
                 {%else%}
-                <!-- <div style="font-size:x-small; font-family: Arial;">{{complex|slice:"3:6"}}</div> -->
-                <!-- <div style="font-size:x-small">{{i_complex|floatformat:0}}</div> -->
-                {% if i_complex < 10 %}
-                <div style="font-size:x-small; color: red;  font-weight: 550;">{{i_complex|floatformat:0}}</div>
-                {%else%}
-                <div style="font-size:x-small; color: blue; font-weight: 550;">{{i_complex|floatformat:0}}</div>
-                {%endif%}
-                <!-- <progress value={{i_complex|floatformat:0}} max="100" style="width: 1.3em"></progress> -->
-
+                  {% if i_complex < 10 %}
+                  <div style="font-size:x-small; color: red;  font-weight: 550;">{{i_complex|floatformat:0}}</div>
+                  {%else%}
+                  <div style="font-size:x-small; color: blue; font-weight: 550;">{{i_complex|floatformat:0}}</div>
+                  {%endif%}
                 {% endif %}
               {% endif %}
             </td>
@@ -289,8 +294,8 @@
             {% endif %}
             {% endfor %}
             <td align="center" style="border-left: 1px solid #444444;">
-              <div style="font-size:x-small;">복</div>
-              <div style="font-size:x-small;">삼</div>
+              <div style="font-size:x-small; padding: 0.1rem;">복</div>
+              <div style="font-size:x-small; padding: 0.1rem;">삼</div>
             </td>
 
           </tr>

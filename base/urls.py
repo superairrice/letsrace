@@ -44,6 +44,8 @@ urlpatterns = [
          views.predictionRace, name="prediction_race"),  # id 전달
     path('race_result/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>',
          views.raceResult, name="race_result"),  # id 전달
+    path('race_train/<str:rcity>/<str:rdate>/<int:rno>',
+         views.raceTrain, name="race_train"),  # id 전달
 
 
     path('print_prediction/', views.printPrediction,
@@ -56,7 +58,10 @@ urlpatterns = [
 
     path('data_management/', views.dataManagement,
          name="data_management"),  # id 전달
+    path('data_breakingnews/', views.dataBreakingNews,
+         name="data_breakingnews"),  # id 전달
     path('krafile_input/', views.krafileInput, name="krafile_input"),  # id 전달
+    path('breakingnews_input/', views.BreakingNewsInput, name="breakingnews_input"),  # id 전달
 
     path('pyscript_test/', views.pyscriptTest, name="pyscript_test"),  # id 전달
 

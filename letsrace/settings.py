@@ -24,9 +24,8 @@ SECRET_KEY = 'django-insecure-#5avbtnbsu4-))u-lddtuvxhnf#%2p9x*cvjr3pmna^tvk7_6^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.compute.amazonaws.com', '127.0.0.1',
-                 'localhost', '43.201.100.201', '0.0.0.0']
-
+ALLOWED_HOSTS = ['.compute.amazonaws.com', '127.0.0.1', 'thethe9.com',
+                 'localhost', '0.0.0.0']
 
 
 # Application definition
@@ -68,6 +67,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 INTERNAL_IPS = [

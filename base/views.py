@@ -8,15 +8,12 @@ from django.contrib.auth.decorators import login_required
 from django.db import connection
 from django.db.models import Count, Max, Min, Q
 from django.http import HttpResponse
-from django.http.request import QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
-from django_pivot import pivot
-from pymysql import ROWID
 
-from base.data_management import get_file_contents, get_kradata, get_krafile
+from base.data_management import get_breakingnews, get_file_contents, get_kradata, get_krafile, krafile_convert
 
-from base.mysqls import (get_award, get_award_race, get_judged, get_judged_horse, get_judged_jockey, get_paternal,
-                         get_paternal_dist, get_pedigree, get_popularity_rate, get_print_prediction, get_race, get_race_center_detail_view,
+from base.mysqls import (get_award, get_award_race, get_jockey_trend, get_judged, get_judged_horse, get_judged_jockey, get_last2weeks_loadin, get_paternal,
+                         get_paternal_dist, get_pedigree, get_popularity_rate, get_print_prediction, get_race, get_race_center_detail_view, get_status_train, get_train, get_train_audit, get_train_horse,
                          get_training, get_status_training, get_weeks, get_last2weeks)
 from letsrace.settings import KRAFILE_ROOT
 
@@ -28,6 +25,8 @@ from .models import (Award, Exp010, Exp011, Exp012, JockeyW, JtRate, Message,
                      RaceResult, Racing, Rec010, RecordS, Room, Topic, User)
 
 from django.core.files.storage import FileSystemStorage  # 파일저장
+
+from django.views.decorators.csrf import csrf_exempt
 
 
 def loginPage(request):
@@ -420,7 +419,11 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         rcity, rdate, rno)                # 부마 거리별 3착 성적
 
     pedigree = get_pedigree(rcity, rdate, rno)                          # 병력
-    training = get_training(rcity, rdate, rno)
+    # training = get_training(rcity, rdate, rno)
+    # train = get_train(rcity, rdate, rno)
+    train = get_train_horse(rcity, rdate, rno)
+
+    h_audit = get_train_audit(rcity, rdate, rno)
 
     popularity_rate = get_popularity_rate(
         rcity, rdate, rno)            # 인기순위별 승률
@@ -428,6 +431,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     judged = get_judged(rcity, rdate, rno)
     judged_horse = get_judged_horse(rcity, rdate, rno)
     judged_jockey = get_judged_jockey(rcity, rdate, rno)
+    wdates, trend_j = get_jockey_trend(rcity, rdate, rno)
 
     # awards_j = get_award_race(rcity, rdate, rno, i_awardee='jockey')
 
@@ -447,7 +451,11 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
                # 'hr_pedigree': hr_pedigree,
 
                'popularity_rate': popularity_rate,
-               'training': training,
+               #    'training': training,
+               'train': train,
+               'h_audit': h_audit,
+               'wdates': wdates,
+               'trend_j': trend_j,
                }
 
     return render(request, 'base/prediction_race.html', context)
@@ -617,19 +625,43 @@ def raceResult(request, rcity, rdate, rno, hname, awardee):
     compare_r = records.aggregate(Min('i_s1f'), Min('i_g1f'), Min(
         'i_g2f'), Min('i_g3f'), Max('handycap'), Max('rating'))
 
-    judged = get_judged(rcity, rdate, rno)
+    # judged = get_judged(rcity, rdate, rno)
+    judged_horse = get_judged_horse(rcity, rdate, rno)
+    # judged_jockey = get_judged_jockey(rcity, rdate, rno)
 
-    training = get_training(rcity, rdate, rno)
+    pedigree = get_pedigree(rcity, rdate, rno)
+    # training = get_training(rcity, rdate, rno)
+    train = get_train_horse(rcity, rdate, rno)
+    h_audit = get_train_audit(rcity, rdate, rno)
+
+    train = sorted(train, key=lambda x: x[5] or 99)
+    pedigree = sorted(pedigree, key=lambda x: x[2] or 99)
+    # print(h_audit)
 
     context = {'records': records,
                'r_condition': r_condition,
-               'training': training,
+               #    'training': training,
+               'train': train,
                'hr_records': hr_records,
                'compare_r': compare_r, 'hname': hname,
-               'judged': judged
+               'pedigree': pedigree,
+               'h_audit': h_audit,
+               'judged_horse': judged_horse,
                }
 
     return render(request, 'base/race_result.html', context)
+
+
+def raceTrain(request, rcity, rdate, rno):
+
+    train = get_train_horse(rcity, rdate, rno)
+
+    context = {
+        'train': train,
+
+    }
+
+    return render(request, 'base/race_train.html', context)
 
 
 def printPrediction(request):
@@ -668,6 +700,9 @@ def printPrediction(request):
 def awardStatusTrainer(request):
 
     q = request.GET.get('q') if request.GET.get('q') != None else ''
+    jname1 = request.GET.get('j1') if request.GET.get('j1') != None else ''
+    jname2 = request.GET.get('j2') if request.GET.get('j2') != None else ''
+    jname3 = request.GET.get('j3') if request.GET.get('j3') != None else ''
 
     if q == '':
 
@@ -706,9 +741,12 @@ def awardStatusTrainer(request):
             messages.warning(request, "선택된 날짜가 금요일이 아닙니다.")
 
     weeks = get_last2weeks(friday, i_awardee='trainer')
-    status = get_status_training(rdate)
+    loadin = get_last2weeks_loadin(friday)
+    # status = get_status_training(rdate)
+    status = get_status_train(rdate)
 
-    context = {'weeks': weeks, 'status': status, 'fdate': fdate}
+    context = {'weeks': weeks, 'loadin': loadin, 'status': status, 'fdate': fdate,
+               'jname1': jname1, 'jname2': jname2, 'jname3': jname3}
 
     return render(request, 'base/award_status_trainer.html', context)
 
@@ -757,12 +795,11 @@ def awardStatusJockey(request):
             messages.warning(request, "선택된 날짜가 금요일이 아닙니다.")
 
     weeks = get_last2weeks(friday, i_awardee='jockey')
-    status = get_status_training(rdate)
+    loadin = get_last2weeks_loadin(friday)
+    # status = get_status_training(rdate)
+    status = get_status_train(rdate)
 
-
-    print(fdate)
-
-    context = {'weeks': weeks, 'status': status, 'fdate': fdate,
+    context = {'weeks': weeks, 'loadin': loadin, 'status': status, 'fdate': fdate,
                'jname1': jname1, 'jname2': jname2, 'jname3': jname3}
 
     return render(request, 'base/award_status_jockey.html', context)
@@ -812,19 +849,22 @@ def dataManagement(request):
 
     if request.method == 'POST':
         myDict = dict(request.POST)
-        print((myDict['rcheck']))
 
-        for fname in myDict['rcheck']:
-            if fname[-12:-10] == '11':
-                print(fname[-12:-10])
+        krafile_convert(myDict['rcheck'])
 
-            # file = open(fname, "r")
-            # while True:
-            #     line = file.readline()
-            #     if not line:
-            #         break
-            #     print(line.strip())
-            # file.close()
+        # for fname in myDict['rcheck']:
+        #     print(fname)
+
+        #     if fname[-12:-10] == '11':
+        #         print(fname[-12:-10])
+
+        #     file = open(fname, "r")
+        #     while True:
+        #         line = file.readline()
+        #         if not line:
+        #             break
+        #         print(line.strip())
+        #     file.close()
 
     context = {'q1': q1, 'q2': q2, 'fcode': fcode, 'fstatus': fstatus,
                'krafile': krafile,
@@ -834,26 +874,98 @@ def dataManagement(request):
     return render(request, 'base/data_management.html', context)
 
 
+def dataBreakingNews(request):
+
+    rcity = request.GET.get('rcity') if request.GET.get(
+        'rcity') != None else ''
+    q1 = request.GET.get('q1') if request.GET.get('q1') != None else ''
+    q2 = request.GET.get('q2') if request.GET.get('q2') != None else ''
+    title = request.GET.get('title') if request.GET.get(
+        'title') != None else ''
+
+    if q1 == '':
+
+        friday = Racing.objects.values('rdate').distinct()[
+            0]['rdate']          # weeks 기준일
+        sunday = Racing.objects.values('rdate').distinct()[
+            2]['rdate']          # weeks 기준일
+
+        rdate1 = friday[0:4] + friday[4:6] + friday[6:8]
+        rdate2 = sunday[0:4] + sunday[4:6] + sunday[6:8]
+
+        fdate1 = friday[0:4] + '-' + friday[4:6] + '-' + friday[6:8]
+        fdate2 = sunday[0:4] + '-' + sunday[4:6] + '-' + sunday[6:8]
+
+    else:
+
+        rdate1 = q1[0:4] + q1[5:7] + q1[8:10]
+        rdate2 = q2[0:4] + q2[5:7] + q2[8:10]
+
+        fdate1 = q1[0:4] + '-' + q1[5:7] + '-' + q1[8:10]
+        fdate2 = q2[0:4] + '-' + q2[5:7] + '-' + q2[8:10]
+
+    breakingnews = get_breakingnews(rcity, rdate1, rdate2, title)
+    print(breakingnews)
+    if breakingnews:
+        messages.warning(
+            request, '총 ' + str(len(breakingnews)) + '건이 검색되었습니다.')
+    else:
+        messages.warning(request, "검색된 결과가 없습니다.")
+    # kradata = get_kradata(rcity, rdate1, rdate2, title, fstatus)
+
+    # print(breakingnews)
+    # print(kradata)
+
+    if request.method == 'POST':
+        myDict = dict(request.POST)
+
+        # breakingnews_convert(myDict['rcheck'])
+
+        # for fname in myDict['rcheck']:
+        #     print(fname)
+
+        #     if fname[-12:-10] == '11':
+        #         print(fname[-12:-10])
+
+        #     file = open(fname, "r")
+        #     while True:
+        #         line = file.readline()
+        #         if not line:
+        #             break
+        #         print(line.strip())
+        #     file.close()
+
+    context = {'q1': q1, 'q2': q2, 'title': title,
+               'breakingnews': breakingnews,
+               'fdate1': fdate1, 'fdate2': fdate2}
+
+    return render(request, 'base/data_breakingnews.html', context)
+
+
+@csrf_exempt
 def krafileInput(request):
     request_files = request.FILES.getlist(
-        'filename[]') if 'filename[]' in request.FILES else None
+        'image_uploads') if 'image_uploads' in request.FILES else None
 
     if request_files:
         # save attached file
         for request_file in request_files:
             # create a new instance of FileSystemStorage
             fs = FileSystemStorage()
+
             fname = request_file.name
 
-            if fname[0:4] < '2018':
-                os.makedirs(KRAFILE_ROOT / '2022이전', exist_ok=True)
-                fs.location = KRAFILE_ROOT / '2022이전'
+            if fname[-4:] == 'xlsx':
+                os.makedirs(KRAFILE_ROOT / 'xlsx', exist_ok=True)
+                fs.location = KRAFILE_ROOT / 'xlsx'
             else:
-                os.makedirs(KRAFILE_ROOT /
-                            fname[0:4], exist_ok=True)
-                fs.location = KRAFILE_ROOT / fname[0:4]
-
-            print(str(fs.location) + '/' + fname)
+                if fname[0:4] < '2018':
+                    os.makedirs(KRAFILE_ROOT / '2022이전', exist_ok=True)
+                    fs.location = KRAFILE_ROOT / '2022이전'
+                else:
+                    os.makedirs(KRAFILE_ROOT /
+                                fname[0:4], exist_ok=True)
+                    fs.location = KRAFILE_ROOT / fname[0:4]
 
             if fs.exists(fname):
                 fs.delete(fname)
@@ -883,13 +995,25 @@ def krafileInput(request):
             # # the fileurl variable now contains the url to the file. This can be used to serve the file when needed.
             # fileurl = fs.url(file)
 
-            fcontent = request_file.read().decode(
-                'euc-kr', errors='strict')       # 한글 decode
+            if fname[-4:] == 'xlsx':
+                print(fname[-4:])
 
-            letter = open(str(fs.location) + '/' +
-                          fname, 'w')           # 새 파일 열기
-            letter.write(fcontent)
-            letter.close()                                    # 닫기
+                fdate = fname[-19:-11]
+                fcode = 'c1'
+
+                file = fs.save(request_file.name, request_file)
+                # shutil.copy(request_file, str(fs.location) + '/')
+            else:
+
+                fdate = fname[0:8]
+                fcode = fname[-12:-10]
+                fcontent = request_file.read().decode(
+                    'euc-kr', errors='strict')       # 한글 decode
+
+                letter = open(str(fs.location) + '/' +
+                              fname, 'w')           # 새 파일 열기
+                letter.write(fcontent)
+                letter.close()                                    # 닫기
 
             try:
                 cursor = connection.cursor()
@@ -900,14 +1024,13 @@ def krafileInput(request):
                         VALUES
                         ( '""" + fname + """',
                         '""" + str(fs.location) + '/' + fname + """',
-                        '""" + fname[0:8] + """',
-                        '""" + fname[-12:-10] + """',
+                        '""" + fdate + """',
+                        '""" + fcode + """',
                         'I',
                         """ + 'NOW()' + """
                         ) ; """
 
                 # print(strSql)
-                print(fname[-12:-10])
                 r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
                 result = cursor.fetchone()
                 # result = cursor.fetchall()
@@ -922,6 +1045,70 @@ def krafileInput(request):
     context = {'request_files': request_files}
 
     return render(request, 'base/krafile_input.html', context)
+
+
+@csrf_exempt
+def BreakingNewsInput(request):
+
+    rcity = request.GET.get('rcity') if request.GET.get(
+        'rcity') != None else ''
+    rdate = request.GET.get('rdate') if request.GET.get(
+        'rdate') != None else ''
+    title = request.GET.get('title') if request.GET.get(
+        'title') != None else ''
+    news = request.GET.get('news') if request.GET.get(
+        'news') != None else ''
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = """
+                DELETE FROM breakingnews
+                WHERE rcity = '""" + rcity + """' and rdate = '""" + rdate + """' and title = '""" + title + """'
+                ; """
+
+        # print(strSql)
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        result = cursor.fetchone()
+        # result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed deleting in Breaking News")
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = """
+                INSERT INTO breakingnews
+                ( rcity, rdate, title, news, in_date )
+                VALUES
+                ( '""" + rcity + """',
+                '""" + rdate + """',
+                '""" + title + """',
+                '""" + news + """',
+                """ + 'NOW()' + """
+                ) ; """
+
+        # print(strSql)
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        result = cursor.fetchone()
+        # result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed inserting in Breaking News")
+
+    context = {'rdate': rdate}
+
+    return render(request, 'base/breakingnews_input.html', context)
 
 
 def pyscriptTest(request):
