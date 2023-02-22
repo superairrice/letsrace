@@ -192,13 +192,14 @@
               <th rowspan="2"><span class="visible-big">g3f</span></th>
               <th rowspan="2"><span class="visible-big">g2f</span></th>
               <th rowspan="2"><span class="visible-big">g1f</span></th>
-              <th rowspan="2"><span class="visible-big">경주기록</span></th>
+              <th rowspan="1"><span class="visible-big">경주기록</span></th>
+              <th rowspan="1"><span class="visible-big">인기</span></th>
+              <th><span class="visible-big">단식</span></th>
+
               <th rowspan="2"><span class="visible-big">착차</span></th>
               <th rowspan="2"><span class="visible-big">코너전개</span></th>
-              <th><span class="visible-big">단식</span></th>
-              <th rowspan="2"><span class="visible-big">인기<br>순위</span></th>
-              <th rowspan="1" colspan="2"><span class="visible-big">프로그램</span></th>
-              <th rowspan="2" colspan="1"><span class="visible-big">장비</span></th>
+              
+              <th rowspan="2" colspan="1" width="20%"><span class="visible-big">장비</span></th>
 
             </tr>
             <tr>
@@ -207,9 +208,12 @@
               
               <th><span class="visible-big">조교사</span></th>
               <th><span class="visible-big">Rate</span></th>
+              <th><span class="visible-big">프로그램</span></th>
+              <th><span class="visible-big">예상</span></th>
+
               <th><span class="visible-big">연식</span></th>
-              <th><span class="visible-big">R</span></th>
-              <th><span class="visible-big">기록</span></th>
+
+
               
             </tr>
         
@@ -269,14 +273,14 @@
                 </div>
                 
               </td>
-              <td align="center" style="font-family: Arial; font-size: 1.2rem ">
+              <td align="center" style="font-size: 1.2rem ">
                 
                 {% if r.horse == hname %}
-                <div style="text-align:left; color: yellow; font-size: 1.3rem; font-style: italic;">{{r.h_weight}}㎏ {{r.w_change}}</div>
+                <div style="font-family: Arial; text-align:left; color: yellow; font-size: 1.3rem; font-style: italic;">{{r.h_weight}}㎏ {{r.w_change}}</div>
                 {%else%}
-                <div style="text-align:left">{{r.h_weight}}㎏ {{r.w_change}}</div>
+                <div style="font-family: Arial; text-align:left">{{r.h_weight}}㎏ {{r.w_change}}</div>
                 {%endif%}
-                <div style="text-align:right; color:var(--color-gray)">{{r.handycap}}㎏</div>
+                <div style="font-family: Arial; text-align:right; color:var(--color-gray)">{{r.handycap}}㎏</div>
                 
               </td>
 
@@ -288,9 +292,10 @@
                 {%endif%}
                 <div style="text-align:right; color: var(--color-gray); font-size: 1.3rem;">{{r.trainer}}</div>
               </td>
+
               <td align="right" style="font-size: 1.3rem ">
                 {% if r.horse == hname %}
-                <div style="color: yellow; font-size: 1.3rem; font-style: italic;">{{r.jockey_w|floatformat:1}}</div>
+                <div style="font-family: Arial; color: yellow; font-size: 1.3rem; font-style: italic;">{{r.jockey_w|floatformat:1}}</div>
                 {%else%}
                 <div style="font-family: Arial;">{{r.jockey_w|floatformat:1}}</div>
                 {%endif%}
@@ -314,8 +319,7 @@
               <td>-</td>
               <td>-</td>
               <td>-</td>
-              <td>-</td>
-              <td>-</td>
+   
               {%else%}
               
               <td align="center" style="font-size: 1.3rem ">
@@ -350,25 +354,113 @@
               <td align="center">
                 <div style=" font-size: 1.3rem ">
                   {% if r.horse == hname %}
-                  <span style="color:yellow; font-weight:700; font-family: Arial; font-style: italic;">{{r.record|slice:"0:1"}}&nbsp;{{r.record|slice:"1:6"}}</span>
+                  <span style="font-family: Arial; color:yellow; font-weight:700; font-family: Arial; font-style: italic;">{{r.record|slice:"0:1"}}&nbsp;{{r.record|slice:"1:6"}}</span>
                   {% else %}
-                  <span>{{r.record|slice:"0:1"}}&nbsp;{{r.record|slice:"1:6"}}</span>
+                  <span style="font-family: Arial;">{{r.record|slice:"0:1"}}&nbsp;{{r.record|slice:"1:6"}}</span>
                   {% endif %}
                 </div>
                 {% if r.r_record == None %}
                 {% else %}
-                <div style="font-family: Arial; font-size: 1.1rem; color:var(--color-gray);text-align: right;">{{r.r_record}}</div>
+                <div style="font-family: Arial; font-family: Arial; font-size: 1.1rem; color:var(--color-gray);text-align: right;">{{r.r_record}}</div>
                 {%endif%}
                 
+                {% if r.p_rank == 1 %}
+                <div style="font-family: Arial; font-family: Arial; font-size: 1.15rem; color:var(--color-r1);text-align: right;">{{r.p_record}}</div>
+                {% elif r.p_rank == 2 %}
+                <div style="font-family: Arial; font-family: Arial; font-size: 1.1rem; color:var(--color-r2);text-align: right;">{{r.p_record}}</div>
+                {% elif r.p_rank == 3 %}
+                <div style="font-family: Arial; font-family: Arial; font-size: 1.1rem; color:var(--color-r3);text-align: right;">{{r.p_record}}</div>
+                {% elif r.p_rank == 4 %}
+                <div style="font-family: Arial; font-family: Arial; font-size: 1.1rem; color:var(--color-r4);text-align: right;">{{r.p_record}}</div>
+                {% elif r.p_rank == 5 %}
+                <div style="font-family: Arial; font-family: Arial; font-size: 1.1rem; color:var(--color-r5);text-align: right;">{{r.p_record}}</div>
+                {% else %}
+                <div style="font-family: Arial; font-family: Arial; font-size: 1.1rem; color:var(--color-gray);text-align: right;">{{r.p_record}}</div>
+                {% endif %}
               </td>
 
-              <td align="center" style="font-size: 1.3rem;">
+              <td align="center">
+                
+                  {% if r.pop_rank == 1 %}
+                  <div style="font-weight:700; color:var(--color-r1); font-style: italic; font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif;">
+                    {% if r.pop_rank < 10 %}{{r.pop_rank}} {% elif r.pop_rank > 20 %}-{% else %} {{r.pop_rank}} {% endif %}
+                  </div>
+                  {% elif r.pop_rank == 2 %}
+                  <div style="font-weight:700; color:var(--color-r2); font-style: italic; font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif;">
+                    {% if r.pop_rank < 10 %}{{r.pop_rank}} {% elif r.pop_rank > 20 %}-{% else %} {{r.pop_rank}} {% endif %}
+                  </div>
+                  {% elif r.pop_rank == 3 %}
+                  <div style="font-weight:700; color:var(--color-r3); font-style: italic; font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif;">
+                    {% if r.pop_rank < 10 %}{{r.pop_rank}} {% elif r.pop_rank > 20 %}-{% else %} {{r.pop_rank}} {% endif %}
+                  </div>
+                  {% elif r.pop_rank == 4 %}
+                  <div style="font-weight:700; color:var(--color-r4); font-style: italic; font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif;">
+                    {% if r.pop_rank < 10 %}{{r.pop_rank}} {% elif r.pop_rank > 20 %}-{% else %} {{r.pop_rank}} {% endif %}
+                  </div>
+                  {% elif r.pop_rank == 5 %}
+                  <div style="font-weight:700; color:var(--color-r5); font-style: italic; font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif;">
+                    {% if r.pop_rank < 10 %}{{r.pop_rank}} {% elif r.pop_rank > 20 %}-{% else %} {{r.pop_rank}} {% endif %}
+                  </div>
+                  {% else %}
+                  <div style="font-weight:400; font-style: italic; font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif;">
+                    {% if r.pop_rank < 10 %}{{r.pop_rank}} {% elif r.pop_rank > 20 %}-{% else %} {{r.pop_rank}} {% endif %}
+                  </div>
+                  {% endif %}
+
+                  {% if r.p_rank == 1 %}
+                  <div style="font-weight:700; color:var(--color-r1); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: right;">
+                    {% if r.p_rank < 10 %}{{r.p_rank}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_rank}} {% endif %}
+                  </div>
+                  {% elif r.p_rank == 2 %}
+                  <div style="font-weight:700; color:var(--color-r2); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: right;">
+                    {% if r.p_rank < 10 %}{{r.p_rank}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_rank}} {% endif %}
+                  </div>
+                  {% elif r.p_rank == 3 %}
+                  <div style="font-weight:700; color:var(--color-r3); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: right;">
+                    {% if r.p_rank < 10 %}{{r.p_rank}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_rank}} {% endif %}
+                  </div>
+                  {% elif r.p_rank == 4 %}
+                  <div style="font-weight:700; color:var(--color-r4); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: right;">
+                    {% if r.p_rank < 10 %}{{r.p_rank}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_rank}} {% endif %}
+                  </div>
+                  {% elif r.p_rank == 5 %}
+                  <div style="font-weight:700; color:var(--color-r5); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: right;">
+                    {% if r.p_rank < 10 %}{{r.p_rank}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_rank}} {% endif %}
+                  </div>
+                  {% else %}
+                  <div style="font-weight:400; font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: right;">
+                    {% if r.p_rank < 10 %}{{r.p_rank}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_rank}} {% endif %}
+                  </div>
+                  {% endif %}
+                  
+              </td>
+
+              <td align="right">
+                {% if r.horse == hname %}
+                <div style="color:yellow; font-size: 1.2rem; font-family: Arial;">
+                  {% if r.alloc1r != None %}
+                  {{r.alloc1r}}<br>{{r.alloc3r}}
+                  {% endif %}
+              
+                </div>
+                {%else%}
+                <div style="font-size: 1.2rem; font-family: Arial;">
+                  {% if r.alloc1r != None %}
+                  {{r.alloc1r}}<br>{{r.alloc3r}}
+                  {% endif %}
+              
+                </div>
+                {%endif%}
+              
+              </td>
+
+              <td align="center" style="font-size: 1.1rem;">
                 {% if r.alloc1r != None %}
                   
                   {% if r.horse == hname %}
-                  <div style="color:yellow; font-weight: 500; font-family: Arial;">{{r.gap}}</div>
+                  <div style="color:yellow; font-weight: 400; font-family: Arial;">{{r.gap}}</div>
                   {%else%}
-                  <div>{{r.gap}}</div>
+                  <div style="font-family: Arial;">{{r.gap}}</div>
                   {%endif%}
                       
                 {%endif%}
@@ -393,114 +485,7 @@
                 {% endif %}
                 
               </td>
-              <td align="right">
-                {% if r.horse == hname %}
-                <div style="color:yellow; font-size: 1.3rem; font-family: Arial;">
-                  {% if r.alloc1r != None %}
-                      {{r.alloc1r}}<br>{{r.alloc3r}}
-                  {% endif %}
-                
-                </div>
-                {%else%}
-                <div style="font-size: 1.3rem; font-family: Arial;">
-                  {% if r.alloc1r != None %}
-                      {{r.alloc1r}}<br>{{r.alloc3r}}
-                  {% endif %}
-                
-                </div>
-                {%endif%}
-               
-              </td>
-
-              <td align="center" style=" font-size: 1.4rem ">
-                
-                  {% if r.pop_rank == 1 %}
-                  <span style="font-weight:700; color:var(--color-r1); font-style: italic; font-size: 1.7rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.pop_rank < 10 %}{{r.pop_rank}} {% elif r.pop_rank > 20 %}-{% else %} {{r.pop_rank}} {% endif %}
-                  </span>
-                  {% elif r.pop_rank == 2 %}
-                  <span style="font-weight:700; color:var(--color-r2); font-style: italic; font-size: 1.7rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.pop_rank < 10 %}{{r.pop_rank}} {% elif r.pop_rank > 20 %}-{% else %} {{r.pop_rank}} {% endif %}
-                  </span>
-                  {% elif r.pop_rank == 3 %}
-                  <span style="font-weight:700; color:var(--color-r3); font-style: italic; font-size: 1.7rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.pop_rank < 10 %}{{r.pop_rank}} {% elif r.pop_rank > 20 %}-{% else %} {{r.pop_rank}} {% endif %}
-                  </span>
-                  {% elif r.pop_rank == 4 %}
-                  <span style="font-weight:700; color:var(--color-r4); font-style: italic; font-size: 1.7rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.pop_rank < 10 %}{{r.pop_rank}} {% elif r.pop_rank > 20 %}-{% else %} {{r.pop_rank}} {% endif %}
-                  </span>
-                  {% elif r.pop_rank == 5 %}
-                  <span style="font-weight:700; color:var(--color-r5); font-style: italic; font-size: 1.7rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.pop_rank < 10 %}{{r.pop_rank}} {% elif r.pop_rank > 20 %}-{% else %} {{r.pop_rank}} {% endif %}
-                  </span>
-                  {% else %}
-                  <span style="font-weight:400; font-style: italic; font-size: 1.3rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.pop_rank < 10 %}{{r.pop_rank}} {% elif r.pop_rank > 20 %}-{% else %} {{r.pop_rank}} {% endif %}
-                  </span>
-                  {% endif %}
-
-              </td>
-
-              <td align="center" style=" font-size: 1.4rem ">
-                
-                  {% if r.p_rank == 1 %}
-                  <span style="font-weight:700; color:var(--color-r1); font-style: italic; font-size: 1.7rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.p_rank < 10 %}{{r.p_rank}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_rank}} {% endif %}
-                  </span>
-                  {% elif r.p_rank == 2 %}
-                  <span style="font-weight:700; color:var(--color-r2); font-style: italic; font-size: 1.7rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.p_rank < 10 %}{{r.p_rank}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_rank}} {% endif %}
-                  </span>
-                  {% elif r.p_rank == 3 %}
-                  <span style="font-weight:700; color:var(--color-r3); font-style: italic; font-size: 1.7rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.p_rank < 10 %}{{r.p_rank}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_rank}} {% endif %}
-                  </span>
-                  {% elif r.p_rank == 4 %}
-                  <span style="font-weight:700; color:var(--color-r4); font-style: italic; font-size: 1.7rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.p_rank < 10 %}{{r.p_rank}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_rank}} {% endif %}
-                  </span>
-                  {% elif r.p_rank == 5 %}
-                  <span style="font-weight:700; color:var(--color-r5); font-style: italic; font-size: 1.7rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.p_rank < 10 %}{{r.p_rank}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_rank}} {% endif %}
-                  </span>
-                  {% else %}
-                  <span style="font-weight:400; font-style: italic; font-size: 1.3rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.p_rank < 10 %}{{r.p_rank}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_rank}} {% endif %}
-                  </span>
-                  {% endif %}
-
-              </td>
-
-              <td align="center" style=" font-size: 1.3rem ">
-                
-                  {% if r.p_rank == 1 %}
-                  <span style="font-weight:700; color:var(--color-r1); font-style: italic; font-size: 1.3rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.p_rank < 10 %}{{r.p_record}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_record}} {% endif %}
-                  </span>
-                  {% elif r.p_rank == 2 %}
-                  <span style="font-weight:700; color:var(--color-r2); font-style: italic; font-size: 1.3rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.p_rank < 10 %}{{r.p_record}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_record}} {% endif %}
-                  </span>
-                  {% elif r.p_rank == 3 %}
-                  <span style="font-weight:700; color:var(--color-r3); font-style: italic; font-size: 1.3rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.p_rank < 10 %}{{r.p_record}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_record}} {% endif %}
-                  </span>
-                  {% elif r.p_rank == 4 %}
-                  <span style="font-weight:700; color:var(--color-r4); font-style: italic; font-size: 1.3rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.p_rank < 10 %}{{r.p_record}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_record}} {% endif %}
-                  </span>
-                  {% elif r.p_rank == 5 %}
-                  <span style="font-weight:700; color:var(--color-r5); font-style: italic; font-size: 1.3rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.p_rank < 10 %}{{r.p_record}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_record}} {% endif %}
-                  </span>
-                  {% else %}
-                  <span style="font-weight:400; font-style: italic; font-size: 1.3rem; font-family: Arial, Helvetica, sans-serif;">
-                    {% if r.p_rank < 10 %}{{r.p_record}} {% elif r.p_rank > 20 %}-{% else %} {{r.p_record}} {% endif %}
-                  </span>
-                  {% endif %}
-
-              </td>
+              
 
               {%endif%}
 
@@ -2003,7 +1988,7 @@
       
           </thead>
           <tbody>
-            {% for gate, rank, r_rank, horse, jockey, trainer, host, h_3rd, h_tot, paternal, maternal, p_tot, p_2rd, m_tot, m_2rd, gear1, gear2, blood1, blood2, treat1, treat2 in pedigree %}
+            {% for gate, rank, r_rank, r_pop, horse, jockey, trainer, host, h_3rd, h_tot, paternal, maternal, p_tot, p_2rd, m_tot, m_2rd, gear1, gear2, blood1, blood2, treat1, treat2 in pedigree %}
             <tr class="view">
       
               <td>

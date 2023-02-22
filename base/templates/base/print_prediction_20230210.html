@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
+  <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
+
+  <script src="{% static 'js/script.js' %}"></script>
+
+  <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
+
+  <title>Let's Enjoy! - 프로그램 경마! 더더구나?! 경주결과</title>
+
+  <div class="room__top" style="z-index:1;">
+  
+    <div id="room__header" class="room__topLeft">
+
+      <form class="header__search" method="GET" action="{% url 'print_prediction' %}">
+        <label>
+          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+            <title>search</title>
+            <path
+              d="M32 30.586l-10.845-10.845c1.771-2.092 2.845-4.791 2.845-7.741 0-6.617-5.383-12-12-12s-12 5.383-12 12c0 6.617 5.383 12 12 12 2.949 0 5.649-1.074 7.741-2.845l10.845 10.845 1.414-1.414zM12 22c-5.514 0-10-4.486-10-10s4.486-10 10-10c5.514 0 10 4.486 10 10s-4.486 10-10 10z">
+            </path>
+          </svg>
+          <fieldset align="center" style="width: 13.5rem;">
+          
+            {% if race.0.0 == '서울' %}
+              서울<input style="width: 3rem;" type="radio" name="rcity" value="서울" checked />
+              부산<input style="width: 3rem;" type="radio" name="rcity" value="부산"  />
+            {% elif race.0.0 == '부산' %}
+              서울<input style="width: 3rem;" type="radio" name="rcity" value="서울" />
+              부산<input style="width: 3rem;" type="radio" name="rcity" value="부산" checked />
+            {% else %}
+              서울<input style="width: 3rem;" type="radio" name="rcity" value="서울" />
+              부산<input style="width: 3rem;" type="radio" name="rcity" value="부산" />
+            {% endif %}
+          
+          </fieldset>
+          경마일 :
+          <input style="width: 12rem;" type="date" value={{fdate}} name="q">
+          관심기수 :
+          <input style="width: 5rem; color:var(--color-r1)" type="text" value='{{jname1}}' placeholder="세영" name="j1">
+          <input style="width: 5rem; color:var(--color-r2)" type="text" value='{{jname2}}' placeholder="안토니오" name="j2">
+          <input style="width: 5rem; color:var(--color-r3)" type="text" value='{{jname3}}' placeholder="이혁" name="j3">
+          <button class="btn" style="background: var(--color-main);">Search</button>
+      
+      
+        </label>
+      </form>
+  
+    </div>
+
+    <div id="room__header" class="room__topRight">
+      <button class="btn" style="background: var(--color-main);" onclick="window.print();">Print</button>
+    </div>
+  
+  </div>
+
+      {% for message in messages %}
+      {{ message.tag }}
+      {{ message }}
+      {% endfor %}
+
+</head>
+
+{% load mathfilters %}
+{% load humanize %}
+
+{% block content %}
+
+<main class="create-room layout">
+
+  <div class="room" style="height: 87.5vh;">
+    
+    <style>
+      @media print {
+        #header, #room__header{display:none}
+        html, body {
+          width: 210mm;
+          /* height: 297mm; */
+          height: 282mm;
+          background: #fff;
+        }
+        body {
+          padding-top:10mm;
+          padding-bottom:5mm;
+        }
+        .paper {
+          margin: 0;
+          border: initial;
+          border-radius: initial;
+          width: initial;
+          min-height: initial;
+          box-shadow: initial;
+          background: initial;
+          page-break-after: always;
+          
+        }
+      }
+      /* @media print {
+        #header, #room__header{display:none}
+        body {
+          width: 100%;
+          height: 100%;
+          margin: 0;
+          padding: 0;
+          background-color: #ddd;
+        }
+      } */
+      
+      * {
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+      }
+      .paper {
+        width: 210mm;
+        min-height: 297mm;
+        
+        padding: 20mm;              /* set contents area */
+        margin: 10mm auto;
+        border-radius: 5px;
+        background: #fff;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      }
+      .content {
+        padding: 0;
+        border: 1px #888 dotted;
+        height: 257mm;
+      }
+      @page {
+          size: A4;
+          margin: 0;
+      }
+    </style>
+
+    <div>
+
+      <style>
+        table {
+          width: 100%;
+          border-top: 1px solid #444444;
+          border-collapse: collapse;
+        }
+
+        th,
+        td {
+          border-bottom: 1px solid #444444;
+        }
+      </style>
+      
+      <table style="background:white  ; color: black;">
+        <thead>
+          <tr>
+            <th colspan="2" rowspan="2" align="center" style="font-size:large; color:#444444; padding: 1.0em; text-transform:capitalize; border-right: 1px solid #444444;">Race<br>No.</th>
+            <th colspan="5" rowspan="1" align="center" style="font-size:large; color:#444444; padding: 1.0em; text-transform:capitalize;">
+              {{race.0.1|slice:"0:4"}}.{{race.0.1|slice:"4:6"}}.{{race.0.1|slice:"6:8"}}&nbsp; ({{race.0.2}})
+            </th>
+            <th colspan="19" align="center" style="font-size:large; color:#444444; padding: 1.0em;">
+              Program Expected Ranking (부담중량 증감 : ⊖ 🟥 ✚ 🟦)</th>
+            <th></th>
+          </tr>
+          <tr>
+            <th colspan="2" align="center" style="font-size:large; color:#444444; padding: 0.7em;">R1</th>
+            <th colspan="2" align="center" style="font-size:large; color:#444444; padding: 0.7em;">R2</th>
+            <th colspan="2" align="center" style="font-size:large; color:#444444; padding: 0.7em;">R3</th>
+            <th colspan="2" align="center" style="font-size:large; color:#444444; padding: 0.7em;">R4</th>
+            <th colspan="2" align="center" style="font-size:large; color:#444444; padding: 0.7em;">R5</th>
+            <th colspan="2" align="center" style="font-size:large; color:#444444; padding: 0.7em;">R6</th>
+            <th colspan="2" align="center" style="font-size:large; color:#444444; padding: 0.7em;">R7</th>
+            <th colspan="2" align="center" style="font-size:large; color:#444444; padding: 0.7em;">R8</th>
+            <th colspan="2" align="center" style="font-size:large; color:#444444; padding: 0.7em;">R9</th>
+            <th colspan="2" align="center" style="font-size:large; color:#444444; padding: 0.7em;">R10</th>
+            <th colspan="2" align="center" style="font-size:large; color:#444444; padding: 0.7em;">R11</th>
+            <th colspan="2" align="center" style="font-size:large; color:#444444; padding: 0.7em;">r12</th>
+            <th colspan="1" align="center" style="font-size:large; color:#444444; padding: 0.7em; border-left: 1px solid #444444;">Etc</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r_rcity, r_rdate, r_rday, r_rno, rtime, distance in race %}
+          
+          <tr>
+            <td style="font-size:large; color:#444444;">
+              <div style="font-size:large; text-align:right; font-weight: 550;">{% if r_rno == 1 %}{{r_rcity}}{% endif %}</div>
+              <div style="font-family: Arial; font-size: x-small; text-align: right; color: var(--color-gray);">{{distance}}m</div>
+            </td>
+            
+            <td align="right" style="border-right: 1px solid #444444;">
+              
+              <div style="font-family: Arial; font-size: large; font-weight: 550; color:#444444;">{{r_rno}}ᴿ&nbsp;</div>
+              <div style="font-size:x-small; text-align:center; color:blue; font-family: Arial;">{{rtime}}</div>
+              
+            </td>
+
+
+            {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex in expects %}  
+            {% if r_rcity == rcity and r_rdate == rdate and r_rno == rno %}
+            
+            <td align="center" style="font-family: Arial; color: var(--color-main);">
+
+              {% if r_pop >= 70 %}
+              <div style="font-size:x-small; font-family: Arial; color:var(--color-r1); font-weight: 550;">{{r_pop}}</div>
+              {% elif r_pop >= 10 and r_pop < 80 %}
+              <div style="font-size:x-small; font-family: Arial; color:var(--color-r2); font-weight: 550;">{{r_pop}}</div>
+              {% elif r_pop >= 1 and r_pop < 10 %}
+              <div style="font-size:x-small; font-family: Arial; color:var(--color-r3); font-weight: 550;">{{r_pop}}</div>
+              {% else %}
+              <div style="font-size:x-small; font-family: Arial; color:var(--color-gray);">{{r_pop}}</div>
+              {% endif %}
+
+              <div align="center" style="font-size: x-large ">
+                {% if rank == 1 %}
+                <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550;">
+                  {{gate}}
+                </span>
+                {% elif rank == 2 %}
+                <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550;">
+                  {{gate}}
+                </span>
+                {% elif rank == 3 %}
+                <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550;">
+                  {{gate}}
+                </span>
+                {% elif rank == 4 %}
+                <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550;">
+                  {{gate}}
+                </span>
+                {% elif rank == 5 %}
+                <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550;">
+                  {{gate}}
+                </span>
+                {% else %}
+                  {% if complex == complex5 %}
+                  <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550;">{{gate}}</span>
+                  {% else %}
+                  <span style="font-family: Arial; font-style: normal; color:var(--color-main);">{{gate}}</span>
+                  {% endif %}
+                {% endif %}
+              </div>
+
+            </td>
+            <td align="center">
+              
+              {% if jockey|slice:"-2:" == jname1|slice:"-2:" %}
+                <div style="font-size:x-small; color: var(--color-r1); font-weight: 550;">{{jockey|slice:"-2:"}}</div>
+              {% elif jockey|slice:"-2:" == jname2|slice:"-2:" %}
+                <div style="font-size:x-small; color: var(--color-r2); font-weight: 550;">{{jockey|slice:"-2:"}}</div>
+              {% elif jockey|slice:"-2:" == jname3|slice:"-2:" %}
+                <div style="font-size:x-small; color: var(--color-r3); font-weight: 550;">{{jockey|slice:"-2:"}}</div>
+              {% else %}
+                <div style="font-size:x-small; color: var(--color-gray)">{{jockey|slice:"-2:"}}</div>
+              {% endif %}
+
+              {% if handycap|sub:i_prehandy >= 10 %}
+                <div style="font-size:x-small;">-</div>
+              {% elif handycap|sub:i_prehandy > 0 and handycap|sub:i_prehandy < 10 %}
+                <div style="font-size:x-small; font-family: Arial; color:blue;font-weight: 550;">{{handycap|sub:i_prehandy}}</div>
+              {% elif handycap|sub:i_prehandy == 0 %}
+                <div style="font-size:x-small;">-</div>
+              {% else %}
+                <div style="font-size:x-small; font-family: Arial; color:red; font-weight: 550;">{{handycap|sub:i_prehandy|mul:-1}}</div>
+              {% endif %}
+
+              {% if rank > 90 %}
+                <div style="font-size:x-small">(신)</div>
+              {% else %}
+                {% if i_complex == None %}
+                <div style="font-size:x-small">&nbsp;</div>
+                {%else%}
+                <!-- <div style="font-size:x-small; font-family: Arial;">{{complex|slice:"3:6"}}</div> -->
+                <!-- <div style="font-size:x-small">{{i_complex|floatformat:0}}</div> -->
+                {% if i_complex < 10 %}
+                <div style="font-size:x-small; color: red;  font-weight: 550;">{{i_complex|floatformat:0}}</div>
+                {%else%}
+                <div style="font-size:x-small; color: blue; font-weight: 550;">{{i_complex|floatformat:0}}</div>
+                {%endif%}
+                <!-- <progress value={{i_complex|floatformat:0}} max="100" style="width: 1.3em"></progress> -->
+
+                {% endif %}
+              {% endif %}
+            </td>
+            
+
+            {% endif %}
+            {% endfor %}
+            <td align="center" style="border-left: 1px solid #444444;">
+              <div style="font-size:x-small;">복</div>
+              <div style="font-size:x-small;">삼</div>
+            </td>
+
+          </tr>
+          {% endfor %}
+      
+      
+        </tbody>
+      </table>
+
+    </div>
+
+
+  </div>
+
+</main>
+{% endblock %}
+
+</html>

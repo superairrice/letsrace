@@ -183,7 +183,7 @@ def get_pedigree(rcity, rdate, rno):
         cursor = connection.cursor()
 
         strSql = """ 
-              SELECT a.gate, a.rank, a.r_rank, a.horse, a.jockey, a.trainer,	a.host,
+              SELECT a.gate, a.rank, a.r_rank, a.r_pop, a.horse, a.jockey, a.trainer,	a.host,
                     ( a.year_1st + a.year_2nd + a.year_3rd )*100/a.year_race h_3rd, 
                     a.year_race h_tot, 
                     b.paternal, 
@@ -1237,7 +1237,7 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
               (
                 SELECT wdate, jockey, year_per
                 FROM The1.jockey_w 
-                where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 100 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 80 DAY), '%Y%m%d') and '""" + i_rdate + """'
               ) a  right outer join  The1.expect b  on a.jockey = b.jockey 
               where b.rdate = '""" + i_rdate + """' and b.rcity = '""" + i_rcity + """' and b.rno = """ + str(i_rno) + """
               order by  a.wdate desc
@@ -1258,12 +1258,12 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
         cursor = connection.cursor()
 
         strSql = """ 
-              select b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, a.wdate, a.year_per
+              select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, b.jockey, a.wdate, a.year_per
               from
               (
                 SELECT wdate, jockey, year_per
                 FROM The1.jockey_w 
-                where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 100 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 80 DAY), '%Y%m%d') and '""" + i_rdate + """'
               ) a  right outer join  The1.expect b  on a.jockey = b.jockey 
               where b.rdate = '""" + i_rdate + """' and b.rcity = '""" + i_rcity + """' and b.rno = """ + str(i_rno) + """
               order by b.rank, a.wdate desc
