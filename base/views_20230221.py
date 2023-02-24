@@ -433,6 +433,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     judged_jockey = get_judged_jockey(rcity, rdate, rno)
     wdates, trend_j = get_jockey_trend(rcity, rdate, rno)
 
+    print(trend_j)
     # awards_j = get_award_race(rcity, rdate, rno, i_awardee='jockey')
 
     context = {'exp011s': exp011s,

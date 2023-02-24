@@ -1,4 +1,5 @@
 from django.db import connection
+import pandas as pd
 
 
 def get_paternal_dist(rcity, rdate, rno):
@@ -29,8 +30,6 @@ def get_paternal_dist(rcity, rdate, rno):
 
         connection.commit()
         connection.close()
-
-        print(strSql)
 
     except:
         connection.rollback()
@@ -98,8 +97,6 @@ def get_judged_jockey(rcity, rdate, rno):
               order by jockey, rdate desc
             ; """
 
-        print(strSql)
-
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
 
@@ -132,8 +129,6 @@ def get_judged_horse(rcity, rdate, rno):
               order by a.rank, b.rdate desc
             ; """
 
-        print(strSql)
-
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
 
@@ -161,8 +156,6 @@ def get_judged(rcity, rdate, rno):
                 AND a.rno = """ + str(rno) + """
               order by a.rank
             ; """
-
-        print(strSql)
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
@@ -260,8 +253,6 @@ def get_weeks(i_rdate, i_awardee):
         connection.commit()
         connection.close()
 
-        # print(strSql)
-
     except:
         connection.rollback()
         print("Failed selecting in BookListView")
@@ -292,9 +283,6 @@ def get_race_center_detail_view(i_rdate, i_awardee):
         connection.rollback()
         print("Failed selecting in BookListView")
 
-    # print(r_cnt)
-    # print(type(weeks[0]))
-
     return weeks
 
 
@@ -318,9 +306,6 @@ def get_race(i_rdate, i_awardee):
     except:
         connection.rollback()
         print("Failed selecting in BookListView")
-
-    # print(r_cnt)
-    # print(type(weeks[0]))
 
     return weeks
 
@@ -389,13 +374,9 @@ def get_training(i_rcity, i_rdate, i_rno):
         connection.commit()
         connection.close()
 
-        print(strSql)
-
     except:
         connection.rollback()
         print("Failed selecting in BookListView")
-
-    # print(training)
 
     return training
 
@@ -494,13 +475,9 @@ def get_train(i_rcity, i_rdate, i_rno):
         connection.commit()
         connection.close()
 
-        print(strSql)
-
     except:
         connection.rollback()
         print("Failed selecting in BookListView")
-
-    # print(training)
 
     return training
 
@@ -535,8 +512,6 @@ def get_train_audit(i_rcity, i_rdate, i_rno):
                       order by rank, tdate desc
                         ;"""
 
-        print(strSql)
-
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         training = cursor.fetchall()
 
@@ -546,8 +521,6 @@ def get_train_audit(i_rcity, i_rdate, i_rno):
     except:
         connection.rollback()
         print("Failed selecting in Train audit")
-
-    # print(training)
 
     return training
 
@@ -653,8 +626,6 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
         connection.rollback()
         print("Failed selecting in BookListView")
 
-    # print(result)
-
     return result
 
 
@@ -684,8 +655,6 @@ def get_award(i_rdate, i_awardee):
     except:
         connection.rollback()
         print("Failed selecting in BookListView")
-
-    print(awards)
 
     return awards
 
@@ -782,11 +751,7 @@ def get_award_race(i_rcity, i_rdate, i_rno, i_awardee):
         connection.rollback()
         print("Failed selecting in BookListView")
 
-    print(strSql)
-
     return awards
-
-# award_status_jockey award_status_trainer
 
 
 def get_last2weeks(i_rdate, i_awardee):
@@ -878,8 +843,6 @@ def get_last2weeks(i_rdate, i_awardee):
                 order by rcity desc, rmonth1 + rmonth2 + rmonth3 desc
                 ; """
 
-        print(strSql)
-
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         weeks = cursor.fetchall()
 
@@ -905,8 +868,6 @@ def get_last2weeks_loadin(i_rdate):
                   select 'T', trainer, year_1st from trainer_w 
                   where wdate = ( select max(wdate) from trainer_w where wdate <= '""" + i_rdate + """' ) 
                 ; """
-
-        print(strSql)
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         results = cursor.fetchall()
@@ -993,8 +954,6 @@ def get_status_training(i_rdate):
     except:
         connection.rollback()
         print("Failed selecting in BookListView")
-
-    # print(training)
 
     return training
 
@@ -1102,8 +1061,6 @@ def get_status_train(i_rdate):
         connection.rollback()
         print("Failed selecting in BookListView")
 
-    # print(training)
-
     return training
 
 
@@ -1170,8 +1127,6 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
         connection.rollback()
         print("Failed selecting in BookListView")
 
-    print(strSql)
-
     return training
 
 
@@ -1232,42 +1187,18 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
         cursor = connection.cursor()
 
         strSql = """ 
-              select distinct wdate
-              from
-              (
-                SELECT wdate, jockey, year_per
-                FROM The1.jockey_w 
-                where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 80 DAY), '%Y%m%d') and '""" + i_rdate + """'
-              ) a  right outer join  The1.expect b  on a.jockey = b.jockey 
-              where b.rdate = '""" + i_rdate + """' and b.rcity = '""" + i_rcity + """' and b.rno = """ + str(i_rno) + """
-              order by  a.wdate desc
-              ; """
-
-        print(strSql)
-        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
-        wdates = cursor.fetchall()
-
-        connection.commit()
-        connection.close()
-
-    except:
-        connection.rollback()
-        print("Failed selecting in Jockey Trend Weekend")
-
-    try:
-        cursor = connection.cursor()
-
-        strSql = """ 
               select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, b.jockey, a.wdate, a.year_per
               from
               (
                 SELECT wdate, jockey, year_per
                 FROM The1.jockey_w 
-                where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 80 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 88 DAY), '%Y%m%d') and '""" + i_rdate + """'
               ) a  right outer join  The1.expect b  on a.jockey = b.jockey 
               where b.rdate = '""" + i_rdate + """' and b.rcity = '""" + i_rcity + """' and b.rno = """ + str(i_rno) + """
               order by b.rank, a.wdate desc
               ; """
+
+        print(strSql)
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
@@ -1279,4 +1210,29 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
         connection.rollback()
         print("Failed selecting in Jockey Trend")
 
-    return wdates, result
+    # result = dict[result]
+
+    col = ['예상', '마번', '실순', '인기',
+           'horse', '기수', 'wdate', 'year_per']
+    data = list(result)
+    # print(data)
+
+    df = pd.DataFrame(data=data, columns=col)
+    # print(df)
+
+    pdf1 = pd.pivot_table(df,                # 피벗할 데이터프레임
+                          index=('예상', '마번', '실순', '인기',
+                                 'horse', '기수'),    # 행 위치에 들어갈 열
+                          columns='wdate',    # 열 위치에 들어갈 열
+                          values='year_per', aggfunc='sum')     # 데이터로 사용할 열
+
+    # pdf1.columns = ['/'.join(col) for col in pdf1.columns]
+    pdf1.columns = [''.join(col)[4:6] + '.' + ''.join(col)[6:8] for col in pdf1.columns]
+
+    # print(((pdf1)))
+
+    pdf1 = pdf1.reset_index()
+
+    # print(((pdf1)))
+
+    return pdf1
