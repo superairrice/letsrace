@@ -1181,58 +1181,58 @@ def get_print_prediction(i_rcity, i_rdate):
     return race, expects
 
 
-def get_jockey_trend(i_rcity, i_rdate, i_rno):
+# def get_jockey_trend(i_rcity, i_rdate, i_rno):
 
-    try:
-        cursor = connection.cursor()
+#     try:
+#         cursor = connection.cursor()
 
-        strSql = """ 
-              select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, b.jockey, a.wdate, a.year_per
-              from
-              (
-                SELECT wdate, jockey, year_per
-                FROM The1.jockey_w 
-                where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 88 DAY), '%Y%m%d') and '""" + i_rdate + """'
-              ) a  right outer join  The1.expect b  on a.jockey = b.jockey 
-              where b.rdate = '""" + i_rdate + """' and b.rcity = '""" + i_rcity + """' and b.rno = """ + str(i_rno) + """
-              order by b.rank, a.wdate desc
-              ; """
+#         strSql = """ 
+#               select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, b.jockey, a.wdate, a.year_per
+#               from
+#               (
+#                 SELECT wdate, jockey, year_per
+#                 FROM The1.jockey_w 
+#                 where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 88 DAY), '%Y%m%d') and '""" + i_rdate + """'
+#               ) a  right outer join  The1.expect b  on a.jockey = b.jockey 
+#               where b.rdate = '""" + i_rdate + """' and b.rcity = '""" + i_rcity + """' and b.rno = """ + str(i_rno) + """
+#               order by b.rank, a.wdate desc
+#               ; """
 
-        print(strSql)
+#         print(strSql)
 
-        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
-        result = cursor.fetchall()
+#         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+#         result = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+#         connection.commit()
+#         connection.close()
 
-    except:
-        connection.rollback()
-        print("Failed selecting in Jockey Trend")
+#     except:
+#         connection.rollback()
+#         print("Failed selecting in Jockey Trend")
 
-    # result = dict[result]
+#     # result = dict[result]
 
-    col = ['예상', '마번', '실순', '인기',
-           'horse', '기수', 'wdate', 'year_per']
-    data = list(result)
-    # print(data)
+#     col = ['예상', '마번', '실순', '인기',
+#            'horse', '기수', 'wdate', 'year_per']
+#     data = list(result)
+#     # print(data)
 
-    df = pd.DataFrame(data=data, columns=col)
-    # print(df)
+#     df = pd.DataFrame(data=data, columns=col)
+#     # print(df)
 
-    pdf1 = pd.pivot_table(df,                # 피벗할 데이터프레임
-                          index=('예상', '마번', '실순', '인기',
-                                 'horse', '기수'),    # 행 위치에 들어갈 열
-                          columns='wdate',    # 열 위치에 들어갈 열
-                          values='year_per', aggfunc='sum')     # 데이터로 사용할 열
+#     pdf1 = pd.pivot_table(df,                # 피벗할 데이터프레임
+#                           index=('예상', '마번', '실순', '인기',
+#                                  'horse', '기수'),    # 행 위치에 들어갈 열
+#                           columns='wdate',    # 열 위치에 들어갈 열
+#                           values='year_per', aggfunc='sum')     # 데이터로 사용할 열
 
-    # pdf1.columns = ['/'.join(col) for col in pdf1.columns]
-    pdf1.columns = [''.join(col)[4:6] + '.' + ''.join(col)[6:8] for col in pdf1.columns]
+#     # pdf1.columns = ['/'.join(col) for col in pdf1.columns]
+#     pdf1.columns = [''.join(col)[4:6] + '.' + ''.join(col)[6:8] for col in pdf1.columns]
 
-    # print(((pdf1)))
+#     # print(((pdf1)))
 
-    pdf1 = pdf1.reset_index()
+#     pdf1 = pdf1.reset_index()
 
-    # print(((pdf1)))
+#     # print(((pdf1)))
 
-    return pdf1
+#     return pdf1
