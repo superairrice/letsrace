@@ -434,7 +434,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     judged_horse = get_judged_horse(rcity, rdate, rno)
     judged_jockey = get_judged_jockey(rcity, rdate, rno)
 
-    # trend_j = get_jockey_trend(rcity, rdate, rno)
+    trend_j = get_jockey_trend(rcity, rdate, rno)
 
     # print(trend_j)
 
@@ -457,7 +457,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
                #    'training': training,
                'train': train,
                'h_audit': h_audit,
-            #    'trend_j': trend_j.to_html(index=False, header=True, justify="right", classes="rwd-table", table_id="rwd-table"),
+               'trend_j': trend_j.to_html(index=False, header=True, justify="right", classes="rwd-table", table_id="rwd-table"),
                #  'pdf1': pdf1,
                }
 
