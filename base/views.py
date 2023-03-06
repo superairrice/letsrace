@@ -190,24 +190,10 @@ def updateUser(request):
     user = request.user
     form = UserForm(instance=user)
 
-    # print(user)
-
     if request.method == 'POST':
         form = UserForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
             form.save()
-
-            request_file = request.FILES['filename[]'] if 'filename[]' in request.FILES else None
-            if request_file:
-                # save attached file
-                # create a new instance of FileSystemStorage
-                fs = FileSystemStorage()
-                file = fs.save(request_file.name, request_file)
-                # the fileurl variable now contains the url to the file. This can be used to serve the file when needed.
-                fileurl = fs.url(file)
-
-                print(fileurl)
-
             redirect('user-profile', pk=user.id)
 
     return render(request, 'base/update-user.html', {'form': form})
