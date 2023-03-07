@@ -35,9 +35,9 @@
 <div>
 
   <ul class="tabs">
-    <li class="tab-link current" data-tab="tab-1">서울</li>
-    <li class="tab-link" data-tab="tab-2">부산</li>
-    <li class="tab-link" data-tab="tab-3">세번째 메뉴</li>
+    <li class="tab-link current" data-tab="tab-1">금요경마</li>
+    <li class="tab-link" data-tab="tab-2">토요경마</li>
+    <li class="tab-link" data-tab="tab-3">일요경마</li>
   </ul>
 
   <div id="tab-1" class="tab-content current">
@@ -67,10 +67,8 @@
           <th colspan="2" align="center" style="font-size:1.3rem; padding: 0.7em;">R11</th>
           <th colspan="2" align="center" style="font-size:1.3rem; padding: 0.7em;">r12</th>
         </tr>
-     
-     
         {% for r_rcity, r_rdate, r_rday, r_rno, rtime, distance in race %}
-    
+        {% if r_rday == '금' %}
         <tr>
           
           <td>
@@ -93,39 +91,39 @@
           <td align="center" style="font-family: Arial; color: var(--color-main); border-style: none;">
     
             {% if jockey|slice:"-2:" == jname1|slice:"-2:" %}
-            <div style="font-size:1.2rem; zoom:0.7; color: var(--color-r1); font-weight: 550;">{{jockey|slice:"-2:"}}</div>
+            <div style="font-size:1.2rem; zoom:0.7; color: var(--color-r1); font-weight: 450;">{{jockey|slice:"-2:"}}</div>
             {% elif jockey|slice:"-2:" == jname2|slice:"-2:" %}
-            <div style="font-size:1.2rem; zoom:0.7; color: var(--color-r2); font-weight: 550;">{{jockey|slice:"-2:"}}</div>
+            <div style="font-size:1.2rem; zoom:0.7; color: var(--color-r2); font-weight: 450;">{{jockey|slice:"-2:"}}</div>
             {% elif jockey|slice:"-2:" == jname3|slice:"-2:" %}
-            <div style="font-size:1.2rem; zoom:0.7; color: var(--color-r3); font-weight: 550;">{{jockey|slice:"-2:"}}</div>
+            <div style="font-size:1.2rem; zoom:0.7; color: var(--color-r3); font-weight: 450;">{{jockey|slice:"-2:"}}</div>
             {% else %}
             <div style="font-size:1.2rem; zoom:0.7; color: var(--color-main-light)">{{jockey|slice:"-2:"}}</div>
             {% endif %}
     
             <div align="center" style="font-size: 1.5rem; padding:0rem ">
               {% if rank == 1 %}
-              <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); font-weight: 550;">
+              <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); font-weight: 450;">
                 {{gate}}
               </span>
               {% elif rank == 2 %}
-              <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); font-weight: 550;">
+              <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); font-weight: 450;">
                 {{gate}}
               </span>
               {% elif rank == 3 %}
-              <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); font-weight: 550;">
+              <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); font-weight: 450;">
                 {{gate}}
               </span>
               {% elif rank == 4 %}
-              <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); font-weight: 550;">
+              <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); font-weight: 450;">
                 {{gate}}
               </span>
               {% elif rank == 5 %}
-              <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); font-weight: 550;">
+              <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); font-weight: 450;">
                 {{gate}}
               </span>
               {% else %}
               {% if complex == complex5 %}
-              <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); font-weight: 550;">{{gate}}</span>
+              <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); font-weight: 450;">{{gate}}</span>
               {% else %}
               <span style="font-family: Arial; font-style: normal; color:var(--color-main);">{{gate}}</span>
               {% endif %}
@@ -138,44 +136,37 @@
     
             {% if handycap|sub:i_prehandy >= 10 %}
             <div style="font-size: 1.2rem; zoom: 0.7;">-</div>
-            {% elif handycap|sub:i_prehandy > 0 and handycap|sub:i_prehandy < 10 %} <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:blue;font-weight: 550;">{{handycap|sub:i_prehandy}}</div>
-              {% elif handycap|sub:i_prehandy == 0 %}
-              <div style="font-size: 1.2rem; zoom: 0.7;">-</div>
-              {% else %}
-              <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:red; font-weight: 550;">{{handycap|sub:i_prehandy|mul:-1}}</div>
-              {% endif %}
-    
-              {% if jt_per >= 50 %}
-              <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:var(--color-r1); font-weight: 400;">{{jt_per}}</div>
-              {% elif jt_per >= 30 and jt_per < 50 %} <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:var(--color-r2); font-weight: 400;">{{jt_per}}</div>
-                {% elif jt_per >= 10 and jt_per < 30 %} <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:var(--color-r5); font-weight: 400;">{{jt_per}}</div>
-                  {% else %}
-                  <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:var(--color-gray);">{{jt_per}}</div>
-                  {% endif %}
+            {% elif handycap|sub:i_prehandy > 0 and handycap|sub:i_prehandy < 10 %} 
+            <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:blue;font-weight: 450;">{{handycap|sub:i_prehandy}}</div>
+            {% elif handycap|sub:i_prehandy == 0 %}
+            <div style="font-size: 1.2rem; zoom: 0.7;">-</div>
+            {% else %}
+            <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:red; font-weight: 450;">{{handycap|sub:i_prehandy|mul:-1}}</div>
+            {% endif %}
 
-                  <!-- {% if r_pop >= 70 %}
-                  <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:var(--color-r1); font-weight: 550;">{{r_pop}}</div>
-                  {% elif r_pop >= 10 and r_pop < 80 %}
-                  <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:var(--color-r2); font-weight: 550;">{{r_pop}}</div>
-                  {% elif r_pop >= 1 and r_pop < 10 %}
-                  <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:var(--color-r3); font-weight: 550;">{{r_pop}}</div>
-                  {% else %}
-                  <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:var(--color-gray);">{{r_pop}}</div>
-                  {% endif %} -->
-    
-                  {% if rank > 90 %}
-                  <div style="font-size: 1.2rem; zoom: 0.7">(신)</div>
-                  {% else %}
-                    {% if i_complex == None %}
-                    <div style="font-size: 1.2rem; zoom: 0.7">&nbsp;</div>
-                    {%else%}
-                    {% if i_complex < 10 %} 
-                    <div style="font-size: 1.2rem; zoom: 0.7; color: red;  font-weight: 550;">{{i_complex|floatformat:0}}</div>
-                    {%else%}
-                    <div style="font-size: 1.2rem; zoom: 0.7; color: blue; font-weight: 550;">{{i_complex|floatformat:0}}</div>
-                    {%endif%}
-                  {% endif %}
-                  {% endif %}
+            {% if r_pop >= 70 %}
+            <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:var(--color-r1); font-weight: 450;">{{r_pop}}</div>
+            {% elif r_pop >= 10 and r_pop < 80 %}
+            <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:var(--color-r2); font-weight: 450;">{{r_pop}}</div>
+            {% elif r_pop >= 1 and r_pop < 10 %}
+            <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:var(--color-r3); font-weight: 450;">{{r_pop}}</div>
+            {% else %}
+            <div style="font-size: 1.2rem; zoom: 0.7; font-family: Arial; color:var(--color-gray);">{{r_pop}}</div>
+            {% endif %}
+
+            {% if rank > 90 %}
+            <div style="font-size: 1.2rem; zoom: 0.7">(신)</div>
+            {% else %}
+              {% if i_complex == None %}
+              <div style="font-size: 1.2rem; zoom: 0.7">&nbsp;</div>
+              {%else%}
+              {% if i_complex < 10 %} 
+              <div style="font-size: 1.2rem; zoom: 0.7; color: red;  font-weight: 450;">{{i_complex|floatformat:0}}</div>
+              {%else%}
+              <div style="font-size: 1.2rem; zoom: 0.7; color: yellow; font-weight: 450;">{{i_complex|floatformat:0}}</div>
+              {%endif%}
+            {% endif %}
+          {% endif %}
           </td>
     
     
@@ -184,6 +175,7 @@
           
     
         </tr>
+        {% endif %}
         {% endfor %}
 
     </table>
