@@ -1180,6 +1180,56 @@ def get_print_prediction(i_rcity, i_rdate):
 
     return race, expects
 
+def get_prediction(i_rcity, i_rdate):
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+                select rcity, rdate, rday, rno, rtime, distance
+                  from exp010
+                where rcity = '""" + i_rcity + """'
+                  and rdate = '""" + i_rdate + """' 
+                order by rdate, rcity desc, rno
+                ; """
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        race = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in BookListView")
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = """
+                select rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex,
+                      ( select complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = 5 ) complex5, 
+                      ( select i_complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = a.rank + 1 ) - i_complex, cast(jt_per as decimal) jt_per
+                  from expect a
+                where rcity = '""" + i_rcity + """'
+                  and rdate = '""" + i_rdate + """' 
+                order by rcity, rdate, rno, rank, gate
+                ; """
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        expects = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in BookListView")
+    # print(r_cnt)
+    # print(type(weeks[0]))
+
+    return race, expects
+
 
 def get_jockey_trend(i_rcity, i_rdate, i_rno):
 
