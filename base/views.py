@@ -14,7 +14,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from base.data_management import get_breakingnews, get_file_contents, get_kradata, get_krafile, krafile_convert
 
 from base.mysqls import (get_award, get_award_race, get_jockey_trend, get_judged, get_judged_horse, get_judged_jockey, get_last2weeks_loadin, get_paternal,
-                         get_paternal_dist, get_pedigree, get_popularity_rate, get_print_prediction, get_race, get_race_center_detail_view, get_status_train, get_train, get_train_audit, get_train_horse,
+                         get_paternal_dist, get_pedigree, get_popularity_rate, get_prediction, get_print_prediction, get_race, get_race_center_detail_view, get_status_train, get_train, get_train_audit, get_train_horse,
                          get_training, get_status_training, get_weeks, get_last2weeks)
 from letsrace.settings import KRAFILE_ROOT
 
@@ -328,9 +328,9 @@ def home(request):
         Q(jockey6__icontains=q) |
         Q(jockey7__icontains=q)).order_by('rdate', 'rcity', 'rno')
 
-    race, expects = get_print_prediction('서울', '20230305')
+    race, expects = get_prediction(i_rdate)
 
-    print(expects)
+    # print(expects)
 
     context = {'racings': racings, 'expects': expects,
                'r_results': r_results, 'race': race, 'q': q}

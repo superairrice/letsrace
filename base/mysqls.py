@@ -1180,7 +1180,8 @@ def get_print_prediction(i_rcity, i_rdate):
 
     return race, expects
 
-def get_prediction(i_rcity, i_rdate):
+
+def get_prediction(i_rdate):
 
     try:
         cursor = connection.cursor()
@@ -1188,8 +1189,7 @@ def get_prediction(i_rcity, i_rdate):
         strSql = """ 
                 select rcity, rdate, rday, rno, rtime, distance
                   from exp010
-                where rcity = '""" + i_rcity + """'
-                  and rdate = '""" + i_rdate + """' 
+                where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
                 order by rdate, rcity desc, rno
                 ; """
 
@@ -1211,8 +1211,7 @@ def get_prediction(i_rcity, i_rdate):
                       ( select complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = 5 ) complex5, 
                       ( select i_complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = a.rank + 1 ) - i_complex, cast(jt_per as decimal) jt_per
                   from expect a
-                where rcity = '""" + i_rcity + """'
-                  and rdate = '""" + i_rdate + """' 
+                where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
                 order by rcity, rdate, rno, rank, gate
                 ; """
 
@@ -1277,7 +1276,8 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
                           values='year_per', aggfunc='sum')     # 데이터로 사용할 열
 
     # pdf1.columns = ['/'.join(col) for col in pdf1.columns]
-    pdf1.columns = [''.join(col)[4:6] + '.' + ''.join(col)[6:8] for col in pdf1.columns]
+    pdf1.columns = [''.join(col)[4:6] + '.' + ''.join(col)[6:8]
+                    for col in pdf1.columns]
 
     # print(((pdf1)))
 
