@@ -315,9 +315,15 @@ def home(request):
         rdate = Racing.objects.values('rdate').distinct()
         i_rdate = rdate[0]['rdate']
 
+        print('aa', i_rdate)
+
     else:
         rdate = q[0:4] + q[5:7] + q[8:10]
         fdate = q
+
+        i_rdate = rdate
+
+        print(i_rdate)
 
     jname1 = request.GET.get('j1') if request.GET.get('j1') != None else ''
     jname2 = request.GET.get('j2') if request.GET.get('j2') != None else ''
@@ -344,9 +350,7 @@ def home(request):
 
     race, expects = get_prediction(i_rdate)
 
-    print(race)
-
-    context = {'racings': racings, 'expects': expects,
+    context = {'racings': racings, 'expects': expects, 'fdate':fdate,
                'jname1': jname1,
                'jname2': jname2,
                'jname3': jname3,
@@ -604,8 +608,8 @@ def updatePopularity(request, rcity, rdate, rno):
                 cursor = connection.cursor()
 
                 strSql = """ update exp011 set r_pop = """ + myDict[pop][0] + """, r_rank = """ + myDict[pop][1] + """
-														where rdate = '""" + rdate + """' and rcity = '""" + rcity + """' and rno = """ + str(rno) + """ and gate = """ + str(race.gate) + """
-												; """
+                            where rdate = '""" + rdate + """' and rcity = '""" + rcity + """' and rno = """ + str(rno) + """ and gate = """ + str(race.gate) + """
+                        ; """
 
                 print(strSql)
                 r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
@@ -998,9 +1002,9 @@ def krafileInput(request):
                     cursor = connection.cursor()
 
                     strSql = """
-														DELETE FROM krafile
-														WHERE fname = '""" + fname + """'
-														; """
+                            DELETE FROM krafile
+                            WHERE fname = '""" + fname + """'
+                            ; """
 
                     # print(strSql)
 
@@ -1043,16 +1047,16 @@ def krafileInput(request):
                 cursor = connection.cursor()
 
                 strSql = """
-												INSERT INTO krafile
-												( fname, fpath, rdate, fcode, fstatus, in_date )
-												VALUES
-												( '""" + fname + """',
-												'""" + str(fs.location) + '/' + fname + """',
-												'""" + fdate + """',
-												'""" + fcode + """',
-												'I',
-												""" + 'NOW()' + """
-												) ; """
+                        INSERT INTO krafile
+                        ( fname, fpath, rdate, fcode, fstatus, in_date )
+                        VALUES
+                        ( '""" + fname + """',
+                        '""" + str(fs.location) + '/' + fname + """',
+                        '""" + fdate + """',
+                        '""" + fcode + """',
+                        'I',
+                        """ + 'NOW()' + """
+                        ) ; """
 
                 # print(strSql)
                 r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
@@ -1087,9 +1091,9 @@ def BreakingNewsInput(request):
         cursor = connection.cursor()
 
         strSql = """
-								DELETE FROM breakingnews
-								WHERE rcity = '""" + rcity + """' and rdate = '""" + rdate + """' and title = '""" + title + """'
-								; """
+                DELETE FROM breakingnews
+                WHERE rcity = '""" + rcity + """' and rdate = '""" + rdate + """' and title = '""" + title + """'
+                ; """
 
         # print(strSql)
 
@@ -1108,15 +1112,15 @@ def BreakingNewsInput(request):
         cursor = connection.cursor()
 
         strSql = """
-								INSERT INTO breakingnews
-								( rcity, rdate, title, news, in_date )
-								VALUES
-								( '""" + rcity + """',
-								'""" + rdate + """',
-								'""" + title + """',
-								'""" + news + """',
-								""" + 'NOW()' + """
-								) ; """
+                INSERT INTO breakingnews
+                ( rcity, rdate, title, news, in_date )
+                VALUES
+                ( '""" + rcity + """',
+                '""" + rdate + """',
+                '""" + title + """',
+                '""" + news + """',
+                """ + 'NOW()' + """
+                ) ; """
 
         # print(strSql)
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
