@@ -336,7 +336,7 @@ def home(request):
     )
 
     # race = get_race(i_rdate, i_awardee='jockey')
-    # race = get_race_center_detail_view(i_rdate, i_awardee='jockey')
+    race_detail = get_race_center_detail_view(i_rdate, i_awardee='jockey')
 
     # r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
     r_results = RaceResult.objects.filter(
@@ -350,7 +350,7 @@ def home(request):
 
     race, expects = get_prediction(i_rdate)
 
-    context = {'racings': racings, 'expects': expects, 'fdate':fdate,
+    context = {'racings': racings, 'expects': expects, 'fdate': fdate, 'race_detail': race_detail,
                'jname1': jname1,
                'jname2': jname2,
                'jname3': jname3,
