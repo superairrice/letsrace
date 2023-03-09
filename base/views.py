@@ -304,16 +304,30 @@ def exp011(request, pk):
 
 
 def home(request):
-    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    q = request.GET.get('q') if request.GET.get(
+        'q') != None else ''            # 경마일
+
+    if q == '':
+        rdate = Racing.objects.values('rdate').distinct()[
+            0]['rdate']          # 초기값은 금요일
+        fdate = rdate[0:4] + '-' + rdate[4:6] + '-' + rdate[6:8]
+
+        rdate = Racing.objects.values('rdate').distinct()
+        i_rdate = rdate[0]['rdate']
+
+    else:
+        rdate = q[0:4] + q[5:7] + q[8:10]
+        fdate = q
+
+    jname1 = request.GET.get('j1') if request.GET.get('j1') != None else ''
+    jname2 = request.GET.get('j2') if request.GET.get('j2') != None else ''
+    jname3 = request.GET.get('j3') if request.GET.get('j3') != None else ''
 
     racings = Racing.objects.filter(
         Q(rcity__icontains=q) |
         Q(rdate__icontains=q) |
         Q(rday__icontains=q)
     )
-
-    rdate = Racing.objects.values('rdate').distinct()
-    i_rdate = rdate[0]['rdate']
 
     # race = get_race(i_rdate, i_awardee='jockey')
     # race = get_race_center_detail_view(i_rdate, i_awardee='jockey')
@@ -330,9 +344,12 @@ def home(request):
 
     race, expects = get_prediction(i_rdate)
 
-    # print(expects)
+    print(race)
 
     context = {'racings': racings, 'expects': expects,
+               'jname1': jname1,
+               'jname2': jname2,
+               'jname3': jname3,
                'r_results': r_results, 'race': race, 'q': q}
 
     return render(request, 'base/home.html', context)
