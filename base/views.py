@@ -329,14 +329,15 @@ def home(request):
     jname2 = request.GET.get('j2') if request.GET.get('j2') != None else ''
     jname3 = request.GET.get('j3') if request.GET.get('j3') != None else ''
 
-    racings = Racing.objects.filter(
-        Q(rcity__icontains=q) |
-        Q(rdate__icontains=q) |
-        Q(rday__icontains=q)
-    )
+    # racings = Racing.objects.filter(
+    #     Q(rcity__icontains=q) |
+    #     Q(rdate__icontains=q) |
+    #     Q(rday__icontains=q)
+    # )
 
     # race = get_race(i_rdate, i_awardee='jockey')
-    race_detail = get_race_center_detail_view(i_rdate, i_awardee='jockey')
+    # race_detail = get_race_center_detail_view(i_rdate, i_awardee='jockey')
+    racings, race_detail = get_race(i_rdate, i_awardee='jockey')
 
     # r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
     r_results = RaceResult.objects.filter(
@@ -348,13 +349,14 @@ def home(request):
         Q(jockey6__icontains=q) |
         Q(jockey7__icontains=q)).order_by('rdate', 'rcity', 'rno')
 
-    race, expects = get_prediction(i_rdate)
+    race, expects, award_j = get_prediction(i_rdate)
 
     context = {'racings': racings, 'expects': expects, 'fdate': fdate, 'race_detail': race_detail,
                'jname1': jname1,
                'jname2': jname2,
                'jname3': jname3,
-               'r_results': r_results, 'race': race, 'q': q}
+               'award_j': award_j,
+               'race': race, 'q': q}
 
     return render(request, 'base/home.html', context)
 
@@ -430,7 +432,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
 
     # training_team = get_training_team(rcity, rdate, rno)
 
-    race = get_race(rdate, i_awardee='jockey')
+    racings, race_detail = get_race(rdate, i_awardee='jockey')
 
     compare_r = exp011s.aggregate(Min('i_s1f'), Min('i_g1f'), Min('i_g2f'), Min('i_g3f'), Max(
         'handycap'), Max('rating'), Max('r_pop'), Max('j_per'), Max('t_per'), Max('jt_per'))
@@ -472,7 +474,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
                'judged': judged,
                'judged_horse': judged_horse,
                'judged_jockey': judged_jockey,
-               'race': race,
+               'race_detail': race_detail,
                'pedigree': pedigree,
                'paternal': paternal,
                'paternal_dist': paternal_dist,
@@ -588,6 +590,7 @@ def awards(request):
     return render(request, 'base/awards.html', context)
 
 
+@login_required(login_url='login')
 def updatePopularity(request, rcity, rdate, rno):
 
     exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno)
@@ -634,7 +637,7 @@ def updatePopularity(request, rcity, rdate, rno):
     return render(request, 'base/update_popularity.html', context)
 
 
-def raceResult(request, rcity, rdate, rno, hname, awardee):
+def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
     records = RecordS.objects.filter(rcity=rcity,
                                      rdate=rdate,
