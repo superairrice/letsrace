@@ -337,7 +337,7 @@ def home(request):
 
     # race = get_race(i_rdate, i_awardee='jockey')
     # race_detail = get_race_center_detail_view(i_rdate, i_awardee='jockey')
-    racings, race_detail = get_race(i_rdate, i_awardee='jockey')
+    racings, race_detail, race_board = get_race(i_rdate, i_awardee='jockey')
 
     # r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
     r_results = RaceResult.objects.filter(
@@ -351,7 +351,9 @@ def home(request):
 
     race, expects, award_j = get_prediction(i_rdate)
 
-    context = {'racings': racings, 'expects': expects, 'fdate': fdate, 'race_detail': race_detail,
+    context = {'racings': racings, 'expects': expects, 'fdate': fdate, 
+               'race_detail': race_detail,
+               'race_board': race_board,
                'jname1': jname1,
                'jname2': jname2,
                'jname3': jname3,
@@ -432,7 +434,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
 
     # training_team = get_training_team(rcity, rdate, rno)
 
-    racings, race_detail = get_race(rdate, i_awardee='jockey')
+    racings, race_detail, race_board = get_race(rdate, i_awardee='jockey')
 
     compare_r = exp011s.aggregate(Min('i_s1f'), Min('i_g1f'), Min('i_g2f'), Min('i_g3f'), Max(
         'handycap'), Max('rating'), Max('r_pop'), Max('j_per'), Max('t_per'), Max('jt_per'))
@@ -471,7 +473,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
                'hr_records': hr_records,
                'compare_r': compare_r,
                'alloc': alloc,
-               'judged': judged,
+               #    'judged': judged,
                'judged_horse': judged_horse,
                'judged_jockey': judged_jockey,
                'race_detail': race_detail,

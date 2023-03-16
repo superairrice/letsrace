@@ -33,10 +33,10 @@
   </script>
 
   <ul class="tabs2" style="font-size:1.4rem">
-    <li class="tab-link current" data-tab="tab-left1" style="padding: 6px 10px;">금</li>
-    <li class="tab-link" data-tab="tab-left2" style="padding: 6px 10px;">토</li>
-    <li class="tab-link" data-tab="tab-left3" style="padding: 6px 10px;">일(서울)</li>
-    <li class="tab-link" data-tab="tab-left4" style="padding: 6px 10px;">일(부산)</li>
+    <li class="tab-link current" data-tab="tab-left1" style="padding: 6px 12px;">금</li>
+    <li class="tab-link" data-tab="tab-left2" style="padding: 6px 12px;">토</li>
+    <li class="tab-link" data-tab="tab-left3" style="padding: 6px 12px;">일(서울)</li>
+    <li class="tab-link" data-tab="tab-left4" style="padding: 6px 12px;">일(부산)</li>
   </ul>
 
   <div id="tab-left1" class="tab-content2 current">
@@ -45,29 +45,46 @@
       <thead>
     
         <tr>
-          <th rowspan="2" colspan="2">Race No.</th>
-          <th rowspan="2"><span class="visible-small" title="rmonth1">등급.</span><span class="visible-big" style="font-size: 1.2rem">등급</span></th>
+          <th rowspan="1" colspan="2">Race</th>
+          <th rowspan="1"><span class="visible-small" title="rmonth1">등급.</span><span class="visible-big" style="font-size: 1.2rem">등급</span></th>
           <th colspan="1"><span class="visible-small" title="rmonth1">거리.</span><span class="visible-big" style="font-size: 1.2rem">거리</span></th>
           <th colspan="1"><span class="visible-small" title="rmonth1">출주.</span><span class="visible-big" style="font-size: 1.2rem">출주</span></th>
 
           <th colspan="1"><span class="visible-small" title="rmonth1">발주.</span><span class="visible-big" style="font-size: 1.2rem">발주</span></th>
-          <th colspan="1"><span class="visible-small" title="rmonth1">게시글.</span><span class="visible-big" style="font-size: 1.2rem">게시글</span></th>
+          <th colspan="1"><span class="visible-small" title="rmonth1">게시.</span><span class="visible-big" style="font-size: 1.2rem">게시</span></th>
         </tr>
 
       </thead>
       <tbody>
 
-        {% for rcity, rdate, rno, rday, rseq,distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime, r1award, r2award, r3award, r4award, r5award, sub1award, sub2award, sub3award in racings %}
+        {% for rcity, rdate, rno, rday, rseq,distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime, r1award, r2award, r3award, r4award, r5award, sub1award, sub2award, sub3award, rcnt in racings %}
         {% if rday == '금' %}
         
         <tr class="view">
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{rcity}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem; font-weight: 500;"><a href="{% url 'prediction_race' rcity rdate rno 0 'awardee' %}">{{rno}}ʳ</a></td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{grade|slice:"0:2"}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{distance}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{rcount}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{rtime}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">0</td>
+          <td align="center" >
+            <div style="font-size: 0.9rem;">{{rcity|slice:"0:1"}}</div>
+            <div style="font-size: 0.9rem;">{{rcity|slice:"1:2"}}</div>
+          </td>
+          <td align="center" >
+            <a href="{% url 'prediction_race' rcity rdate rno 0 'awardee' %}">
+              <span style="font-size: 1.2rem; text-align: right;">{{rno}}ʳ</span>
+            </a>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{grade|slice:"0:2"}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{distance}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{rcount}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{rtime}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{rcnt}}</span>
+          </td>
 
 
         </tr>
@@ -84,7 +101,7 @@
                     <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">🔏&nbsp;글쓰기(기능구현 중)</span>
                   <!-- </a> -->
                   {% else %}
-                  <span class="tooltip" style="font-size: 1.1rem; font-weight: 400;">🔏&nbsp;글쓰기를 하시려면 로그인 해주세요.(기능구현 중)</span>
+                  <span class="tooltip" style="font-size: 1.1rem; font-weight: 400;">🔏&nbsp;글쓰기는 로그인이 필요합니다.(기능구현 중)</span>
                   {% endif %}
                   <a href="{% url 'prediction_race' rcity rdate rno 0 'awardee' %}"></a>
           
@@ -98,38 +115,26 @@
                   <tr>
                     <th><span class="visible-small" style="font-size: 1.0rem;">글쓴이</span><span class="visible-big" style="font-size: 1.0rem;">글쓴이</span></th>
                     <th><span class="visible-small" style="font-size: 1.0rem;">구분</span><span class="visible-big" style="font-size: 1.0rem;">구분</span></th>
-                    <th><span class="visible-small" style="font-size: 1.0rem;">조회수</span><span class="visible-big" style="font-size: 1.0rem;">조회수</span></th>
+                    <th><span class="visible-small" style="font-size: 1.0rem;">조회</span><span class="visible-big" style="font-size: 1.0rem;">조회</span></th>
                     <th><span class="visible-small" style="font-size: 1.0rem;">추천</span><span class="visible-big" style="font-size: 1.0rem;">추천</span></th>
                     <th><span class="visible-small" style="font-size: 1.0rem;">작성일시</span><span class="visible-big" style="font-size: 1.0rem;">작성일시</span></th>
                   </tr>
                 </thead>
                 <tbody>
-          
+                  {% for b_rcity, b_rdate, b_rno, username, memo, board, rcnt, scnt, updated, created in race_board %}
+                  {% if rcity == b_rcity and rdate == b_rdate and rno == b_rno%}
+                  
                   <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">1</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r1award|floatformat:0|intcomma}}</td>
+                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">{{username}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{board}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{rcnt}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{scnt}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{created}}</td>
                   </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">2</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r2award|floatformat:0|intcomma}}</td>
-                  </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">3</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r3award|floatformat:0|intcomma}}</td>
-          
-                  </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">4</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r4award|floatformat:0|intcomma}}</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem "></td>
-                  </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">5</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r5award|floatformat:0|intcomma}}</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem "></td>
-          
-                  </tr>
-          
+                  
+                  {% endif %}
+                  {% endfor %}
+              
                 </tbody>
               </table>
             </div>
@@ -150,95 +155,100 @@
       <thead>
     
         <tr>
-          <th rowspan="2" colspan="2">Race No.</th>
-          <th rowspan="2"><span class="visible-small" title="rmonth1">등급.</span><span class="visible-big" style="font-size: 1.2rem">등급</span></th>
+          <th rowspan="1" colspan="2">Race</th>
+          <th rowspan="1"><span class="visible-small" title="rmonth1">등급.</span><span class="visible-big" style="font-size: 1.2rem">등급</span></th>
           <th colspan="1"><span class="visible-small" title="rmonth1">거리.</span><span class="visible-big" style="font-size: 1.2rem">거리</span></th>
           <th colspan="1"><span class="visible-small" title="rmonth1">출주.</span><span class="visible-big" style="font-size: 1.2rem">출주</span></th>
-    
+
           <th colspan="1"><span class="visible-small" title="rmonth1">발주.</span><span class="visible-big" style="font-size: 1.2rem">발주</span></th>
-          <th colspan="1"><span class="visible-small" title="rmonth1">게시글.</span><span class="visible-big" style="font-size: 1.2rem">게시글</span></th>
+          <th colspan="1"><span class="visible-small" title="rmonth1">게시.</span><span class="visible-big" style="font-size: 1.2rem">게시</span></th>
         </tr>
-    
+
       </thead>
       <tbody>
-    
-        {% for rcity, rdate, rno, rday, rseq,distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime, r1award, r2award, r3award, r4award, r5award, sub1award, sub2award, sub3award in racings %}
+
+        {% for rcity, rdate, rno, rday, rseq,distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime, r1award, r2award, r3award, r4award, r5award, sub1award, sub2award, sub3award, rcnt in racings %}
         {% if rday == '토' %}
-    
+        
         <tr class="view">
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{rcity}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem; font-weight: 500;"><a href="{% url 'prediction_race' rcity rdate rno 0 'awardee' %}">{{rno}}ʳ</a></td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{grade|slice:"0:2"}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{distance}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{rcount}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{rtime}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">0</td>
-    
-    
+          <td align="center" >
+            <div style="font-size: 0.9rem;">{{rcity|slice:"0:1"}}</div>
+            <div style="font-size: 0.9rem;">{{rcity|slice:"1:2"}}</div>
+          </td>
+          <td align="center" >
+            <a href="{% url 'prediction_race' rcity rdate rno 0 'awardee' %}">
+              <span style="font-size: 1.2rem; text-align: right;">{{rno}}ʳ</span>
+            </a>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{grade|slice:"0:2"}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{distance}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{rcount}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{rtime}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{rcnt}}</span>
+          </td>
+
+
         </tr>
         <tr class="fold">
           <td colspan="7">
-    
+          
             <div class="fold-content" style="font-size: 1.3rem; font-weight: 500;">
-    
+          
               <ul>
                 <li>
                   {% if request.user.username %}
                   <!-- <a href="{% url 'update_popularity' rcity rdate rno %}">인기도 or 경주결과 입력</a> -->
-                  <a href="{% url 'update_popularity' rcity rdate rno %}" onclick="window.open(this.href, '_blank', 'width=900, height=800, toolbars=no, scrollbars=yes'); return false;">
+                  <!-- <a href="{% url 'update_popularity' rcity rdate rno %}" onclick="window.open(this.href, '_blank', 'width=900, height=800, toolbars=no, scrollbars=yes'); return false;"> -->
                     <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">🔏&nbsp;글쓰기(기능구현 중)</span>
-                  </a>
+                  <!-- </a> -->
                   {% else %}
-                  <span class="tooltip" style="font-size: 1.1rem; font-weight: 400;">🔏&nbsp;글쓰기를 하시려면 로그인 해주세요.(기능구현 중)</span>
+                  <span class="tooltip" style="font-size: 1.1rem; font-weight: 400;">🔏&nbsp;글쓰기는 로그인이 필요합니다.(기능구현 중)</span>
                   {% endif %}
                   <a href="{% url 'prediction_race' rcity rdate rno 0 'awardee' %}"></a>
-    
+          
                 </li>
               </ul>
             </div>
-    
+          
             <div class="fold-content">
               <table class="small-friendly">
                 <thead>
                   <tr>
                     <th><span class="visible-small" style="font-size: 1.0rem;">글쓴이</span><span class="visible-big" style="font-size: 1.0rem;">글쓴이</span></th>
                     <th><span class="visible-small" style="font-size: 1.0rem;">구분</span><span class="visible-big" style="font-size: 1.0rem;">구분</span></th>
-                    <th><span class="visible-small" style="font-size: 1.0rem;">조회수</span><span class="visible-big" style="font-size: 1.0rem;">조회수</span></th>
+                    <th><span class="visible-small" style="font-size: 1.0rem;">조회</span><span class="visible-big" style="font-size: 1.0rem;">조회</span></th>
                     <th><span class="visible-small" style="font-size: 1.0rem;">추천</span><span class="visible-big" style="font-size: 1.0rem;">추천</span></th>
                     <th><span class="visible-small" style="font-size: 1.0rem;">작성일시</span><span class="visible-big" style="font-size: 1.0rem;">작성일시</span></th>
                   </tr>
                 </thead>
                 <tbody>
-    
+                  {% for b_rcity, b_rdate, b_rno, username, memo, board, rcnt, scnt, updated, created in race_board %}
+                  {% if rcity == b_rcity and rdate == b_rdate and rno == b_rno%}
+              
                   <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">1</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r1award|floatformat:0|intcomma}}</td>
+                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">{{username}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{board}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{rcnt}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{scnt}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{created}}</td>
                   </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">2</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r2award|floatformat:0|intcomma}}</td>
-                  </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">3</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r3award|floatformat:0|intcomma}}</td>
-    
-                  </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">4</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r4award|floatformat:0|intcomma}}</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem "></td>
-                  </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">5</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r5award|floatformat:0|intcomma}}</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem "></td>
-    
-                  </tr>
-    
+              
+                  {% endif %}
+                  {% endfor %}
+              
                 </tbody>
               </table>
             </div>
-    
+          
           </td>
         </tr>
         {% endif %}
@@ -255,29 +265,46 @@
       <thead>
     
         <tr>
-          <th rowspan="2" colspan="2">Race No.</th>
-          <th rowspan="2"><span class="visible-small" title="rmonth1">등급.</span><span class="visible-big" style="font-size: 1.2rem">등급</span></th>
+          <th rowspan="1" colspan="2">Race</th>
+          <th rowspan="1"><span class="visible-small" title="rmonth1">등급.</span><span class="visible-big" style="font-size: 1.2rem">등급</span></th>
           <th colspan="1"><span class="visible-small" title="rmonth1">거리.</span><span class="visible-big" style="font-size: 1.2rem">거리</span></th>
           <th colspan="1"><span class="visible-small" title="rmonth1">출주.</span><span class="visible-big" style="font-size: 1.2rem">출주</span></th>
 
           <th colspan="1"><span class="visible-small" title="rmonth1">발주.</span><span class="visible-big" style="font-size: 1.2rem">발주</span></th>
-          <th colspan="1"><span class="visible-small" title="rmonth1">게시글.</span><span class="visible-big" style="font-size: 1.2rem">게시글</span></th>
+          <th colspan="1"><span class="visible-small" title="rmonth1">게시.</span><span class="visible-big" style="font-size: 1.2rem">게시</span></th>
         </tr>
 
       </thead>
       <tbody>
 
-        {% for rcity, rdate, rno, rday, rseq,distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime, r1award, r2award, r3award, r4award, r5award, sub1award, sub2award, sub3award in racings %}
+        {% for rcity, rdate, rno, rday, rseq,distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime, r1award, r2award, r3award, r4award, r5award, sub1award, sub2award, sub3award, rcnt in racings %}
         {% if rday == '일' and rcity == '서울' %}
         
         <tr class="view">
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{rcity}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem; font-weight: 500;"><a href="{% url 'prediction_race' rcity rdate rno 0 'awardee' %}">{{rno}}ʳ</a></td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{grade|slice:"0:2"}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{distance}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{rcount}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{rtime}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">0</td>
+          <td align="center" >
+            <div style="font-size: 0.9rem;">{{rcity|slice:"0:1"}}</div>
+            <div style="font-size: 0.9rem;">{{rcity|slice:"1:2"}}</div>
+          </td>
+          <td align="center" >
+            <a href="{% url 'prediction_race' rcity rdate rno 0 'awardee' %}">
+              <span style="font-size: 1.2rem; text-align: right;">{{rno}}ʳ</span>
+            </a>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{grade|slice:"0:2"}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{distance}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{rcount}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{rtime}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{rcnt}}</span>
+          </td>
 
 
         </tr>
@@ -290,11 +317,11 @@
                 <li>
                   {% if request.user.username %}
                   <!-- <a href="{% url 'update_popularity' rcity rdate rno %}">인기도 or 경주결과 입력</a> -->
-                  <a href="{% url 'update_popularity' rcity rdate rno %}" onclick="window.open(this.href, '_blank', 'width=900, height=800, toolbars=no, scrollbars=yes'); return false;">
+                  <!-- <a href="{% url 'update_popularity' rcity rdate rno %}" onclick="window.open(this.href, '_blank', 'width=900, height=800, toolbars=no, scrollbars=yes'); return false;"> -->
                     <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">🔏&nbsp;글쓰기(기능구현 중)</span>
-                  </a>
+                  <!-- </a> -->
                   {% else %}
-                  <span class="tooltip" style="font-size: 1.1rem; font-weight: 400;">🔏&nbsp;글쓰기를 하시려면 로그인 해주세요.(기능구현 중)</span>
+                  <span class="tooltip" style="font-size: 1.1rem; font-weight: 400;">🔏&nbsp;글쓰기는 로그인이 필요합니다.(기능구현 중)</span>
                   {% endif %}
                   <a href="{% url 'prediction_race' rcity rdate rno 0 'awardee' %}"></a>
           
@@ -308,38 +335,26 @@
                   <tr>
                     <th><span class="visible-small" style="font-size: 1.0rem;">글쓴이</span><span class="visible-big" style="font-size: 1.0rem;">글쓴이</span></th>
                     <th><span class="visible-small" style="font-size: 1.0rem;">구분</span><span class="visible-big" style="font-size: 1.0rem;">구분</span></th>
-                    <th><span class="visible-small" style="font-size: 1.0rem;">조회수</span><span class="visible-big" style="font-size: 1.0rem;">조회수</span></th>
+                    <th><span class="visible-small" style="font-size: 1.0rem;">조회</span><span class="visible-big" style="font-size: 1.0rem;">조회</span></th>
                     <th><span class="visible-small" style="font-size: 1.0rem;">추천</span><span class="visible-big" style="font-size: 1.0rem;">추천</span></th>
                     <th><span class="visible-small" style="font-size: 1.0rem;">작성일시</span><span class="visible-big" style="font-size: 1.0rem;">작성일시</span></th>
                   </tr>
                 </thead>
                 <tbody>
-          
+                  {% for b_rcity, b_rdate, b_rno, username, memo, board, rcnt, scnt, updated, created in race_board %}
+                  {% if rcity == b_rcity and rdate == b_rdate and rno == b_rno%}
+              
                   <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">1</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r1award|floatformat:0|intcomma}}</td>
+                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">{{username}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{board}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{rcnt}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{scnt}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{created}}</td>
                   </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">2</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r2award|floatformat:0|intcomma}}</td>
-                  </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">3</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r3award|floatformat:0|intcomma}}</td>
-          
-                  </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">4</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r4award|floatformat:0|intcomma}}</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem "></td>
-                  </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">5</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r5award|floatformat:0|intcomma}}</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem "></td>
-          
-                  </tr>
-          
+              
+                  {% endif %}
+                  {% endfor %}
+              
                 </tbody>
               </table>
             </div>
@@ -361,29 +376,46 @@
       <thead>
     
         <tr>
-          <th rowspan="2" colspan="2">Race No.</th>
-          <th rowspan="2"><span class="visible-small" title="rmonth1">등급.</span><span class="visible-big" style="font-size: 1.2rem">등급</span></th>
+          <th rowspan="1" colspan="2">Race</th>
+          <th rowspan="1"><span class="visible-small" title="rmonth1">등급.</span><span class="visible-big" style="font-size: 1.2rem">등급</span></th>
           <th colspan="1"><span class="visible-small" title="rmonth1">거리.</span><span class="visible-big" style="font-size: 1.2rem">거리</span></th>
           <th colspan="1"><span class="visible-small" title="rmonth1">출주.</span><span class="visible-big" style="font-size: 1.2rem">출주</span></th>
 
           <th colspan="1"><span class="visible-small" title="rmonth1">발주.</span><span class="visible-big" style="font-size: 1.2rem">발주</span></th>
-          <th colspan="1"><span class="visible-small" title="rmonth1">게시글.</span><span class="visible-big" style="font-size: 1.2rem">게시글</span></th>
+          <th colspan="1"><span class="visible-small" title="rmonth1">게시.</span><span class="visible-big" style="font-size: 1.2rem">게시</span></th>
         </tr>
 
       </thead>
       <tbody>
 
-        {% for rcity, rdate, rno, rday, rseq,distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime, r1award, r2award, r3award, r4award, r5award, sub1award, sub2award, sub3award in racings %}
+        {% for rcity, rdate, rno, rday, rseq,distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime, r1award, r2award, r3award, r4award, r5award, sub1award, sub2award, sub3award, rcnt in racings %}
         {% if rday == '일' and rcity == '부산' %}
         
         <tr class="view">
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{rcity}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem; font-weight: 500;"><a href="{% url 'prediction_race' rcity rdate rno 0 'awardee' %}">{{rno}}ʳ</a></td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{grade|slice:"0:2"}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{distance}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{rcount}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">{{rtime}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.2rem ">0</td>
+          <td align="center" >
+            <div style="font-size: 0.9rem;">{{rcity|slice:"0:1"}}</div>
+            <div style="font-size: 0.9rem;">{{rcity|slice:"1:2"}}</div>
+          </td>
+          <td align="center" >
+            <a href="{% url 'prediction_race' rcity rdate rno 0 'awardee' %}">
+              <span style="font-size: 1.2rem; text-align: right;">{{rno}}ʳ</span>
+            </a>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{grade|slice:"0:2"}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{distance}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{rcount}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{rtime}}</span>
+          </td>
+          <td align="center">
+            <span style="font-family: Arial; font-size: 1.2rem;">{{rcnt}}</span>
+          </td>
 
 
         </tr>
@@ -396,11 +428,11 @@
                 <li>
                   {% if request.user.username %}
                   <!-- <a href="{% url 'update_popularity' rcity rdate rno %}">인기도 or 경주결과 입력</a> -->
-                  <a href="{% url 'update_popularity' rcity rdate rno %}" onclick="window.open(this.href, '_blank', 'width=900, height=800, toolbars=no, scrollbars=yes'); return false;">
+                  <!-- <a href="{% url 'update_popularity' rcity rdate rno %}" onclick="window.open(this.href, '_blank', 'width=900, height=800, toolbars=no, scrollbars=yes'); return false;"> -->
                     <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">🔏&nbsp;글쓰기(기능구현 중)</span>
-                  </a>
+                  <!-- </a> -->
                   {% else %}
-                  <span class="tooltip" style="font-size: 1.1rem; font-weight: 400;">🔏&nbsp;글쓰기를 하시려면 로그인 해주세요.(기능구현 중)</span>
+                  <span class="tooltip" style="font-size: 1.1rem; font-weight: 400;">🔏&nbsp;글쓰기는 로그인이 필요합니다.(기능구현 중)</span>
                   {% endif %}
                   <a href="{% url 'prediction_race' rcity rdate rno 0 'awardee' %}"></a>
           
@@ -414,38 +446,26 @@
                   <tr>
                     <th><span class="visible-small" style="font-size: 1.0rem;">글쓴이</span><span class="visible-big" style="font-size: 1.0rem;">글쓴이</span></th>
                     <th><span class="visible-small" style="font-size: 1.0rem;">구분</span><span class="visible-big" style="font-size: 1.0rem;">구분</span></th>
-                    <th><span class="visible-small" style="font-size: 1.0rem;">조회수</span><span class="visible-big" style="font-size: 1.0rem;">조회수</span></th>
+                    <th><span class="visible-small" style="font-size: 1.0rem;">조회</span><span class="visible-big" style="font-size: 1.0rem;">조회</span></th>
                     <th><span class="visible-small" style="font-size: 1.0rem;">추천</span><span class="visible-big" style="font-size: 1.0rem;">추천</span></th>
                     <th><span class="visible-small" style="font-size: 1.0rem;">작성일시</span><span class="visible-big" style="font-size: 1.0rem;">작성일시</span></th>
                   </tr>
                 </thead>
                 <tbody>
-          
+                  {% for b_rcity, b_rdate, b_rno, username, memo, board, rcnt, scnt, updated, created in race_board %}
+                  {% if rcity == b_rcity and rdate == b_rdate and rno == b_rno%}
+              
                   <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">1</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r1award|floatformat:0|intcomma}}</td>
+                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">{{username}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{board}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{rcnt}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{scnt}}</td>
+                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{created}}</td>
                   </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">2</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r2award|floatformat:0|intcomma}}</td>
-                  </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">3</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r3award|floatformat:0|intcomma}}</td>
-          
-                  </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">4</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r4award|floatformat:0|intcomma}}</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem "></td>
-                  </tr>
-                  <tr>
-                    <td align="center" style="font-family: Arial; font-size: 1.0rem ">5</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem ">{{r5award|floatformat:0|intcomma}}</td>
-                    <td align="right" style="font-family: Arial; font-size: 1.0rem "></td>
-          
-                  </tr>
-          
+              
+                  {% endif %}
+                  {% endfor %}
+              
                 </tbody>
               </table>
             </div>

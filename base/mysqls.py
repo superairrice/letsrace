@@ -292,8 +292,9 @@ def get_race(i_rdate, i_awardee):
         cursor = connection.cursor()
 
         strSql = """ 
-                select rcity, rdate, rno, rday, rseq,distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime, r1award/1000, r2award/1000, r3award/1000, r4award/1000, r5award/1000, sub1award/1000, sub2award/1000, sub3award/1000
-                  from exp010
+                select rcity, rdate, rno, rday, rseq,distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime, r1award/1000, r2award/1000, r3award/1000, r4award/1000, r5award/1000, sub1award/1000, sub2award/1000, sub3award/1000,
+                      ( select count(*) from rboard where a.rcity = rcity and a.rdate = rdate and a.rno = rno ) rcnt
+                  from exp010 a 
                 where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
                 ; """
 
@@ -325,8 +326,27 @@ def get_race(i_rdate, i_awardee):
     except:
         connection.rollback()
         print("Failed selecting in expect : 경주별 Detail(약식)) ")
+        
+    try:
+        cursor = connection.cursor()
 
-    return racings, race_detail
+        strSql = """ 
+                select rcity, rdate, rno, username, memo, board, rcnt, scnt, updated, created
+                  from rboard
+                where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
+                ; """
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        race_board = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in expect : 경주별 Detail(약식)) ")
+
+    return racings, race_detail, race_board
 
 
 def get_training(i_rcity, i_rdate, i_rno):
