@@ -31,6 +31,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 
 def loginPage(request):
+
     page = 'login'
     if request.user.is_authenticated:
         return redirect('home')
@@ -66,13 +67,14 @@ def registerPage(request):
             user = form.save(commit=False)
             user.username = user.username.lower()
             user.save()
-            login(request, user)
+            # login(request, user)    # allauth 소셜로그인 적용전 
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect('home')
         else:
             messages.warning(request, form.errors)
 
-            print(form.errors)
-            print(form.non_field_errors())
+            # print(form.errors)
+            # print(form.non_field_errors())
 
     return render(request, 'base/login_register.html', {'form': form})
 
@@ -351,7 +353,7 @@ def home(request):
 
     race, expects, award_j = get_prediction(i_rdate)
 
-    context = {'racings': racings, 'expects': expects, 'fdate': fdate, 
+    context = {'racings': racings, 'expects': expects, 'fdate': fdate,
                'race_detail': race_detail,
                'race_board': race_board,
                'jname1': jname1,
@@ -671,6 +673,11 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     pedigree = sorted(pedigree, key=lambda x: x[2] or 99)
     # print(h_audit)
 
+    horses = RecordS.objects.values('horse').filter(rcity=rcity1,
+                                                    rdate=rdate1,
+                                                    rno=rno1)
+    print(horses)
+
     context = {'records': records,
                'r_condition': r_condition,
                #    'training': training,
@@ -680,6 +687,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
                'pedigree': pedigree,
                'h_audit': h_audit,
                'judged_horse': judged_horse,
+               'horses': horses,
                }
 
     return render(request, 'base/race_result.html', context)
@@ -1148,3 +1156,25 @@ def pyscriptTest(request):
     pass
 
     return render(request, 'base/pyscript_test.html')
+
+
+@login_required(login_url='login')
+def createBorder(request):
+    form = RoomForm()
+    topics = Topic.objects.all()
+
+    if request.method == 'POST':
+        topic_name = request.POST.get('topic')
+        topic, created = Topic.objects.get_or_create(name=topic_name)
+
+        Room.objects.create(
+            host=request.user,
+            topic=topic,
+            name=request.POST.get('name'),
+            description=request.POST.get('description'),
+        )
+        return redirect('home')
+
+    context = {'form': form, 'topics': topics}
+    # render(request, 'base/room_form.html', context)
+    return render(request, 'base/room_form.html', context)
