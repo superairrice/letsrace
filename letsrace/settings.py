@@ -10,7 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
+import os
+import json
 from pathlib import Path
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -19,7 +22,49 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#5avbtnbsu4-))u-lddtuvxhnf#%2p9x*cvjr3pmna^tvk7_6^'
+
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+
+secret_file = os.path.join(BASE_DIR, 'secrets.json')
+
+with open(secret_file) as f:
+    secrets = json.loads(f.read())
+
+
+def get_secret(setting, secrets=secrets):
+    try:
+        return secrets[setting]
+    except KeyError:
+        error_msg = "Set the {} environment variable".format(setting)
+        raise ImproperlyConfigured(error_msg)
+
+
+SECRET_KEY = get_secret("SECRET_KEY")
+
+# Email 전송
+# 메일을 호스트하는 서버
+EMAIL_HOST = 'smtp.gmail.com'
+
+# gmail과의 통신하는 포트
+EMAIL_PORT = '587'
+
+# 발신할 이메일
+# EMAIL_HOST_USER = '구글아이디@gmail.com'
+EMAIL_HOST_USER = get_secret("EMAIL_HOST_USER")
+
+# 발신할 메일의 비밀번호
+# EMAIL_HOST_PASSWORD = '구글비밀번호'
+EMAIL_HOST_PASSWORD = get_secret("EMAIL_HOST_PASSWORD")
+
+# TLS 보안 방법
+EMAIL_USE_TLS = True
+
+# 사이트와 관련한 자동응답을 받을 이메일 주소
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -57,10 +102,45 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
 
     'allauth.socialaccount.providers.naver',
+    'allauth.socialaccount.providers.google',
 
 ]
 
-SITE_ID = 1
+SITE_ID = 4
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'online',
+        },
+        'OAUTH_PKCE_ENABLED': True,
+    }
+}
+
+# settings.py
+ACCOUNT_SIGNUP_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# ACCOUNT_AUTHENTICATION_METHOD = 'email'  # 유저네임은 말고 email로만 인증 할것임
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_USERNAME_REQUIRED = False
+# # none, optional(default, 보내긴하는데 인증하지않아도), mandatory(이메일인증받지않으면 로그인할수없다)
+# ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+# ACCOUNT_CONFIRM_EMIAL_ON_GET = True
+
+# settings.py
+# 로그인시 username 이 아니라 email을 사용하게 하는 설정
+# ACCOUNT_AUTHENTICATION_METHOD = 'email'
+# ACCOUNT_EMAIL_REQUIRED = True  # 회원가입시 필수 이메일을 필수항목으로 만들기
+# ACCOUNT_USERNAME_REQUIRED = False  # USERNAME 을 필수항목에서 제거
+
 
 AUTH_USER_MODEL = 'base.User'
 
@@ -95,7 +175,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         # 'DIRS': [],
-        'DIRS': [BASE_DIR/'templates'],
+        'DIRS': [BASE_DIR/'templates', os.path.join(BASE_DIR, 'templates', 'accounts')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

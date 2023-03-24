@@ -24,10 +24,13 @@ urlpatterns = [
 
     path('__debug__/', include('debug_toolbar.urls')),
 
-    path('accounts/', include('allauth.urls')),
+    # path('', include('base.urls')),
 
+    path('', include('allauth.urls')),
+    # path('accounts/', include('base.api.urls')),
 
     path('', include('base.urls')),
+
 
 
 ]

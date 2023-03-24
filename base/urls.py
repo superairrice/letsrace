@@ -1,11 +1,13 @@
 from django.urls import include, path
 from . import views
 
+
 urlpatterns = [
 
     path('login/', views.loginPage, name="login"),
     path('logout/', views.logoutUser, name="logout"),
     path('register/', views.registerPage, name="register"),
+
 
     path('awards/', views.awards, name="awards"),
 
@@ -77,6 +79,8 @@ urlpatterns = [
 
 
     path('', views.home, name="home"),
+
+    path('send_email/', views.send_email, name='send_email'),
 
 
 ]

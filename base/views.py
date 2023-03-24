@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from email.message import EmailMessage
 import os
 import pandas as pd
 
@@ -14,7 +15,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from base.data_management import get_breakingnews, get_file_contents, get_kradata, get_krafile, krafile_convert
 
 from base.mysqls import (get_award, get_award_race, get_jockey_trend, get_judged, get_judged_horse, get_judged_jockey, get_last2weeks_loadin, get_paternal,
-                         get_paternal_dist, get_pedigree, get_popularity_rate, get_prediction, get_print_prediction, get_race, get_race_center_detail_view, get_status_train, get_train, get_train_audit, get_train_horse,
+                         get_paternal_dist, get_pedigree, get_popularity_rate, get_popularity_rate_t, get_prediction, get_print_prediction, get_race, get_race_center_detail_view, get_status_train, get_train, get_train_audit, get_train_horse,
                          get_training, get_status_training, get_weeks, get_last2weeks)
 from letsrace.settings import KRAFILE_ROOT
 
@@ -32,7 +33,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 def loginPage(request):
 
-    page = 'login'
+    page = 'account_login'
     if request.user.is_authenticated:
         return redirect('home')
 
@@ -67,7 +68,7 @@ def registerPage(request):
             user = form.save(commit=False)
             user.username = user.username.lower()
             user.save()
-            # login(request, user)    # allauth 소셜로그인 적용전 
+            # login(request, user)    # allauth 소셜로그인 적용전
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             return redirect('home')
         else:
@@ -104,6 +105,17 @@ def room(request, pk):
 
 
 def userProfile(request, pk):
+    user = User.objects.get(id=pk)
+    rooms = user.room_set.all()
+    room_messages = user.message_set.all()
+    topics = Topic.objects.all()
+
+    context = {"user": user, "rooms": rooms,
+               "room_messages": room_messages, "topics": topics, }
+    return render(request, 'base/profile.html', context)
+
+
+def profilePage(request, pk):
     user = User.objects.get(id=pk)
     rooms = user.room_set.all()
     room_messages = user.message_set.all()
@@ -434,7 +446,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
 
     # print(hr_records.query)
 
-    # training_team = get_training_team(rcity, rdate, rno)
+    # training_team = get_training_team(rcity, rdate, rno) 
 
     racings, race_detail, race_board = get_race(rdate, i_awardee='jockey')
 
@@ -459,6 +471,8 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     h_audit = get_train_audit(rcity, rdate, rno)
 
     popularity_rate = get_popularity_rate(
+        rcity, rdate, rno)            # 인기순위별 승률
+    popularity_rate_t = get_popularity_rate_t(
         rcity, rdate, rno)            # 인기순위별 승률
 
     judged = get_judged(rcity, rdate, rno)
@@ -485,6 +499,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
                # 'hr_pedigree': hr_pedigree,
 
                'popularity_rate': popularity_rate,
+               'popularity_rate_t': popularity_rate_t,
                #    'training': training,
                'train': train,
                'h_audit': h_audit,
@@ -1178,3 +1193,12 @@ def createBorder(request):
     context = {'form': form, 'topics': topics}
     # render(request, 'base/room_form.html', context)
     return render(request, 'base/room_form.html', context)
+
+
+def send_email():
+    subject = "message"
+    to = ["keombit@gmail.com"]
+    from_email = "id@gmail.com"
+    message = "메지시 테스트"
+    EmailMessage(subject=subject, body=message,
+                 to=to, from_email=from_email).send()

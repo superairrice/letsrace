@@ -94,7 +94,19 @@ def get_judged_jockey(rcity, rdate, rno):
                 AND a.rcity = '""" + rcity + """'
                 AND a.rdate = '""" + rdate + """'
                 AND a.rno = """ + str(rno) + """
-              order by jockey, rdate desc
+
+              union
+
+              SELECT distinct a.rank, a.gate, a.horse, b.rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
+                FROM The1.exp011     a,
+                      The1.rec015     b
+                where a.jockey = b.jockey 
+                AND b.t_sort = '조교사'
+                AND b.rdate between date_format(DATE_ADD('""" + rdate + """', INTERVAL - 100 DAY), '%Y%m%d') and '""" + rdate + """'
+                AND a.rcity = '""" + rcity + """'
+                AND a.rdate = '""" + rdate + """'
+                AND a.rno = """ + str(rno) + """
+
             ; """
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
@@ -326,7 +338,7 @@ def get_race(i_rdate, i_awardee):
     except:
         connection.rollback()
         print("Failed selecting in expect : 경주별 Detail(약식)) ")
-        
+
     try:
         cursor = connection.cursor()
 
@@ -1102,6 +1114,8 @@ def get_status_train(i_rdate):
 
     return training
 
+# 기수 인기도 및 게이트 연대율
+
 
 def get_popularity_rate(i_rcity, i_rdate, i_rno):
     try:
@@ -1157,7 +1171,7 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
                         ;"""
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
-        training = cursor.fetchall()
+        popularity = cursor.fetchall()
 
         connection.commit()
         connection.close()
@@ -1166,7 +1180,75 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
         connection.rollback()
         print("Failed selecting in BookListView")
 
-    return training
+    return popularity
+
+# 조교사 인기도 및 게이트 연대율
+
+
+def get_popularity_rate_t(i_rcity, i_rdate, i_rno):
+    try:
+        cursor = connection.cursor()
+
+        strSql = """select b.rank, b.gate, b.jockey, b.trainer, b.host,
+                                  sum(r1_1) r1_1, sum(r1_2) r1_2, sum(r1_3) r1_3, sum(r1_cnt) r1_cnt, 
+                                  sum(r3_1) r1_1, sum(r3_2) r2_2, sum(r3_3) r3_3, sum(r3_cnt) r3_cnt,
+                                  sum(gt_1) r1_1, sum(gt_2) r2_2, sum(gt_3) gt_3, sum(gt_cnt) gt_cnt
+                      from
+                      (
+                        SELECT trainer, sum( if( rank = 1, 1, 0 )) r1_1, sum( if( rank = 2, 1, 0 )) r1_2, sum( if( rank = 3, 1, 0 )) r1_3, count(*) r1_cnt,
+                                    0 r3_1, 0 r3_2, 0 r3_3, 0 r3_cnt,
+                                    0 gt_1, 0 gt_2, 0 gt_3, 0 gt_cnt
+                        FROM The1.rec011 a
+                        where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                        and pop_rank = 1
+                        group by trainer 
+
+                        union all
+
+                        SELECT trainer, 0, 0, 0, 0,
+                                        sum( if( rank = 1, 1, 0 )) r1, sum( if( rank = 2, 1, 0 )) r2, sum( if( rank = 3, 1, 0 )) r3, count(*) rcnt,
+                                        0, 0, 0, 0
+                        FROM The1.rec011 a
+                        where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                        and alloc3r <= 1.9 /* 연식 1.9이하 인기마 */
+                        
+                        group by trainer 
+
+                        union all
+    
+                        select b.trainer,   0, 0, 0, 0,  0, 0, 0, 0, r1_1,  r1_2,  r1_3,  r1_cnt
+                        from
+                        (
+                          SELECT trainer, gate, sum( if( rank = 1, 1, 0 )) r1_1, sum( if( rank = 2, 1, 0 )) r1_2, sum( if( rank = 3, 1, 0 )) r1_3, count(*) r1_cnt
+                          FROM The1.record 
+                          where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                          and grade != '주행검사'
+                          group by trainer , gate	
+                          ) a  right outer join  The1.exp011 b  on a.trainer = b.trainer and a.gate = b.gate
+                        where b.rcity =  '""" + i_rcity + """'
+                          and b.rdate = '""" + i_rdate + """'
+                          and b.rno =  """ + str(i_rno) + """
+
+
+                      ) a  right outer join  The1.exp011 b  on a.trainer = b.trainer
+                    where b.rcity =  '""" + i_rcity + """'
+                      and b.rdate = '""" + i_rdate + """'
+                      and b.rno =  """ + str(i_rno) + """
+                    group by b.rank, b.gate, b.trainer
+                    order by b.rank, b.gate, b.trainer
+                        ;"""
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        popularity = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in BookListView")
+
+    return popularity
 
 
 def get_print_prediction(i_rcity, i_rdate):
