@@ -153,7 +153,7 @@ class Exp011(models.Model):
     r_record = models.CharField(max_length=10, blank=True, null=True)
     ir_record = models.IntegerField(blank=True, null=True)
     remark = models.CharField(max_length=1000, blank=True, null=True)
-    h_weight = models.IntegerField(blank=True, null=True)
+    h_weight = models.CharField(max_length=10, blank=True, null=True)
     j_per = models.DecimalField(
         max_digits=4, decimal_places=1, blank=True, null=True)
     t_per = models.DecimalField(
@@ -165,6 +165,10 @@ class Exp011(models.Model):
     jt_2nd = models.IntegerField(blank=True, null=True)
     jt_3rd = models.IntegerField(blank=True, null=True)
     r_pop = models.IntegerField(blank=True, null=True)
+    jockey_old = models.CharField(max_length=10, blank=True, null=True)
+    handycap_old = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True)
+    reason = models.CharField(max_length=45, blank=True, null=True)
 
     class Meta:
         managed = True

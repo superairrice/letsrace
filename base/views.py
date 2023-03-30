@@ -16,7 +16,7 @@ from base.data_management import get_breakingnews, get_file_contents, get_kradat
 
 from base.mysqls import (get_award, get_award_race, get_jockey_trend, get_judged, get_judged_horse, get_judged_jockey, get_last2weeks_loadin, get_paternal,
                          get_paternal_dist, get_pedigree, get_popularity_rate, get_popularity_rate_t, get_prediction, get_print_prediction, get_race, get_race_center_detail_view, get_status_train, get_train, get_train_audit, get_train_horse,
-                         get_training, get_status_training, get_weeks, get_last2weeks)
+                         get_training, get_status_training, get_weeks, get_last2weeks, set_changed_race_horse, set_changed_race_jockey, set_changed_race_weight)
 from letsrace.settings import KRAFILE_ROOT
 
 # import base.mysqls
@@ -33,7 +33,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 def loginPage(request):
 
-    page = 'account_login'
+    page = 'login'
+
+    print(page)
+
     if request.user.is_authenticated:
         return redirect('home')
 
@@ -55,7 +58,7 @@ def loginPage(request):
             messages.error(request, messages.warning)
 
     context = {'page': page}
-    return render(request, 'base/login_register.html', context)
+    return render(request, 'account/login.html', context)
 
 
 def registerPage(request):
@@ -446,12 +449,12 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
 
     # print(hr_records.query)
 
-    # training_team = get_training_team(rcity, rdate, rno) 
+    # training_team = get_training_team(rcity, rdate, rno)
 
     racings, race_detail, race_board = get_race(rdate, i_awardee='jockey')
 
     compare_r = exp011s.aggregate(Min('i_s1f'), Min('i_g1f'), Min('i_g2f'), Min('i_g3f'), Max(
-        'handycap'), Max('rating'), Max('r_pop'), Max('j_per'), Max('t_per'), Max('jt_per'))
+        'handycap'), Max('rating'), Max('r_pop'), Max('j_per'), Max('t_per'), Max('jt_per'), Min('recent5'), Min('recent3'))
 
     try:
         alloc = Rec010.objects.get(rcity=rcity, rdate=rdate, rno=rno)
@@ -481,7 +484,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
 
     trend_j = get_jockey_trend(rcity, rdate, rno)
 
-    # print(trend_j)
+    print(request.user.is_authenticated)
 
     context = {'exp011s': exp011s,
                'r_condition': r_condition,
@@ -654,6 +657,73 @@ def updatePopularity(request, rcity, rdate, rno):
 
     # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
     return render(request, 'base/update_popularity.html', context)
+
+
+@login_required(login_url='login')
+def updateChangedRace(request, rcity, rdate, rno):
+
+    r_content = request.GET.get('r_content') if request.GET.get(
+        'r_content') != None else ''
+    fdata = request.GET.get('fdata') if request.GET.get(
+        'fdata') != None else ''
+
+    if fdata == '-':
+        print(fdata)
+    elif fdata == '마체중':
+        set_changed_race_weight(rcity, rdate, rno, r_content)
+    elif fdata == '경주순위':
+        pass
+    elif fdata == '경주마취소':
+        print(r_content)
+        set_changed_race_horse(rcity, rdate, rno, r_content)
+    elif fdata == '기수변경':
+        print(r_content)
+        set_changed_race_jockey(rcity, rdate, rno, r_content)
+
+    exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno)
+    context = {'rcity': rcity, 'exp011s': exp011s}
+
+    # user = request.user
+    # form = UserForm(instance=user)
+
+    if request.method == 'POST':
+
+        myDict = dict(request.POST)
+        print(myDict['pop_1'][0])
+
+        for race in exp011s:
+            pop = 'pop_' + str(race.gate)
+
+            try:
+                cursor = connection.cursor()
+
+                strSql = """ update exp011 
+                                set r_rank = """ + myDict[pop][0] + """,
+                                    r_pop = """ + myDict[pop][1] + """
+                            where rdate = '""" + rdate + """' and rcity = '""" + rcity + """' and rno = """ + str(rno) + """ and gate = """ + str(race.gate) + """
+                        ; """
+
+                print(strSql)
+                r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                awards = cursor.fetchall()
+
+                connection.commit()
+                connection.close()
+
+                # return render(request, 'base/update_popularity.html', context)
+                # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+
+            except:
+                connection.rollback()
+                print("Failed updating in exp011")
+
+        # form = Exp011(request.POST, request.FILES, rcity=rcity, rdate=rdate, rno=rno, instance=pop_1)
+        # if form.is_valid():
+        #     form.save()
+        #     redirect('user-profile', pk=rdate)
+
+    # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+    return render(request, 'base/update_changed_race.html', context)
 
 
 def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):

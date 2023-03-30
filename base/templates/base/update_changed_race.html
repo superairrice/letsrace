@@ -14,13 +14,11 @@
 
   <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
 
-  <title>Let's Enjoy! 인기도 입력</title>
-
+  <title>Let's Enjoy! 경주제반 </title>
 
 </head>
 
 {% block content %}
-<br>
 <br>
 
   <div class="container">
@@ -32,15 +30,14 @@
         <div class="room__top">
           <div class="room__topLeft">
         
-            <a href="{% url 'update_popularity' race.rcity race.rdate race.rno|add:-1 %}">
+            <a href="{% url 'update_changed_race' race.rcity race.rdate race.rno|add:-1 %}">
               <span class="tooltip" style="color:var(--color-main); font-size: 1.5rem;">◀︎
                 <span class="tooltip-text" style="font-size:1.4rem; text-align: right; font-family: Arial; z-index: 3;">
                   이전 경주
                 </span>
               </span>
             </a>
-            <span class="tooltip" style="font-size: 1.5rem;">🏇</span>
-            <a href="{% url 'update_popularity' race.rcity race.rdate race.rno|add:1 %}">
+            <a href="{% url 'update_changed_race' race.rcity race.rdate race.rno|add:1 %}">
               <span class="tooltip" style="color:var(--color-main); font-size: 1.5rem;">▶︎
                 <span class="tooltip-text" style="font-size:1.4rem; text-align: right; font-family: Arial; z-index: 3;">
                   다음 경주
@@ -59,78 +56,121 @@
         
           </div>
         
-          <div class="room__topRight" style="color: var(--color-main); font-weight: 600;">
-            <a href="{% url 'update_popularity' race.rcity race.rdate race.rno|add:1 %}">
-              <span class="tooltip" style="color:var(--color-main); font-size: 1.5rem;">▶︎
-                <span class="tooltip-text" style="font-size:1.4rem; text-align: right; font-family: Arial; z-index: 3;">
-                  다음 경주
-                </span>
-              </span>
-            </a>
-          </div>
-        
-        
         </div>
         
         {% endif %}
       {% endfor %}
 
+      <hr style="border: solid 1px gray;">
 
+      <form action="" method="get">
+        <div style="font-size: 1.3rem;"><span>입력 데이터 구분:&nbsp;</span>
+          <select name="fdata">
+            <option value="-" {% if fdata == '-' %} selected {% endif %}>&nbsp;-</option>
+            <option value="마체중" {% if fdata == '마체중' %} selected {% endif %}>마체중</option>
+            <option value="경주순위" {% if fdata == '경주순위' %} selected {% endif %}>경주순위</option>
+            <option value="경주마취소" {% if fdata == '경주마취소' %} selected {% endif %}>경주마취소</option>
+            <option value="기수변경" {% if fdata == '기수변경' %} selected {% endif %}>기수변경</option>
+          </select>
+        </div>
+
+        <div style="display:flex; align-items: center;">
+          <textarea name="r_content" rows="3" style="font-size: 1.1rem; position:relative; width: 100%;"></textarea>
+        
+        </div>
+
+        <button class="btn btn--link" type="submit" style="font-size: 1.3rem;">Convert</button>
+
+      </form>
+
+      <hr style="border: solid 1px gray;">
 
       <div>
         <form class="form" action="" method="POST" enctype="multipart/form-data">
           
-          <table class="rwd-table">
+          <table class="table_common">
 
             <thead>
               <tr>
-                              <th>마번</th>
-                              <th>마명</th>
-                              <th>예상순위</th>
-                              <th>예상기록</th>
-                              <th>조교사</th>
-                              <th>기수</th>
-                              <th>출주마 인기도</th>
-                              <th>경주순위</th>
+                <th>마번</th>
+                <th>마명</th>
+                <th>예상순위</th>
+                <th>예상기록</th>
+                <th>조교사</th>
+                <th>기수</th>
+                <th>부담중량</th>
+                <th>마체중</th>
+                <th>경주순위</th>
+                <th>출주마 인기도</th>
+
               </tr>
                               
             </thead>
+
             <tbody>
         
               {% csrf_token %}
               {% for race in exp011s %}
-              <tr align="middle">
-                <td>{{race.gate}}</td>
-                <td align="right">{{race.horse}}</td>
-                <td>{{race.rank}}</td>
-                <td>{{race.complex}}</td>
+              <tr class="tr_common">
+                <td class="td_common" align="right">{{race.gate}}&nbsp;</td>
+                <td align="left">{{race.horse}}</td>
+                <td class="td_common" style="text-align: center;">{{race.rank}}</td>
+                <td class="td_common" style="text-align: center;">{{race.complex}}</td>
 
-                <td align="left">{{race.trainer}}</td>
+                <td align="left" style="text-align: center;">{{race.trainer}}</td>
         
-                <td align="left">{{race.jockey}}</td>
-        
-                <td>
-                  <div style="font-family: Arial;">
-                    <input name="pop_{{race.gate}}" style="text-align:right;" type="number" min="0" max="100" value="{{race.r_pop}}" />
-                  </div>
-                </td>
-                <td>
-                  <div style="font-family: Arial;">
-                    <input name="pop_{{race.gate}}" style="text-align:right;" type="number" min="0" max="100" value="{{race.r_rank}}" /></div>
+                <td align="center">
+                  {{race.jockey}}
                 </td>
         
+                <td class="td_common" align="center">
+                  {{race.handycap}}
+                </td>
+                <td class="td_common" align="center">
+                  <span style="text-align: left;">{{race.h_weight|slice:"0:3"}}</span>
+                  <span style="text-align: right;">{{race.h_weight|slice:"4:"}}</span>
+                </td>
+                
+                <td class="td_common" align="center">
+                  <input name="pop_{{race.gate}}" style="text-align:right; font-family: Arial, Helvetica, sans-serif;" type="number" min="0" max="100" value="{{race.r_rank}}" />
+                </td>
+        
+                <td class="td_common" align="center">
+                  <input name="pop_{{race.gate}}" style="text-align:right; font-family: Arial, Helvetica, sans-serif;" type="number" min="0" max="100" value="{{race.r_pop}}" />
+                </td>
               </tr>
+
               {% endfor %}
         
             </tbody>
           </table>
-
-          <input name="pop_{{race.jockey}}" style="text-align:right;" type="number" min="0" max="100" value="{{race.r_rank}}" />
-
           <br>
+          <style>
+            .table_common {
+              font-size: 1.4rem;
+              font-family: Arial, Helvetica, sans-serif;
+            }
+      
+            .td_common {
+              font-family: Arial, Helvetica, sans-serif;
+            }
+            input {
+              width: 60px;
+              height: 24px;
+              font-size: 1.3rem;
+              border: 0;
+              border-radius: 5px;
+              outline: none;
+              padding-left: 10px;
+              background-color:lightgray;
+            }
+            textarea {
+              padding: 10px;
+            }
+          </style>
 
           <div class="form__action">
-            <a class="btn btn--dark" href="{% url 'home' %}">Cancel</a>
+            <a class="btn btn--dark" onclick="window.close()">Cancel</a>
             <button class="btn btn--main" type="submit">Update</button>
           </div>
         </form>

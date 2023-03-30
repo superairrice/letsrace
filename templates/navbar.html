@@ -7,6 +7,7 @@
       <h1 style="font-style: italic;">Let's Race!</h1>
     </a>
 
+    {% if request.user.is_authenticated %}
     <form class="header__search" align="center" method="GET" action="{% url 'home' %}">
 
       <input style="width: 12rem;" type="date" value={{fdate}} name="q">&nbsp;&nbsp;&nbsp;&nbsp;
@@ -16,6 +17,7 @@
       <input style="width: 5rem; color:var(--color-r3)" type="text" value='{{jname3}}' placeholder="이혁" name="j3">
       <button class="btn" style="background: var(--color-main);">Confirm</button>
     </form>
+    {%endif%}
     
 
     <nav class="header__menu">
@@ -27,7 +29,7 @@
           <div class="avatar avatar--medium active">
             <img src="{% static request.user.avatar.url %}" />
           </div>
-          <p>{% if request.user.name %}{{request.user.name}}{% else %} 필명등록 {%endif%}
+          <p>{% if request.user.name %}{{request.user.name}}{% else %} 필명{%endif%}
             <span style="font-size: xx-small;">@{{request.user.last_login}}
             </span>
           </p>

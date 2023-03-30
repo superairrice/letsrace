@@ -75,7 +75,8 @@ urlpatterns = [
 
     path('update_popularity/<str:rcity>/<str:rdate>/<int:rno>',
 	    views.updatePopularity, name="update_popularity"),
-    # path('update_changed_race/<str:rcity>/<str:rdate>/<int:rno>', views.updateChangedRace, name="update_changed_race"),
+        
+    path('update_changed_race/<str:rcity>/<str:rdate>/<int:rno>', views.updateChangedRace, name="update_changed_race"),
 
 
     path('', views.home, name="home"),
