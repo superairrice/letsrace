@@ -1454,7 +1454,10 @@ def set_changed_race_jockey(i_rcity, i_rdate, i_rno, r_content):
         if items[0]:
             rdate = items[0][0:4] + items[0][5:7] + items[0][8:10]
             rno = items[1]
+
             horse = items[3]
+            if horse[0:1] == '[':
+                horse = horse[3:]
             jockey = items[6]
             handycap = items[7]
             reason = items[8]
@@ -1465,7 +1468,7 @@ def set_changed_race_jockey(i_rcity, i_rdate, i_rno, r_content):
                 rdate=rdate, rno=rno, horse=horse)
 
             # 이미 입력 되었으면 skip - skip 하지 않으면 변경기수가 다시 변경됨
-            if jockey_old[0]['jockey_old']:
+            if jockey_old:
                 print(jockey_old[0]['jockey_old'])
             else:
 
@@ -1512,6 +1515,8 @@ def set_changed_race_horse(i_rcity, i_rdate, i_rno, r_content):
             rdate = items[1][0:4] + items[1][5:7] + items[1][8:10]
             rno = items[2]
             horse = items[4]
+            if horse[0:1] == '[':
+                horse = horse[3:]
             reason = items[7]
 
             print(rdate, rno, horse, reason)
@@ -1540,8 +1545,6 @@ def set_changed_race_horse(i_rcity, i_rdate, i_rno, r_content):
                 print("Failed updating in exp011 : 경주마 취소")
 
 # 경주 변경 내용 update - 경주마 체중
-
-
 def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
     print(r_content)
 
@@ -1556,6 +1559,8 @@ def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
             rdate = items[0][0:4] + items[0][5:7] + items[0][8:10]
         elif items[0] and index >= 8:
             horse = items[1]
+            if horse[0:1] == '[':
+                horse = horse[3:]
 
             if int(items[3]) > 0:
                 items[3] = '+' + items[3]
@@ -1569,6 +1574,50 @@ def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
 
                 strSql = """ update exp011
                               set h_weight = '""" + weight + """'
+                          where rdate = '""" + rdate + """' and horse = '""" + horse + """'
+                      ; """
+
+                print(strSql)
+                r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                awards = cursor.fetchall()
+
+                connection.commit()
+                connection.close()
+
+                # return render(request, 'base/update_popularity.html', context)
+                # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+
+            except:
+                connection.rollback()
+                print("Failed updating in exp011 : 경주마 체중")
+
+# 경주 변경 내용 update - 경주순위
+def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
+    print(r_content)
+
+    lines = r_content.split('\n')
+
+    for index, line in enumerate(lines):
+        items = line.split('\t')
+
+        print(index, items)
+
+        if items[0] and index == 0:
+            rdate = items[0][0:4] + items[0][6:8] + items[0][10:12]
+        elif items[0] and index >= 9:
+            
+            r_rank = items[0]
+            horse = items[2]
+            if horse[0:1] == '[':
+                horse = horse[3:]
+
+            print(rdate, horse, r_rank)
+
+            try:
+                cursor = connection.cursor()
+
+                strSql = """ update exp011
+                              set r_rank = """ + r_rank + """
                           where rdate = '""" + rdate + """' and horse = '""" + horse + """'
                       ; """
 

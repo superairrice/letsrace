@@ -16,7 +16,7 @@ from base.data_management import get_breakingnews, get_file_contents, get_kradat
 
 from base.mysqls import (get_award, get_award_race, get_jockey_trend, get_judged, get_judged_horse, get_judged_jockey, get_last2weeks_loadin, get_paternal,
                          get_paternal_dist, get_pedigree, get_popularity_rate, get_popularity_rate_t, get_prediction, get_print_prediction, get_race, get_race_center_detail_view, get_status_train, get_train, get_train_audit, get_train_horse,
-                         get_training, get_status_training, get_weeks, get_last2weeks, set_changed_race_horse, set_changed_race_jockey, set_changed_race_weight)
+                         get_training, get_status_training, get_weeks, get_last2weeks, set_changed_race_horse, set_changed_race_jockey, set_changed_race_rank, set_changed_race_weight)
 from letsrace.settings import KRAFILE_ROOT
 
 # import base.mysqls
@@ -672,12 +672,10 @@ def updateChangedRace(request, rcity, rdate, rno):
     elif fdata == '마체중':
         set_changed_race_weight(rcity, rdate, rno, r_content)
     elif fdata == '경주순위':
-        pass
+        set_changed_race_rank(rcity, rdate, rno, r_content)
     elif fdata == '경주마취소':
-        print(r_content)
         set_changed_race_horse(rcity, rdate, rno, r_content)
     elif fdata == '기수변경':
-        print(r_content)
         set_changed_race_jockey(rcity, rdate, rno, r_content)
 
     exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno)
