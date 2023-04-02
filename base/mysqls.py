@@ -1458,45 +1458,40 @@ def set_changed_race_jockey(i_rcity, i_rdate, i_rno, r_content):
             horse = items[3]
             if horse[0:1] == '[':
                 horse = horse[3:]
-            jockey = items[6]
-            handycap = items[7]
+
+            jockey_old = items[4]
+            handy_old = items[5]
+            jockey_new = items[6]
+            handy_new = items[7]
             reason = items[8]
 
-            print(rdate, rno, horse, jockey, handycap, reason)
+            print(rdate, rno, horse, jockey_old, handy_old, jockey_new, handy_new, reason)
 
-            jockey_old = Exp011.objects.values('jockey_old').filter(
-                rdate=rdate, rno=rno, horse=horse)
+            try:
+                cursor = connection.cursor()
 
-            # 이미 입력 되었으면 skip - skip 하지 않으면 변경기수가 다시 변경됨
-            if jockey_old:
-                print(jockey_old[0]['jockey_old'])
-            else:
+                strSql = """ update exp011
+                            set jockey = '""" + jockey_new + """',
+                                handycap = """ + handy_new + """,
+                                jockey_old =  '""" + jockey_old + """',
+                                handycap_old = """ + handy_old + """,
+                                reason = '""" + reason + """'
+                        where rdate = '""" + rdate + """' and rno = """ + str(rno) + """ and horse = '""" + horse + """'
+                    ; """
 
-                try:
-                    cursor = connection.cursor()
+                print(strSql)
+                r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                awards = cursor.fetchall()
 
-                    strSql = """ update exp011
-                                set jockey = '""" + jockey + """',
-                                    handycap = """ + handycap + """,
-                                    jockey_old = jockey,
-                                    handycap_old = handycap,
-                                    reason = '""" + reason + """'
-                            where rdate = '""" + rdate + """' and rno = """ + str(rno) + """ and horse = '""" + horse + """'
-                        ; """
+                connection.commit()
+                connection.close()
 
-                    print(strSql)
-                    r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
-                    awards = cursor.fetchall()
+                # return render(request, 'base/update_popularity.html', context)
+                # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
 
-                    connection.commit()
-                    connection.close()
-
-                    # return render(request, 'base/update_popularity.html', context)
-                    # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
-
-                except:
-                    connection.rollback()
-                    print("Failed updating in exp011 : 기수변경")
+            except:
+                connection.rollback()
+                print("Failed updating in exp011 : 기수변경")
 
 # 경주 변경 내용 update - 경주마 취소
 

@@ -148,8 +148,8 @@
             <tr>
               <th rowspan="2" valign="center"><span class="visible-small">예상<br>순위.</span><span class="visible-big" style="padding:0.95rem">예상<br>순위</span></th>
               <th rowspan="1"><span class="visible-small">마번</span><span class="visible-big">마번</span></th>
-              <th><span class="visible-small">Horse.</span><span class="visible-big">Horse</span></th>
-              <th><span class="visible-small">부담중량.</span><span class="visible-big">부담중량</span></th>
+              <th colspan="2"><span class="visible-small">Horse.</span><span class="visible-big">Horse</span></th>
+              <th rowspan="2"><span class="visible-small">부담<br>중량.</span><span class="visible-big" style="padding:0.95rem">부담<br>중량</span></th>
 
               <th><span class="visible-small">기수.</span><span class="visible-big">기수</span></th>
               <th rowspan="2"><span class="visible-small">복<br>승<br>율</span><span class="visible-big">복<br>승<br>율</span></th>
@@ -166,7 +166,9 @@
             <tr>
               <th rowspan="1"><span class="visible-small">실순</span><span class="visible-big">실순</span></th>
               <th><span class="visible-small">Info.</span><span class="visible-big">Info.</span></th>
-              <th><span class="visible-small">마체중</span><span class="visible-big">마체중</span></th>
+              <th rowspan="1"><span class="visible-small">체중.</span><span class="visible-big">체중</span></th>
+
+ 
               
               <th><span class="visible-small">조교사.</span><span class="visible-big">조교사</span></th>
               
@@ -185,6 +187,7 @@
                 {% if r.rank > 20 %}신{% else %} {{r.rank}} {% endif %}
               </td>
 
+              {# gate(마번) 착순 #}
               <td align="center" style="font-size: 1.4rem ">
                 {% if r.r_rank == 99 %}
                 <span style="font-style: italic; text-decoration:line-through; color:gray;">{{r.gate}}</span>
@@ -235,6 +238,7 @@
                 {% endif %}
               </td>
 
+              {# 경주마 이름 출주주기, 산지 성별 나이 #}
               <td>
                 <div style="font-size: 1.3rem;">
                   {% if r.r_rank == 99 %}
@@ -306,31 +310,41 @@
                 </div>
                 
               </td>
+
+              {# 마체중 #}
               <td style="font-family: Arial; font-size: 1.2rem ">
-                
-                <div style="text-align:left">
-                  {# 부담중량 증감 #}
-                  <span style="font-family: Arial;">{{r.handycap}}&nbsp;</span>
-                  {% if r.handycap|sub:r.i_prehandy > 0 %}
-                    <span class="tooltip_a" style="font-family: Arial; color: var(--color-r1)">+{{r.handycap|sub:r.i_prehandy}}<span class="tooltip_a-text">직전경주 대비 부담중량 차이</span></span>
-                  {% elif r.handycap|sub:r.i_prehandy == 0 %}
-                    <span style="font-family: Arial; color: var(--color-gray);">±0.0 </span>
-                  {% else %}
-                    <span class="tooltip_a" style="font-family: Arial; color:rgb(0, 192, 255);">{{r.handycap|sub:r.i_prehandy}}<span class="tooltip_a-text">직전경주 대비 부담중량 차이</span></span>
-                  {% endif %}
-                </div>
                 
                 <div style="text-align:right">
                   
                   {# 경주마 체중 증감 #}
-                  <span style="font-family: Arial; font-weight: 500;">&nbsp;&nbsp;{{r.h_weight|slice:"0:3"}}</span>
-                  <span style="font-family: Arial; font-style: italic; color:var(--color-light); font-weight: 500;">&nbsp;&nbsp;{{r.h_weight|slice:"4:"}}</span>
+                  <div style="font-family: Arial; font-weight: 500; text-align: center;">&nbsp;&nbsp;{{r.h_weight|slice:"0:3"}}</div>
+                  <div style="font-family: Arial; font-style: italic; color:var(--color-light); font-weight: 500;">&nbsp;&nbsp;{{r.h_weight|slice:"4:"}}</div>
                 </div>
 
               </td>
 
+              <td style="font-family: Arial; font-size: 1.2rem ">
+                
+                <div>
+                  {# 부담중량 증감 #}
+                  <div style="font-family: Arial; text-align: center">{{r.handycap}}&nbsp;</div>
+                  {% if r.handycap|sub:r.i_prehandy > 0 %}
+                    <div style="font-family: Arial; color: var(--color-r1); text-align: right;">+{{r.handycap|sub:r.i_prehandy}}</div>
+                  {% elif r.handycap|sub:r.i_prehandy == 0 %}
+                    <div style="font-family: Arial; color: var(--color-gray); text-align: right;">±0.0 </div>
+                  {% else %}
+                    <div style="font-family: Arial; color:rgb(0, 192, 255); text-align: right;">{{r.handycap|sub:r.i_prehandy}}</div>
+                  {% endif %}
+                </div>
+                
+              </td>
+
               <td align="center">
+                {% if r.jockey_old %}   {# 기수변경이 있으면  #}
+                <div  class="blink" style="font-size: 1.3rem; font-style: italic; text-align: left; color:gray;">{{r.jockey}}</div>
+                {% else %}
                 <div style="font-size: 1.3rem; font-style: italic; text-align: left;">{{r.jockey}}</div>
+                {% endif %}
                 <div style="color: var(--color-gray); font-size: 1.3rem; text-align: right;">{{r.trainer}}</div>
               </td>
               <td align="right" style="font-size: 1.3rem ">
