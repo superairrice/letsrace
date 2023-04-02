@@ -172,7 +172,16 @@
               
               <th><span class="visible-small">조교사.</span><span class="visible-big">조교사</span></th>
               
-              <th><span class="visible-small">경주결과</span><span class="visible-big">경주결과</span></th>
+              <th>
+                {% if alloc.r2alloc %}  {# 경주결과가 입력되었으면 #}
+                <a href="{% url 'race_result' r_condition.rcity r_condition.rdate r_condition.rno 0 0 0 0 %}"
+                  onclick="window.open(this.href, '_blank', 'width=1000, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                  <span class="visible-small">경주결과</span><span class="visible-big">경주결과</span>
+              </a>
+                {% else %}
+                <span class="visible-small">경주결과</span><span class="visible-big">경주결과</span>
+                {% endif %}
+              </th>
               <th><span class="visible-small">최근5경주</span><span class="visible-big">최근5경주</span></th>
               <th><span class="visible-small">최근7경주 순위</span><span class="visible-big">최근 7경주 순위</span></th>
               <th rowspan="1"><span class="visible-small">Rate</span><span class="visible-big">Rate</span></th>
@@ -471,7 +480,7 @@
               <td align="center" style="font-family: Arial; font-size: 1.3rem;">
                 
                 <div>
-                  <progress value={{r.r_pop}} max="100" style="width: 8rem"></progress>
+                  <progress value={{r.r_pop}} max="99" style="width: 7.7rem"></progress>
                 </div>
 
                 {% if r.remark|slice:"0:1" == '1' and r.remark|slice:"1:2" == '-' %}
