@@ -96,11 +96,36 @@
                   
           <span class="tooltip" style="color:var(--color-r3); font-size: 1.5rem;">1위 상금: {{r_condition.r1award|div:1000|intcomma}}
             <span class="tooltip-text" style="text-align: right; font-family: Arial;">
-              {{r_condition.r1award|intcomma}}<br>
-              {{r_condition.r2award|intcomma}}<br>
-              {{r_condition.r3award|intcomma}}<br>
-              {{r_condition.r4award|intcomma}}<br>
-              {{r_condition.r5award|intcomma}}
+              <table>
+                <thead>
+                  <th style="font-family: Arial; font-size: 1.2rem;">순위</th>
+                  <th style="font-family: Arial; font-size: 1.2rem;">상금</th>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">1</td>
+                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r1award|div:1000|intcomma}}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">2</td>
+                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r2award|div:1000|intcomma}}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">3</td>
+                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r3award|div:1000|intcomma}}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">4</td>
+                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r4award|div:1000|intcomma}}</td>
+                  </tr>
+                  <tr>
+                    <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">5</td>
+                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r5award|div:1000|intcomma}}</td>
+                  </tr>
+                </tbody>
+
+              </table>
+     
             </span>
           </span>
           {%if alloc.r2alloc %}
@@ -318,7 +343,7 @@
                   {% elif r.h_sex == '거' %}
                   <span style="font-size: 1.2rem; color:var(--color-r3);">{{r.h_sex}}</span>
                   {%else%}
-                  <span style="font-size: 1.2rem; color:var(--color-main-light);">{{r.h_sex}}</span>
+                  <span style="font-size: 1.2rem; color:var(--color-light-gray);">{{r.h_sex}}</span>
                   {%endif%}
                   
                   {# 나이 #}
@@ -337,8 +362,17 @@
                 <div style="text-align:right">
                   
                   {# 경주마 체중 증감 #}
-                  <div style="font-family: Arial; font-weight: 500; text-align: center;">&nbsp;&nbsp;{{r.h_weight|slice:"0:3"}}</div>
-                  <div style="font-family: Arial; font-style: italic; color:var(--color-light); font-weight: 500;">&nbsp;&nbsp;{{r.h_weight|slice:"4:"}}</div>
+                  {% if r.h_weight|slice:"0:3" <= '440' %}
+                  <div style="font-family: Arial; text-align: center; color:var(--color-r5);">{{r.h_weight|slice:"0:3"}}</div>
+                  {% elif r.h_weight|slice:"0:3" >= '500' %}
+                  <div style="font-family: Arial; text-align: center; color:var(--color-r2);">{{r.h_weight|slice:"0:3"}}</div>
+                  {% else %}
+                  <div style="font-family: Arial; text-align: center; color:var(--color-gray);">{{r.h_weight|slice:"0:3"}}</div>
+                  {% endif %}
+                  <div style="font-family: Arial; color:var(--color-light-gray);">
+                    <span style="font-family: Arial; color:var(--color-light);">{{r.h_weight|slice:"4:5"}}</span>
+                    <span style="font-family: Arial;">{{r.h_weight|slice:"5:"}}</span>
+                  </div>
                 </div>
 
               </td>
@@ -347,13 +381,13 @@
                 
                 <div>
                   {# 부담중량 증감 #}
-                  <div style="font-family: Arial; text-align: center">{{r.handycap}}&nbsp;</div>
+                  <div style="font-family: Arial; text-align: center; color:var(--color-light-gray);">{{r.handycap}}&nbsp;</div>
                   {% if r.handycap|sub:r.i_prehandy > 0 %}
-                    <div style="font-family: Arial; color: var(--color-r1); text-align: right;">+{{r.handycap|sub:r.i_prehandy}}</div>
+                    <div style="font-family: Arial; color: var(--color-r5); text-align: right;">+{{r.handycap|sub:r.i_prehandy}}</div>
                   {% elif r.handycap|sub:r.i_prehandy == 0 %}
-                    <div style="font-family: Arial; color: var(--color-gray); text-align: right;">±0.0 </div>
+                    <div style="font-family: Arial; color: var(--color-gray); text-align: right;">-&nbsp;&nbsp;</div>
                   {% else %}
-                    <div style="font-family: Arial; color:rgb(0, 192, 255); text-align: right;">{{r.handycap|sub:r.i_prehandy}}</div>
+                    <div style="font-family: Arial; color: var(--color-r1); text-align: right;">{{r.handycap|sub:r.i_prehandy}}</div>
                   {% endif %}
                 </div>
                 
@@ -361,12 +395,19 @@
 
               <td align="center">
                 {% if r.jockey_old %}   {# 기수변경이 있으면  #}
-                <div  class="blink" style="font-size: 1.3rem; font-style: italic; text-align: left; color:gray;">{{r.jockey}}</div>
+                <div style="font-style: italic; font-size: 1.3rem; text-align: left; ">
+                  <span class="tooltip" style="color:var(--color-r2);">{{r.jockey}}
+                    <span class="tooltip-text">
+                      {{r.jockey_old}}&nbsp;-&nbsp;{{r.reason}}
+                    </span>
+                  </span>
+                </div>
                 {% else %}
-                <div style="font-size: 1.3rem; font-style: italic; text-align: left;">{{r.jockey}}</div>
+                <div style="font-size: 1.3rem; text-align: left;">{{r.jockey}}</div>
                 {% endif %}
                 <div style="color: var(--color-gray); font-size: 1.3rem; text-align: right;">{{r.trainer}}</div>
               </td>
+
               <td align="right" style="font-size: 1.3rem ">
                 {% if r.j_per %}
                   {% if compare_r.j_per__max == r.j_per %}
@@ -389,18 +430,20 @@
                 {% if r.jt_cnt %}
                 <div style="font-size: 1.3rem; font-weight: 500; ">
                   {% if r.jt_per > r.j_per and r.jt_per > r.t_per %}
-                  <span style="font-family: Arial; color: var(--color-r1) ">{{r.jt_per|rjust:"5"}}&nbsp;%</span>
+                  <span style="font-family: Arial; color: var(--color-r1) ">{{r.jt_per|rjust:"5"}}</span>
                   {% elif r.jt_per > r.j_per and r.jt_per <= r.t_per %} 
-                  <span style="font-family: Arial; color: var(--color-r4) ">{{r.jt_per|rjust:"5"}}&nbsp;%</span>
+                  <span style="font-family: Arial; color: var(--color-r4) ">{{r.jt_per|rjust:"5"}}</span>
                   {% else %}
-                  <span style="font-family: Arial; color:var(--color-gray);">{{r.jt_per|rjust:"5"}}&nbsp;%</span>
+                  <span style="font-family: Arial; color:var(--color-gray);">{{r.jt_per|rjust:"5"}}</span>
                   {% endif %}
+                  <span style="color:var(--color-gray); font-size:small">%</span>
                 </div>
                 
                 <div style="font-size: 1.1rem; color:gray ">
-                  <span style="font-family: Arial; color:var(--color-r5)">{{r.jt_1st}}</span>
+                  <!-- <span style="font-family: Arial; color:var(--color-r5)">{{r.jt_1st}}</span> -->
                   <span style="font-family: Arial; color:var(--color-r3)">{{r.jt_2nd}}</span>
-                  <span style="font-family: Arial; color:var(--color-r5)">{{r.jt_3rd}}</span>
+                  <!-- <span style="font-family: Arial; color:var(--color-r5)">{{r.jt_3rd}}</span> -->
+                  <span style="font-family: Arial; color:var(--color-gray)">/</span>
 
                   <span style="font-family: Arial; color:var(--color-r3)">{{r.jt_cnt}}</span>
                 </div>
@@ -534,8 +577,6 @@
                 </div>
               </td>
 
- 
-        
             </tr>
 
             <tr class="fold">
