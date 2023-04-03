@@ -1117,8 +1117,6 @@ def get_status_train(i_rdate):
     return training
 
 # 기수 인기도 및 게이트 연대율
-
-
 def get_popularity_rate(i_rcity, i_rdate, i_rno):
     try:
         cursor = connection.cursor()
@@ -1133,7 +1131,7 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
                                     0 r3_1, 0 r3_2, 0 r3_3, 0 r3_cnt,
                                     0 gt_1, 0 gt_2, 0 gt_3, 0 gt_cnt
                         FROM The1.rec011 a
-                        where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                        where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d')
                         and pop_rank = 1
                         group by jockey 
 
@@ -1143,7 +1141,7 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
                                         sum( if( rank = 1, 1, 0 )) r1, sum( if( rank = 2, 1, 0 )) r2, sum( if( rank = 3, 1, 0 )) r3, count(*) rcnt,
                                         0, 0, 0, 0
                         FROM The1.rec011 a
-                        where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                        where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d')
                         and alloc3r <= 1.9 /* 연식 1.9이하 인기마 */
                         
                         group by jockey 
@@ -1155,7 +1153,7 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
                         (
                           SELECT jockey, gate, sum( if( rank = 1, 1, 0 )) r1_1, sum( if( rank = 2, 1, 0 )) r1_2, sum( if( rank = 3, 1, 0 )) r1_3, count(*) r1_cnt
                           FROM The1.record 
-                          where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                          where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d')
                           and grade != '주행검사'
                           group by jockey , gate	
                           ) a  right outer join  The1.exp011 b  on a.jockey = b.jockey and a.gate = b.gate
@@ -1185,8 +1183,6 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
     return popularity
 
 # 조교사 인기도 및 게이트 연대율
-
-
 def get_popularity_rate_t(i_rcity, i_rdate, i_rno):
     try:
         cursor = connection.cursor()
@@ -1201,7 +1197,7 @@ def get_popularity_rate_t(i_rcity, i_rdate, i_rno):
                                     0 r3_1, 0 r3_2, 0 r3_3, 0 r3_cnt,
                                     0 gt_1, 0 gt_2, 0 gt_3, 0 gt_cnt
                         FROM The1.rec011 a
-                        where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                        where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d')
                         and pop_rank = 1
                         group by trainer 
 
@@ -1211,7 +1207,7 @@ def get_popularity_rate_t(i_rcity, i_rdate, i_rno):
                                         sum( if( rank = 1, 1, 0 )) r1, sum( if( rank = 2, 1, 0 )) r2, sum( if( rank = 3, 1, 0 )) r3, count(*) rcnt,
                                         0, 0, 0, 0
                         FROM The1.rec011 a
-                        where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                        where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d')
                         and alloc3r <= 1.9 /* 연식 1.9이하 인기마 */
                         
                         group by trainer 
@@ -1223,7 +1219,7 @@ def get_popularity_rate_t(i_rcity, i_rdate, i_rno):
                         (
                           SELECT trainer, gate, sum( if( rank = 1, 1, 0 )) r1_1, sum( if( rank = 2, 1, 0 )) r1_2, sum( if( rank = 3, 1, 0 )) r1_3, count(*) r1_cnt
                           FROM The1.record 
-                          where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                          where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d')
                           and grade != '주행검사'
                           group by trainer , gate	
                           ) a  right outer join  The1.exp011 b  on a.trainer = b.trainer and a.gate = b.gate
@@ -1494,8 +1490,6 @@ def set_changed_race_jockey(i_rcity, i_rdate, i_rno, r_content):
                 print("Failed updating in exp011 : 기수변경")
 
 # 경주 변경 내용 update - 경주마 취소
-
-
 def set_changed_race_horse(i_rcity, i_rdate, i_rno, r_content):
     print(r_content)
 
@@ -1588,6 +1582,50 @@ def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
 
 # 경주 변경 내용 update - 경주순위
 def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
+    print(r_content)
+
+    lines = r_content.split('\n')
+
+    for index, line in enumerate(lines):
+        items = line.split('\t')
+
+        print(index, items)
+
+        if items[0] and index == 0:
+            rdate = items[0][0:4] + items[0][6:8] + items[0][10:12]
+        elif items[0] and index >= 9:
+            
+            r_rank = items[0]
+            horse = items[2]
+            if horse[0:1] == '[':
+                horse = horse[3:]
+
+            print(rdate, horse, r_rank)
+
+            try:
+                cursor = connection.cursor()
+
+                strSql = """ update exp011
+                              set r_rank = """ + r_rank + """
+                          where rdate = '""" + rdate + """' and horse = '""" + horse + """'
+                      ; """
+
+                print(strSql)
+                r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                awards = cursor.fetchall()
+
+                connection.commit()
+                connection.close()
+
+                # return render(request, 'base/update_popularity.html', context)
+                # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+
+            except:
+                connection.rollback()
+                print("Failed updating in exp011 : 경주마 체중")
+
+# 경주 변경 내용 update - 경주순위
+def set_race_review(i_rcity, i_rdate, i_rno, r_content):
     print(r_content)
 
     lines = r_content.split('\n')
