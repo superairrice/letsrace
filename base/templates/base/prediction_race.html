@@ -31,7 +31,6 @@
 
   <div class="container">
     
-
     <div class="roomList" style="height: auto;">
       {# Header #}
       <div class="room__top" style="z-index:1; border-radius: 5px;">
@@ -658,7 +657,7 @@
                           <a href="{% url 'race_result' hr.rcity hr.rdate hr.rno hr.horse r_condition.rcity r_condition.rdate r_condition.rno %}"
                             onclick="window.open(this.href, '_blank', 'width=1000, height=1000, toolbars=no, scrollbars=yes'); return false;">
                             <div style="text-align: left;">
-                              <span style="font-size: 1.2rem; font-family: Arial">'{{hr.rdate|slice:"2:4" }}.{{hr.rdate|slice:"4:6" }}.{{hr.rdate|slice:"6:8"}}</span>
+                              <span style="font-size: 1.2rem; font-family: Arial; color:dodgerblue; font-style: italic;">'{{hr.rdate|slice:"2:4" }}.{{hr.rdate|slice:"4:6" }}.{{hr.rdate|slice:"6:8"}}</span>
                               <span style="font-size: 1.0rem; font-family: Arial">({{hr.rcity}}﹆{{hr.rno}}ᴿ)</span>
                             </div>
                           
@@ -686,9 +685,9 @@
 
                           ﹆
                           {% if r_condition.distance == hr.distance %}
-                          <span style="font-size: 1.05rem; font-family: Arial, Helvetica, sans-serif; color:tomato; font-size: 1.05rem; font-weight: 500; font-style: italic;">{{hr.distance}}ᵐ</span>
+                          <span style="font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif; color:tomato; font-size: 1.05rem; font-weight: 500; font-style: italic;">{{hr.distance}}ᵐ</span>
                           {%else%}
-                          <span style="font-size: 1.05rem; font-family: Arial, Helvetica, sans-serif;">{{hr.distance}}ᵐ</span>
+                          <span style="font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif;">{{hr.distance}}ᵐ</span>
                           {%endif%}
 
                           </div>
@@ -713,7 +712,14 @@
                         {# 부담중량 #}
                         <td style="font-size: 1.2rem;">
                           <div style="font-size: 1.2rem; text-align:center; font-family: Arial;">{{hr.handycap}}</div>
-                          <div style="font-size: 1.1rem; text-align:center; font-family: Arial; text-align: right;">{{hr.handycap|sub:r.handycap|floatformat:1}}</div>
+
+                          {% if hr.handycap|sub:r.handycap == 0 %}
+                          <div style="font-size: 1.1rem; text-align:center; font-family: Arial; text-align: right;">-&nbsp;&nbsp;</div>
+                          {% elif hr.handycap|sub:r.handycap > 0 %}
+                          <div style="font-size: 1.1rem; text-align:center; font-family: Arial; text-align: right; color:tomato">+{{hr.handycap|sub:r.handycap|floatformat:1}}</div>
+                          {% else %}
+                          <div style="font-size: 1.1rem; text-align:center; font-family: Arial; text-align: right; color:blue">{{hr.handycap|sub:r.handycap|floatformat:1}}</div>
+                          {% endif %}
                         </td>
 
                         <td style="font-size: 1.2rem">
@@ -737,9 +743,12 @@
                           {% endif %}
                         </td>
                         
-                        
-
                         <td data-th="경주마" style="font-size: 1.2rem">
+                          {% if hr.rstate == '불량' or hr.rstate == '포화' %}
+                          <div style="text-align:left; font-family: Arial; font-size: 1.1rem; color:tomato;">{{hr.rstate}}&nbsp;{{hr.rmoisture}}</div>
+                          {% else %}
+                          <div style="text-align:left; font-family: Arial; font-size: 1.1rem;">{{hr.rstate}}&nbsp;{{hr.rmoisture}}</div>
+                          {% endif %}
                           {% if hr.weather %}
                           <div style="text-align:right; font-family: Arial;">
                             {% if hr.weather == '맑음' %}☀️
@@ -749,14 +758,9 @@
                             {% else %}-
                             {% endif %}
                           </div>
-                          {% if hr.rstate == '불량' or hr.rstate == '포화' %}
-                          <div style="text-align:left; font-family: Arial; font-size: 1.1rem; color:tomato;">{{hr.rstate}}&nbsp;{{hr.rmoisture}}</div>
-                          {% else %}
-                          <div style="text-align:left; font-family: Arial; font-size: 1.1rem;">{{hr.rstate}}&nbsp;{{hr.rmoisture}}</div>
-                          {% endif %}
+                          
                           {% endif %}
                         </td>
-                        
                         
                         <td>
                           {% if hr.rs1f %}
@@ -766,7 +770,6 @@
                             <div style="font-size: 1.2rem; font-family: Arial;">{{hr.rs1f|slice:"-4:"}}</div>
                             {%endif%}
                           {%endif%}
-                            
                           
                         </td>
                         <td>
@@ -877,7 +880,7 @@
                           {%endif%}
                         </td>
 
-                        <td>
+                        <td style="text-align: center;">
                           {% if hr.pop_rank %}
                           {% if hr.grade|slice:"0:2" == '주행' %}
                           {% else %}
@@ -899,19 +902,19 @@
                             </div>
                             {% endif %}
                             {% if hr.p_rank == 1 %}
-                            <div style="font-style: italic; color:var(--color-r1); font-size: 1.1rem;">
+                            <div style="font-style: italic; color:var(--color-r1); font-size: 1.1rem; text-align: right;">
                               {% if hr.p_rank > 20 %}﹆{% else %} {{hr.p_rank}} {% endif %}
                             </div>
                             {% elif hr.p_rank == 2 %}
-                            <div style="font-style: italic; color:var(--color-r2); font-size: 1.1rem;">
+                            <div style="font-style: italic; color:var(--color-r2); font-size: 1.1rem; text-align: right;">
                               {% if hr.p_rank > 20 %}﹆{% else %} {{hr.p_rank}} {% endif %}
                             </div>
                             {% elif hr.p_rank == 3 %}
-                            <div style="font-style: italic; color:var(--color-r3); font-size: 1.1rem;">
+                            <div style="font-style: italic; color:var(--color-r3); font-size: 1.1rem; text-align: right;">
                               {% if hr.p_rank > 20 %}﹆{% else %} {{hr.p_rank}} {% endif %}
                             </div>
                             {% else %}
-                            <div style="font-style: normal; font-size: 1.1rem;">
+                            <div style="font-style: normal; font-size: 1.1rem; text-align: right;">
                               {% if hr.p_rank > 20 %}﹆{% else %} {{hr.p_rank}} {% endif %}
                             </div>
                             {% endif %}
