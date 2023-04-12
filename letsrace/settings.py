@@ -68,6 +68,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+CSRF_TRUSTED_ORIGINS = ["http://thethe9.com", "https://thethe9.com"]
 
 ALLOWED_HOSTS = ['.compute.amazonaws.com', '127.0.0.1', 'thethe9.com', '3.37.228.51',
                  'localhost', '0.0.0.0']
