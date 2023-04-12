@@ -67,7 +67,7 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 
 ALLOWED_HOSTS = ['.compute.amazonaws.com', '127.0.0.1', 'thethe9.com', '3.37.228.51',
                  'localhost', '0.0.0.0']
