@@ -28,9 +28,10 @@ class UserForm(ModelForm):
         #     'password': forms.PasswordInput(attrs={'class': 'form-control'}),
         # }
         labels = {
-            'username': '닉네임',
+            'name': '필명',
+            'username': 'ID',
             'email': '이메일',
-            'password': '패스워드'
+            'bio': '하고싶은 말 '
         }
     # 글자수 제한
 

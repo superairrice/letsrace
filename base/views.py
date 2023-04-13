@@ -30,6 +30,9 @@ from django.core.files.storage import FileSystemStorage  # 파일저장
 
 from django.views.decorators.csrf import csrf_exempt
 
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+
 
 def loginPage(request):
 
@@ -127,6 +130,23 @@ def profilePage(request, pk):
     context = {"user": user, "rooms": rooms,
                "room_messages": room_messages, "topics": topics, }
     return render(request, 'base/profile.html', context)
+
+@login_required
+def passwordChange(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('home')
+        else:
+            messages.error(request,'기존 비밀번호와 새 비밀번호를 규칙에 맞게 설정하십시오(툭수문자와 숫자포함 8자 이상)')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'account/password_change.html', {
+        'form': form
+    })
 
 
 @login_required(login_url='login')
@@ -340,7 +360,7 @@ def home(request):
 
         i_rdate = rdate
 
-        print(i_rdate)
+    print('IP' , get_client_ip(request))
 
     jname1 = request.GET.get('j1') if request.GET.get('j1') != None else ''
     jname2 = request.GET.get('j2') if request.GET.get('j2') != None else ''
@@ -1270,3 +1290,18 @@ def send_email():
     message = "메지시 테스트"
     EmailMessage(subject=subject, body=message,
                  to=to, from_email=from_email).send()
+    
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+
+
+    print(type(x_forwarded_for))
+
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+

@@ -1,5 +1,8 @@
+import datetime
+import json
 from django.db import connection
 import pandas as pd
+from requests import session
 
 from base.models import Exp011
 
@@ -1667,3 +1670,5 @@ def set_race_review(i_rcity, i_rdate, i_rno, r_content):
             except:
                 connection.rollback()
                 print("Failed updating in exp011 : 경주마 체중")
+
+
