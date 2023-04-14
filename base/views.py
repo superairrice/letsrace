@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from email.message import EmailMessage
 import os
+import shutil
 import pandas as pd
 
 from django.contrib import messages
@@ -131,6 +132,7 @@ def profilePage(request, pk):
                "room_messages": room_messages, "topics": topics, }
     return render(request, 'base/profile.html', context)
 
+
 @login_required
 def passwordChange(request):
     if request.method == 'POST':
@@ -138,10 +140,12 @@ def passwordChange(request):
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)  # Important!
-            messages.success(request, 'Your password was successfully updated!')
+            messages.success(
+                request, 'Your password was successfully updated!')
             return redirect('home')
         else:
-            messages.error(request,'기존 비밀번호와 새 비밀번호를 규칙에 맞게 설정하십시오(툭수문자와 숫자포함 8자 이상)')
+            messages.error(
+                request, '기존 비밀번호와 새 비밀번호를 규칙에 맞게 설정하십시오(툭수문자와 숫자포함 8자 이상)')
     else:
         form = PasswordChangeForm(request.user)
     return render(request, 'account/password_change.html', {
@@ -227,14 +231,16 @@ def updateUser(request):
     user = request.user
     form = UserForm(instance=user)
 
-    # print(user)
+    print(user)
 
     if request.method == 'POST':
         form = UserForm(request.POST, request.FILES, instance=user)
+
         if form.is_valid():
             form.save()
 
             request_file = request.FILES['filename[]'] if 'filename[]' in request.FILES else None
+
             if request_file:
                 # save attached file
                 # create a new instance of FileSystemStorage
@@ -243,9 +249,16 @@ def updateUser(request):
                 # the fileurl variable now contains the url to the file. This can be used to serve the file when needed.
                 fileurl = fs.url(file)
 
-                print(fileurl)
+                
+
+                # destination = r"D:\Image1\i1.png"
+                # shutil.copyfile(fileurl, destination)
 
             redirect('user-profile', pk=user.id)
+
+            stream = os.popen('echo yes | python manage.py collectstatic')
+            output = stream.read()
+            print(output)
 
     return render(request, 'base/update-user.html', {'form': form})
 
@@ -360,7 +373,7 @@ def home(request):
 
         i_rdate = rdate
 
-    print('IP' , get_client_ip(request))
+    print('IP', get_client_ip(request))
 
     jname1 = request.GET.get('j1') if request.GET.get('j1') != None else ''
     jname2 = request.GET.get('j2') if request.GET.get('j2') != None else ''
@@ -1290,11 +1303,10 @@ def send_email():
     message = "메지시 테스트"
     EmailMessage(subject=subject, body=message,
                  to=to, from_email=from_email).send()
-    
+
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-
 
     print(type(x_forwarded_for))
 
@@ -1303,5 +1315,3 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     return ip
-
-
