@@ -384,14 +384,13 @@ def home(request):
     #     count.count = 1
     #     count.save()
 
-    name = "John Doe"
-    # name = get_client_ip(request)
+    # name = "John Doe"
+    name = get_client_ip(request)g
     # today = timezone.now().date()
     # timestamp = timezone.now()
     # visitor = VisitorLog(name=name, date=today, timestamp=timestamp)
     # visitor.save()
 
-    
     update_visitor_count(name)
 
     t_count, u_count = visitor_count()
@@ -1348,7 +1347,8 @@ def get_client_ip(request):
 def visitor_count():
     today = timezone.now().date()
     tot_count = VisitorCount.objects.get(date=today).count
-    user = VisitorLog.objects.values('name').filter(date=today).annotate(max_count=Count('name'))
+    user = VisitorLog.objects.values('name').filter(
+        date=today).annotate(max_count=Count('name'))
 
     print('aaaaaaa', user.count())
     return tot_count, user.count()
