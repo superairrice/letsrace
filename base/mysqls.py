@@ -1120,6 +1120,8 @@ def get_status_train(i_rdate):
     return training
 
 # 기수 인기도 및 게이트 연대율
+
+
 def get_popularity_rate(i_rcity, i_rdate, i_rno):
     try:
         cursor = connection.cursor()
@@ -1186,6 +1188,8 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
     return popularity
 
 # 조교사 인기도 및 게이트 연대율
+
+
 def get_popularity_rate_t(i_rcity, i_rdate, i_rno):
     try:
         cursor = connection.cursor()
@@ -1464,7 +1468,8 @@ def set_changed_race_jockey(i_rcity, i_rdate, i_rno, r_content):
             handy_new = items[7]
             reason = items[8]
 
-            print(rdate, rno, horse, jockey_old, handy_old, jockey_new, handy_new, reason)
+            print(rdate, rno, horse, jockey_old,
+                  handy_old, jockey_new, handy_new, reason)
 
             try:
                 cursor = connection.cursor()
@@ -1493,6 +1498,8 @@ def set_changed_race_jockey(i_rcity, i_rdate, i_rno, r_content):
                 print("Failed updating in exp011 : 기수변경")
 
 # 경주 변경 내용 update - 경주마 취소
+
+
 def set_changed_race_horse(i_rcity, i_rdate, i_rno, r_content):
     print(r_content)
 
@@ -1537,6 +1544,8 @@ def set_changed_race_horse(i_rcity, i_rdate, i_rno, r_content):
                 print("Failed updating in exp011 : 경주마 취소")
 
 # 경주 변경 내용 update - 경주마 체중
+
+
 def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
     print(r_content)
 
@@ -1584,6 +1593,8 @@ def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
                 print("Failed updating in exp011 : 경주마 체중")
 
 # 경주 변경 내용 update - 경주순위
+
+
 def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
     print(r_content)
 
@@ -1597,8 +1608,9 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
         if items[0] and index == 0:
             rdate = items[0][0:4] + items[0][6:8] + items[0][10:12]
         elif items[0] and index >= 9:
-            
+
             r_rank = items[0]
+            print(r_rank)
             horse = items[2]
             if horse[0:1] == '[':
                 horse = horse[3:]
@@ -1628,6 +1640,8 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
                 print("Failed updating in exp011 : 경주마 체중")
 
 # 경주 변경 내용 update - 경주순위
+
+
 def set_race_review(i_rcity, i_rdate, i_rno, r_content):
     print(r_content)
 
@@ -1641,7 +1655,7 @@ def set_race_review(i_rcity, i_rdate, i_rno, r_content):
         if items[0] and index == 0:
             rdate = items[0][0:4] + items[0][6:8] + items[0][10:12]
         elif items[0] and index >= 9:
-            
+
             r_rank = items[0]
             horse = items[2]
             if horse[0:1] == '[':
@@ -1670,5 +1684,3 @@ def set_race_review(i_rcity, i_rdate, i_rno, r_content):
             except:
                 connection.rollback()
                 print("Failed updating in exp011 : 경주마 체중")
-
-

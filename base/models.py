@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+from django.utils import timezone
+
 
 class User(AbstractUser):
     name = models.CharField(max_length=200, null=True)
@@ -533,3 +535,24 @@ class Krafile(models.Model):
     class Meta:
         managed = False
         db_table = 'krafile'
+
+
+class Visitor(models.Model):
+    ip_address = models.CharField(max_length=50)
+    user_agent = models.CharField(max_length=500)
+    referrer = models.CharField(max_length=500)
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return self.ip_address
+
+
+class VisitorCount(models.Model):
+    date = models.DateField(default=timezone.now)
+    count = models.IntegerField(default=0)
+
+
+class VisitorLog(models.Model):
+    name = models.CharField(max_length=255)
+    date = models.DateField(default=timezone.now)
+    timestamp = models.DateTimeField(default=timezone.now)

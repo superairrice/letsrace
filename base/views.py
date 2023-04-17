@@ -1,3 +1,6 @@
+
+from datetime import datetime
+from typing import Dict
 from datetime import date, datetime
 from email.message import EmailMessage
 import os
@@ -25,7 +28,7 @@ from letsrace.settings import KRAFILE_ROOT
 from .forms import MyUserCreationForm, RoomForm, UserForm
 # from django.contrib.auth.forms import UserCreationForm
 from .models import (Award, Exp010, Exp011, Exp012, JockeyW, JtRate, Message,
-                     RaceResult, Racing, Rec010, RecordS, Room, Topic, User)
+                     RaceResult, Racing, Rec010, RecordS, Room, Topic, User, Visitor, VisitorCount, VisitorLog)
 
 from django.core.files.storage import FileSystemStorage  # 파일저장
 
@@ -33,6 +36,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
+
+from django.utils import timezone
 
 
 def loginPage(request):
@@ -249,8 +254,6 @@ def updateUser(request):
                 # the fileurl variable now contains the url to the file. This can be used to serve the file when needed.
                 fileurl = fs.url(file)
 
-                
-
                 # destination = r"D:\Image1\i1.png"
                 # shutil.copyfile(fileurl, destination)
 
@@ -365,13 +368,33 @@ def home(request):
         rdate = Racing.objects.values('rdate').distinct()
         i_rdate = rdate[0]['rdate']
 
-        print('aa', i_rdate)
-
     else:
         rdate = q[0:4] + q[5:7] + q[8:10]
         fdate = q
 
         i_rdate = rdate
+
+    # today = timezone.now().date()
+
+    # count, created = VisitorCount.objects.get_or_create(date=today)
+    # if not created:
+    #     count.count += 1
+    #     count.save()
+    # else:
+    #     count.count = 1
+    #     count.save()
+
+    name = "John Doe"
+    # name = get_client_ip(request)
+    # today = timezone.now().date()
+    # timestamp = timezone.now()
+    # visitor = VisitorLog(name=name, date=today, timestamp=timestamp)
+    # visitor.save()
+
+    
+    update_visitor_count(name)
+
+    t_count, u_count = visitor_count()
 
     print('IP', get_client_ip(request))
 
@@ -401,6 +424,8 @@ def home(request):
 
     race, expects, award_j = get_prediction(i_rdate)
 
+    # return render(request, 'home.html', {'count_visitors': visitor_count})
+
     context = {'racings': racings, 'expects': expects, 'fdate': fdate,
                'race_detail': race_detail,
                'race_board': race_board,
@@ -408,7 +433,10 @@ def home(request):
                'jname2': jname2,
                'jname3': jname3,
                'award_j': award_j,
-               'race': race, 'q': q}
+               'race': race, 'q': q,
+               't_count': t_count,
+               'u_count': u_count,
+               }
 
     return render(request, 'base/home.html', context)
 
@@ -1315,3 +1343,44 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     return ip
+
+
+def visitor_count():
+    today = timezone.now().date()
+    tot_count = VisitorCount.objects.get(date=today).count
+    user = VisitorLog.objects.values('name').filter(date=today).annotate(max_count=Count('name'))
+
+    print('aaaaaaa', user.count())
+    return tot_count, user.count()
+
+
+def update_visitor_count(name):
+    today = date.today()
+    now = datetime.now()
+    timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+
+    # Connect to the MySQL database
+
+    cursor = connection.cursor()
+
+    # Check if a record already exists for today
+    cursor.execute(
+        "SELECT COUNT(*) FROM base_visitorcount WHERE date = %s", (today,))
+    result = cursor.fetchone()
+    if result[0] > 0:
+        # If a record exists, update the count
+        cursor.execute(
+            "UPDATE base_visitorcount SET count = count + 1 WHERE date = %s", (today,))
+    else:
+        # If a record doesn't exist, create a new record
+        cursor.execute(
+            "INSERT INTO base_visitorcount (date, count) VALUES (%s, %s)", (today, 1))
+
+    # Add a new visitor to the visitors_log table
+    sql = "INSERT INTO base_visitorlog (name, date, timestamp) VALUES (%s, %s, %s)"
+    val = (name, today, timestamp)
+    cursor.execute(sql, val)
+
+    # Commit the changes and close the connection
+    connection.commit()
+    connection.close()
