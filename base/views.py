@@ -385,7 +385,7 @@ def home(request):
     #     count.save()
 
     # name = "John Doe"
-    name = get_client_ip(request)g
+    name = get_client_ip(request)
     # today = timezone.now().date()
     # timestamp = timezone.now()
     # visitor = VisitorLog(name=name, date=today, timestamp=timestamp)
