@@ -67,8 +67,8 @@ EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-# DEBUG = False
+# DEBUG = True
+DEBUG = False
 
 CSRF_TRUSTED_ORIGINS = ["http://thethe9.com", "https://thethe9.com"]
 

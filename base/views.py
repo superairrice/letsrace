@@ -13,7 +13,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 from django.db.models import Count, Max, Min, Q
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from base.data_management import get_breakingnews, get_file_contents, get_kradata, get_krafile, krafile_convert
@@ -392,6 +392,8 @@ def home(request):
     # visitor.save()
 
     update_visitor_count(name)
+    update_visitor(request)
+    
 
     t_count, u_count = visitor_count()
 
@@ -1335,12 +1337,16 @@ def send_email():
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
 
-    print(type(x_forwarded_for))
+    user_agent = request.META['HTTP_USER_AGENT']
+
+    print((user_agent))
 
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[0]
     else:
         ip = request.META.get('REMOTE_ADDR')
+
+    print('bbbbb' , ip)
     return ip
 
 
@@ -1384,3 +1390,14 @@ def update_visitor_count(name):
     # Commit the changes and close the connection
     connection.commit()
     connection.close()
+
+
+def update_visitor(request: HttpRequest) -> None:
+    ip_address = request.META.get('REMOTE_ADDR')
+    user_agent = request.META.get('HTTP_USER_AGENT')
+    referrer = request.META.get('HTTP_REFERER')
+    timestamp = timezone.now()
+
+    visitor = Visitor(ip_address=ip_address, user_agent=user_agent,
+                      referrer=referrer, timestamp=timestamp)
+    visitor.save()
