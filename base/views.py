@@ -392,8 +392,7 @@ def home(request):
     # visitor.save()
 
     update_visitor_count(name)
-    update_visitor(request)
-    
+    # update_visitor(request)
 
     t_count, u_count = visitor_count()
 
@@ -1346,7 +1345,7 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
 
-    print('bbbbb' , ip)
+    print('bbbbb', ip)
     return ip
 
 
