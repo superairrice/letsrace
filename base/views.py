@@ -13,7 +13,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db import connection
 from django.db.models import Count, Max, Min, Q
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from base.data_management import get_breakingnews, get_file_contents, get_kradata, get_krafile, krafile_convert
@@ -386,45 +386,34 @@ def home(request):
 
     # name = "John Doe"
     name = get_client_ip(request)
+
     # today = timezone.now().date()
     # timestamp = timezone.now()
     # visitor = VisitorLog(name=name, date=today, timestamp=timestamp)
     # visitor.save()
 
-    update_visitor_count(name)
-    # update_visitor(request)
+    if name[0:6] != '15.177':
+        update_visitor_count(name)
 
-    t_count, u_count = visitor_count()
-
-    print('IP', get_client_ip(request))
+    t_count = visitor_count()
 
     jname1 = request.GET.get('j1') if request.GET.get('j1') != None else ''
     jname2 = request.GET.get('j2') if request.GET.get('j2') != None else ''
     jname3 = request.GET.get('j3') if request.GET.get('j3') != None else ''
 
-    # racings = Racing.objects.filter(
-    #     Q(rcity__icontains=q) |
-    #     Q(rdate__icontains=q) |
-    #     Q(rday__icontains=q)
-    # )
-
-    # race = get_race(i_rdate, i_awardee='jockey')
-    # race_detail = get_race_center_detail_view(i_rdate, i_awardee='jockey')
     racings, race_detail, race_board = get_race(i_rdate, i_awardee='jockey')
 
     # r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
-    r_results = RaceResult.objects.filter(
-        Q(jockey1__icontains=q) |
-        Q(jockey2__icontains=q) |
-        Q(jockey3__icontains=q) |
-        Q(jockey4__icontains=q) |
-        Q(jockey5__icontains=q) |
-        Q(jockey6__icontains=q) |
-        Q(jockey7__icontains=q)).order_by('rdate', 'rcity', 'rno')
+    # r_results = RaceResult.objects.filter(
+    #     Q(jockey1__icontains=q) |
+    #     Q(jockey2__icontains=q) |
+    #     Q(jockey3__icontains=q) |
+    #     Q(jockey4__icontains=q) |
+    #     Q(jockey5__icontains=q) |
+    #     Q(jockey6__icontains=q) |
+    #     Q(jockey7__icontains=q)).order_by('rdate', 'rcity', 'rno')
 
     race, expects, award_j = get_prediction(i_rdate)
-
-    # return render(request, 'home.html', {'count_visitors': visitor_count})
 
     context = {'racings': racings, 'expects': expects, 'fdate': fdate,
                'race_detail': race_detail,
@@ -435,7 +424,7 @@ def home(request):
                'award_j': award_j,
                'race': race, 'q': q,
                't_count': t_count,
-               'u_count': u_count,
+               #    'u_count': u_count,
                }
 
     return render(request, 'base/home.html', context)
@@ -1336,27 +1325,23 @@ def send_email():
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
 
-    user_agent = request.META['HTTP_USER_AGENT']
-
-    print((user_agent))
+    # print((x_forwarded_for.split(',')[0]))
+    # print((request.META.get('REMOTE_ADDR')))
 
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[0]
     else:
         ip = request.META.get('REMOTE_ADDR')
-
-    print('bbbbb', ip)
     return ip
 
 
 def visitor_count():
     today = timezone.now().date()
-    tot_count = VisitorCount.objects.get(date=today).count
+    # tot_count = VisitorCount.objects.get(date=today).count
     user = VisitorLog.objects.values('name').filter(
         date=today).annotate(max_count=Count('name'))
 
-    print('aaaaaaa', user.count())
-    return tot_count, user.count()
+    return user.count()
 
 
 def update_visitor_count(name):
@@ -1391,12 +1376,3 @@ def update_visitor_count(name):
     connection.close()
 
 
-def update_visitor(request: HttpRequest) -> None:
-    ip_address = request.META.get('REMOTE_ADDR')
-    user_agent = request.META.get('HTTP_USER_AGENT')
-    referrer = request.META.get('HTTP_REFERER')
-    timestamp = timezone.now()
-
-    visitor = Visitor(ip_address=ip_address, user_agent=user_agent,
-                      referrer=referrer, timestamp=timestamp)
-    visitor.save()
