@@ -395,6 +395,17 @@ def home(request):
     if name[0:6] != '15.177':
         update_visitor_count(name)
 
+        # create a new Visitor instance
+        new_visitor = Visitor(
+            ip_address=name,
+            user_agent=request.META.get('HTTP_USER_AGENT'),
+            referrer=request.META.get('HTTP_REFERER'),
+            timestamp=timezone.now()
+        )
+
+        # insert the new_visitor object into the database
+        new_visitor.save()
+
     t_count = visitor_count()
 
     jname1 = request.GET.get('j1') if request.GET.get('j1') != None else ''
