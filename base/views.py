@@ -399,7 +399,7 @@ def home(request):
         new_visitor = Visitor(
             ip_address=name,
             user_agent=request.META.get('HTTP_USER_AGENT'),
-            referrer=request.META.get('HTTP_REFERER'),
+            referrer='',
             timestamp=timezone.now()
         )
 
