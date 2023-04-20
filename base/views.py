@@ -534,6 +534,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     # training = get_training(rcity, rdate, rno)
     # train = get_train(rcity, rdate, rno)
     train = get_train_horse(rcity, rdate, rno)
+    train = sorted(train, key=lambda x: x[4] or 99)
 
     h_audit = get_train_audit(rcity, rdate, rno)
 
@@ -542,13 +543,11 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     popularity_rate_t = get_popularity_rate_t(
         rcity, rdate, rno)            # 인기순위별 승률
 
-    judged = get_judged(rcity, rdate, rno)
+    # judged = get_judged(rcity, rdate, rno)
     judged_horse = get_judged_horse(rcity, rdate, rno)
     judged_jockey = get_judged_jockey(rcity, rdate, rno)
 
     trend_j = get_jockey_trend(rcity, rdate, rno)
-
-    print(request.user.is_authenticated)
 
     context = {'exp011s': exp011s,
                'r_condition': r_condition,
@@ -801,8 +800,8 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     r_condition = Rec010.objects.filter(
         rcity=rcity, rdate=rdate, rno=rno).get()
 
-    hr_records = RecordS.objects.filter(
-        rdate__lt=rdate, horse__in=records.values("horse")).order_by('horse', '-rdate')
+    # hr_records = RecordS.objects.filter(
+    #     rdate__lt=rdate, horse__in=records.values("horse")).order_by('horse', '-rdate')
 
     compare_r = records.aggregate(Min('i_s1f'), Min('i_g1f'), Min(
         'i_g2f'), Min('i_g3f'), Max('handycap'), Max('rating'))
@@ -814,13 +813,13 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     pedigree = get_pedigree(rcity, rdate, rno)
     # training = get_training(rcity, rdate, rno)
     train = get_train_horse(rcity, rdate, rno)
+
     h_audit = get_train_audit(rcity, rdate, rno)
 
-    train = sorted(train, key=lambda x: x[5] or 99)
     pedigree = sorted(pedigree, key=lambda x: x[2] or 99)
     # print(h_audit)
 
-    horses = RecordS.objects.values('horse').filter(rcity=rcity1,
+    horses = Exp011.objects.values('horse').filter(rcity=rcity1,
                                                     rdate=rdate1,
                                                     rno=rno1)
     print(horses)
@@ -829,7 +828,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
                'r_condition': r_condition,
                #    'training': training,
                'train': train,
-               'hr_records': hr_records,
+            #    'hr_records': hr_records,
                'compare_r': compare_r, 'hname': hname,
                'pedigree': pedigree,
                'h_audit': h_audit,

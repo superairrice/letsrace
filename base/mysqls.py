@@ -669,7 +669,7 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
                         and tdate between date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d') and rdate
                       ) a
                       group by rdate, gate, rank, r_rank, r_pop, horse, jockey, trainer
-                      order by rdate desc, rank, gate
+                      order by rdate desc, r_rank, gate
                         ;"""
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
