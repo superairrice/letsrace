@@ -26,6 +26,7 @@ const conversationThread = document.querySelector(".room__box");
 if (conversationThread) conversationThread.scrollTop = conversationThread.scrollHeight;
 
 
+
 /////////////////////////////////////////////////
 //userAgent를 받아서 클라이언트 정보를 출력하는 함수입니다.
 function identifyBrowser(userAgent) {

@@ -540,7 +540,7 @@ class Krafile(models.Model):
 class Visitor(models.Model):
     ip_address = models.CharField(max_length=50)
     user_agent = models.CharField(max_length=500)
-    referrer = models.CharField(max_length=500)
+    referer = models.CharField(max_length=500)
     timestamp = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

@@ -399,9 +399,12 @@ def home(request):
         new_visitor = Visitor(
             ip_address=name,
             user_agent=request.META.get('HTTP_USER_AGENT'),
-            referrer='',
+            # referrer=request.META.get('HTTP_REFERER'),
+            referer='',
             timestamp=timezone.now()
         )
+
+        print(timezone.now())
 
         # insert the new_visitor object into the database
         new_visitor.save()
@@ -1347,7 +1350,9 @@ def get_client_ip(request):
 
 
 def visitor_count():
-    today = timezone.now().date()
+    # today = timezone.now().date()
+    today = date.today()
+    print(today)
     # tot_count = VisitorCount.objects.get(date=today).count
     user = VisitorLog.objects.values('name').filter(
         date=today).annotate(max_count=Count('name'))
@@ -1385,5 +1390,3 @@ def update_visitor_count(name):
     # Commit the changes and close the connection
     connection.commit()
     connection.close()
-
-
