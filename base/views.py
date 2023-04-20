@@ -534,7 +534,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     # training = get_training(rcity, rdate, rno)
     # train = get_train(rcity, rdate, rno)
     train = get_train_horse(rcity, rdate, rno)
-    train = sorted(train, key=lambda x: x[4] or 99)
+    # train = sorted(train, key=lambda x: x[4] or 99)
 
     h_audit = get_train_audit(rcity, rdate, rno)
 
