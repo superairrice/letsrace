@@ -14,10 +14,18 @@
 
   <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
 
-  <title>Let's Enjoy! - 프로그램 경마! 더더구나?! 경주결과</title>
+  <title>Let's Race! 경주성적&nbsp;{% if hname %}'{{r_condition.rdate|slice:"2:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}}) {{hname}}{% endif %}</title>
 </head>
 
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-BFZZL101LZ"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag() { dataLayer.push(arguments); }
+  gtag('js', new Date());
 
+  gtag('config', 'G-BFZZL101LZ');
+</script>
 
 
 {% load mathfilters %}
@@ -89,7 +97,7 @@
           </span>
           
           <span style="font-size:1.4rem; color: var(--color-main-light); font-weight: 500;">{{r_condition.dividing}}</span>
-          <span class="tooltip" style="color:var(--color-light); font-size: 1.4rem; font-family: Arial, Helvetica, sans-serif;">&nbsp;&nbsp;💵 {{r_condition.r1award|div:1000|intcomma}}
+          <span class="tooltip" style="color:var(--color-light); font-size: 1.4rem; font-family: Arial, Helvetica, sans-serif;">&nbsp;&nbsp;💵 {{r_condition.r1award|intcomma}}
             <span class="tooltip-text" style="text-align: right; font-family: Arial;">
               <table>
                 <thead>
@@ -99,23 +107,23 @@
                 <tbody>
                   <tr>
                     <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">1</td>
-                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r1award|div:1000|intcomma}}</td>
+                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r1award|intcomma}}</td>
                   </tr>
                   <tr>
                     <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">2</td>
-                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r2award|div:1000|intcomma}}</td>
+                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r2award|intcomma}}</td>
                   </tr>
                   <tr>
                     <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">3</td>
-                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r3award|div:1000|intcomma}}</td>
+                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r3award|intcomma}}</td>
                   </tr>
                   <tr>
                     <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">4</td>
-                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r4award|div:1000|intcomma}}</td>
+                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r4award|intcomma}}</td>
                   </tr>
                   <tr>
                     <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">5</td>
-                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r5award|div:1000|intcomma}}</td>
+                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r5award|intcomma}}</td>
                   </tr>
                 </tbody>
           
@@ -230,8 +238,8 @@
             <tr>
               <th rowspan="2" valign="center"><span class="visible-big">순<br>위</span></th>
               <th rowspan="2"><span class="visible-big">마<br>번</span></th>
-              <th><span class="visible-big">Horse</span></th>
-              <th><span class="visible-big">마체중</span></th>
+              <th colspan="2"><span class="visible-big">Horse</span></th>
+              <th rowspan="1"><span class="visible-big">부중</span></th>
 
               <th><span class="visible-big">기수</span></th>
               <th><span class="visible-big">%</span></th>
@@ -252,10 +260,11 @@
             </tr>
             <tr>
               <th><span class="visible-big">Info.</span></th>
-              <th><span class="visible-big">부담중량</span></th>
               
+              <th><span class="visible-big">체중</span></th>
+              <th><span class="visible-big">adv</span></th>
               <th><span class="visible-big">조교사</span></th>
-              <th><span class="visible-big">Rate</span></th>
+              <th><span class="visible-big">adv</span></th>
               <th><span class="visible-big">프로그램</span></th>
               <th><span class="visible-big">예상</span></th>
 
@@ -291,6 +300,8 @@
                   {{r.gate}}
                 </span>
                 {% endif %}
+
+
               </td>
 
               {# 경주마 이름 출주주기, 산지 성별 나이 #}
@@ -312,19 +323,16 @@
 
                   {# 출주주기 #}
                   {% if r.r_rank == 99 %}
-                  <span style="font-size:0.9rem; color:gray;">{{r.reason}}
-                  </span>
+                  <span style="font-size:0.9rem; color:gray;">{{r.reason}}</span>
                   {% else %}
 
                     {% if r.rank >= 20 %}
                     <span>주행</span>
                     {% else %}
-                      {% if r.i_cycle <= 16 %}
-                      <span class="blink" style="font-family: Arial; color:var(--color-r1); font-weight: 500;">{{r.i_cycle|div:7|floatformat:0}}주</span>
-                      {% elif r.i_cycle >= 68 %}
-                      <span class="blink" style="font-family: Arial; color:var(--color-r2); font-weight: 500;">{{r.i_cycle|div:7|floatformat:0}}주</span>
+                      {% if compare_r.rating__max == r.rating and r.rating != 0 %}
+                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); font-weight: 700;">r {{r.rating}}</span>
                       {% else %}
-                      <span style="font-family: Arial; color:var(--color-gray)">{{r.i_cycle|div:7|floatformat:0}}주</span>
+                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-light)">r {{r.rating}}</span>
                       {% endif %}
                     {% endif %}
                     &nbsp;
@@ -364,11 +372,18 @@
               <td align="center" style="font-size: 1.2rem ">
                 
                 {% if r.horse == hname %}
-                <div style="font-family: Arial; text-align:left; color: var(--color-r3); font-size: 1.3rem; font-style: italic;">{{r.h_weight}}㎏ {{r.w_change}}</div>
+                <div style="font-family: Arial; text-align:left; color: var(--color-r3); font-size: 1.3rem; font-style: italic;">{{r.h_weight}}</div>
+                <div style="font-family: Arial; text-align:right; color: var(--color-r3); font-size: 1.3rem; font-style: italic;">{{r.w_change}}</div>
                 {%else%}
-                <div style="font-family: Arial; text-align:left">{{r.h_weight}}㎏ {{r.w_change}}</div>
+                <div style="font-family: Arial; text-align:left">{{r.h_weight}}</div>
+                <div style="font-family: Arial; text-align:right">{{r.w_change}}</div>
                 {%endif%}
-                <div style="font-family: Arial; text-align:right; color:var(--color-gray)">{{r.handycap}}㎏</div>
+                
+              </td>
+              <td align="center" style="font-size: 1.2rem ">
+                
+                <div style="font-family: Arial; text-align:center; color:var(--color-light)">{{r.handycap}}</div>
+                <div style="font-family: Arial; text-align:right; color:var(--color-gray); font-size: 1.0rem;">{{r.burden_w|floatformat:1}}</div>
                 
               </td>
 
@@ -387,13 +402,7 @@
                 {%else%}
                 <div style="font-family: Arial;">{{r.jockey_w|floatformat:1}}</div>
                 {%endif%}
-                <div style="font-family: Arial; font-size: 1.2rem; text-align: left; ">
-                  {% if compare_r.rating__max == r.rating and r.rating != 0 %}
-                  <span style="color:var(--color-r1); font-weight: 700;">r {{r.rating}}</span>
-                  {% else %}
-                  <span>r {{r.rating}}</span>
-                  {% endif %}
-                </div>
+                <div style="font-family: Arial; text-align:right; color:var(--color-gray); font-size: 1.0rem;">{{r.adv_jockey|floatformat:1}}</div>
 
               </td>
 
