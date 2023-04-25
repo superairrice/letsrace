@@ -374,6 +374,24 @@ def home(request):
 
         i_rdate = rdate
 
+    jname1 = request.GET.get('j1') if request.GET.get('j1') != None else ''
+    jname2 = request.GET.get('j2') if request.GET.get('j2') != None else ''
+    jname3 = request.GET.get('j3') if request.GET.get('j3') != None else ''
+
+    racings, race_detail, race_board = get_race(i_rdate, i_awardee='jockey')
+
+    # r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
+    # r_results = RaceResult.objects.filter(
+    #     Q(jockey1__icontains=q) |
+    #     Q(jockey2__icontains=q) |
+    #     Q(jockey3__icontains=q) |
+    #     Q(jockey4__icontains=q) |
+    #     Q(jockey5__icontains=q) |
+    #     Q(jockey6__icontains=q) |
+    #     Q(jockey7__icontains=q)).order_by('rdate', 'rcity', 'rno')
+
+    race, expects, award_j = get_prediction(i_rdate)
+
     name = get_client_ip(request)
 
     if name[0:6] != '15.177':
@@ -392,24 +410,6 @@ def home(request):
         new_visitor.save()
 
     t_count = visitor_count()
-
-    jname1 = request.GET.get('j1') if request.GET.get('j1') != None else ''
-    jname2 = request.GET.get('j2') if request.GET.get('j2') != None else ''
-    jname3 = request.GET.get('j3') if request.GET.get('j3') != None else ''
-
-    racings, race_detail, race_board = get_race(i_rdate, i_awardee='jockey')
-
-    # r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
-    # r_results = RaceResult.objects.filter(
-    #     Q(jockey1__icontains=q) |
-    #     Q(jockey2__icontains=q) |
-    #     Q(jockey3__icontains=q) |
-    #     Q(jockey4__icontains=q) |
-    #     Q(jockey5__icontains=q) |
-    #     Q(jockey6__icontains=q) |
-    #     Q(jockey7__icontains=q)).order_by('rdate', 'rcity', 'rno')
-
-    race, expects, award_j = get_prediction(i_rdate)
 
     context = {'racings': racings, 'expects': expects, 'fdate': fdate,
                'race_detail': race_detail,
