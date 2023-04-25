@@ -374,23 +374,7 @@ def home(request):
 
         i_rdate = rdate
 
-    # today = timezone.now().date()
-
-    # count, created = VisitorCount.objects.get_or_create(date=today)
-    # if not created:
-    #     count.count += 1
-    #     count.save()
-    # else:
-    #     count.count = 1
-    #     count.save()
-
-    # name = "John Doe"
     name = get_client_ip(request)
-
-    # today = timezone.now().date()
-    # timestamp = timezone.now()
-    # visitor = VisitorLog(name=name, date=today, timestamp=timestamp)
-    # visitor.save()
 
     if name[0:6] != '15.177':
         update_visitor_count(name)
@@ -400,11 +384,9 @@ def home(request):
             ip_address=name,
             user_agent=request.META.get('HTTP_USER_AGENT'),
             # referrer=request.META.get('HTTP_REFERER'),
-            referer='',
-            timestamp=timezone.now()
+            referer='home',
+            # timestamp=timezone.now()
         )
-
-        print(timezone.now())
 
         # insert the new_visitor object into the database
         new_visitor.save()
@@ -548,6 +530,24 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     judged_jockey = get_judged_jockey(rcity, rdate, rno)
 
     trend_j = get_jockey_trend(rcity, rdate, rno)
+
+    name = get_client_ip(request)
+
+    if name[0:6] != '15.177':
+        update_visitor_count(name)
+
+        # create a new Visitor instance
+        new_visitor = Visitor(
+            ip_address=name,
+            user_agent=request.META.get('HTTP_USER_AGENT'),
+            # referrer=request.META.get('HTTP_REFERER'),
+            referer=rcity + ' ' + rdate + ' ' + \
+            str(rno) + ' ' + 'predictionRace',
+            # timestamp=timezone.now()
+        )
+
+        # insert the new_visitor object into the database
+        new_visitor.save()
 
     context = {'exp011s': exp011s,
                'r_condition': r_condition,
@@ -820,15 +820,14 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     # print(h_audit)
 
     horses = Exp011.objects.values('horse').filter(rcity=rcity1,
-                                                    rdate=rdate1,
-                                                    rno=rno1)
-    print(horses)
+                                                   rdate=rdate1,
+                                                   rno=rno1)
 
     context = {'records': records,
                'r_condition': r_condition,
                #    'training': training,
                'train': train,
-            #    'hr_records': hr_records,
+               #    'hr_records': hr_records,
                'compare_r': compare_r, 'hname': hname,
                'pedigree': pedigree,
                'h_audit': h_audit,
@@ -1349,10 +1348,7 @@ def get_client_ip(request):
 
 
 def visitor_count():
-    # today = timezone.now().date()
     today = date.today()
-    print(today)
-    # tot_count = VisitorCount.objects.get(date=today).count
     user = VisitorLog.objects.values('name').filter(
         date=today).annotate(max_count=Count('name'))
 

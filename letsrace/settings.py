@@ -269,7 +269,7 @@ TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False              # False = 한국시간대로 설정됨
 
 
 # Static files (CSS, JavaScript, Images)
