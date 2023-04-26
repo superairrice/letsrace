@@ -15,17 +15,20 @@
   <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
 
   <title>Let's Race! 경주성적&nbsp;{% if hname %}'{{r_condition.rdate|slice:"2:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}}) {{hname}}{% endif %}</title>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-BFZZL101LZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-BFZZL101LZ');
+  </script>
+  
 </head>
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-BFZZL101LZ"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag() { dataLayer.push(arguments); }
-  gtag('js', new Date());
 
-  gtag('config', 'G-BFZZL101LZ');
-</script>
 
 
 {% load mathfilters %}
@@ -1207,8 +1210,7 @@
             <tr>
               <th rowspan="2"><span class="visible-small" title="Jockey">순<br>위</span><span class="visible-big">순<br>위</span></th>
               <th rowspan="2"><span class="visible-small" title="Jockey">마<br>번</span><span class="visible-big">마<br>번</span></th>
-              <th rowspan="2"><span class="visible-small" title="Jockey">Horse</span><span class="visible-big">Horse</span></th>
-              <th rowspan="1"><span class="visible-small" title="Jockey" style="font-size:1.1rem;">인기</span><span class="visible-big" style="font-size:1.1rem;">인기</span></th>
+              <th rowspan="1"><span class="visible-small" title="Jockey">Horse</span><span class="visible-big">Horse</span></th>
 
               <th rowspan="1"><span class="visible-small" title="Jockey">기수</span><span class="visible-big" >기수</span></th>
               <th rowspan="1"><span class="visible-small" title="Jockey">Tot</span><span class="visible-big">Tot</span></th>
@@ -1229,7 +1231,8 @@
               <th rowspan="2"><span class="visible-small" title="rmonth3">D-13</span><span class="visible-big">D-13</span></th> -->
             </tr>
             <tr>
-              <th rowspan="1"><span class="visible-small" title="Jockey" style="font-size:1.1rem;">실순</span><span class="visible-big" style="font-size:1.1rem;">실순</span></th>
+              <th rowspan="1"><span class="visible-small" title="Jockey">Pop.</span><span class="visible-big">Pop.</span></th>
+
               <th><span class="visible-small" title="Jockey">조교사</span><span class="visible-big">조교사</span></th>
               <th rowspan="1"><span class="visible-small" title="Jockey">C/S</span><span class="visible-big">C/S</span></th>
               <th rowspan="1"><span class="visible-small" title="Jockey" style="font-size:1.1rem;">T/C/S</span><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
@@ -1320,32 +1323,25 @@
                 </span>
                 {% endif %}
                 </div>
-              </td>
 
-              <td align="center">
-                <div style="font-family: Arial; font-size:1.2rem; color:var(--color-r5);">
-                  {% if r_pop > 80 %}★&nbsp;{{r_pop}}
-                  {% elif r_pop > 60 and r_pop <= 80 %}◎&nbsp;{{r_pop}}
-                  {% elif r_pop > 40 and r_pop <= 60 %}○&nbsp;{{r_pop}}
-                  {% elif r_pop > 20 and r_pop <= 20 %}▲&nbsp;{{r_pop}}
-                  {% elif r_pop > 0 %}※&nbsp;{{r_pop}}
-                  {% else %}−
+                <div style="font-family: Arial; font-size:1.1rem; color:var(--color-r5); text-align: right;">
+                  {% if r_pop > 80 %}
+                  <span style="font-family: Arial; font-size:1.1rem; color:var(--color-r1)">★&nbsp;{{r_pop}}</span>
+                  {% elif r_pop > 60 and r_pop <= 80 %}
+                  <span style="font-family: Arial; font-size:1.1rem; color:var(--color-r2)">◎&nbsp;{{r_pop}}</span>
+                  {% elif r_pop > 40 and r_pop <= 60 %}
+                  <span style="font-family: Arial; font-size:1.1rem; color:var(--color-r3)">○&nbsp;{{r_pop}}</span>
+                  {% elif r_pop > 20 and r_pop <= 40 %}
+                  <span style="font-family: Arial; font-size:1.1rem; color:var(--color-r4)">▲&nbsp;{{r_pop}}</span>
+                  {% elif r_pop > 0 %}
+                  <span style="font-family: Arial; font-size:1.1rem; color:var(--color-r5)">※&nbsp;{{r_pop}}</span>
+                  {% else %}
+                  <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray)">−&nbsp;</span>
                   {% endif %}
-                
+                  </span>
+
+                  <!-- <progress value={{r_pop}} max="100" style="width: 3rem"></progress> -->
                 </div>
-                {% if r_rank == 1 %}
-                <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r1); text-align: right;">{{r_rank}}</div>
-                {% elif r_rank == 2 %}
-                <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r2); text-align: right;">{{r_rank}}</div>
-                {% elif r_rank == 3 %}
-                <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r3); text-align: right;">{{r_rank}}</div>
-                {% elif r_rank == 4 %}
-                <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r4); text-align: right;">{{r_rank}}</div>
-                {% elif r_rank == 5 %}
-                <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r5); text-align: right;">{{r_rank}}</div>
-                {% else %}
-                <div style="font-family: Arial; font-size:1.2rem; color:var(--color-gray); text-align: right;">{{r_rank}}</div>
-                {% endif %}
               </td>
 
               <td align="center">
