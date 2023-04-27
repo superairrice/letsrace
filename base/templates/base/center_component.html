@@ -1,37 +1,6 @@
 {% load humanize %}
 {% load mathfilters %}
 
-
-<script>
-  $(function () {
-    $(".fold-table tr.view").on("click", function () {
-      if ($(this).hasClass("open")) {
-        $(this).removeClass("open").next(".fold").removeClass("open");
-      } else {
-        $(".fold-table tr.view").removeClass("open").next(".fold").removeClass("open");
-        $(this).addClass("open").next(".fold").addClass("open");
-      }
-    });
-  });
-
-</script>
-
-<script>
-  $(document).ready(function () {
-
-    $('ul.tabs li').click(function () {
-      var tab_id = $(this).attr('data-tab');
-
-      $('ul.tabs li').removeClass('current');
-      $('.tab-content').removeClass('current');
-
-      $(this).addClass('current');
-      $("#" + tab_id).addClass('current');
-    })
-
-  })
-</script>
-
 <div clss="roomListRoom">
 
   <ul class="tabs">
@@ -167,28 +136,29 @@
             <div align="center" style="font-style: italic;; font-size: 1.5rem; padding:0.0rem">
             {% if r_rank %}
               {% if r_rank == 1 %}
-              <span style="font-family: Arial; color:var(--color-r1); font-weight: 600;">
+              <span class="tooltip" style="font-family: Arial; color:var(--color-r1); font-weight: 500;">
                 {{gate}}
               </span>
               {% elif r_rank == 2 %}
-              <span style="font-family: Arial; color:var(--color-r2); font-weight: 500;">
+              <span class="tooltip" style="font-family: Arial; color:var(--color-r2); font-weight: 500;">
                 {{gate}}
               </span>
               {% elif r_rank == 3 %}
-              <span style="font-family: Arial; color:var(--color-r3); font-weight: 500;">
+              <span class="tooltip" style="font-family: Arial; color:var(--color-r3); font-weight: 500;">
                 {{gate}}
               </span>
               {% elif r_rank == 4 %}
-              <span style="font-family: Arial; color:var(--color-r4); font-weight: 500;">
+              <span class="tooltip" style="font-family: Arial; color:var(--color-r4); font-weight: 500;">
                 {{gate}}
               </span>
               {% elif r_rank == 5 %}
-              <span style="font-family: Arial; color:var(--color-r5); font-weight: 500;">
+              <span class="tooltip" style="font-family: Arial; color:var(--color-r5); font-weight: 500;">
                 {{gate}}
               </span>
               {% else %}
-              <span style="font-family: Arial; color:var(--color-gray); font-weight: 300;">{{gate}}</span>
+              <span class="tooltip" style="font-family: Arial; color:var(--color-gray); font-weight: 300;">{{gate}}</span>
               {% endif %}
+              
             
             {% else %}
               {% if rank == 1 %}
@@ -222,13 +192,15 @@
             </div>
             
             {# 기수 #}
-            <div>
-              {% if jockey|slice:"-2:" == jname1|slice:"-2:" %}
-              <div class="blink" style="font-size: 1.0rem; color: var(--color-r1);">{{jockey|slice:"-2:-1"}}<br>{{jockey|slice:"-1:"}}</div>
-              {% else %}
-              <div style="font-size: 1.0rem; color:var(--color-light); line-height:120%; padding-top: 0.3rem;">{{jockey|slice:"-2:-1"}}<br>{{jockey|slice:"-1:"}}</div>
-              {% endif %}
-            </div>
+            <a href="#">
+              <div>
+                {% if jockey|slice:"-2:" == jname1|slice:"-2:" %}
+                <div class="blink" style="font-size: 1.0rem; color: var(--color-r1);">{{jockey|slice:"-2:-1"}}<br>{{jockey|slice:"-1:"}}</div>
+                {% else %}
+                <div style="font-size: 1.0rem; color:var(--color-light); line-height:110%; padding-top: 0.1rem;">{{jockey|slice:"-2:-1"}}<br>{{jockey|slice:"-1:"}}</div>
+                {% endif %}
+              </div>
+            </a>
 
             
           </td>
@@ -253,17 +225,25 @@
             {% if rank > 90 %}
             <span style="font-size: 1.3rem; zoom: 0.7">🐣</span>
             {% else %}
-              {% if i_complex == None %}
-              <span style="font-size: 1.3rem; zoom: 0.7">&nbsp;</span>
+              {% if i_complex %}
+              
+                {% if rank == 12 %}   {# 만약 12두 이상의 경주마가 출주했으면 줄임말 표시 #}
+                  <span class="blink tooltip" style="font-size: 1.3rem; zoom: 0.7; animation: blink-effect 1.0s step-end infinite;">m..
+                    <span class="tooltip-text">출주마가 더 있습니다.</span></span>
+                {% else %}
+                  {% if i_complex < 10 %} 
+                  <span style="font-size: 1.3rem; zoom: 0.7; color:tomato;">{{i_complex|floatformat:0}}</span>
+                  {% else %}
+                  <span style="font-size: 1.3rem; zoom: 0.7; color: gray;">{{i_complex|floatformat:0}}</span>
+                  {% endif %}
+                {% endif %}
+                
               {%else%}
-                {% if i_complex < 10 %} 
-                <span style="font-size: 1.3rem; zoom: 0.7; color:tomato;">{{i_complex|floatformat:0}}</span>
-                {%else%}
-                <span style="font-size: 1.3rem; zoom: 0.7; color: gray;">{{i_complex|floatformat:0}}</span>
-                {%endif%}
+                <span style="font-size: 1.3rem; zoom: 0.7">&nbsp;</span>
+
               {% endif %}
             {% endif %}
-            </div>
+          </div>
 
             {# 부담중량 즘감 #}
             <div style="text-align: left;">
@@ -505,15 +485,24 @@
             {% if rank > 90 %}
             <span style="font-size: 1.3rem; zoom: 0.7">🐣</span>
             {% else %}
-            {% if i_complex == None %}
-            <span style="font-size: 1.3rem; zoom: 0.7">&nbsp;</span>
-            {%else%}
-            {% if i_complex < 10 %} <span style="font-size: 1.3rem; zoom: 0.7; color:tomato;">{{i_complex|floatformat:0}}</span>
+              {% if i_complex %}
+              
+                {% if rank == 12 %}   {# 만약 12두 이상의 경주마가 출주했으면 줄임말 표시 #}
+                  <span class="blink tooltip" style="font-size: 1.3rem; zoom: 0.7; animation: blink-effect 1.0s step-end infinite;">m..
+                    <span class="tooltip-text">출주마가 더 있습니다.</span></span>
+                {% else %}
+                  {% if i_complex < 10 %} 
+                  <span style="font-size: 1.3rem; zoom: 0.7; color:tomato;">{{i_complex|floatformat:0}}</span>
+                  {% else %}
+                  <span style="font-size: 1.3rem; zoom: 0.7; color: gray;">{{i_complex|floatformat:0}}</span>
+                  {% endif %}
+                {% endif %}
+                
               {%else%}
-              <span style="font-size: 1.3rem; zoom: 0.7; color: gray;">{{i_complex|floatformat:0}}</span>
-              {%endif%}
+                <span style="font-size: 1.3rem; zoom: 0.7">&nbsp;</span>
+
               {% endif %}
-              {% endif %}
+            {% endif %}
           </div>
     
           {# 부담중량 즘감 #}
@@ -757,17 +746,25 @@
             {% if rank > 90 %}
             <span style="font-size: 1.3rem; zoom: 0.7">🐣</span>
             {% else %}
-            {% if i_complex == None %}
-            <span style="font-size: 1.3rem; zoom: 0.7">&nbsp;</span>
-            {%else%}
-            {% if i_complex < 10 %} <span style="font-size: 1.3rem; zoom: 0.7; color:tomato;">{{i_complex|floatformat:0}}</span>
+              {% if i_complex %}
+              
+                {% if rank == 12 %}   {# 만약 12두 이상의 경주마가 출주했으면 줄임말 표시 #}
+                  <span class="blink tooltip" style="font-size: 1.3rem; zoom: 0.7; animation: blink-effect 1.0s step-end infinite;">m..
+                    <span class="tooltip-text">출주마가 더 있습니다.</span></span>
+                {% else %}
+                  {% if i_complex < 10 %} 
+                  <span style="font-size: 1.3rem; zoom: 0.7; color:tomato;">{{i_complex|floatformat:0}}</span>
+                  {% else %}
+                  <span style="font-size: 1.3rem; zoom: 0.7; color: gray;">{{i_complex|floatformat:0}}</span>
+                  {% endif %}
+                {% endif %}
+                
               {%else%}
-              <span style="font-size: 1.3rem; zoom: 0.7; color: gray;">{{i_complex|floatformat:0}}</span>
-              {%endif%}
+                <span style="font-size: 1.3rem; zoom: 0.7">&nbsp;</span>
+
               {% endif %}
-              {% endif %}
+            {% endif %}
           </div>
-    
           {# 부담중량 즘감 #}
           <div style="text-align: left;">
             {% if handycap|sub:i_prehandy == 0 or handycap|sub:i_prehandy >= 10 %}
@@ -1009,15 +1006,24 @@
             {% if rank > 90 %}
             <span style="font-size: 1.3rem; zoom: 0.7">🐣</span>
             {% else %}
-            {% if i_complex == None %}
-            <span style="font-size: 1.3rem; zoom: 0.7">&nbsp;</span>
-            {%else%}
-            {% if i_complex < 10 %} <span style="font-size: 1.3rem; zoom: 0.7; color:tomato;">{{i_complex|floatformat:0}}</span>
+              {% if i_complex %}
+              
+                {% if rank == 12 %}   {# 만약 12두 이상의 경주마가 출주했으면 줄임말 표시 #}
+                  <span class="blink tooltip" style="font-size: 1.3rem; zoom: 0.7; animation: blink-effect 1.0s step-end infinite;">m..
+                    <span class="tooltip-text">출주마가 더 있습니다.</span></span>
+                {% else %}
+                  {% if i_complex < 10 %} 
+                  <span style="font-size: 1.3rem; zoom: 0.7; color:tomato;">{{i_complex|floatformat:0}}</span>
+                  {% else %}
+                  <span style="font-size: 1.3rem; zoom: 0.7; color: gray;">{{i_complex|floatformat:0}}</span>
+                  {% endif %}
+                {% endif %}
+                
               {%else%}
-              <span style="font-size: 1.3rem; zoom: 0.7; color: gray;">{{i_complex|floatformat:0}}</span>
-              {%endif%}
+                <span style="font-size: 1.3rem; zoom: 0.7">&nbsp;</span>
+
               {% endif %}
-              {% endif %}
+            {% endif %}
           </div>
     
           {# 부담중량 즘감 #}
@@ -1053,3 +1059,33 @@
   </div>
 
 </div>
+
+<script>
+  $(function () {
+    $(".fold-table tr.view").on("click", function () {
+      if ($(this).hasClass("open")) {
+        $(this).removeClass("open").next(".fold").removeClass("open");
+      } else {
+        $(".fold-table tr.view").removeClass("open").next(".fold").removeClass("open");
+        $(this).addClass("open").next(".fold").addClass("open");
+      }
+    });
+  });
+
+</script>
+
+<script>
+  $(document).ready(function () {
+
+    $('ul.tabs li').click(function () {
+      var tab_id = $(this).attr('data-tab');
+
+      $('ul.tabs li').removeClass('current');
+      $('.tab-content').removeClass('current');
+
+      $(this).addClass('current');
+      $("#" + tab_id).addClass('current');
+    })
+
+  })
+</script>

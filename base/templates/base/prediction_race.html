@@ -427,12 +427,17 @@
 
               {# 복승률 #}
               <td align="right" style="font-size: 1.3rem ">
-                {% if r.j_per %}
-                  {% if compare_r.j_per__max == r.j_per %}
-                  <div style="font-family: Arial; font-size: 1.3rem; color:var(--color-r1)">{{r.j_per}}</div>
-                  {%else%}
-                  <div style="font-family: Arial; font-size: 1.3rem;">{{r.j_per}}</div>
-                  {%endif%}
+
+                {% if r.jockey_old %}
+                <div style="font-family: Arial; font-size: 1.3rem; color:var(--color-r1); text-decoration:line-through;">{{r.j_per}}</div>
+                {% else %}
+                  {% if r.j_per %}
+                    {% if compare_r.j_per__max == r.j_per %}
+                    <div style="font-family: Arial; font-size: 1.3rem; color:var(--color-r1);">{{r.j_per}}</div>
+                    {%else%}
+                    <div style="font-family: Arial; font-size: 1.3rem;">{{r.j_per}}</div>
+                    {%endif%}
+                  {% endif %}
                 {% endif %}
 
                 {% if r.t_per %}
@@ -444,21 +449,27 @@
                 {% endif %}
               </td>
 
-              {# 경주거리 #}
+              {# 기수 조교사 연대율 #}
               <td align="right">
-                {% if r.jt_cnt %}
-                <div style="font-size: 1.3rem; font-weight: 500; ">
-                  {% if r.jt_per > r.j_per and r.jt_per > r.t_per %}
-                  <span style="font-family: Arial; color: var(--color-r1) ">{{r.jt_per|rjust:"5"}}</span>
-                  {% elif r.jt_per > r.j_per and r.jt_per <= r.t_per %} 
-                  <span style="font-family: Arial; color: var(--color-r4) ">{{r.jt_per|rjust:"5"}}</span>
-                  {% else %}
-                  <span style="font-family: Arial; color:var(--color-gray);">{{r.jt_per|rjust:"5"}}</span>
+
+                {% if r.jockey_old %}
+                  {# 기수가 변경되었으면 기존 기수의 기록을 삭제 #}
+                  <div style="font-size: 1.1rem; text-align:center;">기수<br>변경</div>
+                {% else %}
+                  {% if r.jt_cnt %}
+                    <div style="font-size: 1.3rem; font-weight: 500; ">
+                      {% if r.jt_per > r.j_per and r.jt_per > r.t_per %}
+                      <span style="font-family: Arial; color: var(--color-r1);">{{r.jt_per|rjust:"5"}}</span>
+                      {% elif r.jt_per > r.j_per and r.jt_per <= r.t_per %} 
+                      <span style="font-family: Arial; color: var(--color-r4);">{{r.jt_per|rjust:"5"}}</span>
+                      {% else %}
+                      <span style="font-family: Arial; color:var(--color-gray);">{{r.jt_per|rjust:"5"}}</span>
+                      {% endif %}
+                      <span style="color:var(--color-gray); font-size:1.1rem;">%</span>
+                    </div>
                   {% endif %}
-                  <span style="color:var(--color-gray); font-size:1.1rem;">%</span>
-                </div>
                 
-                {# 날씨 주로 #}
+                {# 기수 조교사 연대 출주 복승 회수 #}
                 <div style="font-size: 1.1rem; color:gray ">
                   <!-- <span style="font-family: Arial; color:var(--color-r5)">{{r.jt_1st}}</span> -->
                   <span style="font-family: Arial; color:var(--color-r3)">{{r.jt_2nd}}</span>
@@ -467,7 +478,7 @@
 
                   <span style="font-family: Arial; color:var(--color-r3)">{{r.jt_cnt}}</span>
                 </div>
-                {% endif %}
+              {% endif %}
               </td>
               
               {# 경주전개 furlong 기록 #}
@@ -2739,15 +2750,20 @@
                     {% endif %}
 
                     <td align="right">
-                      {% if jt_per >= 50 %}
-                      <span style="font-size: 1.1rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r1)">{{jt_per}}</span>
-                      {% elif jt_per >= 30 and jt_per < 50 %}
-                      <span style="font-size: 1.1rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r3)">{{jt_per}}</span>
-                      {% elif jt_per >= 10 and jt_per < 30 %}
-                      <span style="font-size: 1.1rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r5)">{{jt_per}}</span>
+                      {% if r.jockey_old %}
+                        {# 기수가 변경되었으면 기존 기수의 기록을 삭제 #}
+                        <span style="font-size: 1.1rem; text-align:center;"></div>
                       {% else %}
-                      <span style="font-size: 1.1rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-gray)">{{jt_per}}</span>
-                      {% endif %}
+                        {% if jt_per >= 50 %}
+                        <span style="font-size: 1.1rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r1)">{{jt_per}}</span>
+                        {% elif jt_per >= 30 and jt_per < 50 %}
+                        <span style="font-size: 1.1rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r3)">{{jt_per}}</span>
+                        {% elif jt_per >= 10 and jt_per < 30 %}
+                        <span style="font-size: 1.1rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r5)">{{jt_per}}</span>
+                        {% else %}
+                        <span style="font-size: 1.1rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-gray)">{{jt_per}}</span>
+                        {% endif %}
+                        {% endif %}
                     </td>
 
                     {% if host == h_name %}

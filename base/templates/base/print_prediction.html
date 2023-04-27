@@ -265,17 +265,27 @@
               <div style="font-size:x-small; font-family: Arial; color:var(--color-gray);">{{r_pop}}</div>
               {% endif %}
 
+
+
               {% if rank > 90 %}
-                <div style="padding-top:0.1rem; padding-bottom:0rem; font-size:x-small">(신)</div>
+              <div style="font-size: 1.3rem; zoom: 0.7">🐣</div>
               {% else %}
-                {% if i_complex == None %}
-                <div style="padding-top:0.1rem; padding-bottom:0rem; font-size:x-small">&nbsp;</div>
+                {% if i_complex %}
+                
+                  {% if rank == 12 %}   {# 만약 12두 이상의 경주마가 출주했으면 줄임말 표시 #}
+                    <div class="blink tooltip" style="font-size: 1.3rem; zoom: 0.7; animation: blink-effect 1.0s step-end infinite;">m..
+                      <div class="tooltip-text">출주마가 더 있습니다.</div></div>
+                  {% else %}
+                    {% if i_complex < 10 %} 
+                    <div style="font-size: 1.3rem; zoom: 0.7; color:tomato;">{{i_complex|floatformat:0}}</div>
+                    {% else %}
+                    <div style="font-size: 1.3rem; zoom: 0.7; color: gray;">{{i_complex|floatformat:0}}</div>
+                    {% endif %}
+                  {% endif %}
+                  
                 {%else%}
-                  {% if i_complex < 10 %}
-                  <div style="padding-top:0.1rem; padding-bottom:0rem; font-size:x-small; color: red;  font-weight: 550;">{{i_complex|floatformat:0}}</div>
-                  {%else%}
-                  <div style="padding-top:0.1rem; padding-bottom:0rem; font-size:x-small; color: blue; font-weight: 550;">{{i_complex|floatformat:0}}</div>
-                  {%endif%}
+                  <div style="font-size: 1.3rem; zoom: 0.7">&nbsp;</div>
+
                 {% endif %}
               {% endif %}
 

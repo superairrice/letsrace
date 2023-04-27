@@ -813,6 +813,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     pedigree = get_pedigree(rcity, rdate, rno)
     # training = get_training(rcity, rdate, rno)
     train = get_train_horse(rcity, rdate, rno)
+    train = sorted(train, key=lambda x: x[5] or 99)
 
     h_audit = get_train_audit(rcity, rdate, rno)
 

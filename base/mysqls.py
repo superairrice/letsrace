@@ -99,18 +99,19 @@ def get_judged_jockey(rcity, rdate, rno):
                 AND a.rcity = '""" + rcity + """'
                 AND a.rdate = '""" + rdate + """'
                 AND a.rno = """ + str(rno) + """
+                ORDER BY b.rdate desc
 
-              union
+            #   union
 
-              SELECT distinct a.rank, a.gate, a.horse, b.rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
-                FROM The1.exp011     a,
-                      The1.rec015     b
-                where a.jockey = b.jockey 
-                AND b.t_sort = '조교사'
-                AND b.rdate between date_format(DATE_ADD('""" + rdate + """', INTERVAL - 100 DAY), '%Y%m%d') and '""" + rdate + """'
-                AND a.rcity = '""" + rcity + """'
-                AND a.rdate = '""" + rdate + """'
-                AND a.rno = """ + str(rno) + """
+            #   SELECT distinct a.rank, a.gate, a.horse, b.rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
+            #     FROM The1.exp011     a,
+            #           The1.rec015     b
+            #     where a.jockey = b.jockey 
+            #     AND b.t_sort = '조교사'
+            #     AND b.rdate between date_format(DATE_ADD('""" + rdate + """', INTERVAL - 100 DAY), '%Y%m%d') and '""" + rdate + """'
+            #     AND a.rcity = '""" + rcity + """'
+            #     AND a.rdate = '""" + rdate + """'
+            #     AND a.rno = """ + str(rno) + """
 
             ; """
 
@@ -669,7 +670,7 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
                         and tdate between date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d') and rdate
                       ) a
                       group by rdate, gate, rank, r_rank, r_pop, horse, jockey, trainer
-                      order by rdate desc, r_rank, rank,  gate
+                      order by rdate desc,  rank,  gate
                         ;"""
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
@@ -1289,6 +1290,7 @@ def get_print_prediction(i_rcity, i_rdate):
                   from expect a
                 where rcity = '""" + i_rcity + """'
                   and rdate = '""" + i_rdate + """' 
+                  and rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98 )
                 order by rcity, rdate, rno, rank, gate
                 ; """
 
@@ -1341,7 +1343,7 @@ def get_prediction(i_rdate):
                       rcount
                   from expect a
                 where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
-                and gate between 1 and 12
+                and rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98 )
                 order by rcity, rdate, rno, rank, gate
                 ; """
 
