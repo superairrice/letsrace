@@ -1007,8 +1007,9 @@ def dataManagement(request):
 
         friday = Racing.objects.values('rdate').distinct()[
             0]['rdate']          # weeks 기준일
+        
         sunday = Racing.objects.values('rdate').distinct()[
-            2]['rdate']          # weeks 기준일
+            1]['rdate']          # weeks 기준일
 
         rdate1 = friday[0:4] + friday[4:6] + friday[6:8]
         rdate2 = sunday[0:4] + sunday[4:6] + sunday[6:8]
