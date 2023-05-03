@@ -1387,6 +1387,84 @@ def get_prediction(i_rdate):
 
     return race, expects, award_j
 
+def get_trainer_double_check(i_rdate):
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+                select a.rcity, a.rdate, a.rday, a.rno, a.rtime, a.distance, b.r2alloc, b.r333alloc, b.r123alloc
+                  from exp010 a left outer join 
+                        rec010 b on a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
+                where a.rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
+                order by a.rdate, a.rcity desc, a.rno
+                ; """
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        race = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in exp010 outer join rec010")
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = """
+                select rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex,
+                      ( select complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = 5 ) complex5, 
+                      ( select i_complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = a.rank + 1 ) - i_complex, 
+                      cast(jt_per as decimal) jt_per,
+                      rcount
+                  from expect a
+                where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
+                and rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98 )
+                order by rcity, rdate, rno, rank, gate
+                ; """
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        expects = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in expect ")
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = """
+                select rcity, jockey, count(*), 
+                        sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) + sum(if(r_rank = 3, 1, 0)) rr123_cnt, 
+                        sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) r123_cnt, 
+                        sum(if(r_rank = 1, 1, 0)) rr1, sum(if(r_rank = 2, 1, 0)) rr2, sum(if(r_rank = 3, 1, 0)) rr3,
+                        sum(if(rank = 1, 1, 0)) r1, sum(if(rank = 2, 1, 0)) r2, sum(if(rank = 3, 1, 0)) r3
+                  from expect a
+                where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
+                group by rcity, jockey
+                order by rcity, sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) + sum(if(r_rank = 3, 1, 0)) desc,
+                                sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) desc
+                ; """
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        award_j = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in BookListView")
+    # print(r_cnt)
+    # print(type(weeks[0]))
+
+    return race, expects, award_j
+
 
 def get_jockey_trend(i_rcity, i_rdate, i_rno):
 

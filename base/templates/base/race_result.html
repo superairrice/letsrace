@@ -282,12 +282,12 @@
               <td align="center" style="font-family: Arial; font-size: 1.4rem;">
                 {% if r.horse == hname %}
                 <div style="font-family: Arial; font-style: italic; color:var(--color-r3); font-weight: 700;">
-                  {{r.rank}}
+                  {% if r.rank == 99 %}🚫{% else %}{{r.rank}}{% endif %}
                 </div>
                 
                 {% else %}
                 <div style="font-family: Arial; font-style: normal;">
-                  {{r.rank}}
+                  {% if r.rank == 99 %}🚫{% else %}{{r.rank}}{% endif %}
                 </div>
                 {% endif %}
 
@@ -323,53 +323,46 @@
                   {% endif %}
             
                 </div>
+
                 <div align="right" style="font-size: 1.2rem; color:var(--color-gray);">
 
-                  {# 출주주기 #}
-                  {% if r.r_rank == 99 %}
-                  <span style="font-size:0.9rem; color:gray;">{{r.reason}}</span>
+                  {# Rating #}
+                  {% if compare_r.rating__max == r.rating and r.rating != 0 %}
+                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); font-weight: 700;">r {{r.rating}}</span>
                   {% else %}
-
-                    {% if r.rank >= 20 %}
-                    <span>주행</span>
-                    {% else %}
-                      {% if compare_r.rating__max == r.rating and r.rating != 0 %}
-                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); font-weight: 700;">r {{r.rating}}</span>
-                      {% else %}
-                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-light)">r {{r.rating}}</span>
-                      {% endif %}
-                    {% endif %}
-                    &nbsp;
-                    {# 출생지 #}
-                    {% if r.birthplace == '한' %}
-                    <span style="font-size: 1.2rem; color:var(--color-gray);">{{r.birthplace}}</span>
-                    {% elif r.birthplace == '미' %}
-                    <span style="font-size: 1.2rem; color:var(--color-r2);">{{r.birthplace}}</span>
-                    {%else%}
-                      {% if '포' in r.birthplace %}
-                      <span style="font-size: 1.2rem; color:var(--color-r4);">포</span>
-                      {% else %}
-                      <span style="font-size: 1.2rem; color:var(--color-r4);">{{r.birthplace}}</span>
-                      {% endif %}
-                    {%endif%}
-                    
-                    {# 성별 #}
-                    {% if r.h_sex == '암' %}
-                    <span style="font-size: 1.2rem; color:var(--color-r1);">{{r.h_sex}}</span>
-                    {% elif r.h_sex == '거' %}
-                    <span style="font-size: 1.2rem; color:var(--color-r3);">{{r.h_sex}}</span>
-                    {%else%}
-                    <span style="font-size: 1.2rem; color:var(--color-light-gray);">{{r.h_sex}}</span>
-                    {%endif%}
-                    
-                    {# 나이 #}
-                    {% if r.h_age >= 6 %}
-                    <span style="font-size: 1.2rem; font-style: italic; color:var(--color-r1);">{{r.h_age}}</span>
-                    {%else%}
-                    <span style="font-size: 1.2rem; font-style: italic; color:var(--color-gray);">{{r.h_age}}</span>
-                    {%endif%}
-
+                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-light)">r {{r.rating}}</span>
                   {% endif %}
+                  &nbsp;
+
+                  {# 출생지 #}
+                  {% if r.birthplace == '한' %}
+                  <span style="font-size: 1.2rem; color:var(--color-gray);border-radius: 10px; background-color:var(--color-bg);">{{r.birthplace}}</span>
+                  {% elif r.birthplace == '미' %}
+                  <span style="font-size: 1.2rem; color:var(--color-r2);border-radius: 10px; background-color:var(--color-bg);">{{r.birthplace}}</span>
+                  {%else%}
+                    {% if '포' in r.birthplace %}
+                    <span style="font-size: 1.2rem; color:var(--color-r4);border-radius: 10px; background-color:var(--color-bg);">포</span>
+                    {% else %}
+                    <span style="font-size: 1.2rem; color:var(--color-r4);border-radius: 10px; background-color:var(--color-bg);">{{r.birthplace}}</span>
+                    {% endif %}
+                  {%endif%}
+                  
+                  {# 성별 #}
+                  {% if r.h_sex == '암' %}
+                  <span style="font-size: 1.2rem; color:var(--color-r1);border-radius: 10px; background-color:var(--color-bg);">{{r.h_sex}}</span>
+                  {% elif r.h_sex == '거' %}
+                  <span style="font-size: 1.2rem; color:var(--color-r3);border-radius: 10px; background-color:var(--color-bg);">{{r.h_sex}}</span>
+                  {%else%}
+                  <span style="font-size: 1.2rem; color:var(--color-light-gray);border-radius: 10px; background-color:var(--color-bg);">{{r.h_sex}}</span>
+                  {%endif%}
+                  
+                  {# 나이 #}
+                  {% if r.h_age >= 6 %}
+                  <span style="font-size: 1.2rem; font-style: italic; color:var(--color-r1);border-radius: 10px; background-color:var(--color-bg);">{{r.h_age}}</span>
+                  {%else%}
+                  <span style="font-size: 1.2rem; font-style: italic; color:var(--color-gray);border-radius: 10px; background-color:var(--color-bg);">{{r.h_age}}</span>
+                  {%endif%}
+
                 </div>
                 
               </td>
@@ -560,7 +553,7 @@
                 {% if r.alloc1r != None %}
                   
                   {% if r.horse == hname %}
-                  <div style="color:var(--color-r3); font-weight: 400; font-family: Arial;">{{r.gap}}</div>
+                  <div style="color:var(--color-r3); font-weight: 400; font-family: Arial; border-radius: 10px; background-color: var(--color-bg);">{{r.gap}}</div>
                   {%else%}
                   <div style="font-family: Arial;">{{r.gap}}</div>
                   {%endif%}
