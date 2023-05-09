@@ -81,6 +81,8 @@ urlpatterns = [
 
     path('update_changed_race/<str:rcity>/<str:rdate>/<int:rno>',
          views.updateChangedRace, name="update_changed_race"),
+    path('race_report/<str:rcity>/<str:rdate>/<int:rno>',
+         views.raceReport, name="race_report"),
 
 
     path('', views.home, name="home"),

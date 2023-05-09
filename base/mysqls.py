@@ -586,24 +586,24 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
     try:
         cursor = connection.cursor()
 
-        strSql = """ select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per,
-                                              max(r1), max(d1), max(c1), max(s1) , 
-                                              max(r2), max(d2), max(c2), max(s2) , 
-                                              max(r3), max(d3), max(c3), max(s3) , 
-                                              max(r4), max(d4), max(c4), max(s4) , 
-                                              max(r5), max(d5), max(c5), max(s5) , 
-                                              max(r6), max(d6), max(c6), max(s6) , 
-                                              max(r7), max(d7), max(c7), max(s7) , 
-                                              max(r8), max(d8), max(c8), max(s8) , 
-                                              max(r9), max(d9), max(c9), max(s9) , 
-                                              max(r10), max(d10), max(c10), max(s10) , 
-                                              max(r11), max(d11), max(c11), max(s11) , 
-                                              max(r12), max(d12), max(c12), max(s12) , 
-                                              max(r13), max(d13), max(c13), max(s13) , 
-                                              max(r14), max(d14), max(c14), max(s14) 
-                      from
-                      (
-                        select rdate, gate, b.rank, r_rank, r_pop, a.horse, b.jockey, b.trainer, b.rcity, rno, j_per, t_per, jt_per,
+        strSql = """ select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight,
+                                            max(r1), max(d1), max(c1), max(s1) , 
+                                            max(r2), max(d2), max(c2), max(s2) , 
+                                            max(r3), max(d3), max(c3), max(s3) , 
+                                            max(r4), max(d4), max(c4), max(s4) , 
+                                            max(r5), max(d5), max(c5), max(s5) , 
+                                            max(r6), max(d6), max(c6), max(s6) , 
+                                            max(r7), max(d7), max(c7), max(s7) , 
+                                            max(r8), max(d8), max(c8), max(s8) , 
+                                            max(r9), max(d9), max(c9), max(s9) , 
+                                            max(r10), max(d10), max(c10), max(s10) , 
+                                            max(r11), max(d11), max(c11), max(s11) , 
+                                            max(r12), max(d12), max(c12), max(s12) , 
+                                            max(r13), max(d13), max(c13), max(s13) , 
+                                            max(r14), max(d14), max(c14), max(s14) 
+                    from
+                    (
+                        select rdate, gate, b.rank, r_rank, r_pop, a.horse, b.jockey, b.trainer, b.rcity, rno, j_per, t_per, jt_per,h_weight,
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 1 DAY), '%Y%m%d'), rider, '' ) r1,
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 2 DAY), '%Y%m%d'), rider, '' ) r2,
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 3 DAY), '%Y%m%d'), rider, '' ) r3,
@@ -664,13 +664,14 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 13 DAY), '%Y%m%d'), strong, 0 ) s13,
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), strong, 0 ) s14
                         from train a ,
-                            ( select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per from The1.exp011 
+                            ( select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight
+                                from The1.exp011 
                               where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) ) b 
                         where a.horse = b.horse
                         and tdate between date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d') and rdate
                       ) a
                       group by rdate, gate, rank, r_rank, r_pop, horse, jockey, trainer
-                      order by rdate desc,  rank,  gate
+                      order by rdate desc, rank, gate
                         ;"""
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
@@ -1387,21 +1388,25 @@ def get_prediction(i_rdate):
 
     return race, expects, award_j
 
-def get_trainer_double_check(i_rdate):
+
+def get_trainer_double_check(i_rcity, i_rdate, i_rno):
 
     try:
         cursor = connection.cursor()
 
         strSql = """ 
-                select a.rcity, a.rdate, a.rday, a.rno, a.rtime, a.distance, b.r2alloc, b.r333alloc, b.r123alloc
-                  from exp010 a left outer join 
-                        rec010 b on a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
-                where a.rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
-                order by a.rdate, a.rcity desc, a.rno
+                select a.trainer
+                  from exp011 a
+                where a.rcity =  '""" + i_rcity + """'
+                and a.rdate = '""" + i_rdate + """'
+                and a.rno =  """ + str(i_rno) + """
+                group by a.rcity, a.rdate, a.rno, a.trainer
+                having count(*) >= 2
+
                 ; """
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
-        race = cursor.fetchall()
+        trainer_double_check = cursor.fetchall()
 
         connection.commit()
         connection.close()
@@ -1410,60 +1415,7 @@ def get_trainer_double_check(i_rdate):
         connection.rollback()
         print("Failed selecting in exp010 outer join rec010")
 
-    try:
-        cursor = connection.cursor()
-
-        strSql = """
-                select rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex,
-                      ( select complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = 5 ) complex5, 
-                      ( select i_complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = a.rank + 1 ) - i_complex, 
-                      cast(jt_per as decimal) jt_per,
-                      rcount
-                  from expect a
-                where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
-                and rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98 )
-                order by rcity, rdate, rno, rank, gate
-                ; """
-
-        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
-        expects = cursor.fetchall()
-
-        connection.commit()
-        connection.close()
-
-    except:
-        connection.rollback()
-        print("Failed selecting in expect ")
-
-    try:
-        cursor = connection.cursor()
-
-        strSql = """
-                select rcity, jockey, count(*), 
-                        sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) + sum(if(r_rank = 3, 1, 0)) rr123_cnt, 
-                        sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) r123_cnt, 
-                        sum(if(r_rank = 1, 1, 0)) rr1, sum(if(r_rank = 2, 1, 0)) rr2, sum(if(r_rank = 3, 1, 0)) rr3,
-                        sum(if(rank = 1, 1, 0)) r1, sum(if(rank = 2, 1, 0)) r2, sum(if(rank = 3, 1, 0)) r3
-                  from expect a
-                where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
-                group by rcity, jockey
-                order by rcity, sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) + sum(if(r_rank = 3, 1, 0)) desc,
-                                sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) desc
-                ; """
-
-        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
-        award_j = cursor.fetchall()
-
-        connection.commit()
-        connection.close()
-
-    except:
-        connection.rollback()
-        print("Failed selecting in BookListView")
-    # print(r_cnt)
-    # print(type(weeks[0]))
-
-    return race, expects, award_j
+    return trainer_double_check
 
 
 def get_jockey_trend(i_rcity, i_rdate, i_rno):
