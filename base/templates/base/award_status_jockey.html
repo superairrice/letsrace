@@ -134,24 +134,35 @@
         {% for rcity, rcity_in, awardee, rcnt, r1cnt, r2cnt, r3cnt, r4cnt, r5cnt, rmonth1, rmonth2, rmonth3, rdate1, rdate2, rdate3, lw1_fri1, lw1_fri2, lw1_fri3, lw1_fri, lw1_sat1, lw1_sat2, lw1_sat3, lw1_sat, lw1_sun1, lw1_sun2, lw1_sun3, lw1_sun,lw2_fri1, lw2_fri2, lw2_fri3, lw2_fri, lw2_sat1, lw2_sat2, lw2_sat3, lw2_sat,lw2_sun1, lw2_sun2, lw2_sun3, lw2_sun, award, year_per in weeks %}
         {% if rcity == '서울' %}
         <tr class="view">
-          {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 15000 and rmonth1 < rmonth2|add:rmonth3|div:2 %}
-          <td style="font-size:1.4rem; color:tomato; font-weight: 700;" >
-            <div {% if jname1|slice:"-2:" == awardee|slice:"-2:" or jname2|slice:"-2:" == awardee|slice:"-2:" or jname3|slice:"-2:" == awardee|slice:"-2:" %} class = "blink"{%endif%}>{{awardee}}</div>
-          </td>
-          {% else %}
-          <td style="font-size:1.4rem;" >
-            <div {% if jname1|slice:"-2:" == awardee|slice:"-2:" or jname2|slice:"-2:" == awardee|slice:"-2:" or jname3|slice:"-2:" == awardee|slice:"-2:" %} class = "blink"{%endif%}>{{awardee}}</div></td>
-          {% endif %}
+          <td>
+            <div>
+            {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 15000 and rmonth1 < rmonth2|add:rmonth3|div:2 %}
+            
+              {% if jname1|slice:"-2:" == awardee|slice:"-2:" or jname2|slice:"-2:" == awardee|slice:"-2:" or jname3|slice:"-2:" == awardee|slice:"-2:" %}
+              <span style="font-size:1.3rem; color:tomato; font-weight: 700;" class = "blink">{{awardee}}</span>
+              {% else %}
+              <span style="font-size:1.3rem; color:tomato; font-weight: 700;">{{awardee}}</span>
+              {% endif %}
 
+            {% else %}
+              {% if jname1|slice:"-2:" == awardee|slice:"-2:" or jname2|slice:"-2:" == awardee|slice:"-2:" or jname3|slice:"-2:" == awardee|slice:"-2:" %}
+              <span style="font-size:1.3rem;" class="blink">{{awardee}}</span>
+              {% else %}
+              <span style="font-size:1.3rem;">{{awardee}}</span>
+              {% endif %}
+            {% endif %}
+            </div>
+          </td>
+          
           <td>
             {% for flag, jockey, load_in in loadin %}
             {% if flag == 'J' and awardee == jockey %}
               {% if load_in >= 53 %}
-              <div style="text-align:center; font-family: Arial; font-size: 1.2rem; color: var(--color-main-light); ">{{load_in}}</div>
+              <span style="text-align:center; font-family: Arial; font-size: 1.2rem; color: var(--color-main-light); border-radius: 5px; background-color: var(--color-bg);">{{load_in}}</span>
               {% elif load_in >= 50 and load_in < 53 %}
-              <div style="text-align:center; font-family: Arial; font-size: 1.2rem; color: var(--color-gray); ">{{load_in}}</div>
+              <span style="text-align:center; font-family: Arial; font-size: 1.2rem; color: var(--color-gray);">{{load_in}}</span>
               {% else %}
-              <div style="text-align:center; font-family: Arial; font-size: 1.2rem; color: var(--color-r3); ">{{load_in}}</div>
+              <span style="text-align:center; font-family: Arial; font-size: 1.2rem; color: var(--color-r3); border-radius: 5px; background-color: var(--color-bg);">{{load_in}}</span>
               {% endif %}
             {% endif %}
             {% endfor %}
@@ -165,13 +176,11 @@
           <td align="right" style="font-family: Arial; font-size: 1.2rem; color: var(--color-gray);">{{year_per}}</td>
           {%endif%}
           
-          <td align="center" style="font-family: Arial; font-size: 1.4rem;">{{rdate2}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.4rem;">{{rdate3}}</td>
-
+          <td align="center" style="font-family: Arial; font-size: 1.3rem;">{{rdate2}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.3rem;">{{rdate3}}</td>
           
-
           {% if rmonth1 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.4rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
           {%else%}
             {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 10000 and rmonth1 > rmonth2|add:rmonth3|div:2 %}
             <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|intcomma}}</td>
@@ -181,7 +190,7 @@
           {% endif %}
 
           {% if rmonth2 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.4rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
           {%else%}
             {% if rmonth2|add:rmonth3|div:2 > 200000 and rmonth2 > 200000 %}
             <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:tomato; font-weight: 700;">{{rmonth2|intcomma}}</td>
@@ -191,7 +200,7 @@
           {% endif %}
 
           {% if rmonth3 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.4rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
           {%else%}
             {% if rmonth2|add:rmonth3|div:2 > 200000 and rmonth3 > 200000 %}
             <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:tomato; font-weight: 700;">{{rmonth3|intcomma}}</td>
@@ -201,7 +210,7 @@
           {% endif %}
 
           {% if rmonth1|add:rmonth2|add:rmonth3 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.4rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
           {%else%}
             {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 15000  %}
             <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</td>
@@ -219,7 +228,7 @@
           {%endif%}
 
           {% if rmonth1|add:rmonth2|add:rmonth3 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.4rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
           {%else%}
             {% if rmonth1|add:rmonth2|add:rmonth3|div:3 > 200000  %}
             <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|add:rmonth2|add:rmonth3|div:3|floatformat:0|intcomma}}</td>
@@ -258,7 +267,6 @@
                     <th colspan="2"><span class="visible-small" title="Jockey">조교 (연대%)</span><span class="visible-big">조교 (연대%)</span></th>
                     <th><span class="visible-small" title="Jockey">예상<br>실순</span></span><span class="visible-big">예상<br>실순</span></th>
                     <th><span class="visible-small" title="Jockey">POP</span><span class="visible-big">POP</span></th>
-                    <th><span class="visible-small" title="Jockey">실<br>순</span></span><span class="visible-big">실<br>순</span></th>
                     <th><span class="visible-small" title="Jockey">Tot<br>C/S</span><span class="visible-big">Tot<br>C/S</span></th>
                     <th><span class="visible-small" title="Jockey">D-1</span><span class="visible-big">D-1</span></th>
                     <th><span class="visible-small" title="Jockey">D-2</span><span class="visible-big">D-2</span></th>
@@ -280,7 +288,13 @@
                   {% if awardee == jockey %}
     
                   <tr>
-                    <td><div align="center" style="font-family: Arial; font-size:1.2rem;">{{rday}}</div></td>
+                    <td>
+                      {% if rday == '일' %}
+                      <div align="center" style="font-size:1.2rem; color: var(--color-r1);">{{rday}}</div>
+                      {% else %}
+                      <div align="center" style="font-size:1.2rem;">{{rday}}</div>
+                      {% endif %}
+                    </td>
                     <td>
                       <div align="center" style="font-family: Arial; font-size:1.2rem;">
                         <a href="http://kra.fiveplayer.co.kr/player.php?f={{rdate}}/{% if rcity == '서울' %}s{%else%}b{%endif%}{{rno}}r"
@@ -291,7 +305,7 @@
                     </td>
 
                     <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem; padding:0.15rem">
+                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
                         <a href="{% url 'prediction_race' rcity rdate rno horse 0 %}"
                           onclick="window.open(this.href, '_blank', 'width=1400, height=1000, toolbars=no, scrollbars=yes'); return false;">
                         {% if rank == 1 %}
@@ -419,53 +433,52 @@
                           {% endif %}
                         </a>
                       </div>
+
+                      <div align="right" style="font-family: Arial; font-size:1.2rem;">
+                        <a href="{% url 'race_result' rcity rdate rno horse 0 0 0 %}" onclick="window.open(this.href, '_blank', 'width=960, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                          {% if r_rank %}
+                          {% if r_rank == 1 %}
+                          <span class="tooltip" style="color:var(--color-r1); font-style: italic;">
+                            {{r_rank}}
+                            <span class="tooltip-text">경주결과 보기</span></span>
+                          {% elif r_rank == 2 %}
+                          <span class="tooltip" style="color:var(--color-r2); font-style: italic;">
+                            {{r_rank}}
+                            <span class="tooltip-text">경주결과 보기</span></span>
+                          {% elif r_rank == 3 %}
+                          <span class="tooltip" style="color:var(--color-r3); font-style: italic;">
+                            {{r_rank}}
+                            <span class="tooltip-text">경주결과 보기</span></span>
+                          {% elif r_rank == 4 %}
+                          <span class="tooltip" style="color:var(--color-r4); font-style: italic;">
+                            {{r_rank}}
+                            <span class="tooltip-text">경주결과 보기</span></span>
+                          {% elif r_rank == 5 %}
+                          <span class="tooltip" style="color:var(--color-r5); font-style: italic;">
+                            {{r_rank}}
+                            <span class="tooltip-text">경주결과 보기</span></span>
+                          {% else %}
+                          <span class="tooltip" style="font-style: normal;">
+                            {{r_rank}}
+                            <span class="tooltip-text">경주결과 보기</span></span>
+                          {% endif %}
+                          {% endif %}
+                        </a>
+                      </div>
                     </td>
 
                     <td>
                       <span style="color:blue">
-                        <progress value={{r_pop}} max="100" style="width: 3.0rem"></progress>
+                        <progress value={{r_pop}} max="99" style="width: 3.0rem"></progress>
                       </span>
-                    </td>
-
-                    <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
-                        <a href="{% url 'race_result' rcity rdate rno horse 0 0 0 %}"
-                          onclick="window.open(this.href, '_blank', 'width=960, height=1000, toolbars=no, scrollbars=yes'); return false;">
-                        {% if r_rank == 1 %}
-                        <span class="tooltip" style="color:var(--color-r1); font-style: italic;">
-                          {{r_rank}}
-                        <span class="tooltip-text">경주결과 보기</span></span>
-                        {% elif r_rank == 2 %}
-                        <span class="tooltip" style="color:var(--color-r2); font-style: italic;">
-                          {{r_rank}}
-                        <span class="tooltip-text">경주결과 보기</span></span>
-                        {% elif r_rank == 3 %}
-                        <span class="tooltip" style="color:var(--color-r3); font-style: italic;">
-                          {{r_rank}}
-                        <span class="tooltip-text">경주결과 보기</span></span>
-                        {% elif r_rank == 4 %}
-                        <span class="tooltip" style="color:var(--color-r4); font-style: italic;">
-                          {{r_rank}}
-                        <span class="tooltip-text">경주결과 보기</span></span>
-                        {% elif r_rank == 5 %}
-                        <span class="tooltip" style="color:var(--color-r5); font-style: italic;">
-                          {{r_rank}}
-                        <span class="tooltip-text">경주결과 보기</span></span>
-                        {% else %}
-                        <span class="tooltip" style="font-style: normal;">
-                          {{r_rank}}
-                        <span class="tooltip-text">경주결과 보기</span></span>
-                        {% endif %}
-                        </a>
-                      </div>
                     </td>
                     
                     <td align="center">
-                      <div style="font-family: Arial; font-size:1.1rem; color:tomato;">
+                      <div style="font-family: Arial; font-size:1.1rem; font-style: italic;">
                         {{d1|add:d2|add:d3|add:d4|add:d5|add:d6|add:d7|add:d8|add:d9|add:d10|add:d11|add:d12|add:d13|add:d14}}
                       </div>
                     
-                      <div style="font-family: Arial; font-size:1.1rem;">
+                      <div style="font-family: Arial; font-size:1.1rem;  font-style: italic; text-align: right;">
                         <span style="font-family: Arial; color:dodgerblue">{{c1|add:c2|add:c3|add:c4|add:c5|add:c6|add:c7|add:c8|add:c9|add:c10|add:c11|add:c12|add:c13|add:c14}}</span>
                         <span style="font-family: Arial; color:tomato">{{s1|add:s2|add:s3|add:s4|add:s5|add:s6|add:s7|add:s8|add:s9|add:s10|add:s11|add:s12|add:s13|add:s14}}</span>
                       </div>
@@ -945,25 +958,35 @@
         {% for rcity, rcity_in, awardee, rcnt, r1cnt, r2cnt, r3cnt, r4cnt, r5cnt, rmonth1, rmonth2, rmonth3, rdate1, rdate2, rdate3, lw1_fri1, lw1_fri2, lw1_fri3, lw1_fri, lw1_sat1, lw1_sat2, lw1_sat3, lw1_sat, lw1_sun1, lw1_sun2, lw1_sun3, lw1_sun,lw2_fri1, lw2_fri2, lw2_fri3, lw2_fri, lw2_sat1, lw2_sat2, lw2_sat3, lw2_sat,lw2_sun1, lw2_sun2, lw2_sun3, lw2_sun, award, year_per in weeks %}
         {% if rcity == '부산' %}
         <tr class="view">
-          {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 15000 and rmonth1 < rmonth2|add:rmonth3|div:2 %}
-          <td style="font-size:1.4rem; color:tomato; font-weight: 700;" >
-            <div {% if jname1|slice:"-2:" == awardee|slice:"-2:" or jname2|slice:"-2:" == awardee|slice:"-2:" or jname3|slice:"-2:" == awardee|slice:"-2:" %} class = "blink"{%endif%}>{{awardee}}</div>
-          </td>
-          {% else %}
-          <td style="font-size:1.4rem;" >
-            <div {% if jname1|slice:"-2:" == awardee|slice:"-2:" or jname2|slice:"-2:" == awardee|slice:"-2:" or jname3|slice:"-2:" == awardee|slice:"-2:" %} class = "blink"{%endif%}>{{awardee}}</div>
-          </td>
-          {% endif %}
+          <td>
+            <div>
+            {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 15000 and rmonth1 < rmonth2|add:rmonth3|div:2 %}
+            
+              {% if jname1|slice:"-2:" == awardee|slice:"-2:" or jname2|slice:"-2:" == awardee|slice:"-2:" or jname3|slice:"-2:" == awardee|slice:"-2:" %}
+              <span style="font-size:1.3rem; color:tomato; font-weight: 700;" class = "blink">{{awardee}}</span>
+              {% else %}
+              <span style="font-size:1.3rem; color:tomato; font-weight: 700;">{{awardee}}</span>
+              {% endif %}
 
+            {% else %}
+              {% if jname1|slice:"-2:" == awardee|slice:"-2:" or jname2|slice:"-2:" == awardee|slice:"-2:" or jname3|slice:"-2:" == awardee|slice:"-2:" %}
+              <span style="font-size:1.3rem;" class="blink">{{awardee}}</span>
+              {% else %}
+              <span style="font-size:1.3rem;">{{awardee}}</span>
+              {% endif %}
+            {% endif %}
+            </div>
+          </td>
+          
           <td>
             {% for flag, jockey, load_in in loadin %}
             {% if flag == 'J' and awardee == jockey %}
               {% if load_in >= 53 %}
-              <div style="text-align:center; font-family: Arial; font-size: 1.2rem; color: var(--color-main-light); ">{{load_in}}</div>
+              <span style="text-align:center; font-family: Arial; font-size: 1.2rem; color: var(--color-main-light); border-radius: 5px; background-color: var(--color-bg);">{{load_in}}</span>
               {% elif load_in >= 50 and load_in < 53 %}
-              <div style="text-align:center; font-family: Arial; font-size: 1.2rem; color: var(--color-gray); ">{{load_in}}</div>
+              <span style="text-align:center; font-family: Arial; font-size: 1.2rem; color: var(--color-gray);">{{load_in}}</span>
               {% else %}
-              <div style="text-align:center; font-family: Arial; font-size: 1.2rem; color: var(--color-r3); ">{{load_in}}</div>
+              <span style="text-align:center; font-family: Arial; font-size: 1.2rem; color: var(--color-r3); border-radius: 5px; background-color: var(--color-bg);">{{load_in}}</span>
               {% endif %}
             {% endif %}
             {% endfor %}
@@ -977,13 +1000,11 @@
           <td align="right" style="font-family: Arial; font-size: 1.2rem; color: var(--color-gray);">{{year_per}}</td>
           {%endif%}
           
-          <td align="center" style="font-family: Arial; font-size: 1.4rem;">{{rdate1}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.4rem;">{{rdate3}}</td>
-
+          <td align="center" style="font-family: Arial; font-size: 1.3rem;">{{rdate1}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.3rem;">{{rdate3}}</td>
           
-
           {% if rmonth1 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.4rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
           {%else%}
             {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 10000 and rmonth1 > rmonth2|add:rmonth3|div:2 %}
             <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|intcomma}}</td>
@@ -993,7 +1014,7 @@
           {% endif %}
 
           {% if rmonth2 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.4rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
           {%else%}
             {% if rmonth2|add:rmonth3|div:2 > 200000 and rmonth2 > 200000 %}
             <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:tomato; font-weight: 700;">{{rmonth2|intcomma}}</td>
@@ -1003,7 +1024,7 @@
           {% endif %}
 
           {% if rmonth3 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.4rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
           {%else%}
             {% if rmonth2|add:rmonth3|div:2 > 200000 and rmonth3 > 200000 %}
             <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:tomato; font-weight: 700;">{{rmonth3|intcomma}}</td>
@@ -1013,7 +1034,7 @@
           {% endif %}
 
           {% if rmonth1|add:rmonth2|add:rmonth3 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.4rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
           {%else%}
             {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 15000  %}
             <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</td>
@@ -1031,7 +1052,7 @@
           {%endif%}
 
           {% if rmonth1|add:rmonth2|add:rmonth3 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.4rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
           {%else%}
             {% if rmonth1|add:rmonth2|add:rmonth3|div:3 > 200000  %}
             <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|add:rmonth2|add:rmonth3|div:3|floatformat:0|intcomma}}</td>
@@ -1048,13 +1069,13 @@
             <td align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-light-gray) ">{{award|floatformat:0|intcomma}}</td>
           {% endif %}
 
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw1_fri|add:lw1_sun}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw1_fri1|add:lw1_sun1|add:lw1_fri2|add:lw1_sun2|add:lw1_fri3|add:lw1_sun3}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray); font-style: italic; ">{{lw1_fri1|add:lw1_sun1}}-{{lw1_fri2|add:lw1_sun2}}-{{lw1_fri3|add:lw1_sun3}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw1_sat|add:lw1_sun}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw1_sat1|add:lw1_sun1|add:lw1_sat2|add:lw1_sun2|add:lw1_sat3|add:lw1_sun3}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray); font-style: italic; ">{{lw1_sat1|add:lw1_sun1}}-{{lw1_sat2|add:lw1_sun2}}-{{lw1_sat3|add:lw1_sun3}}</td>
 
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw2_fri|add:lw2_sun}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw2_fri1|add:lw2_sun1|add:lw2_fri2|add:lw2_sun2|add:lw2_fri3|add:lw2_sun3}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray); font-style: italic; ">{{lw2_fri1|add:lw2_sun1}}-{{lw2_fri2|add:lw2_sun2}}-{{lw2_fri3|add:lw2_sun3}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw2_sat|add:lw2_sun}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw2_sat1|add:lw2_sun1|add:lw2_sat2|add:lw2_sun2|add:lw2_sat3|add:lw2_sun3}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray); font-style: italic; ">{{lw2_sat1|add:lw2_sun1}}-{{lw2_sat2|add:lw2_sun2}}-{{lw2_sat3|add:lw2_sun3}}</td>
 
         </tr>
         <tr class="fold">
@@ -1068,22 +1089,21 @@
                     <th><span class="visible-small" title="Jockey">경주마</span><span class="visible-big">경주마</span></th>
                     <th><span class="visible-small" title="Jockey">부<br>중</span><span class="visible-big">부<br>중</span></th>
                     <th colspan="2"><span class="visible-small" title="Jockey">조교 (연대%)</span><span class="visible-big">조교 (연대%)</span></th>
-                    <th><span class="visible-small" title="Jockey">예<br>상</span></span><span class="visible-big">예<br>상</span></th>
+                    <th><span class="visible-small" title="Jockey">예상<br>실순</span></span><span class="visible-big">예상<br>실순</span></th>
                     <th><span class="visible-small" title="Jockey">POP</span><span class="visible-big">POP</span></th>
-                    <th><span class="visible-small" title="Jockey">실<br>순</span></span><span class="visible-big">실<br>순</span></th>
                     <th><span class="visible-small" title="Jockey">Tot<br>C/S</span><span class="visible-big">Tot<br>C/S</span></th>
-                    <th><span class="visible-small" title="Jockey">D1</span><span class="visible-big">D1</span></th>
-                    <th><span class="visible-small" title="Jockey">D2</span><span class="visible-big">D2</span></th>
-                    <th><span class="visible-small" title="rmonth1">D3</span><span class="visible-big">D3</span></th>
-                    <th><span class="visible-small" title="rmonth2">D4</span><span class="visible-big">D4</span></th>
-                    <th><span class="visible-small" title="rmonth3">D5</span><span class="visible-big">D5</span></th>
-                    <th><span class="visible-small" title="rmonth3">D6</span><span class="visible-big">D6</span></th>
-                    <th><span class="visible-small" title="rmonth3">D7</span><span class="visible-big">D7</span></th>
-                    <th><span class="visible-small" title="Jockey">D8</span><span class="visible-big">D8</span></th>
-                    <th><span class="visible-small" title="Jockey">D9</span><span class="visible-big">D8</span></th>
-                    <th><span class="visible-small" title="rmonth1">D10</span><span class="visible-big">D10</span></th>
-                    <th><span class="visible-small" title="rmonth2">D11</span><span class="visible-big">D11</span></th>
-                    <th><span class="visible-small" title="rmonth3">D12</span><span class="visible-big">D12</span></th>
+                    <th><span class="visible-small" title="Jockey">D-1</span><span class="visible-big">D-1</span></th>
+                    <th><span class="visible-small" title="Jockey">D-2</span><span class="visible-big">D-2</span></th>
+                    <th><span class="visible-small" title="rmonth1">D-3</span><span class="visible-big">D-3</span></th>
+                    <th><span class="visible-small" title="rmonth2">D-4</span><span class="visible-big">D-4</span></th>
+                    <th><span class="visible-small" title="rmonth3">D-5</span><span class="visible-big">D-5</span></th>
+                    <th><span class="visible-small" title="rmonth3">D-6</span><span class="visible-big">D-6</span></th>
+                    <th><span class="visible-small" title="rmonth3">D-7</span><span class="visible-big">D-7</span></th>
+                    <th><span class="visible-small" title="Jockey">D-8</span><span class="visible-big">D-8</span></th>
+                    <th><span class="visible-small" title="Jockey">D-9</span><span class="visible-big">D-9</span></th>
+                    <th><span class="visible-small" title="rmonth1">D-10</span><span class="visible-big">D-10</span></th>
+                    <th><span class="visible-small" title="rmonth2">D-11</span><span class="visible-big">D-11</span></th>
+                    <th><span class="visible-small" title="rmonth3">D-12</span><span class="visible-big">D-12</span></th>
                   
                   </tr>
                 </thead>
@@ -1092,7 +1112,13 @@
                   {% if awardee == jockey %}
     
                   <tr>
-                    <td><div align="center" style="font-family: Arial; font-size:1.2rem;">{{rday}}</div></td>
+                    <td>
+                      {% if rday == '일' %}
+                      <div align="center" style="font-size:1.2rem; color: var(--color-r1);">{{rday}}</div>
+                      {% else %}
+                      <div align="center" style="font-size:1.2rem;">{{rday}}</div>
+                      {% endif %}
+                    </td>
                     <td>
                       <div align="center" style="font-family: Arial; font-size:1.2rem;">
                         <a href="http://kra.fiveplayer.co.kr/player.php?f={{rdate}}/{% if rcity == '서울' %}s{%else%}b{%endif%}{{rno}}r"
@@ -1103,7 +1129,7 @@
                     </td>
 
                     <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem; padding:0.15rem">
+                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
                         <a href="{% url 'prediction_race' rcity rdate rno horse 0 %}"
                           onclick="window.open(this.href, '_blank', 'width=1400, height=1000, toolbars=no, scrollbars=yes'); return false;">
                         {% if rank == 1 %}
@@ -1231,60 +1257,59 @@
                           {% endif %}
                         </a>
                       </div>
+                      <div align="right" style="font-family: Arial; font-size:1.2rem;">
+                        <a href="{% url 'race_result' rcity rdate rno horse 0 0 0 %}"
+                          onclick="window.open(this.href, '_blank', 'width=960, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                          {% if r_rank %}
+                            {% if r_rank == 1 %}
+                            <span class="tooltip" style="color:var(--color-r1); font-style: italic;">
+                              {{r_rank}}
+                            <span class="tooltip-text">경주결과 보기</span></span>
+                            {% elif r_rank == 2 %}
+                            <span class="tooltip" style="color:var(--color-r2); font-style: italic;">
+                              {{r_rank}}
+                            <span class="tooltip-text">경주결과 보기</span></span>
+                            {% elif r_rank == 3 %}
+                            <span class="tooltip" style="color:var(--color-r3); font-style: italic;">
+                              {{r_rank}}
+                            <span class="tooltip-text">경주결과 보기</span></span>
+                            {% elif r_rank == 4 %}
+                            <span class="tooltip" style="color:var(--color-r4); font-style: italic;">
+                              {{r_rank}}
+                            <span class="tooltip-text">경주결과 보기</span></span>
+                            {% elif r_rank == 5 %}
+                            <span class="tooltip" style="color:var(--color-r5); font-style: italic;">
+                              {{r_rank}}
+                            <span class="tooltip-text">경주결과 보기</span></span>
+                            {% else %}
+                            <span class="tooltip" style="font-style: normal;">
+                              {{r_rank}}
+                            <span class="tooltip-text">경주결과 보기</span></span>
+                            {% endif %}
+                          {% endif %}
+                        </a>
+                      </div>
                     </td>
 
                     <td>
                       <span style="color:blue">
-                        <progress value={{r_pop}} max="100" style="width: 3.0rem"></progress>
+                        <progress value={{r_pop}} max="99" style="width: 3.0rem"></progress>
                       </span>
-                    </td>
-
-                    <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
-                        <a href="{% url 'race_result' rcity rdate rno horse 0 0 0 %}"
-                          onclick="window.open(this.href, '_blank', 'width=960, height=1000, toolbars=no, scrollbars=yes'); return false;">
-                        {% if r_rank == 1 %}
-                        <span class="tooltip" style="color:var(--color-r1); font-style: italic;">
-                          {{r_rank}}
-                        <span class="tooltip-text">경주결과 보기</span></span>
-                        {% elif r_rank == 2 %}
-                        <span class="tooltip" style="color:var(--color-r2); font-style: italic;">
-                          {{r_rank}}
-                        <span class="tooltip-text">경주결과 보기</span></span>
-                        {% elif r_rank == 3 %}
-                        <span class="tooltip" style="color:var(--color-r3); font-style: italic;">
-                          {{r_rank}}
-                        <span class="tooltip-text">경주결과 보기</span></span>
-                        {% elif r_rank == 4 %}
-                        <span class="tooltip" style="color:var(--color-r4); font-style: italic;">
-                          {{r_rank}}
-                        <span class="tooltip-text">경주결과 보기</span></span>
-                        {% elif r_rank == 5 %}
-                        <span class="tooltip" style="color:var(--color-r5); font-style: italic;">
-                          {{r_rank}}
-                        <span class="tooltip-text">경주결과 보기</span></span>
-                        {% else %}
-                        <span class="tooltip" style="font-style: normal;">
-                          {{r_rank}}
-                        <span class="tooltip-text">경주결과 보기</span></span>
-                        {% endif %}
-                        </a>
-                      </div>
                     </td>
                     
                     <td align="center">
-                      <div style="font-family: Arial; font-size:1.3rem;">
+                      <div style="font-family: Arial; font-size:1.1rem; font-style: italic;">
                         {{d1|add:d2|add:d3|add:d4|add:d5|add:d6|add:d7|add:d8|add:d9|add:d10|add:d11|add:d12|add:d13|add:d14}}
                       </div>
                     
-                      <div style="font-family: Arial; font-size:1.3rem;">
-                        <span style="font-family: Arial; color:var(--color-r4);">{{c1|add:c2|add:c3|add:c4|add:c5|add:c6|add:c7|add:c8|add:c9|add:c10|add:c11|add:c12|add:c13|add:c14}}</span>
+                      <div style="font-family: Arial; font-size:1.1rem;  font-style: italic; text-align: right;">
+                        <span style="font-family: Arial; color:dodgerblue">{{c1|add:c2|add:c3|add:c4|add:c5|add:c6|add:c7|add:c8|add:c9|add:c10|add:c11|add:c12|add:c13|add:c14}}</span>
                         <span style="font-family: Arial; color:tomato">{{s1|add:s2|add:s3|add:s4|add:s5|add:s6|add:s7|add:s8|add:s9|add:s10|add:s11|add:s12|add:s13|add:s14}}</span>
                       </div>
                     </td>
                     
                     <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if r1 == '조' %}
                         <span style="color:red;">{{r1}}</span>
                         {% else %}
@@ -1301,25 +1326,25 @@
                         {% endif %}
                         {% endif %}
                       </div>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if d1 == 0 %}-
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem;">{{d1}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem;">{{d1}}</span>
                         {% if c1 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{c1}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{c1}}</span>
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem; font-weight: 700;">{{c1}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; font-weight: 700;">{{c1}}</span>
                         {% endif %}
                         {% if s1 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{s1}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{s1}}</span>
                         {% else %}
-                        <span class="blink" style="font-family: Arial; font-size:1.2rem; font-weight: 700; color:tomato;">{{s1}}</span>
+                        <span class="blink" style="font-family: Arial; font-size:1.1rem; font-weight: 700; color:tomato;">{{s1}}</span>
                         {% endif %}
                         {%endif%}
                       </div>
                     </td>
                     <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if r2 == '조' %}
                         <span style="color:red;">{{r2}}</span>
                         {% else %}
@@ -1336,25 +1361,25 @@
                         {% endif %}
                         {% endif %}
                       </div>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if d2 == 0 %}-
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem;">{{d2}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem;">{{d2}}</span>
                         {% if c2 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{c2}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{c2}}</span>
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem; font-weight: 700;">{{c2}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; font-weight: 700;">{{c2}}</span>
                         {% endif %}
                         {% if s2 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{s2}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{s2}}</span>
                         {% else %}
-                        <span class="blink" style="font-family: Arial; font-size:1.2rem; font-weight: 700; color:tomato;">{{s2}}</span>
+                        <span class="blink" style="font-family: Arial; font-size:1.1rem; font-weight: 700; color:tomato;">{{s2}}</span>
                         {% endif %}
                         {%endif%}
                       </div>
                     </td>
                     <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if r3 == '조' %}
                         <span style="color:red;">{{r3}}</span>
                         {% else %}
@@ -1371,25 +1396,25 @@
                         {% endif %}
                         {% endif %}
                       </div>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if d3 == 0 %}-
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem;">{{d3}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem;">{{d3}}</span>
                         {% if c3 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{c3}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{c3}}</span>
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem; font-weight: 700;">{{c3}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; font-weight: 700;">{{c3}}</span>
                         {% endif %}
                         {% if s3 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{s3}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{s3}}</span>
                         {% else %}
-                        <span class="blink" style="font-family: Arial; font-size:1.2rem; font-weight: 700; color:tomato;">{{s3}}</span>
+                        <span class="blink" style="font-family: Arial; font-size:1.1rem; font-weight: 700; color:tomato;">{{s3}}</span>
                         {% endif %}
                         {%endif%}
                       </div>
                     </td>
                     <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if r4 == '조' %}
                         <span style="color:red;">{{r4}}</span>
                         {% else %}
@@ -1406,25 +1431,25 @@
                         {% endif %}
                         {% endif %}
                       </div>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if d4 == 0 %}-
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem;">{{d4}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem;">{{d4}}</span>
                         {% if c4 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{c4}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{c4}}</span>
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem; font-weight: 700;">{{c4}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; font-weight: 700;">{{c4}}</span>
                         {% endif %}
                         {% if s4 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{s4}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{s4}}</span>
                         {% else %}
-                        <span class="blink" style="font-family: Arial; font-size:1.2rem; font-weight: 700; color:tomato;">{{s4}}</span>
+                        <span class="blink" style="font-family: Arial; font-size:1.1rem; font-weight: 700; color:tomato;">{{s4}}</span>
                         {% endif %}
                         {%endif%}
                       </div>
                     </td>
                     <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if r5 == '조' %}
                         <span style="color:red;">{{r5}}</span>
                         {% else %}
@@ -1441,25 +1466,25 @@
                         {% endif %}
                         {% endif %}
                       </div>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if d5 == 0 %}-
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem;">{{d5}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem;">{{d5}}</span>
                         {% if c5 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{c5}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{c5}}</span>
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem; font-weight: 700;">{{c5}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; font-weight: 700;">{{c5}}</span>
                         {% endif %}
                         {% if s5 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{s5}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{s5}}</span>
                         {% else %}
-                        <span class="blink" style="font-family: Arial; font-size:1.2rem; font-weight: 700; color:tomato;">{{s5}}</span>
+                        <span class="blink" style="font-family: Arial; font-size:1.1rem; font-weight: 700; color:tomato;">{{s5}}</span>
                         {% endif %}
                         {%endif%}
                       </div>
                     </td>
                     <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if r6 == '조' %}
                         <span style="color:red;">{{r6}}</span>
                         {% else %}
@@ -1476,25 +1501,25 @@
                         {% endif %}
                         {% endif %}
                       </div>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if d6 == 0 %}-
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem;">{{d6}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem;">{{d6}}</span>
                         {% if c6 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{c6}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{c6}}</span>
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem; font-weight: 700;">{{c6}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; font-weight: 700;">{{c6}}</span>
                         {% endif %}
                         {% if s6 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{s6}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{s6}}</span>
                         {% else %}
-                        <span class="blink" style="font-family: Arial; font-size:1.2rem; font-weight: 700; color:tomato;">{{s6}}</span>
+                        <span class="blink" style="font-family: Arial; font-size:1.1rem; font-weight: 700; color:tomato;">{{s6}}</span>
                         {% endif %}
                         {%endif%}
                       </div>
                     </td>
                     <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if r7 == '조' %}
                         <span style="color:red;">{{r7}}</span>
                         {% else %}
@@ -1511,25 +1536,25 @@
                         {% endif %}
                         {% endif %}
                       </div>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if d7 == 0 %}-
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem;">{{d7}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem;">{{d7}}</span>
                         {% if c7 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{c7}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{c7}}</span>
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem; font-weight: 700;">{{c7}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; font-weight: 700;">{{c7}}</span>
                         {% endif %}
                         {% if s7 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{s7}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{s7}}</span>
                         {% else %}
-                        <span class="blink" style="font-family: Arial; font-size:1.2rem; font-weight: 700; color:tomato;">{{s7}}</span>
+                        <span class="blink" style="font-family: Arial; font-size:1.1rem; font-weight: 700; color:tomato;">{{s7}}</span>
                         {% endif %}
                         {%endif%}
                       </div>
                     </td>
                     <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if r8 == '조' %}
                         <span style="color:red;">{{r8}}</span>
                         {% else %}
@@ -1546,25 +1571,25 @@
                         {% endif %}
                         {% endif %}
                       </div>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if d8 == 0 %}-
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem;">{{d8}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem;">{{d8}}</span>
                         {% if c8 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{c8}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{c8}}</span>
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem; font-weight: 700;">{{c8}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; font-weight: 700;">{{c8}}</span>
                         {% endif %}
                         {% if s8 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{s8}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{s8}}</span>
                         {% else %}
-                        <span class="blink" style="font-family: Arial; font-size:1.2rem; font-weight: 700; color:tomato;">{{s8}}</span>
+                        <span class="blink" style="font-family: Arial; font-size:1.1rem; font-weight: 700; color:tomato;">{{s8}}</span>
                         {% endif %}
                         {%endif%}
                       </div>
                     </td>
                     <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if r9 == '조' %}
                         <span style="color:red;">{{r9}}</span>
                         {% else %}
@@ -1581,25 +1606,25 @@
                         {% endif %}
                         {% endif %}
                       </div>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if d9 == 0 %}-
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem;">{{d9}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem;">{{d9}}</span>
                         {% if c9 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{c9}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{c9}}</span>
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem; font-weight: 700;">{{c9}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; font-weight: 700;">{{c9}}</span>
                         {% endif %}
                         {% if s9 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{s9}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{s9}}</span>
                         {% else %}
-                        <span class="blink" style="font-family: Arial; font-size:1.2rem; font-weight: 700; color:tomato;">{{s9}}</span>
+                        <span class="blink" style="font-family: Arial; font-size:1.1rem; font-weight: 700; color:tomato;">{{s9}}</span>
                         {% endif %}
                         {%endif%}
                       </div>
                     </td>
                     <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if r10 == '조' %}
                         <span style="color:red;">{{r10}}</span>
                         {% else %}
@@ -1616,25 +1641,25 @@
                         {% endif %}
                         {% endif %}
                       </div>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if d10 == 0 %}-
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem;">{{d10}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem;">{{d10}}</span>
                         {% if c10 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{c10}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{c10}}</span>
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem; font-weight: 700;">{{c10}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; font-weight: 700;">{{c10}}</span>
                         {% endif %}
                         {% if s10 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{s10}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{s10}}</span>
                         {% else %}
-                        <span class="blink" style="font-family: Arial; font-size:1.2rem; font-weight: 700; color:tomato;">{{s10}}</span>
+                        <span class="blink" style="font-family: Arial; font-size:1.1rem; font-weight: 700; color:tomato;">{{s10}}</span>
                         {% endif %}
                         {%endif%}
                       </div>
                     </td>
                     <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if r11 == '조' %}
                         <span style="color:red;">{{r11}}</span>
                         {% else %}
@@ -1651,25 +1676,25 @@
                         {% endif %}
                         {% endif %}
                       </div>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if d11 == 0 %}-
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem;">{{d11}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem;">{{d11}}</span>
                         {% if c11 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{c11}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{c11}}</span>
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem; font-weight: 700;">{{c11}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; font-weight: 700;">{{c11}}</span>
                         {% endif %}
                         {% if s11 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{s11}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{s11}}</span>
                         {% else %}
-                        <span class="blink" style="font-family: Arial; font-size:1.2rem; font-weight: 700; color:tomato;">{{s11}}</span>
+                        <span class="blink" style="font-family: Arial; font-size:1.1rem; font-weight: 700; color:tomato;">{{s11}}</span>
                         {% endif %}
                         {%endif%}
                       </div>
                     </td>
                     <td>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if r12 == '조' %}
                         <span style="color:red;">{{r12}}</span>
                         {% else %}
@@ -1686,19 +1711,19 @@
                         {% endif %}
                         {% endif %}
                       </div>
-                      <div align="center" style="font-family: Arial; font-size:1.2rem;">
+                      <div align="center" style="font-family: Arial; font-size:1.1rem;">
                         {% if d12 == 0 %}-
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem;">{{d12}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem;">{{d12}}</span>
                         {% if c12 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{c12}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{c12}}</span>
                         {% else %}
-                        <span style="font-family: Arial; font-size:1.2rem; font-weight: 700;">{{c12}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; font-weight: 700;">{{c12}}</span>
                         {% endif %}
                         {% if s12 == 0 %}
-                        <span style="font-family: Arial; font-size:1.2rem; color:var(--color-gray);">{{s12}}</span>
+                        <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray);">{{s12}}</span>
                         {% else %}
-                        <span class="blink" style="font-family: Arial; font-size:1.2rem; font-weight: 700; color:tomato;">{{s12}}</span>
+                        <span class="blink" style="font-family: Arial; font-size:1.1rem; font-weight: 700; color:tomato;">{{s12}}</span>
                         {% endif %}
                         {%endif%}
                       </div>
