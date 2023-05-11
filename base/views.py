@@ -19,7 +19,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from base.data_management import get_breakingnews, get_file_contents, get_kradata, get_krafile, krafile_convert
 
 from base.mysqls import (get_award, get_award_race, get_jockey_trend, get_judged, get_judged_horse, get_judged_jockey, get_last2weeks_loadin, get_paternal,
-                         get_paternal_dist, get_pedigree, get_popularity_rate, get_popularity_rate_t, get_prediction, get_print_prediction, get_race, get_race_center_detail_view, get_status_train, get_train, get_train_audit, get_train_horse, get_trainer_double_check,
+                         get_paternal_dist, get_pedigree, get_popularity_rate, get_popularity_rate_t, get_prediction, get_print_prediction, get_race, get_race_center_detail_view, get_report_code, get_status_train, get_train, get_train_audit, get_train_horse, get_trainer_double_check,
                          get_training, get_status_training, get_weeks, get_last2weeks, set_changed_race_horse, set_changed_race_jockey, set_changed_race_rank, set_changed_race_weight)
 from letsrace.settings import KRAFILE_ROOT
 
@@ -744,30 +744,38 @@ def raceReport(request, rcity, rdate, rno):
     elif fdata == '기수변경':
         set_changed_race_jockey(rcity, rdate, rno, r_content)
 
-    exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno)
-    context = {'rcity': rcity, 'exp011s': exp011s}
+    rec011s, r_start, r_corners, r_finish, r_wrapup = get_report_code(
+        rcity, rdate, rno)
 
-    # user = request.user
-    # form = UserForm(instance=user)
+    context = {'rcity': rcity,
+               'rec011s': rec011s,
+               'r_start': r_start,
+               'r_corners': r_corners,
+               'r_finish': r_finish,
+               'r_wrapup': r_wrapup
+               }
 
     if request.method == 'POST':
 
         myDict = dict(request.POST)
-        print(myDict['pop_1'][0])
+        print(myDict)
 
-        for race in exp011s:
-            pop = 'pop_' + str(race.gate)
+        for rcity, rdate, rno, rank, gate, horse, r_start, r_corners, r_finish, r_wrapup, r_etc in rec011s:
+           
+            pop = 'pop_' + str(gate)
+            # print(myDict[pop][0])
 
             try:
                 cursor = connection.cursor()
 
-                strSql = """ update exp011 
-                                set r_rank = """ + myDict[pop][0] + """,
-                                    r_pop = """ + myDict[pop][1] + """
-                            where rdate = '""" + rdate + """' and rcity = '""" + rcity + """' and rno = """ + str(rno) + """ and gate = """ + str(race.gate) + """
+                strSql = """ update rec011 
+                                set r_start = '""" + myDict[pop][0] + """',
+                                    r_corners = '""" + myDict[pop][1] + """'
+                            where rdate = '""" + rdate + """' and rcity = '""" + rcity + """' and rno = """ + str(rno) + """ and gate = """ + str(gate) + """
                         ; """
 
                 print(strSql)
+
                 r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
                 awards = cursor.fetchall()
 
@@ -779,7 +787,7 @@ def raceReport(request, rcity, rdate, rno):
 
             except:
                 connection.rollback()
-                print("Failed updating in exp011")
+                print("Failed updating in rec011")
 
         # form = Exp011(request.POST, request.FILES, rcity=rcity, rdate=rdate, rno=rno, instance=pop_1)
         # if form.is_valid():
@@ -787,7 +795,8 @@ def raceReport(request, rcity, rdate, rno):
         #     redirect('user-profile', pk=rdate)
 
     # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
-    return render(request, 'base/update_changed_race.html', context)
+    return render(request, 'base/race_report.html', context)
+
 
 @login_required(login_url='login')
 def updateChangedRace(request, rcity, rdate, rno):
@@ -817,6 +826,7 @@ def updateChangedRace(request, rcity, rdate, rno):
     if request.method == 'POST':
 
         myDict = dict(request.POST)
+        print(myDict)
         print(myDict['pop_1'][0])
 
         for race in exp011s:
@@ -895,7 +905,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
                'r_condition': r_condition,
                #    'training': training,
                'train': train,
-                'hr_records': hr_records,
+               'hr_records': hr_records,
                'compare_r': compare_r, 'hname': hname,
                'pedigree': pedigree,
                'h_audit': h_audit,

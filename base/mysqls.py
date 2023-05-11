@@ -1389,6 +1389,80 @@ def get_prediction(i_rdate):
     return race, expects, award_j
 
 
+def get_report_code(i_rcity, i_rdate, i_rno):
+
+    try:
+        cursor = connection.cursor()
+        strSql = """ select rcity, rdate, rno, rank, gate, horse, r_start, r_corners, r_finish, r_wrapup, r_etc
+                    from rec011 
+                    where rcity =  '""" + i_rcity + """'
+                      and rdate = '""" + i_rdate + """'
+                      and rno =  """ + str(i_rno) + """
+                      order by rank, gate
+                    """
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        rec011 = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting start")
+        
+    try:
+        cursor = connection.cursor()
+        strSql = """ select r_code, r_name from race_cd where cd_type = 'R1' order by r_code; """
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        r_start = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting r_start")
+
+    try:
+        cursor = connection.cursor()
+        strSql = """ select r_code, r_name from race_cd where cd_type = 'R2' order by r_code; """
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        r_corners = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting r_corners")
+
+    try:
+        cursor = connection.cursor()
+        strSql = """ select r_code, r_name from race_cd where cd_type = 'R3' order by r_code; """
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        r_finish = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting r_finish")
+    try:
+        cursor = connection.cursor()
+        strSql = """ select r_code, r_name from race_cd where cd_type = 'R4' order by r_code; """
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        r_wrapup = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting r_wrapup")
+
+    return rec011, r_start, r_corners, r_finish, r_wrapup
+
 def get_trainer_double_check(i_rcity, i_rdate, i_rno):
 
     try:

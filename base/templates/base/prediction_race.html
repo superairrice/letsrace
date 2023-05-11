@@ -408,12 +408,16 @@
                   <div style="font-family: Arial; text-align: center; color:var(--color-light-gray);">{{r.handycap}}&nbsp;</div>
 
                   {# 부담중량 증감 #}
-                  {% if r.handycap|sub:r.i_prehandy > 0 %}
-                    <div style="font-family: Arial; color: var(--color-r5); text-align: right;">+{{r.handycap|sub:r.i_prehandy}}</div>
-                  {% elif r.handycap|sub:r.i_prehandy == 0 %}
-                    <div style="font-family: Arial; color: var(--color-gray); text-align: right;">-&nbsp;&nbsp;</div>
+                  {% if r.i_prehandy == 0.0 %}
+                    <div style="font-family: Arial; color: var(--color-gray); text-align: right;">신마</div>
                   {% else %}
-                    <div style="font-family: Arial; color: var(--color-r1); text-align: right;">{{r.handycap|sub:r.i_prehandy}}</div>
+                    {% if r.handycap|sub:r.i_prehandy > 0 %}
+                      <div style="font-family: Arial; color: var(--color-r5); text-align: right;">+{{r.handycap|sub:r.i_prehandy}}</div>
+                    {% elif r.handycap|sub:r.i_prehandy == 0 %}
+                      <div style="font-family: Arial; color: var(--color-gray); text-align: right;">-&nbsp;&nbsp;</div>
+                    {% else %}
+                      <div style="font-family: Arial; color: var(--color-r1); text-align: right;">{{r.handycap|sub:r.i_prehandy}}</div>
+                    {% endif %}
                   {% endif %}
                 </div>
                 
@@ -459,9 +463,9 @@
 
                 {% if r.t_per %}
                   {% if compare_r.t_per__max == r.t_per %}
-                  <div style="color:var(--color-r1); font-family: Arial; font-size: 1.3rem;">{{r.t_per}}</div>
+                  <div style="color:var(--color-r1); font-family: Arial; font-size: 1.2rem;">{{r.t_per}}</div>
                   {%else%}
-                  <div style="color: var(--color-gray); font-family: Arial; font-size: 1.3rem;">{{r.t_per}}</div>
+                  <div style="color: var(--color-gray); font-family: Arial; font-size: 1.2rem;">{{r.t_per}}</div>
                   {%endif%}
                 {% endif %}
               </td>
@@ -1197,9 +1201,9 @@
                 <div style="font-family: Arial; font-size:1.3rem; font-weight: 400; text-align: left;">{{jockey}}</div>
 
                 {% if trainer in trainer_double_check %}
-                <div style="font-size: 1.25rem; text-align: right; color:var(--color-r3)"> {{trainer}}</div>
+                <div style="font-size: 1.2rem; text-align: right; color:var(--color-r3)"> {{trainer}}</div>
                 {% else %}
-                <div style="color: var(--color-gray); font-size: 1.25rem; text-align: right;">{{trainer}}</div>
+                <div style="color: var(--color-gray); font-size: 1.2rem; text-align: right;">{{trainer}}</div>
                 {% endif %}
               </td>
 
@@ -2487,7 +2491,7 @@
                 <div style="text-align:center; font-size:1.3rem; font-family: Arial;">
                   
                   {% if p_tot > 0 %}{{p_2rd|div:p_tot|mul:100|floatformat:1}}{%else%}0.0{%endif%}</div>
-                <div style="text-align:right; font-size:1.3rem; font-family: Arial;">
+                <div style="text-align:right; font-size:1.2rem; font-family: Arial;">
                   {% if m_tot > 0 %}{{m_2rd|div:m_tot|mul:100|floatformat:1}}{%else%}0.0{%endif%}</div>
               </td>
               <td>
@@ -2792,7 +2796,7 @@
               <td>
                 <div align="left" style=" font-size: 1.3rem;">
                   {% if r3_cnt == 0 %}
-                  0
+                    <span style="font-family: Arial; color:var(--color-gray)">0.0</span>
                   {%else%}
                     {% if r3_1|add:r3_2|add:r3_3|div:r3_cnt|mul:100 >= 60 %}
                     <span style="font-family: Arial; color:var(--color-r1)">{{r3_1|add:r3_2|add:r3_3|div:r3_cnt|mul:100|floatformat:1}}</span>
@@ -2804,10 +2808,8 @@
                   {%endif%}
                 </div>
 
-                <div align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray);">
-                  {% if gt_cnt == 0 %}
-                  0
-                  {%else%}
+                <div align="right" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">
+                  {% if gt_cnt %}
                     {% if gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 >= 50 %}
                     <span style="font-family: Arial; color:var(--color-r1)">{{gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100|floatformat:1}}</span>
                     {% elif gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 >= 40 and gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 < 50 %}
@@ -2821,25 +2823,35 @@
                     {%else%}
                     <span style="font-family: Arial; color:blue">{{gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100|floatformat:1}}</span>
                     {%endif%}
+                  {% else %}
+                  <span style="font-family: Arial; color:var(--color-gray)">0.0</span>
                   {%endif%}
                 </div>
               </td>
               <td>
                 <div align="right" style="font-family: Arial; font-size: 1.3rem;">{{r3_1}}</div>
-                <div align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray);">{{gt_1}}</div>
+                {% if gt_cnt %}
+                <div align="right" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">{{gt_1}}</div>
+                {% endif %}
               </td>
               <td>
                 <div align="right" style="font-family: Arial; font-size: 1.3rem;">{{r3_2}}</div>
-                <div align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray);">{{gt_2}}</div>
+                {% if gt_cnt %}
+                <div align="right" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">{{gt_2}}</div>
+                {% endif %}
               </td>
               <td>
                 <div align="right" style="font-family: Arial; font-size: 1.3rem;">{{r3_3}}</div>
-                <div align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray);">{{gt_3}}</div>
+                {% if gt_cnt %}
+                <div align="right" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">{{gt_3}}</div>
+                {% endif %}
               </td>
               
               <td>
                 <div align="right" style="font-family: Arial; font-size: 1.3rem;">{{r3_cnt}}</div>
-                <div align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray);">{{gt_cnt}}</div>
+                {% if gt_cnt %}
+                <div align="right" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">{{gt_cnt}}</div>
+                {% endif %}
               </td>
               
             </tr>
@@ -3091,54 +3103,62 @@
               <td>
                 <div align="left" style=" font-size: 1.3rem;">
                   {% if r3_cnt == 0 %}
-                  0
+                    <span style="font-family: Arial; color:var(--color-gray)">0.0</span>
                   {%else%}
-                  {% if r3_1|add:r3_2|add:r3_3|div:r3_cnt|mul:100 >= 60 %}
-                  <span style="font-family: Arial; color:var(--color-r1)">{{r3_1|add:r3_2|add:r3_3|div:r3_cnt|mul:100|floatformat:1}}</span>
-                  {% elif r3_1|add:r3_2|add:r3_3|div:r3_cnt|mul:100 >= 50 and r3_1|add:r3_2|add:r3_3|div:r3_cnt|mul:100 < 60 %} <span style="font-family: Arial; color:var(--color-gray)">
-                    {{r3_1|add:r3_2|add:r3_3|div:r3_cnt|mul:100|floatformat:1}}</span>
+                    {% if r3_1|add:r3_2|add:r3_3|div:r3_cnt|mul:100 >= 60 %}
+                    <span style="font-family: Arial; color:var(--color-r1)">{{r3_1|add:r3_2|add:r3_3|div:r3_cnt|mul:100|floatformat:1}}</span>
+                    {% elif r3_1|add:r3_2|add:r3_3|div:r3_cnt|mul:100 >= 50 and r3_1|add:r3_2|add:r3_3|div:r3_cnt|mul:100 < 60 %}
+                    <span style="font-family: Arial; color:var(--color-gray)">{{r3_1|add:r3_2|add:r3_3|div:r3_cnt|mul:100|floatformat:1}}</span>
                     {%else%}
                     <span style="font-family: Arial; color:blue">{{r3_1|add:r3_2|add:r3_3|div:r3_cnt|mul:100|floatformat:1}}</span>
                     {%endif%}
-                    {%endif%}
+                  {%endif%}
                 </div>
-      
-                <div align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray);">
-                  {% if gt_cnt == 0 %}
-                  0
-                  {%else%}
-                  {% if gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 >= 50 %}
-                  <span style="font-family: Arial; color:var(--color-r1)">{{gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100|floatformat:1}}</span>
-                  {% elif gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 >= 40 and gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 < 50 %} <span style="font-family: Arial; color:var(--color-r2)">
-                    {{gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100|floatformat:1}}</span>
-                    {% elif gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 >= 30 and gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 < 40 %} <span style="font-family: Arial; color:var(--color-r3)">
-                      {{gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100|floatformat:1}}</span>
-                      {% elif gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 >= 20 and gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 < 30 %} <span style="font-family: Arial; color:var(--color-r4)">
-                        {{gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100|floatformat:1}}</span>
-                        {% elif gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 >= 10 and gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 < 20 %} <span style="font-family: Arial; color:var(--color-r5)">
-                          {{gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100|floatformat:1}}</span>
-                          {%else%}
-                          <span style="font-family: Arial; color:blue">{{gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100|floatformat:1}}</span>
-                          {%endif%}
-                          {%endif%}
+
+                <div align="right" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">
+                  {% if gt_cnt %}
+                    {% if gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 >= 50 %}
+                    <span style="font-family: Arial; color:var(--color-r1)">{{gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100|floatformat:1}}</span>
+                    {% elif gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 >= 40 and gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 < 50 %}
+                    <span style="font-family: Arial; color:var(--color-r2)">{{gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100|floatformat:1}}</span>
+                    {% elif gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 >= 30 and gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 < 40 %}
+                    <span style="font-family: Arial; color:var(--color-r3)">{{gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100|floatformat:1}}</span>
+                    {% elif gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 >= 20 and gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 < 30 %}
+                    <span style="font-family: Arial; color:var(--color-r4)">{{gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100|floatformat:1}}</span>
+                    {% elif gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 >= 10 and gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100 < 20 %}
+                    <span style="font-family: Arial; color:var(--color-r5)">{{gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100|floatformat:1}}</span>
+                    {%else%}
+                    <span style="font-family: Arial; color:blue">{{gt_1|add:gt_2|add:gt_3|div:gt_cnt|mul:100|floatformat:1}}</span>
+                    {%endif%}
+                  {% else %}
+                  <span style="font-family: Arial; color:var(--color-gray)">0.0</span>
+                  {%endif%}
                 </div>
               </td>
               <td>
                 <div align="right" style="font-family: Arial; font-size: 1.3rem;">{{r3_1}}</div>
-                <div align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray);">{{gt_1}}</div>
+                {% if gt_cnt %}
+                <div align="right" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">{{gt_1}}</div>
+                {% endif %}
               </td>
               <td>
                 <div align="right" style="font-family: Arial; font-size: 1.3rem;">{{r3_2}}</div>
-                <div align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray);">{{gt_2}}</div>
+                {% if gt_cnt %}
+                <div align="right" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">{{gt_2}}</div>
+                {% endif %}
               </td>
               <td>
                 <div align="right" style="font-family: Arial; font-size: 1.3rem;">{{r3_3}}</div>
-                <div align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray);">{{gt_3}}</div>
+                {% if gt_cnt %}
+                <div align="right" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">{{gt_3}}</div>
+                {% endif %}
               </td>
-      
+              
               <td>
                 <div align="right" style="font-family: Arial; font-size: 1.3rem;">{{r3_cnt}}</div>
-                <div align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray);">{{gt_cnt}}</div>
+                {% if gt_cnt %}
+                <div align="right" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">{{gt_cnt}}</div>
+                {% endif %}
               </td>
       
             </tr>
@@ -3315,14 +3335,6 @@
       <div id="tab-3" class="tab-content">
         <table class="fold-table"  style="table-layout: fixed">
           <thead>
-      
-            <!-- <tr>
-              <th width="17%"><span class="visible-small">예상<br>순위</span><span class="visible-big">예상<br>순위</span></th>
-              <th width="10%"><span class="visible-small">마번</span><span class="visible-big">마번</span></th>
-              <th width="28%"><span class="visible-small">부마</span><span class="visible-big">부마</span></th>
-              <th width="45%" colspan="3"><span class="visible-small">복승률 & 총전적<br>———————————————<br>{{r_condition.distance}}m
-                  전적</span><span class="visible-big">복승률 & 총전적<br>———————————————<br>{{r_condition.distance}}m 전적</span></th>
-            </tr> -->
 
             <tr>
               <th width="17%" rowspan="2"><span class="visible-small"><br>예상<br>순위</span><span class="visible-big" style="padding:0.15rem"><br>예상<br>순위</span></th>
@@ -3342,7 +3354,7 @@
             <tr class="view">
       
               <td>
-                <div align="center" style="font-family: Arial; font-size:1.3rem; font-weight: 700; padding:1.05rem;">{% if rank > 20 %}🐣{% else %} {{rank}} {% endif %}</div>
+                <div align="center" style="font-family: Arial; font-size:1.3rem; font-weight: 700;">{% if rank > 20 %}🐣{% else %} {{rank}} {% endif %}</div>
               </td>
               <td>
                 <div align="center" style="font-family: Arial; font-size:1.4rem;">
@@ -3376,12 +3388,12 @@
               </td>
       
               <td>
-                {% if paternal|length >= 12 %}
-                <div align="left" style="font-family: Arial; font-size:1.1rem;">{{paternal|slice:"0:8"}}</div>
-                <div align="left" style="font-family: Arial; font-size:1.1rem; text-align: right;">{{paternal|slice:"8:18"}}</div>
+                {% if paternal|length >= 8 %}
+                <div style="font-family: Arial; font-size:1.0rem;">{{paternal|slice:"0:12"}}</div>
+                <!-- <div style="font-family: Arial; font-size:1.0rem; text-align: right;">{{paternal|slice:"8:18"}}</div> -->
                 {%else%}
-                <div align="left" style="font-family: Arial; font-size:1.2rem;">{{paternal|slice:"0:8"}}</div>
-                <div align="left" style="font-family: Arial; font-size:1.2rem; text-align: right;">{{paternal|slice:"8:18"}}</div>
+                <div style="font-family: Arial; font-size:1.2rem;">{{paternal|slice:"0:8"}}</div>
+                <!-- <div style="font-family: Arial; font-size:1.2rem; text-align: right;">{{paternal|slice:"8:18"}}</div> -->
                 {%endif%}
               </td>
       
@@ -3389,22 +3401,22 @@
                 
                 {% if rtot != 0 %}
                   {% if r1|add:r2|add:r3|div:rtot|mul:100|floatformat:1 >=  '30.0' %}
-                  <div align="right" style="font-family: Arial; font-size:1.25rem; color:rgb(0, 192, 255); width:700;">{{r1|add:r2|add:r3|div:rtot|mul:100|floatformat:1}}</div>
+                  <div align="right" style="font-family: Arial; font-size:1.3rem; color:rgb(0, 192, 255); width:700;">{{r1|add:r2|add:r3|div:rtot|mul:100|floatformat:1}}</div>
                   {% else %}
-                  <div align="right" style="font-family: Arial; font-size:1.25rem;">{{r1|add:r2|add:r3|div:rtot|mul:100|floatformat:1}}</div>
+                  <div align="right" style="font-family: Arial; font-size:1.3rem;">{{r1|add:r2|add:r3|div:rtot|mul:100|floatformat:1}}</div>
                   {% endif %}
                 {% else %}
-                <div align="right" style="font-family: Arial; font-size:1.25rem;">0.0</div>
+                <div align="right" style="font-family: Arial; font-size:1.3rem;">0.0</div>
                 {%endif%}
 
                 {% if rdtot != 0 %}
                   {% if rd1|add:rd2|add:rd3|div:rdtot|mul:100|floatformat:1 >= r1|add:r2|add:r3|div:rtot|mul:100|floatformat:1 %}
-                  <div align="right" style="font-family: Arial; font-size:1.25rem; color:var(--color-r1); width:700;">{{rd1|add:rd2|add:rd3|div:rdtot|mul:100|floatformat:1}}</div>
+                  <div align="right" style="font-family: Arial; font-size:1.2rem; color:var(--color-r1); width:700;">{{rd1|add:rd2|add:rd3|div:rdtot|mul:100|floatformat:1}}</div>
                   {% else %}
-                  <div align="right" style="font-family: Arial; font-size:1.25rem;">{{rd1|add:rd2|add:rd3|div:rdtot|mul:100|floatformat:1}}</div>
+                  <div align="right" style="font-family: Arial; font-size:1.2rem;">{{rd1|add:rd2|add:rd3|div:rdtot|mul:100|floatformat:1}}</div>
                   {% endif %}
                 {% else %}
-                <div align="right" style="font-family: Arial; font-size:1.25rem;">0.0</div>
+                <div align="right" style="font-family: Arial; font-size:1.2rem;">0.0</div>
                 {%endif%}
       
       
