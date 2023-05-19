@@ -167,7 +167,7 @@ def get_judged(rcity, rdate, rno):
 
         strSql = """ 
               SELECT distinct a.rank, a.gate, a.horse, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
-                FROM exp011	a right outer join 
+                FROM rec011	a right outer join 
                     rec015	b on a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno and a.horse = b.horse
                 where a.rcity = '""" + rcity + """'
                 AND a.rdate = '""" + rdate + """'

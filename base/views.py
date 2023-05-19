@@ -761,7 +761,7 @@ def raceReport(request, rcity, rdate, rno):
         print(myDict)
 
         for rcity, rdate, rno, rank, gate, horse, r_start, r_corners, r_finish, r_wrapup, r_etc in rec011s:
-           
+
             pop = 'pop_' + str(gate)
             # print(myDict[pop][0])
 
@@ -877,13 +877,14 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     r_condition = Rec010.objects.filter(
         rcity=rcity, rdate=rdate, rno=rno).get()
 
+    rdate_1year = str( int(rdate[0:4]) - 1) + rdate[4:8] # 최근 1년 경주성적 조회조건 추가
+
     hr_records = RecordS.objects.filter(
-        rdate__lt=rdate, horse__in=records.values("horse")).order_by('horse', '-rdate')
+        rdate__lt=rdate, rdate__gt=rdate_1year, horse__in=records.values("horse")).order_by('horse', '-rdate')
 
     compare_r = records.aggregate(Min('i_s1f'), Min('i_g1f'), Min(
         'i_g2f'), Min('i_g3f'), Max('handycap'), Max('rating'))
 
-    # judged = get_judged(rcity, rdate, rno)
     judged_horse = get_judged_horse(rcity, rdate, rno)
     # judged_jockey = get_judged_jockey(rcity, rdate, rno)
 
@@ -896,6 +897,8 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
     pedigree = sorted(pedigree, key=lambda x: x[2] or 99)
     # print(h_audit)
+
+    judged = get_judged(rcity, rdate, rno)
 
     horses = Exp011.objects.values('horse').filter(rcity=rcity1,
                                                    rdate=rdate1,
@@ -910,6 +913,8 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
                'pedigree': pedigree,
                'h_audit': h_audit,
                'judged_horse': judged_horse,
+               'judged': judged,
+
                'horses': horses,
                }
 
