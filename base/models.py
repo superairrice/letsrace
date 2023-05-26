@@ -258,6 +258,8 @@ class RecordS(models.Model):
         max_length=10, db_collation='euckr_korean_ci', blank=True, null=True)
     rtime = models.CharField(
         max_length=5, db_collation='euckr_korean_ci', blank=True, null=True)
+    race_speed = models.CharField(
+        max_length=2, db_collation='euckr_korean_ci', blank=True, null=True)
     gate = models.IntegerField()
     rank = models.IntegerField(blank=True, null=True)
     horse = models.CharField(

@@ -19,8 +19,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from base.data_management import get_breakingnews, get_file_contents, get_kradata, get_krafile, krafile_convert
 
 from base.mysqls import (get_award, get_award_race, get_jockey_trend, get_judged, get_judged_horse, get_judged_jockey, get_last2weeks_loadin, get_paternal,
-                         get_paternal_dist, get_pedigree, get_popularity_rate, get_popularity_rate_t, get_prediction, get_print_prediction, get_race, get_race_center_detail_view, get_report_code, get_status_train, get_train, get_train_audit, get_train_horse, get_trainer_double_check,
-                         get_training, get_status_training, get_weeks, get_last2weeks, set_changed_race_horse, set_changed_race_jockey, set_changed_race_rank, set_changed_race_weight)
+                         get_paternal_dist, get_pedigree, get_popularity_rate, get_popularity_rate_t, get_prediction, get_print_prediction, get_race, get_race_center_detail_view, get_report_code, get_status_train, get_swim_horse, get_train, get_train_audit, get_train_horse, get_trainer_double_check,
+                         get_training, get_status_training, get_treat_horse, get_weeks, get_last2weeks, insert_horse_disease, insert_train_swim, set_changed_race_horse, set_changed_race_jockey, set_changed_race_rank, set_changed_race_weight)
 from letsrace.settings import KRAFILE_ROOT
 
 # import base.mysqls
@@ -516,7 +516,11 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     # training = get_training(rcity, rdate, rno)
     # train = get_train(rcity, rdate, rno)
     train = get_train_horse(rcity, rdate, rno)
+    treat = get_treat_horse(rcity, rdate, rno)
+    # swim = get_swim_horse(rcity, rdate, rno)
     # train = sorted(train, key=lambda x: x[4] or 99)
+
+    # print(treat)
 
     h_audit = get_train_audit(rcity, rdate, rno)
 
@@ -529,7 +533,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     judged_horse = get_judged_horse(rcity, rdate, rno)
     judged_jockey = get_judged_jockey(rcity, rdate, rno)
 
-    trend_j = get_jockey_trend(rcity, rdate, rno)
+    # trend_j = get_jockey_trend(rcity, rdate, rno)
 
     trainer_double_check = get_trainer_double_check(rcity, rdate, rno)
 
@@ -570,9 +574,12 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
                'popularity_rate_t': popularity_rate_t,
                #    'training': training,
                'train': train,
+               'treat': treat,
+            #    'swim': swim,
                'h_audit': h_audit,
                'trainer_double_check': str(trainer_double_check),
-               'trend_j': trend_j.to_html(index=False, header=True, justify="right", classes="rwd-table", table_id="rwd-table"),
+               #    'trend_j': trend_j.to_html(index=False, header=True, justify="right", classes="rwd-table", table_id="rwd-table"),
+               #    'trend_j': trend_j,
                #  'pdf1': pdf1,
                }
 
@@ -816,9 +823,13 @@ def updateChangedRace(request, rcity, rdate, rno):
         set_changed_race_horse(rcity, rdate, rno, r_content)
     elif fdata == '기수변경':
         set_changed_race_jockey(rcity, rdate, rno, r_content)
+    elif fdata == '수영조교':
+        insert_train_swim(r_content)
+    elif fdata == '말진료현황':
+        insert_horse_disease(r_content)
 
     exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno)
-    context = {'rcity': rcity, 'exp011s': exp011s}
+    context = {'rcity': rcity, 'exp011s': exp011s, 'fdata': fdata}
 
     # user = request.user
     # form = UserForm(instance=user)
@@ -826,8 +837,8 @@ def updateChangedRace(request, rcity, rdate, rno):
     if request.method == 'POST':
 
         myDict = dict(request.POST)
-        print(myDict)
-        print(myDict['pop_1'][0])
+        # print(myDict)
+        # print(myDict['pop_1'][0])
 
         for race in exp011s:
             pop = 'pop_' + str(race.gate)
@@ -877,7 +888,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     r_condition = Rec010.objects.filter(
         rcity=rcity, rdate=rdate, rno=rno).get()
 
-    rdate_1year = str( int(rdate[0:4]) - 1) + rdate[4:8] # 최근 1년 경주성적 조회조건 추가
+    rdate_1year = str(int(rdate[0:4]) - 1) + rdate[4:8]  # 최근 1년 경주성적 조회조건 추가
 
     hr_records = RecordS.objects.filter(
         rdate__lt=rdate, rdate__gt=rdate_1year, horse__in=records.values("horse")).order_by('horse', '-rdate')
@@ -892,6 +903,8 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     # training = get_training(rcity, rdate, rno)
     train = get_train_horse(rcity, rdate, rno)
     train = sorted(train, key=lambda x: x[5] or 99)
+
+    treat = get_treat_horse(rcity, rdate, rno)
 
     h_audit = get_train_audit(rcity, rdate, rno)
 
@@ -908,6 +921,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
                'r_condition': r_condition,
                #    'training': training,
                'train': train,
+               'treat': treat,
                'hr_records': hr_records,
                'compare_r': compare_r, 'hname': hname,
                'pedigree': pedigree,

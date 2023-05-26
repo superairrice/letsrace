@@ -600,7 +600,8 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
                                             max(r11), max(d11), max(c11), max(s11) , 
                                             max(r12), max(d12), max(c12), max(s12) , 
                                             max(r13), max(d13), max(c13), max(s13) , 
-                                            max(r14), max(d14), max(c14), max(s14) 
+                                            max(r14), max(d14), max(c14), max(s14) ,
+                                            ( select sum(laps) from swim aa where aa.horse = a.horse and aa.tdate between date_format(DATE_ADD(a.rdate, INTERVAL - 14 DAY), '%Y%m%d') and a.rdate ) laps
                     from
                     (
                         select rdate, gate, b.rank, r_rank, r_pop, a.horse, b.jockey, b.trainer, b.rcity, rno, j_per, t_per, jt_per,h_weight,
@@ -683,6 +684,198 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
     except:
         connection.rollback()
         print("Failed selecting in BookListView")
+
+    return result
+
+# def get_train_horse(i_rcity, i_rdate, i_rno):
+#     try:
+#         cursor = connection.cursor()
+
+#         strSql = """ select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight,
+#                                             max(r1), max(d1), max(c1), max(s1) ,
+#                                             max(r2), max(d2), max(c2), max(s2) ,
+#                                             max(r3), max(d3), max(c3), max(s3) ,
+#                                             max(r4), max(d4), max(c4), max(s4) ,
+#                                             max(r5), max(d5), max(c5), max(s5) ,
+#                                             max(r6), max(d6), max(c6), max(s6) ,
+#                                             max(r7), max(d7), max(c7), max(s7) ,
+#                                             max(r8), max(d8), max(c8), max(s8) ,
+#                                             max(r9), max(d9), max(c9), max(s9) ,
+#                                             max(r10), max(d10), max(c10), max(s10) ,
+#                                             max(r11), max(d11), max(c11), max(s11) ,
+#                                             max(r12), max(d12), max(c12), max(s12) ,
+#                                             max(r13), max(d13), max(c13), max(s13) ,
+#                                             max(r14), max(d14), max(c14), max(s14)
+#                     from
+#                     (
+#                         select rdate, gate, b.rank, r_rank, r_pop, a.horse, b.jockey, b.trainer, b.rcity, rno, j_per, t_per, jt_per,h_weight,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 1 DAY), '%Y%m%d'), rider, '' ) r1,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 2 DAY), '%Y%m%d'), rider, '' ) r2,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 3 DAY), '%Y%m%d'), rider, '' ) r3,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 4 DAY), '%Y%m%d'), rider, '' ) r4,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 5 DAY), '%Y%m%d'), rider, '' ) r5,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 6 DAY), '%Y%m%d'), rider, '' ) r6,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 7 DAY), '%Y%m%d'), rider, '' ) r7,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 8 DAY), '%Y%m%d'), rider, '' ) r8,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 9 DAY), '%Y%m%d'), rider, '' ) r9,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 10 DAY), '%Y%m%d'), rider, '' ) r10,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 11 DAY), '%Y%m%d'), rider, '' ) r11,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 12 DAY), '%Y%m%d'), rider, '' ) r12,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 13 DAY), '%Y%m%d'), rider, '' ) r13,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), rider, '' ) r14,
+
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 1 DAY), '%Y%m%d'), t_time, 0 ) d1,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 2 DAY), '%Y%m%d'), t_time, 0 ) d2,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 3 DAY), '%Y%m%d'), t_time, 0 ) d3,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 4 DAY), '%Y%m%d'), t_time, 0 ) d4,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 5 DAY), '%Y%m%d'), t_time, 0 ) d5,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 6 DAY), '%Y%m%d'), t_time, 0 ) d6,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 7 DAY), '%Y%m%d'), t_time, 0 ) d7,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 8 DAY), '%Y%m%d'), t_time, 0 ) d8,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 9 DAY), '%Y%m%d'), t_time, 0 ) d9,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 10 DAY), '%Y%m%d'), t_time, 0 ) d10,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 11 DAY), '%Y%m%d'), t_time, 0 ) d11,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 12 DAY), '%Y%m%d'), t_time, 0 ) d12,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 13 DAY), '%Y%m%d'), t_time, 0 ) d13,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), t_time, 0 ) d14,
+
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 1 DAY), '%Y%m%d'), canter, 0 ) c1,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 2 DAY), '%Y%m%d'), canter, 0 ) c2,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 3 DAY), '%Y%m%d'), canter, 0 ) c3,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 4 DAY), '%Y%m%d'), canter, 0 ) c4,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 5 DAY), '%Y%m%d'), canter, 0 ) c5,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 6 DAY), '%Y%m%d'), canter, 0 ) c6,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 7 DAY), '%Y%m%d'), canter, 0 ) c7,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 8 DAY), '%Y%m%d'), canter, 0 ) c8,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 9 DAY), '%Y%m%d'), canter, 0 ) c9,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 10 DAY), '%Y%m%d'), canter, 0 ) c10,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 11 DAY), '%Y%m%d'), canter, 0 ) c11,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 12 DAY), '%Y%m%d'), canter, 0 ) c12,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 13 DAY), '%Y%m%d'), canter, 0 ) c13,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), canter, 0 ) c14,
+
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 1 DAY), '%Y%m%d'), strong, 0 ) s1,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 2 DAY), '%Y%m%d'), strong, 0 ) s2,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 3 DAY), '%Y%m%d'), strong, 0 ) s3,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 4 DAY), '%Y%m%d'), strong, 0 ) s4,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 5 DAY), '%Y%m%d'), strong, 0 ) s5,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 6 DAY), '%Y%m%d'), strong, 0 ) s6,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 7 DAY), '%Y%m%d'), strong, 0 ) s7,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 8 DAY), '%Y%m%d'), strong, 0 ) s8,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 9 DAY), '%Y%m%d'), strong, 0 ) s9,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 10 DAY), '%Y%m%d'), strong, 0 ) s10,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 11 DAY), '%Y%m%d'), strong, 0 ) s11,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 12 DAY), '%Y%m%d'), strong, 0 ) s12,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 13 DAY), '%Y%m%d'), strong, 0 ) s13,
+#                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), strong, 0 ) s14
+#                         from train a ,
+#                             ( select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight
+#                                 from The1.exp011
+#                               where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) ) b
+#                         where a.horse = b.horse
+#                         and tdate between date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d') and rdate
+#                       ) a
+#                       group by rdate, gate, rank, r_rank, r_pop, horse, jockey, trainer
+#                       order by rdate desc, rank, gate
+#                         ;"""
+
+#         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+#         result = cursor.fetchall()
+
+#         connection.commit()
+#         connection.close()
+
+#     except:
+#         connection.rollback()
+#         print("Failed selecting in BookListView")
+
+#     return result
+
+
+def get_swim_horse(i_rcity, i_rdate, i_rno):
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight,
+                                            max(s1) , 
+                                            max(s2) , 
+                                            max(s3) , 
+                                            max(s4) , 
+                                            max(s5) , 
+                                            max(s6) , 
+                                            max(s7) , 
+                                            max(s8) , 
+                                            max(s9) , 
+                                            max(s10) , 
+                                            max(s11) , 
+                                            max(s12) , 
+                                            max(s13) , 
+                                            max(s14) 
+                    from
+                    (
+                        select rdate, gate, b.rank, r_rank, r_pop, a.horse, b.jockey, b.trainer, b.rcity, rno, j_per, t_per, jt_per,h_weight,
+
+                            if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 1 DAY), '%Y%m%d'), laps, 0 ) s1,
+                            if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 2 DAY), '%Y%m%d'), laps, 0 ) s2,
+                            if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 3 DAY), '%Y%m%d'), laps, 0 ) s3,
+                            if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 4 DAY), '%Y%m%d'), laps, 0 ) s4,
+                            if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 5 DAY), '%Y%m%d'), laps, 0 ) s5,
+                            if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 6 DAY), '%Y%m%d'), laps, 0 ) s6,
+                            if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 7 DAY), '%Y%m%d'), laps, 0 ) s7,
+                            if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 8 DAY), '%Y%m%d'), laps, 0 ) s8,
+                            if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 9 DAY), '%Y%m%d'), laps, 0 ) s9,
+                            if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 10 DAY), '%Y%m%d'), laps, 0 ) s10,
+                            if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 11 DAY), '%Y%m%d'), laps, 0 ) s11,
+                            if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 12 DAY), '%Y%m%d'), laps, 0 ) s12,
+                            if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 13 DAY), '%Y%m%d'), laps, 0 ) s13,
+                            if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), laps, 0 ) s14
+                        from swim a ,
+                            ( select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight
+                                from The1.exp011 
+                                where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) ) b 
+                        where a.horse = b.horse
+                        and tdate between date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d') and rdate
+                        ) a
+                        group by rdate, gate, rank, r_rank, r_pop, horse, jockey, trainer
+                        order by rdate desc, rank, gate
+                        ;"""
+
+        print(strSql)
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in BookListView")
+
+    return result
+
+
+def get_treat_horse(i_rcity, i_rdate, i_rno):
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+                    select horse, tdate, team, hospital, disease
+                    from treat a 
+                    where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
+                    and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 60 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                    order by  a.horse, a.tdate desc
+            ;"""
+
+        print(strSql)
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in 마필병력 히스토리 ")
 
     return result
 
@@ -1409,7 +1602,7 @@ def get_report_code(i_rcity, i_rdate, i_rno):
     except:
         connection.rollback()
         print("Failed selecting start")
-        
+
     try:
         cursor = connection.cursor()
         strSql = """ select r_code, r_name from race_cd where cd_type = 'R1' order by r_code; """
@@ -1462,6 +1655,7 @@ def get_report_code(i_rcity, i_rdate, i_rno):
         print("Failed selecting r_wrapup")
 
     return rec011, r_start, r_corners, r_finish, r_wrapup
+
 
 def get_trainer_double_check(i_rcity, i_rdate, i_rno):
 
@@ -1545,7 +1739,7 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
 
     pdf1 = pdf1.reset_index()
 
-    # print(((pdf1)))
+    # print(pdf1)
 
     return pdf1
 
@@ -1745,9 +1939,124 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
                 connection.rollback()
                 print("Failed updating in exp011 : 경주마 체중")
 
+# 수영조교 데이터 입력
+
+
+def insert_train_swim(r_content):
+    # print(r_content)
+
+    lines = r_content.split('\n')
+
+    for index, line in enumerate(lines):
+        items = line.split('\t')
+
+        print(index, items)
+
+        if items[0] and index == 0:
+            tdate = items[0][0:4] + items[0][5:7] + items[0][8:10]
+            print(tdate)
+        elif items[0] and index >= 2:               # 제목(title) 라인 스킵
+
+            team = items[1][0:2]
+            trainer = items[1][3:-1]
+
+            if team[1:] == '조':
+                team = team[0:1]
+            else:
+                trainer = trainer[1:]
+
+            horse = items[3]
+            laps = items[4][0:1]
+            print(trainer, horse, laps)
+
+            print(tdate, horse, team)
+
+            try:
+                cursor = connection.cursor()
+
+                strSql = """ insert swim 
+                                ( horse, tdate, team, trainer, laps ) 
+                                values ( '""" + horse + """', '""" + tdate + """', '""" + team + """', '""" + trainer + """', """ + laps + """ )
+                      ; """
+
+                print(strSql)
+                r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                awards = cursor.fetchall()
+
+                connection.commit()
+                connection.close()
+
+                # return render(request, 'base/update_popularity.html', context)
+                # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+
+            except:
+                connection.rollback()
+                print("Failed inserting in swim : 수영조교")
+
+# 말진료현황 데이터 입력
+
+
+def insert_horse_disease(r_content):
+    # print(r_content)
+
+    lines = r_content.split('\n')
+
+    for index, line in enumerate(lines):
+        items = line.split('\t')
+
+        # print(index, items)
+
+        if items[0]:
+            num = items[0]
+            tdate = items[1][0:4] + items[1][5:7] + items[1][8:10]
+            horse = items[2]
+
+            team = items[3][0:-1]
+            hospital = items[4]
+            disease = items[5]
+
+            # print(tdate, horse, team, hospital, disease)
+
+            try:
+                cursor = connection.cursor()
+
+                strSql = """ delete from treat
+                                where horse = '""" + horse + """'
+                                and tdate = '""" + tdate + """'
+                                and hospital = '""" + hospital + """'
+                        ; """
+
+                r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                awards = cursor.fetchall()
+
+                connection.commit()
+                connection.close()
+
+            except:
+                connection.rollback()
+                print("Failed deleting in swim : 말 진료현황")
+
+            try:
+                cursor = connection.cursor()
+
+                strSql = """ insert treat
+                                ( rcity, horse, tdate, team, hospital, disease )
+                                values ( '""" + num + """', '""" + horse + """', '""" + tdate + """', '""" + team + """', '""" + hospital + """', '""" + disease + """' )
+                        ; """
+
+                print(strSql)
+                r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                awards = cursor.fetchall()
+
+                connection.commit()
+                connection.close()
+
+            except:
+                connection.rollback()
+                print("Failed inserting in swim : 말 진료현황")
+
+
 # 경주 변경 내용 update - 경주순위
-
-
 def set_race_review(i_rcity, i_rdate, i_rno, r_content):
     print(r_content)
 

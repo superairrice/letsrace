@@ -184,9 +184,9 @@
       {# Tab #}
       <ul class="tabs1" style="font-size: 1.4rem;">
         <li class="tab-link current" data-tab="tab-11" style="padding: 4px 25px;">프로그램</li>
-        <li class="tab-link" data-tab="tab-12" style="padding: 4px 25px;">조교현황</li>
+        <li class="tab-link" data-tab="tab-12" style="padding: 4px 25px;">조교현항</li>
         <li class="tab-link" data-tab="tab-13" style="padding: 4px 25px;">Judged & Audit</li>
-        <li class="tab-link" data-tab="tab-14" style="padding: 4px 25px;">기수 복승률 추이</li>
+        <!-- <li class="tab-link" data-tab="tab-14" style="padding: 4px 25px;">기수 복승률 추이</li> -->
       </ul>
       
       <div id="tab-11" class="tab-content1 current">
@@ -689,26 +689,21 @@
                       {% if r.horse == hr.horse %}
 
                       <tr align="center" style="font-size: 1.2rem;">
-                      
-                        <!-- <td>
-                          <a href="http://kra.fiveplayer.co.kr/player.php?f={{hr.rdate}}/{% if hr.rcity == '서울' %}s{%else%}b{%endif%}{{hr.rno}}r"
-                            onclick="window.open(this.href, '_blank', 'width=1024, height=1000, toolbars=no, scrollbars=yes'); return false;">
-                          🖥️
-                          </a>
-                        </td> -->
-                        <td align="center" >
+
+                        <td>
 
                           <a href="{% url 'race_result' hr.rcity hr.rdate hr.rno hr.horse r_condition.rcity r_condition.rdate r_condition.rno %}"
-                            onclick="window.open(this.href, '_blank', 'width=1000, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                            onclick="window.open(this.href, '_blank', 'width=1000, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
 
-                            <div style="text-align: left; color:dodgerblue; font-style: italic;">
-                              <span style="font-size: 1.2rem; font-family: Arial;  ">'{{hr.rdate|slice:"2:4" }}.{{hr.rdate|slice:"4:6" }}.{{hr.rdate|slice:"6:8"}}</span>
-                              :
+                            <div style="text-align: left; color:dodgerblue; font-style: italic; text-align: left;">
+                              <span style="font-size: 1.2rem; font-family: Arial;">'{{hr.rdate|slice:"2:4" }}.{{hr.rdate|slice:"4:6" }}.{{hr.rdate|slice:"6:8"}}</span>
+                              ­­­»
                               {% if r_condition.distance == hr.distance %}
                               <span style="font-size: 1.2rem; font-family: Arial; color:tomato; font-weight: 700;">{{hr.distance}}ᵐ</span>
                               {%else%}
                               <span style="font-size: 1.2rem; font-family: Arial; font-weight: 300;">{% if hr.distance %}{{hr.distance}}ᵐ{% else %}취소{% endif %}</span>
                               {%endif%}
+                              &nbsp;
                             </div>
                           
                             {# 경주정보 #}
@@ -716,26 +711,27 @@
                             
                               {% if hr.grade %}
                                 {% if hr.grade|slice:"0:2" == '주행'%}
-                                <span style="font-size: 1.1rem; text-align: left; color:var(--color-r4)">{{hr.grade|slice:"0:4"}}</span>
+                                <span style="font-size: 1.1rem; color:var(--color-r4)">{{hr.grade|slice:"0:4"}}</span>
                                 {%else%}
 
                                   {% if hr.grade|slice:"0:2" == r_condition.grade|slice:"0:2" %}
-                                  <span style="font-size: 1.1rem; text-align: left; color:tomato;">{{hr.grade|slice:"0:2"}}</span>
+                                  <span style="font-size: 1.1rem; color:tomato;">{{hr.grade|slice:"0:2"}}</span>
                                   {% else %}
-                                  <span style="font-size: 1.1rem; text-align: left;">{{hr.grade|slice:"0:2"}}</span>
+                                  <span style="font-size: 1.1rem;">{{hr.grade|slice:"0:2"}}</span>
                                   {% endif %}
                                   
                                   {% if hr.dividing|slice:"0:2" == r_condition.dividing|slice:"0:2"%}
-                                  <span style="font-size: 1.1rem; text-align: right; color:tomato;">{{hr.dividing|slice:"0:2"}}</span>
+                                  <span style="font-size: 1.1rem; color:tomato;">{{hr.dividing|slice:"0:2"}}</span>
                                   {% else %}
-                                  <span style="font-size: 1.1rem; text-align: right;">{{hr.dividing|slice:"0:2"}}</span>
+                                  <span style="font-size: 1.1rem;">{{hr.dividing|slice:"0:2"}}</span>
                                   {% endif %}
 
                                 {%endif%}
                               {%endif%}
 
-                              <span style="font-size: 1.0rem; font-family: Arial">&nbsp;&nbsp;[{{hr.rcity}}</span>
+                              <span style="font-size: 1.0rem; font-family: Arial">&nbsp;[{{hr.rcity}}</span>
                               <span style="font-size: 1.0rem; font-family: Arial">{{hr.rno}}ᴿ]</span>
+                              <span style="font-size: 1.3rem; color:tomato ">{% if hr.race_speed %}&nbsp;{{hr.race_speed}}{% else %}&nbsp;&nbsp;{% endif %}</span>
                               
                             </div>
                           </a>
@@ -761,7 +757,7 @@
                           <div style="font-size: 1.2rem; text-align:left; font-family: Arial;">{% if hr.handycap %}{{hr.handycap}}{% endif %}</div>
 
                           {% if hr.handycap|sub:r.handycap == 0 %}
-                          <div style="font-size: 1.1rem; font-family: Arial; text-align: right;">0&nbsp;&nbsp;</div>
+                          <div style="font-size: 1.1rem; font-family: Arial; text-align: right;">-&nbsp;&nbsp;</div>
                           {% elif hr.handycap|sub:r.handycap > 0 %}
                           <div style="font-size: 1.1rem; font-family: Arial; text-align: right; color:tomato">+{{hr.handycap|sub:r.handycap|floatformat:1}}</div>
                           {% else %}
@@ -1062,7 +1058,7 @@
         
           </thead>
           <tbody>
-            {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14 in train %}
+            {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14, laps in train %}
 
             {% if rdate == r_condition.rdate %}
             
@@ -1198,7 +1194,7 @@
               </td>
 
               <td align="center">
-                <div style="font-family: Arial; font-size:1.3rem; font-weight: 400; text-align: left;">{{jockey}}</div>
+                <div style="font-family: Arial; font-size:1.25rem; font-weight: 400; text-align: left;">{{jockey}}</div>
 
                 {% if trainer in trainer_double_check %}
                 <div style="font-size: 1.2rem; text-align: right; color:var(--color-r3)"> {{trainer}}</div>
@@ -1209,10 +1205,15 @@
 
               <td align="center">
                 <div style="font-family: Arial; font-size:1.25rem; font-style: italic;">
-                  {{d1|add:d2|add:d3|add:d4|add:d5|add:d6|add:d7|add:d8|add:d9|add:d10|add:d11|add:d12|add:d13|add:d14}}
+                  <span>{{d1|add:d2|add:d3|add:d4|add:d5|add:d6|add:d7|add:d8|add:d9|add:d10|add:d11|add:d12|add:d13|add:d14}}</span>
+                  {% if laps %}
+                  <span class="blink" style="font-family: Arial; color:var(--color-r5); border-radius: 10px; background-color:var(--color-bg);">{{laps}}</span>
+                  {% else %}
+                  <span style="font-family: Arial; color:gray">0</span>
+                  {% endif %}
                 </div>
 
-                <div style="font-family: Arial; font-size:1.25rem; font-style: italic; text-align: right;">
+                <div style="font-family: Arial; font-size:1.2rem; font-style: italic; text-align: right;">
                   <span style="font-family: Arial; color:var(--color-r4);">{{c1|add:c2|add:c3|add:c4|add:c5|add:c6|add:c7|add:c8|add:c9|add:c10|add:c11|add:c12|add:c13|add:c14}}</span>
                   {% if s1|add:s2|add:s3|add:s4|add:s5|add:s6|add:s7|add:s8|add:s9|add:s10|add:s11|add:s12|add:s13|add:s14 == 0 %}
                   <span style="font-family: Arial;">{{s1|add:s2|add:s3|add:s4|add:s5|add:s6|add:s7|add:s8|add:s9|add:s10|add:s11|add:s12|add:s13|add:s14}}</span>
@@ -1698,7 +1699,7 @@
                     
                     </thead>
                     <tbody>
-                      {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, hname, jockey, trainer, j_per, t_per, jt_per, h_weight, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14 in train %}
+                      {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, hname, jockey, trainer, j_per, t_per, jt_per, h_weight, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14, laps in train %}
                       {% if r_condition.rdate > rdate and horse == hname %}
                   
                       <tr>
@@ -1811,7 +1812,12 @@
                   
                         <td align="center">
                           <div style="font-family: Arial; font-size:1.2rem; font-style: italic;">
-                            {{d1|add:d2|add:d3|add:d4|add:d5|add:d6|add:d7|add:d8|add:d9|add:d10|add:d11|add:d12|add:d13|add:d14}}
+                            <span>{{d1|add:d2|add:d3|add:d4|add:d5|add:d6|add:d7|add:d8|add:d9|add:d10|add:d11|add:d12|add:d13|add:d14}}</span>
+                            {% if laps %}
+                            <span class="blink" style="font-family: Arial; color:var(--color-r5); border-radius: 10px; background-color:var(--color-bg);">{{laps}}</span>
+                            {% else %}
+                            <span style="font-family: Arial; color:darkgray">0</span>
+                            {% endif %}
                           </div>
                   
                           <div style="font-family: Arial; font-size:1.2rem; font-style: italic; text-align: right;">
@@ -2571,7 +2577,58 @@
                   </table>
                 </div>
               </td>
-              <td colspan="8">
+              <td colspan="3">
+                <div class="fold-content" style="position:static" >
+                  <table class="small-friendly" align="Top">
+                    <thead>
+                  
+                      <tr>
+                        <th width="10%"><span class="visible-small">Date</span><span class="visible-big">Date</span></th>
+                        <th width="70%"><span class="visible-small">진료내역(최근60일)</span><span class="visible-big">진료내역(최근60일)</span></th>
+                        <th width="20%"><span class="visible-small">병원</span><span class="visible-big">병원</span></th>
+                      </tr>
+                  
+                    </thead>
+                    <tbody>
+                      {% for hname, tdate, team, hospital, disease in treat %}
+                      {% if horse == hname %}
+                      <tr class="view">
+                        <td align="center">
+                          <div style="font-size:1.2rem; font-family: Arial;">'{{tdate|slice:"2:4"}}.{{tdate|slice:"4:6"}}.{{tdate|slice:"6:8"}}</div>
+                        </td>
+
+                        <td align="left">
+                          {% if '운동기인성' in disease %}
+                          <span style="color:tomato; font-family: Arial;">{{disease}}</span>
+                          {% elif '구절염' in disease %}
+                          <span style="color:var(--color-r3); font-family: Arial;">{{disease}}</span>
+                          {% elif '관절염' in disease %}
+                          <span style="color:var(--color-r4); font-family: Arial;">{{disease}}</span>
+                          {%else%}
+                            {% if disease|length > 2 %}
+                            <span style="font-family: Arial; font-size:1.2rem;">{{disease}}</span>
+                            {% else %}
+                            <span style="font-family: Arial; font-size:1.2rem; color:var(--color-r5);">{{hospital}}</span>
+                            {% endif %}
+                          {%endif%}
+                        </td>
+
+                        <td align="center">
+                          <div style="font-size:1.0rem;">{{hospital|slice:"0:4"}}</div>
+                        </td>
+                        
+                        
+                        
+                      </tr>
+                      {% endif %}
+                  
+                      {% endfor %}
+                  
+                    </tbody>
+                  </table>
+                </div>
+              </td>
+              <td colspan="4">
                 <div class="fold-content">
                   <table class="fsmall-friendly" style="position:static;" >
                     <thead>
@@ -2643,18 +2700,16 @@
         </table>
       </div>
 
-      <div id="tab-14" class="tab-content1">
-        {{trend_j|safe }}
+      <!-- <div id="tab-14" class="tab-content1">
+        {{trend_j}}
+      </div> -->
 
-        
-      </div>
-
-      <style>
+      <!-- <style>
         .rwd-table td {
           font-family:Arial, Helvetica, sans-serif;
           padding:0.9em auto;
         }
-      </style>
+      </style> -->
 
     </div>
     <!-- Room End -->

@@ -75,7 +75,7 @@
       <div class="room__top" style="z-index:1">
         
         <div class="room__topLeft">
-          <a class="header__logo" style="height:2.0rem; width: 2.2rem;" onclick="window.close()">
+          <a class="header__logo" style="height:2.0rem; width: 2.2rem; cursor: pointer;" onclick="window.close()">
           <!-- <a href="{% url 'home' %}" class="header__logo" style="height:2.0rem; width: 2.2rem;"> -->
             <img src="{% static 'images/number-9.png' %}" />
           </a>&nbsp;
@@ -991,7 +991,7 @@
         
           </thead>
           <tbody>
-            {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14 in train %}
+            {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14, laps in train %}
 
             {% if rdate == r_condition.rdate %}
             
@@ -1129,7 +1129,12 @@
 
               <td align="center">
                 <div style="font-family: Arial; font-size:1.3rem; font-style: italic; text-align: right;">
-                  {{d1|add:d2|add:d3|add:d4|add:d5|add:d6|add:d7|add:d8|add:d9|add:d10|add:d11|add:d12|add:d13|add:d14}}
+                  <span>{{d1|add:d2|add:d3|add:d4|add:d5|add:d6|add:d7|add:d8|add:d9|add:d10|add:d11|add:d12|add:d13|add:d14}}</span>
+                  {% if laps %}
+                  <span class="blink" style="font-family: Arial; color:var(--color-r5); border-radius: 10px; background-color:var(--color-bg);">{{laps}}</span>
+                  {% else %}
+                  <span style="font-family: Arial; color:darkgray">0</span>
+                  {% endif %}
                 </div>
 
                 <div style="font-family: Arial; font-size:1.2rem; font-style: italic;">
@@ -1615,7 +1620,7 @@
                     
                     </thead>
                     <tbody>
-                      {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, hname, jockey, trainer, j_per, t_per, jt_per, h_weight, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14 in train %}
+                      {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, hname, jockey, trainer, j_per, t_per, jt_per, h_weight, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14, laps in train %}
                       {% if r_condition.rdate >= rdate and horse == hname %}
                   
                       <tr>
@@ -1727,8 +1732,13 @@
                   
                         <td align="center">
                           <div style="font-family: Arial; font-size:1.2rem; font-style: italic;">
-                            {{d1|add:d2|add:d3|add:d4|add:d5|add:d6|add:d7|add:d8|add:d9|add:d10|add:d11|add:d12|add:d13|add:d14}}
-                          </div>
+                            <span>{{d1|add:d2|add:d3|add:d4|add:d5|add:d6|add:d7|add:d8|add:d9|add:d10|add:d11|add:d12|add:d13|add:d14}}</span>
+                            {% if laps %}
+                            <span class="blink" style="font-family: Arial; color:var(--color-r5); border-radius: 10px; background-color:var(--color-bg);">{{laps}}</span>
+                            {% else %}
+                            <span style="font-family: Arial; color:darkgray">0</span>
+                            {% endif %}
+                          </div> 
                   
                           <div style="font-family: Arial; font-size:1.2rem; font-style: italic; text-align: right;">
                             <span style="font-family: Arial; color:var(--color-r4);">{{c1|add:c2|add:c3|add:c4|add:c5|add:c6|add:c7|add:c8|add:c9|add:c10|add:c11|add:c12|add:c13|add:c14}}</span>
@@ -2484,7 +2494,58 @@
                   </table>
                 </div>
               </td>
-              <td colspan="8">
+              <td colspan="3">
+                <div class="fold-content" style="position:static">
+                  <table class="small-friendly" align="Top">
+                    <thead>
+              
+                      <tr>
+                        <th width="10%"><span class="visible-small">Date</span><span class="visible-big">Date</span></th>
+                        <th width="70%"><span class="visible-small">진료내역(최근60일)</span><span class="visible-big">진료내역(최근60일)</span></th>
+                        <th width="20%"><span class="visible-small">병원</span><span class="visible-big">병원</span></th>
+                      </tr>
+              
+                    </thead>
+                    <tbody>
+                      {% for hname, tdate, team, hospital, disease in treat %}
+                      {% if horse == hname %}
+                      <tr class="view">
+                        <td align="center">
+                          <div style="font-size:1.2rem; font-family: Arial;">'{{tdate|slice:"2:4"}}.{{tdate|slice:"4:6"}}.{{tdate|slice:"6:8"}}</div>
+                        </td>
+              
+                        <td align="left">
+                          {% if '운동기인성' in disease %}
+                          <span style="color:tomato; font-family: Arial;">{{disease}}</span>
+                          {% elif '구절염' in disease %}
+                          <span style="color:var(--color-r3); font-family: Arial;">{{disease}}</span>
+                          {% elif '관절염' in disease %}
+                          <span style="color:var(--color-r4); font-family: Arial;">{{disease}}</span>
+                          {%else%}
+                          {% if disease|length > 2 %}
+                          <span style="font-family: Arial; font-size:1.2rem;">{{disease}}</span>
+                          {% else %}
+                          <span style="font-family: Arial; font-size:1.2rem; color:var(--color-r5);">{{hospital}}</span>
+                          {% endif %}
+                          {%endif%}
+                        </td>
+              
+                        <td align="center">
+                          <div style="font-size:1.0rem;">{{hospital|slice:"0:4"}}</div>
+                        </td>
+              
+              
+              
+                      </tr>
+                      {% endif %}
+              
+                      {% endfor %}
+              
+                    </tbody>
+                  </table>
+                </div>
+              </td>
+              <td colspan="5">
                 <div class="fold-content">
                   <table class="fsmall-friendly" style="position:static;" >
                     <thead>
