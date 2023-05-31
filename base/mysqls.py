@@ -1214,20 +1214,21 @@ def get_status_train(i_rdate):
         cursor = connection.cursor()
 
         strSql = """ select rcity, rdate, rno, rday, gate, rank, r_rank, r_pop, horse, trainer, jockey, jt_per, handycap,
-                                              max(r1), max(d1), max(c1), max(s1), 
-                                              max(r2), max(d2), max(c2), max(s2), 
-                                              max(r3), max(d3), max(c3), max(s3), 
-                                              max(r4), max(d4), max(c4), max(s4), 
-                                              max(r5), max(d5), max(c5), max(s5), 
-                                              max(r6), max(d6), max(c6), max(s6), 
-                                              max(r7), max(d7), max(c7), max(s7), 
-                                              max(r8), max(d8), max(c8), max(s8), 
-                                              max(r9), max(d9), max(c9), max(s9), 
-                                              max(r10), max(d10), max(c10), max(s10), 
-                                              max(r11), max(d11), max(c11), max(s11), 
-                                              max(r12), max(d12), max(c12), max(s12), 
-                                              max(r13), max(d13), max(c13), max(s13), 
-                                              max(r14), max(d14), max(c14), max(s14)
+                                            max(r1), max(d1), max(c1), max(s1), 
+                                            max(r2), max(d2), max(c2), max(s2), 
+                                            max(r3), max(d3), max(c3), max(s3), 
+                                            max(r4), max(d4), max(c4), max(s4), 
+                                            max(r5), max(d5), max(c5), max(s5), 
+                                            max(r6), max(d6), max(c6), max(s6), 
+                                            max(r7), max(d7), max(c7), max(s7), 
+                                            max(r8), max(d8), max(c8), max(s8), 
+                                            max(r9), max(d9), max(c9), max(s9), 
+                                            max(r10), max(d10), max(c10), max(s10), 
+                                            max(r11), max(d11), max(c11), max(s11), 
+                                            max(r12), max(d12), max(c12), max(s12), 
+                                            max(r13), max(d13), max(c13), max(s13), 
+                                            max(r14), max(d14), max(c14), max(s14),
+                                            ( select sum(laps) from swim aa where aa.horse = a.horse and aa.tdate between date_format(DATE_ADD(a.rdate, INTERVAL - 14 DAY), '%Y%m%d') and a.rdate ) laps
                       from
                       (
                         select b.rcity, b.rdate, b.rday, b.rno, b.gate, b.rank, b.r_rank, b.r_pop, a.horse, b.trainer, b.jockey, b.jt_per, b.handycap,
