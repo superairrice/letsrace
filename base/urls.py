@@ -64,8 +64,8 @@ urlpatterns = [
 
     path('data_management/', views.dataManagement,
          name="data_management"),  # id 전달
-    path('data_breakingnews/', views.dataBreakingNews,
-         name="data_breakingnews"),  # id 전달
+    path('race_breakingnews/', views.raceBreakingNews,
+         name="race_breakingnews"),  # id 전달
     path('krafile_input/', views.krafileInput, name="krafile_input"),  # id 전달
     path('breakingnews_input/', views.BreakingNewsInput,
          name="breakingnews_input"),  # id 전달

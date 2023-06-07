@@ -4,6 +4,7 @@ from django.db import connection
 import pandas as pd
 from requests import session
 
+from django.db.models import Count, Max, Min, Q
 from base.models import Exp011
 
 
@@ -333,6 +334,7 @@ def get_race(i_rdate, i_awardee):
                 select rcity,""" + i_awardee + """ awardee, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey j_name, trainer t_name, host h_name, r_pop, distance, handycap, jt_per
                   from expect
                 where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
+                and rno < 80
                 ; """
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
@@ -1563,6 +1565,7 @@ def get_prediction(i_rdate):
                         sum(if(rank = 1, 1, 0)) r1, sum(if(rank = 2, 1, 0)) r2, sum(if(rank = 3, 1, 0)) r3
                   from expect a
                 where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
+                and rno < 80
                 group by rcity, jockey
                 order by rcity, sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) + sum(if(r_rank = 3, 1, 0)) desc,
                                 sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) desc
@@ -2056,8 +2059,9 @@ def insert_horse_disease(r_content):
                 connection.rollback()
                 print("Failed inserting in swim : 말 진료현황")
 
-
 # 경주 변경 내용 update - 경주순위
+
+
 def set_race_review(i_rcity, i_rdate, i_rno, r_content):
     print(r_content)
 
@@ -2100,3 +2104,189 @@ def set_race_review(i_rcity, i_rdate, i_rno, r_content):
             except:
                 connection.rollback()
                 print("Failed updating in exp011 : 경주마 체중")
+
+
+# 말진료현황 데이터 입력
+def insert_race_simulation(rcity, rcount, r_content):
+    # print(r_content)
+    print(rcount)
+
+    lines = r_content.split('\n')
+
+    for index, line in enumerate(lines):
+        items = line.split('\t')
+
+        if items[0]:
+
+            if index == 0:
+
+                rdate = items[0][0:4] + items[0][6:8] + items[0][10:12]
+                rno = items[0][-5:]
+
+                if rno[0:1] == '제':
+                    rno = rno[1:2]
+                else:
+                    rno = rno[0:2]
+
+                i_rno = int(rno) + 80
+
+            elif index == 1:
+
+                pos = items[0].find(' ')
+                # print(pos)
+                grade = items[0][0:pos]
+                # print(grade)
+
+                pos = items[0].find('M')
+                # print(pos)
+                distance = items[0][pos - 4:pos]
+
+                # print(distance)
+
+                try:
+                    cursor = connection.cursor()
+
+                    strSql = """ delete from exp010
+                                    where rcity = '""" + rcity + """'
+                                    and rdate = '""" + rdate + """'
+                                    and rno = """ + str(i_rno) + """
+                            ; """
+
+                    print(strSql)
+
+                    r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                    awards = cursor.fetchall()
+
+                    connection.commit()
+                    connection.close()
+
+                except:
+                    connection.rollback()
+                    print("Failed deleting in exp010")
+
+                try:
+                    cursor = connection.cursor()
+
+                    strSql = """ insert into exp010
+                                    ( rcity, rdate, rno, grade, distance, rcount )
+                                values ( '""" + rcity + """', '""" + rdate + """', """ + str(i_rno) + """, 
+                                        '""" + grade + """', """ + distance + """, '""" + str(rcount) + """' )
+                            ; """
+
+                    print(strSql)
+
+                    r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                    awards = cursor.fetchall()
+
+                    connection.commit()
+                    connection.close()
+
+                except:
+                    connection.rollback()
+                    print("Failed inserting in exp010")
+
+                try:
+                    cursor = connection.cursor()
+
+                    strSql = """ delete from exp011
+                                    where rcity = '""" + rcity + """'
+                                    and rdate = '""" + rdate + """'
+                                    and rno = """ + str(i_rno) + """
+                            ; """
+
+                    print(strSql)
+                    r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                    awards = cursor.fetchall()
+
+                    connection.commit()
+                    connection.close()
+
+                except:
+                    connection.rollback()
+                    print("Failed deleting in exp011")
+
+            else:
+
+                if index > 5 and int(items[0]) >= 1:
+                    gate = items[0]
+                    horse = items[1]
+                    if horse[0:1] == '[':
+                        horse = horse[3:]
+
+                    # sql 튜플값 가져올때 [0][0]
+                    jockey = get_jockey(horse)[0][0]
+
+                    rating = items[2]
+                    birthplace = items[4]
+                    sex = items[5]
+                    age = items[6]
+                    trainer = items[7]
+                    host = items[8]
+                    print(gate, horse, trainer, host)
+
+                    try:
+                        cursor = connection.cursor()
+
+                        strSql = """ insert into exp011
+                                        ( rcity, rdate, rno, gate, horse, rating, birthplace, h_sex, h_age, trainer, host, handycap, jockey  )
+                                        values ( '""" + rcity + """', '""" + rdate + """', """ + str(i_rno) + """, """ + gate + """, '""" + horse + """', 
+                                            """ + rating + """ , '""" + birthplace + """' , '""" + sex + """' , """ + age + """ , 
+                                            '""" + trainer + """' , '""" + host + """', 57,  '""" + jockey + """'   )
+                                        ; """
+
+                        # print(strSql)
+
+                        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                        awards = cursor.fetchall()
+
+                        connection.commit()
+                        connection.close()
+
+                    except:
+                        connection.rollback()
+                        print("Failed inserting in exp011")
+
+                    try:
+                        cursor = connection.cursor()
+
+                        strSql = """ insert into exp012
+                                        ( rcity, rdate, rno, gate, horse  )
+                                        values ( '""" + rcity + """', '""" + rdate + """', """ + str(i_rno) + """, """ + gate + """, '""" + horse + """' )
+                                        ; """
+
+                        # print(strSql)
+
+                        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                        awards = cursor.fetchall()
+
+                        connection.commit()
+                        connection.close()
+
+                    except:
+                        connection.rollback()
+                        print("Failed inserting in exp012")
+
+                else:
+                    pass
+
+
+def get_jockey(horse):
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ select jockey from rec011
+                        where horse = '""" + horse + """'
+                        and rdate = ( select max(rdate) from rec011 where horse = '""" + horse + """')
+                        ; """
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        jockey = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed inserting in exp010")
+
+    return jockey

@@ -20,7 +20,7 @@ from base.data_management import get_breakingnews, get_file_contents, get_kradat
 
 from base.mysqls import (get_award, get_award_race, get_jockey_trend, get_judged, get_judged_horse, get_judged_jockey, get_last2weeks_loadin, get_paternal,
                          get_paternal_dist, get_pedigree, get_popularity_rate, get_popularity_rate_t, get_prediction, get_print_prediction, get_race, get_race_center_detail_view, get_report_code, get_status_train, get_swim_horse, get_train, get_train_audit, get_train_horse, get_trainer_double_check,
-                         get_training, get_status_training, get_treat_horse, get_weeks, get_last2weeks, insert_horse_disease, insert_train_swim, set_changed_race_horse, set_changed_race_jockey, set_changed_race_rank, set_changed_race_weight)
+                         get_training, get_status_training, get_treat_horse, get_weeks, get_last2weeks, insert_horse_disease, insert_race_simulation, insert_train_swim, set_changed_race_horse, set_changed_race_jockey, set_changed_race_rank, set_changed_race_weight)
 from letsrace.settings import KRAFILE_ROOT
 
 # import base.mysqls
@@ -575,7 +575,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
                #    'training': training,
                'train': train,
                'treat': treat,
-            #    'swim': swim,
+               #    'swim': swim,
                'h_audit': h_audit,
                'trainer_double_check': str(trainer_double_check),
                #    'trend_j': trend_j.to_html(index=False, header=True, justify="right", classes="rwd-table", table_id="rwd-table"),
@@ -1123,9 +1123,9 @@ def dataManagement(request):
 
     krafile = get_krafile(rcity, rdate1, rdate2, fcode, fstatus)
     if krafile:
-        messages.warning(request, '총 ' + str(len(krafile)) + '건이 검색되었습니다.')
+        messages.warning(request, '총 ' + str(len(krafile)) + '건.')
     else:
-        messages.warning(request, "검색된 결과가 없습니다.")
+        messages.warning(request, "결과 0.")
     # kradata = get_kradata(rcity, rdate1, rdate2, fcode, fstatus)
 
     # print(krafile)
@@ -1158,72 +1158,96 @@ def dataManagement(request):
     return render(request, 'base/data_management.html', context)
 
 
-def dataBreakingNews(request):
+def raceBreakingNews(request):
+
+    r_content = request.GET.get('r_content') if request.GET.get(
+        'r_content') != None else ''
 
     rcity = request.GET.get('rcity') if request.GET.get(
         'rcity') != None else ''
-    q1 = request.GET.get('q1') if request.GET.get('q1') != None else ''
-    q2 = request.GET.get('q2') if request.GET.get('q2') != None else ''
-    title = request.GET.get('title') if request.GET.get(
-        'title') != None else ''
 
-    if q1 == '':
+    fdate = request.GET.get('fdate') if request.GET.get(
+        'fdate') != None else '0000-00-00'
 
-        friday = Racing.objects.values('rdate').distinct()[
-            0]['rdate']          # weeks 기준일
-        sunday = Racing.objects.values('rdate').distinct()[
-            2]['rdate']          # weeks 기준일
+    rno = request.GET.get('rno') if request.GET.get(
+        'rno') != None else 99
 
-        rdate1 = friday[0:4] + friday[4:6] + friday[6:8]
-        rdate2 = sunday[0:4] + sunday[4:6] + sunday[6:8]
+    rcount = request.GET.get('rcount') if request.GET.get(
+        'rcount') != None else 30
 
-        fdate1 = friday[0:4] + '-' + friday[4:6] + '-' + friday[6:8]
-        fdate2 = sunday[0:4] + '-' + sunday[4:6] + '-' + sunday[6:8]
+    fdata = request.GET.get('fdata') if request.GET.get(
+        'fdata') != None else '-'
 
-    else:
+    # fdate = rdate[0:4] + '-' + rdate[4:6] + '-' + rdate[6:8]
+    rdate = fdate[0:4] + fdate[5:7] + fdate[8:10]
 
-        rdate1 = q1[0:4] + q1[5:7] + q1[8:10]
-        rdate2 = q2[0:4] + q2[5:7] + q2[8:10]
+    print(1, rcity)
+    print(2, fdate)
+    print(22, rdate)
+    print(3, rno)
+    print(4, fdata)
 
-        fdate1 = q1[0:4] + '-' + q1[5:7] + '-' + q1[8:10]
-        fdate2 = q2[0:4] + '-' + q2[5:7] + '-' + q2[8:10]
+    if fdata == '-':
+        # alert('코딩유치원 자주 찾아와주세요.')
+        pass
+    elif fdata == '출전등록 시뮬레이션':
+        insert_race_simulation(rcity, rcount, r_content)
+    elif fdata == '심판위원 Report':
+        set_changed_race_rank(rcity, rdate, rno, r_content)
 
-    breakingnews = get_breakingnews(rcity, rdate1, rdate2, title)
-    print(breakingnews)
-    if breakingnews:
-        messages.warning(
-            request, '총 ' + str(len(breakingnews)) + '건이 검색되었습니다.')
-    else:
-        messages.warning(request, "검색된 결과가 없습니다.")
-    # kradata = get_kradata(rcity, rdate1, rdate2, title, fstatus)
+    exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=1)
 
-    # print(breakingnews)
-    # print(kradata)
+    context = {'rcity': rcity,
+               'rdate': rdate,
+               'rno': rno,
+               'rcount': rcount,
+               'exp011s': exp011s,
+               'fdata': fdata,
+               'fdate': fdate
+               }
+
+    # user = request.user
+    # form = UserForm(instance=user)
 
     if request.method == 'POST':
+
         myDict = dict(request.POST)
+        # print(myDict)
+        # print(myDict['pop_1'][0])
 
-        # breakingnews_convert(myDict['rcheck'])
+        for race in exp011s:
+            pop = 'pop_' + str(race.gate)
 
-        # for fname in myDict['rcheck']:
-        #     print(fname)
+            try:
+                cursor = connection.cursor()
 
-        #     if fname[-12:-10] == '11':
-        #         print(fname[-12:-10])
+                strSql = """ update exp011 
+                                set r_rank = """ + myDict[pop][0] + """,
+                                    r_pop = """ + myDict[pop][1] + """
+                            where rdate = '""" + rdate + """' and rcity = '""" + rcity + """' and rno = """ + str(rno) + """ and gate = """ + str(race.gate) + """
+                        ; """
 
-        #     file = open(fname, "r")
-        #     while True:
-        #         line = file.readline()
-        #         if not line:
-        #             break
-        #         print(line.strip())
-        #     file.close()
+                print(strSql)
+                r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                awards = cursor.fetchall()
 
-    context = {'q1': q1, 'q2': q2, 'title': title,
-               'breakingnews': breakingnews,
-               'fdate1': fdate1, 'fdate2': fdate2}
+                connection.commit()
+                connection.close()
 
-    return render(request, 'base/data_breakingnews.html', context)
+                # return render(request, 'base/update_popularity.html', context)
+                # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+
+            except:
+                connection.rollback()
+                print("Failed updating in exp011")
+
+        # form = Exp011(request.POST, request.FILES, rcity=rcity, rdate=rdate, rno=rno, instance=pop_1)
+        # if form.is_valid():
+        #     form.save()
+        #     redirect('user-profile', pk=rdate)
+
+    # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+    return render(request, 'base/race_breakingnews.html', context)
 
 
 @csrf_exempt
