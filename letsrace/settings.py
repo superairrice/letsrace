@@ -219,7 +219,8 @@ DATABASES = {
         'NAME': 'The1',                         # [2]
         'USER': 'letslove',                     # [3]
         'PASSWORD': 'Ruddksp!23',               # [4]
-        'HOST': 'super007.synology.me',         # [5]
+        'HOST': 'super007-1.synology.me',         # [5]
+        # 'HOST': '192.168.45.111',         # [5]
         'PORT': '3307',                         # [6]
     }
 }
