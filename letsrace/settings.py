@@ -231,15 +231,11 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',   # [1]
         'NAME': 'The1',                         # [2]
-        'USER': 'admin',                     # [3]
+        'USER': 'letslove',                     # [3]
         'PASSWORD': 'Ruddksp!23',               # [4]
-        # [5]
-        'HOST': 'database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
-        # 'HOST': 'thethe9-aws.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
+        # 'HOST': 'database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
+        'HOST': 'database-2.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
         'PORT': '3306',                         # [6]
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
-        }
     }
 }
 
