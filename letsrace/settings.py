@@ -219,8 +219,9 @@ WSGI_APPLICATION = 'letsrace.wsgi.application'
 #         'NAME': 'The1',                         # [2]
 #         'USER': 'letslove',                     # [3]
 #         'PASSWORD': 'Ruddksp!23',               # [4]
-#         'HOST': 'super007-1.synology.me',         # [5]
+#         'HOST': 'super007.synology.me',         # [5]
 #         # 'HOST': '192.168.45.111',         # [5]
+#         # 'HOST': '123.111.131.8',         # [5]
 #         'PORT': '3307',                         # [6]
 #     }
 # }
@@ -233,8 +234,8 @@ DATABASES = {
         'NAME': 'The1',                         # [2]
         'USER': 'letslove',                     # [3]
         'PASSWORD': 'Ruddksp!23',               # [4]
-        # 'HOST': 'database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
-        'HOST': 'database-2.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
+        'HOST': 'database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
+        # 'HOST': 'database-2.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
         'PORT': '3306',                         # [6]
     }
 }
