@@ -236,9 +236,9 @@ DATABASES = {
         'HOST': 'database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
         'PORT': '3306',                         # [6]
         # 'OPTIONS': {'ssl': {'key': '~/.ssh/letsrace.pem'}}
-        # 'OPTIONS': {
-        #     'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
-        # }
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        }
     }
 }
 
