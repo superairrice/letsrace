@@ -15,6 +15,9 @@ import json
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 
+# import pymysql
+# pymysql.install_as_MySQLdb()
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -65,10 +68,6 @@ EMAIL_USE_TLS = True
 
 # 사이트와 관련한 자동응답을 받을 이메일 주소
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-# SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-DEBUG = False
 
 CSRF_TRUSTED_ORIGINS = ["http://thethe9.com", "https://thethe9.com"]
 
@@ -225,21 +224,27 @@ WSGI_APPLICATION = 'letsrace.wsgi.application'
 #         'PORT': '3307',                         # [6]
 #     }
 # }
-
-# SECRET_KEY = get_secret("SECRET_KEY")
-
+# DEBUG = True
+DEBUG = False
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',   # [1]
         'NAME': 'The1',                         # [2]
         'USER': 'letslove',                     # [3]
         'PASSWORD': 'Ruddksp!23',               # [4]
+        # 'HOST': 'database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
         'HOST': 'database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
-        # 'HOST': 'database-2.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
         'PORT': '3306',                         # [6]
+        # 'OPTIONS': {'ssl': {'key': '~/.ssh/letsrace.pem'}}
+        # 'OPTIONS': {
+        #     'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        # }
     }
 }
 
+# SECRET_KEY = get_secret("SECRET_KEY")
+
+# SECURITY WARNING: don't run with debug turned on in production!
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
