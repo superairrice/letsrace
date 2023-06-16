@@ -861,7 +861,7 @@ def get_treat_horse(i_rcity, i_rdate, i_rno):
         cursor = connection.cursor()
 
         strSql = """ 
-                    select horse, tdate, team, hospital, disease
+                    select distinct horse, tdate, team, hospital, disease
                     from treat a 
                     where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
                     and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 60 DAY), '%Y%m%d') and '""" + i_rdate + """'
@@ -2015,7 +2015,7 @@ def insert_horse_disease(r_content):
             tdate = items[1][0:4] + items[1][5:7] + items[1][8:10]
             horse = items[2]
 
-            team = items[3][0:-1]
+            team = items[3][0:-1].zfill(2)
             hospital = items[4]
             disease = items[5]
 

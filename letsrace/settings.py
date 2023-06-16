@@ -71,7 +71,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 CSRF_TRUSTED_ORIGINS = ["http://thethe9.com", "https://thethe9.com"]
 
-ALLOWED_HOSTS = ['.compute.amazonaws.com', '127.0.0.1', 'thethe9.com', '3.37.228.51',
+ALLOWED_HOSTS = ['.compute.amazonaws.com', '127.0.0.1', 'thethe9.com', '3.37.228.51', '123.111.131.8',
                  'localhost', '0.0.0.0']
 
 
@@ -224,18 +224,18 @@ WSGI_APPLICATION = 'letsrace.wsgi.application'
 #         'PORT': '3307',                         # [6]
 #     }
 # }
+
 # DEBUG = True
 DEBUG = False
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',   # [1]
         'NAME': 'The1',                         # [2]
         'USER': 'letslove',                     # [3]
         'PASSWORD': 'Ruddksp!23',               # [4]
-        # 'HOST': 'database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
         'HOST': 'database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
         'PORT': '3306',                         # [6]
-        # 'OPTIONS': {'ssl': {'key': '~/.ssh/letsrace.pem'}}
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
         }
