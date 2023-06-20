@@ -842,7 +842,7 @@ def get_swim_horse(i_rcity, i_rdate, i_rno):
                         order by rdate desc, rank, gate
                         ;"""
 
-        print(strSql)
+        # print(strSql)
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
 
@@ -868,7 +868,7 @@ def get_treat_horse(i_rcity, i_rdate, i_rno):
                     order by  a.horse, a.tdate desc
             ;"""
 
-        print(strSql)
+        # print(strSql)
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
 
@@ -1707,7 +1707,7 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
               order by b.rank, a.wdate desc
               ; """
 
-        print(strSql)
+        # print(strSql)
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
@@ -1750,13 +1750,13 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
 
 # 경주 변경 내용 update - 기수변경
 def set_changed_race_jockey(i_rcity, i_rdate, i_rno, r_content):
-    print(r_content)
+    # print(r_content)
 
     lines = r_content.split('\n')
 
     for index, line in enumerate(lines):
         items = line.split('\t')
-        print(index, items)
+        # print(index, items)
 
         if items[0]:
             rdate = items[0][0:4] + items[0][5:7] + items[0][8:10]
@@ -1772,8 +1772,8 @@ def set_changed_race_jockey(i_rcity, i_rdate, i_rno, r_content):
             handy_new = items[7]
             reason = items[8]
 
-            print(rdate, rno, horse, jockey_old,
-                  handy_old, jockey_new, handy_new, reason)
+            # print(rdate, rno, horse, jockey_old,
+                #   handy_old, jockey_new, handy_new, reason)
 
             try:
                 cursor = connection.cursor()
@@ -1787,7 +1787,7 @@ def set_changed_race_jockey(i_rcity, i_rdate, i_rno, r_content):
                         where rdate = '""" + rdate + """' and rno = """ + str(rno) + """ and horse = '""" + horse + """'
                     ; """
 
-                print(strSql)
+                # print(strSql)
                 r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
                 awards = cursor.fetchall()
 
@@ -1801,11 +1801,13 @@ def set_changed_race_jockey(i_rcity, i_rdate, i_rno, r_content):
                 connection.rollback()
                 print("Failed updating in exp011 : 기수변경")
 
+    return len(lines)
+
 # 경주 변경 내용 update - 경주마 취소
 
 
 def set_changed_race_horse(i_rcity, i_rdate, i_rno, r_content):
-    print(r_content)
+    # print(r_content)
 
     lines = r_content.split('\n')
 
@@ -1822,7 +1824,7 @@ def set_changed_race_horse(i_rcity, i_rdate, i_rno, r_content):
                 horse = horse[3:]
             reason = items[7]
 
-            print(rdate, rno, horse, reason)
+            # print(rdate, rno, horse, reason)
 
             try:
                 cursor = connection.cursor()
@@ -1833,7 +1835,7 @@ def set_changed_race_horse(i_rcity, i_rdate, i_rno, r_content):
                           where rdate = '""" + rdate + """' and rno = """ + str(rno) + """ and horse = '""" + horse + """'
                       ; """
 
-                print(strSql)
+                # print(strSql)
                 r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
                 awards = cursor.fetchall()
 
@@ -1847,18 +1849,20 @@ def set_changed_race_horse(i_rcity, i_rdate, i_rno, r_content):
                 connection.rollback()
                 print("Failed updating in exp011 : 경주마 취소")
 
+    return len(lines)
+
 # 경주 변경 내용 update - 경주마 체중
 
 
 def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
-    print(r_content)
+    # print(r_content)
 
     lines = r_content.split('\n')
 
     for index, line in enumerate(lines):
         items = line.split('\t')
 
-        print(index, items)
+        # print(index, items)
 
         if items[0] and index == 0:
             rdate = items[0][0:4] + items[0][5:7] + items[0][8:10]
@@ -1872,7 +1876,7 @@ def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
 
             weight = items[2] + ' ' + items[3]
 
-            print(rdate, horse, weight)
+            # print(rdate, horse, weight)
 
             try:
                 cursor = connection.cursor()
@@ -1882,7 +1886,7 @@ def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
                           where rdate = '""" + rdate + """' and horse = '""" + horse + """'
                       ; """
 
-                print(strSql)
+                # print(strSql)
                 r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
                 awards = cursor.fetchall()
 
@@ -1895,19 +1899,20 @@ def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
             except:
                 connection.rollback()
                 print("Failed updating in exp011 : 경주마 체중")
+    return len(lines)
 
 # 경주 변경 내용 update - 경주순위
 
 
 def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
-    print(r_content)
+    # print(r_content)
 
     lines = r_content.split('\n')
 
     for index, line in enumerate(lines):
         items = line.split('\t')
 
-        print(index, items)
+        # print(index, items)
 
         if items[0] and index == 0:
             rdate = items[0][0:4] + items[0][6:8] + items[0][10:12]
@@ -1919,7 +1924,7 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
             if horse[0:1] == '[':
                 horse = horse[3:]
 
-            print(rdate, horse, r_rank)
+            # print(rdate, horse, r_rank)
 
             try:
                 cursor = connection.cursor()
@@ -1929,7 +1934,7 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
                           where rdate = '""" + rdate + """' and horse = '""" + horse + """'
                       ; """
 
-                print(strSql)
+                # print(strSql)
                 r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
                 awards = cursor.fetchall()
 
@@ -1942,6 +1947,8 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
             except:
                 connection.rollback()
                 print("Failed updating in exp011 : 경주마 체중")
+
+    return len(lines)
 
 # 수영조교 데이터 입력
 
@@ -1954,7 +1961,7 @@ def insert_train_swim(r_content):
     for index, line in enumerate(lines):
         items = line.split('\t')
 
-        print(index, items)
+        # print(index, items)
 
         if items[0] and index == 0:
             tdate = items[0][0:4] + items[0][5:7] + items[0][8:10]
@@ -1973,7 +1980,7 @@ def insert_train_swim(r_content):
             laps = items[4][0:1]
             print(trainer, horse, laps)
 
-            print(tdate, horse, team)
+            # print(tdate, horse, team)
 
             try:
                 cursor = connection.cursor()
@@ -1996,6 +2003,8 @@ def insert_train_swim(r_content):
             except:
                 connection.rollback()
                 print("Failed inserting in swim : 수영조교")
+
+    return len(lines)
 
 # 말진료현황 데이터 입력
 
@@ -2048,7 +2057,7 @@ def insert_horse_disease(r_content):
                                 values ( '""" + num + """', '""" + horse + """', '""" + tdate + """', '""" + team + """', '""" + hospital + """', '""" + disease + """' )
                         ; """
 
-                print(strSql)
+                # print(strSql)
                 r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
                 awards = cursor.fetchall()
 
@@ -2058,6 +2067,8 @@ def insert_horse_disease(r_content):
             except:
                 connection.rollback()
                 print("Failed inserting in swim : 말 진료현황")
+
+    return len(lines)
 
 # 경주 변경 내용 update - 경주순위
 
@@ -2109,7 +2120,7 @@ def set_race_review(i_rcity, i_rdate, i_rno, r_content):
 # 말진료현황 데이터 입력
 def insert_race_simulation(rcity, rcount, r_content):
     # print(r_content)
-    print(rcount)
+    # print(rcount)
 
     lines = r_content.split('\n')
 
@@ -2152,7 +2163,7 @@ def insert_race_simulation(rcity, rcount, r_content):
                                     and rno = """ + str(i_rno) + """
                             ; """
 
-                    print(strSql)
+                    # print(strSql)
 
                     r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
                     awards = cursor.fetchall()
@@ -2173,7 +2184,7 @@ def insert_race_simulation(rcity, rcount, r_content):
                                         '""" + grade + """', """ + distance + """, '""" + str(rcount) + """' )
                             ; """
 
-                    print(strSql)
+                    # print(strSql)
 
                     r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
                     awards = cursor.fetchall()
@@ -2194,7 +2205,7 @@ def insert_race_simulation(rcity, rcount, r_content):
                                     and rno = """ + str(i_rno) + """
                             ; """
 
-                    print(strSql)
+                    # print(strSql)
                     r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
                     awards = cursor.fetchall()
 
@@ -2204,6 +2215,26 @@ def insert_race_simulation(rcity, rcount, r_content):
                 except:
                     connection.rollback()
                     print("Failed deleting in exp011")
+
+                try:
+                    cursor = connection.cursor()
+
+                    strSql = """ delete from exp012
+                                    where rcity = '""" + rcity + """'
+                                    and rdate = '""" + rdate + """'
+                                    and rno = """ + str(i_rno) + """
+                            ; """
+
+                    # print(strSql)
+                    r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                    awards = cursor.fetchall()
+
+                    connection.commit()
+                    connection.close()
+
+                except:
+                    connection.rollback()
+                    print("Failed deleting in exp012")
 
             else:
 
@@ -2222,7 +2253,7 @@ def insert_race_simulation(rcity, rcount, r_content):
                     age = items[6]
                     trainer = items[7]
                     host = items[8]
-                    print(gate, horse, trainer, host)
+                    # print(gate, horse, trainer, host)
 
                     try:
                         cursor = connection.cursor()
@@ -2269,8 +2300,10 @@ def insert_race_simulation(rcity, rcount, r_content):
                 else:
                     pass
 
+    return len(lines)
 
-def get_jockey(horse):
+
+def get_jockey(horse):      # 출전등록 시뮬레이션 - 기수 select 
     try:
         cursor = connection.cursor()
 
