@@ -162,7 +162,7 @@ def krafile_convert(fnames):
 
 def convert_c1(fname):
 
-    # print(fname)
+    print(fname)
     # df = pd.read_excel(fname,  index_col=None, engine='openpyxl')
     wb = op.load_workbook(fname)
     ws = wb.active
