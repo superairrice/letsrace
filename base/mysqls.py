@@ -60,7 +60,8 @@ def get_paternal(rcity, rdate, rno, distance):
                     sum(r1) r1,
                     sum(r2) r2,
                     sum(r3) r3,
-                    sum(rtot) rtot
+                    sum(rtot) rtot,
+                    b.price/1000
                 FROM exp011	a,
                     horse		b right outer join paternal c on b.paternal = c.paternal 
                 where  a.horse = b.horse
@@ -204,7 +205,7 @@ def get_pedigree(rcity, rdate, rno):
                     (	select sum( year_1st + year_2nd + year_3rd ) from horse where paternal = b.paternal ) p_3rd,
                     (	select sum( year_race ) from horse where maternal = b.maternal ) m_tot,
                     (	select sum( year_1st + year_2nd + year_3rd ) from horse where maternal = b.maternal ) m_3rd,
-                    gear1, gear2, blood1, blood2, treat1, treat2
+                    gear1, gear2, blood1, blood2, treat1, treat2, price/10000000
                 FROM exp011	a,
                     horse		b,
                     exp012 c
@@ -1568,7 +1569,11 @@ def get_prediction(i_rdate):
                 and rno < 80
                 group by rcity, jockey
                 order by rcity, sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) + sum(if(r_rank = 3, 1, 0)) desc,
-                                sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) desc
+                                sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) desc,
+                                sum(if(r_rank = 1, 1, 0))  desc,
+                                sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) desc,
+                                sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0))  desc,
+                                sum(if(rank = 1, 1, 0)) desc
                 ; """
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환

@@ -194,7 +194,7 @@
         <table class="fold-table">
           <thead>
             <tr>
-              <th rowspan="2" width="6%" valign="center"><span class="visible-small">예<br>상</span><span class="visible-big" style="padding:0.95rem">예<br>상</span></th>
+              <th rowspan="1" width="6%" valign="center"><span class="visible-small">예상</span><span class="visible-big">예상</span></th>
               <th rowspan="1"><span class="visible-small">마번</span><span class="visible-big">마번</span></th>
               <th colspan="2"><span class="visible-small">Horse.</span><span class="visible-big">Horse</span></th>
               <th rowspan="2"><span class="visible-small">부담<br>중량.</span><span class="visible-big" style="padding:0.95rem">부담<br>중량</span></th>
@@ -208,11 +208,14 @@
               <th rowspan="2"><span class="visible-small"><br>g1f<br></span><span class="visible-big"><br>g1f<br></span></th>
               <th><span class="visible-small">예상기록</span><span class="visible-big">예상기록</span></th>
               <th><span class="visible-small">최근 3R</span><span class="visible-big">최근 3R</span></th>
-              <th colspan="2"><span class="visible-small">인기도</span><span class="visible-big">인기도</span></th>
+              <th colspan="1"><span class="visible-small">인기도</span><span class="visible-big">인기도</span></th>
+              <th rowspan="2"><span class="visible-small">마필장구</span><span class="visible-big">마필장구</span></th>
               
             </tr>
             <tr>
-              <th rowspan="1"><span class="visible-small">실순</span><span class="visible-big">실순</span></th>
+              
+              <th rowspan="1"><span class="visible-small">Rate</span><span class="visible-big">Rate</span></th>
+              <th rowspan="1"><span class="visible-small">(실순)</span><span class="visible-big">(실순)</span></th>
               <th><span class="visible-small">Info.</span><span class="visible-big">Info.</span></th>
               <th rowspan="1"><span class="visible-small">체중.</span><span class="visible-big">체중</span></th>
 
@@ -229,7 +232,7 @@
               </th>
               <th><span class="visible-small">최근 5R</span><span class="visible-big">최근 5R</span></th>
               <th><span class="visible-small">최근7경주 순위</span><span class="visible-big">최근 7경주 순위</span></th>
-              <th rowspan="1"><span class="visible-small">Rate</span><span class="visible-big">Rate</span></th>
+              
             </tr>
         
           </thead>
@@ -237,8 +240,16 @@
             {% for r in exp011s %}
             <tr class="view">
               
-              <td align="center" style="font-family: Arial; font-size: 1.4rem; color: var(--color-main-light);">
-                {% if r.rank > 20 %}🐣{% else %} {{r.rank}} {% endif %}
+              <td align="center" style="font-family: Arial; font-size: 1.3rem; color: var(--color-main-light);">
+                <div style="font-family: Arial;">{% if r.rank > 20 %}🐣{% else %} {{r.rank}} {% endif %}</div>
+
+                <div style="font-family: Arial; font-size: 1.2rem; text-align: right;">
+                  {% if compare_r.rating__max == r.rating and r.rating != 0 %}
+                  <span style="font-family: Arial; color:var(--color-r1); font-weight: 700;">{{r.rating}}</span>
+                  {% else %}
+                  <span style="font-family: Arial; color:var(--color-gray);">{{r.rating}}</span>
+                  {% endif %}
+                </div>
               </td>
 
               {# gate(마번) 착순 #}
@@ -609,7 +620,16 @@
 
               {# Rating #}
               <td align="center">
-                <div style="font-family: Arial; font-size:1.1rem; color:var(--color-r5); text-align: right;">
+
+                {% for gate, rank, r_rank, r_pop, horse, jockey, trainer, host, h_3rd, h_tot, paternal, maternal, p_tot, p_2rd, m_tot, m_2rd, gear1, gear2, blood1, blood2, treat1, treat2, price in pedigree %}
+                {% if r.horse == horse %}
+                <div style="font-family: Arial; font-size:0.9rem; color:var(--color-light-gray); text-align: right;">{{gear1|slice:"0:5"}}
+                </div>
+                <div style="font-family: Arial; font-size:0.9rem; color:var(--color-light-gray); text-align: right;">{{gear2|slice:"0:5"}}
+                </div>
+                {% endif %}
+                {% endfor %}
+                <!-- <div style="font-family: Arial; font-size:1.1rem; color:var(--color-r5); text-align: right;">
                   {% if r.r_pop > 80 %}
                   <span style="font-family: Arial; font-size:1.1rem; color:var(--color-r1)">★&nbsp;{{r.r_pop}}</span>
                   {% elif r.r_pop > 60 and r.r_pop <= 80 %}
@@ -624,17 +644,14 @@
                   <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray)">−&nbsp;</span>
                   {% endif %}
                   </span>
-
-                  <!-- <progress value={{r.r_pop}} max="100" style="width: 3rem"></progress> -->
-                </div>
-               
-                <div style="font-family: Arial; font-size: 1.2rem; text-align: left;">
+                </div> -->
+                <!-- <div style="font-family: Arial; font-size: 1.2rem; text-align: left;">
                   {% if compare_r.rating__max == r.rating and r.rating != 0 %}
                   <span class="blink" style="color:var(--color-r1); font-weight: 700;">r {{r.rating}}</span>
                   {% else %}
                   <span style="color:var(--color-gray);">r {{r.rating}}</span>
                   {% endif %}
-                </div>
+                </div> -->
               </td>
 
             </tr>
@@ -661,6 +678,7 @@
                         <th rowspan="2"><span class="visible-small" title="Current">s1f</span><span class="visible-big">착<br>차</span></th>
                         <th><span class="visible-small" title="Current">인기</span><span class="visible-big">인기</span></th>
                         <th><span class="visible-small" title="Current">단식</span><span class="visible-big">단식</span></th>
+                        <th rowspan="2"><span class="visible-small" title="Current">마필장구</span><span class="visible-big">마필장구</span></th>
                         
                       </tr>
                       <tr>
@@ -986,8 +1004,13 @@
                         {%endif%}
                         </td>
 
+                        <td align="center">
                         
-
+                          <div style="font-family: Arial; font-size:0.9rem; color:var(--color-r5); text-align: right;">{{hr.gear1|slice:"0:5"}}
+                          </div>
+                          <div style="font-family: Arial; font-size:0.9rem; color:var(--color-r5); text-align: right;">{{hr.gear2|slice:"0:5"}}
+                          </div>
+                        </td>
                         
                       </tr>
                       {%endif%}
@@ -2302,7 +2325,7 @@
       
           </thead>
           <tbody>
-            {% for gate, rank, r_rank, r_pop, horse, jockey, trainer, host, h_3rd, h_tot, paternal, maternal, p_tot, p_2rd, m_tot, m_2rd, gear1, gear2, blood1, blood2, treat1, treat2 in pedigree %}
+            {% for gate, rank, r_rank, r_pop, horse, jockey, trainer, host, h_3rd, h_tot, paternal, maternal, p_tot, p_2rd, m_tot, m_2rd, gear1, gear2, blood1, blood2, treat1, treat2, price in pedigree %}
             <tr class="view">
       
               <td align="center">
@@ -2389,6 +2412,7 @@
                 </div>
 
                 <div style="font-family: Arial; font-size:1.1rem; color:var(--color-r5); text-align: right;">
+
                   {% if r_pop > 80 %}
                   <span style="font-family: Arial; font-size:1.1rem; color:var(--color-r1)">★&nbsp;{{r_pop}}</span>
                   {% elif r_pop > 60 and r_pop <= 80 %}
@@ -2783,12 +2807,12 @@
       <hr style="border: solid 1px black;"> 
 
       <ul class="tabs" style="font-size: 1.4rem; z-index: index 1;">
-        <li class="tab-link current" data-tab="tab-1" style="padding: 4px 25px;">기수</li>
+        <li class="tab-link" data-tab="tab-1" style="padding: 4px 25px;">기수</li>
         <li class="tab-link" data-tab="tab-2" style="padding: 4px 25px;">마방</li>
-        <li class="tab-link" data-tab="tab-3" style="padding: 4px 25px;">마적</li>
+        <li class="tab-link current" data-tab="tab-3" style="padding: 4px 25px;">마적</li>
       </ul>
 
-      <div id="tab-1" class="tab-content current">
+      <div id="tab-1" class="tab-content">
         <table class="fold-table">
           <thead>
         
@@ -3397,25 +3421,26 @@
       
       </div>
 
-      <div id="tab-3" class="tab-content">
+      <div id="tab-3" class="tab-content current">
         <table class="fold-table"  style="table-layout: fixed">
           <thead>
 
             <tr>
               <th width="17%" rowspan="2"><span class="visible-small"><br>예상<br>순위</span><span class="visible-big" style="padding:0.15rem"><br>예상<br>순위</span></th>
               <th width="10%" rowspan="2"><span class="visible-small">마번</span><span class="visible-big">마번</span></th>
-              <th width="28%" rowspan="2"><span class="visible-small">부마</span><span class="visible-big">부마</span></th>
+              <th width="28%" rowspan="1"><span class="visible-small">부마</span><span class="visible-big">부마</span></th>
               <th width="45%" colspan="3"><span class="visible-small">삼복승률 & 총전적</span><span class="visible-big">삼복승률 & 총전적</span></th>
             </tr>
 
             <tr>
+              <th width="28%" rowspan="1"><span class="visible-small">거래가(천원)</span><span class="visible-big">거래가(천원)</span></th>
               <th colspan="3"><span class="visible-small">{{r_condition.distance}}m 삼복승률</span><span class="visible-big" style="color:var(--color-r4);">{{r_condition.distance}}m 삼복승률</span></th>
             </tr>
 
             
           </thead>
           <tbody>
-            {% for gate, rank, horse, paternal, rd1, rd2, rd3, rdtot, r1, r2, r3, rtot in paternal %}
+            {% for gate, rank, horse, paternal, rd1, rd2, rd3, rdtot, r1, r2, r3, rtot, price in paternal %}
             <tr class="view">
       
               <td>
@@ -3453,13 +3478,26 @@
               </td>
       
               <td>
+                <div>
                 {% if paternal|length >= 8 %}
-                <div style="font-family: Arial; font-size:1.0rem;">{{paternal|slice:"0:12"}}</div>
-                <!-- <div style="font-family: Arial; font-size:1.0rem; text-align: right;">{{paternal|slice:"8:18"}}</div> -->
+                <p style="font-family: Arial; font-size:1.0rem;">{{paternal|slice:"0:12"}}</p>
                 {%else%}
-                <div style="font-family: Arial; font-size:1.2rem;">{{paternal|slice:"0:8"}}</div>
-                <!-- <div style="font-family: Arial; font-size:1.2rem; text-align: right;">{{paternal|slice:"8:18"}}</div> -->
+                <p style="font-family: Arial; font-size:1.2rem;">{{paternal|slice:"0:8"}}</p>
                 {%endif%}
+                </div>
+
+                <div>
+                  {% if price >= 50000 %}
+                  <p style="text-align: right; font-family: Arial; font-size:1.15rem; color:var(--color-r1)">{{price|floatformat:0|intcomma}}&nbsp;</p>
+                  {% elif price >= 20000 and price < 50000 %}
+                  <p style="text-align: right; font-family: Arial; font-size:1.1rem; color:var(--color-r3)">{{price|floatformat:0|intcomma}}&nbsp;</p>
+                  {% elif price > 0 and price < 20000 %}
+                  <p style="text-align: right; font-family: Arial; font-size:1.1rem; color:var(--color-gray)">{{price|floatformat:0|intcomma}}&nbsp;</p>
+                  {% else %}
+                  <p style="text-align: right; font-family: Arial; font-size:1.1rem;">-&nbsp;</p>
+                  {% endif %}
+                </div>
+
               </td>
       
               <td>
