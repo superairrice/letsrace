@@ -32,7 +32,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-secret_file = os.path.join(BASE_DIR, 'secrets.json')
+secret_file = os.path.join(BASE_DIR, "secrets.json")
 
 with open(secret_file) as f:
     secrets = json.loads(f.read())
@@ -50,10 +50,10 @@ SECRET_KEY = get_secret("SECRET_KEY")
 
 # Email 전송
 # 메일을 호스트하는 서버
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = "smtp.gmail.com"
 
 # gmail과의 통신하는 포트
-EMAIL_PORT = '587'
+EMAIL_PORT = "587"
 
 # 발신할 이메일
 # EMAIL_HOST_USER = '구글아이디@gmail.com'
@@ -71,63 +71,60 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 CSRF_TRUSTED_ORIGINS = ["http://thethe9.com", "https://thethe9.com"]
 
-ALLOWED_HOSTS = ['.compute.amazonaws.com', '127.0.0.1', 'thethe9.com', '3.37.228.51', '123.111.131.8',
-                 'localhost', '0.0.0.0']
+ALLOWED_HOSTS = [
+    ".compute.amazonaws.com",
+    "127.0.0.1",
+    "thethe9.com",
+    "3.37.228.51",
+    "123.111.131.8",
+    "localhost",
+    "0.0.0.0",
+]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-
-    'django.contrib.sessions',
-
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-
-    'base.apps.BaseConfig',
-
-    'rest_framework',
-
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "base.apps.BaseConfig",
+    "rest_framework",
     "corsheaders",
-
-    'debug_toolbar',
-    'mathfilters',
-    'django.contrib.humanize',
-
-    'django.contrib.sites',
-
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-
-    'allauth.socialaccount.providers.naver',
-    'allauth.socialaccount.providers.google',
-
+    "debug_toolbar",
+    "mathfilters",
+    "django.contrib.humanize",
+    "django.contrib.sites",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.naver",
+    "allauth.socialaccount.providers.google",
 ]
 
 SITE_ID = 3
 
 SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': [
-            'profile',
-            'email',
+    "google": {
+        "SCOPE": [
+            "profile",
+            "email",
         ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
+        "AUTH_PARAMS": {
+            "access_type": "online",
         },
-        'OAUTH_PKCE_ENABLED': True,
+        "OAUTH_PKCE_ENABLED": True,
     }
 }
 
 # settings.py
-ACCOUNT_SIGNUP_REDIRECT_URL = '/'
-LOGIN_REDIRECT_URL = '/'
+ACCOUNT_SIGNUP_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "/"
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # ACCOUNT_AUTHENTICATION_METHOD = 'email'  # 유저네임은 말고 email로만 인증 할것임
@@ -144,55 +141,53 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # ACCOUNT_USERNAME_REQUIRED = False  # USERNAME 을 필수항목에서 제거
 
 
-AUTH_USER_MODEL = 'base.User'
+AUTH_USER_MODEL = "base.User"
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
 MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
-
-    'django.middleware.security.SecurityMiddleware',
-
+    "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
-ROOT_URLCONF = 'letsrace.urls'
+ROOT_URLCONF = "letsrace.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
         # 'DIRS': [],
-        'DIRS': [BASE_DIR/'templates', os.path.join(BASE_DIR, 'templates', 'accounts')],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-
-                'django.template.context_processors.request',
+        "DIRS": [
+            BASE_DIR / "templates",
+            os.path.join(BASE_DIR, "templates", "accounts"),
+        ],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.request",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'letsrace.wsgi.application'
+WSGI_APPLICATION = "letsrace.wsgi.application"
 
 
 # Database
@@ -228,16 +223,14 @@ WSGI_APPLICATION = 'letsrace.wsgi.application'
 
 DEBUG = False
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',   # [1]
-        'NAME': 'The1',                         # [2]
-        'USER': 'letslove',                     # [3]
-        'PASSWORD': 'Ruddksp!23',               # [4]
-        'HOST': 'database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com',
-        'PORT': '3306',                         # [6]
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
-        }
+    "default": {
+        "ENGINE": "django.db.backends.mysql",  # [1]
+        "NAME": "The1",  # [2]
+        "USER": "letslove",  # [3]
+        "PASSWORD": "Ruddksp!23",  # [4]
+        "HOST": "database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com",
+        "PORT": "3306",  # [6]
+        "OPTIONS": {"init_command": "SET sql_mode='STRICT_TRANS_TABLES'"},
     }
 }
 
@@ -250,16 +243,16 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -268,34 +261,32 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
 # LANGUAGE_CODE = 'en-us'
-LANGUAGE_CODE = 'ko-KR'
+LANGUAGE_CODE = "ko-KR"
 
-TIME_ZONE = 'Asia/Seoul'
+TIME_ZONE = "Asia/Seoul"
 
 USE_I18N = True
 
-USE_TZ = False              # False = 한국시간대로 설정됨
+USE_TZ = False  # False = 한국시간대로 설정됨
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
-STATIC_ROOT = '/tmp/.static_root'       # EC2 폴더권한문제 방지 nginx
-STATIC_URL = 'static/'
-MEDIA_URL = '/images/'
+STATIC_ROOT = "/tmp/.static_root"  # EC2 폴더권한문제 방지 nginx
+STATIC_URL = "static/"
+MEDIA_URL = "/images/"
 
 # MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-STATICFILES_DIRS = [
-    BASE_DIR / 'static'
-]
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
-MEDIA_ROOT = BASE_DIR / 'static/images'
-KRAFILE_ROOT = BASE_DIR / 'kradata'
+MEDIA_ROOT = BASE_DIR / "static/images"
+KRAFILE_ROOT = BASE_DIR / "kradata"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ALLOW_ALL_ORIGINS = True
 
