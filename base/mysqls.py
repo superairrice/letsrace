@@ -205,7 +205,13 @@ def get_pedigree(rcity, rdate, rno):
                     (	select sum( year_1st + year_2nd + year_3rd ) from horse where paternal = b.paternal ) p_3rd,
                     (	select sum( year_race ) from horse where maternal = b.maternal ) m_tot,
                     (	select sum( year_1st + year_2nd + year_3rd ) from horse where maternal = b.maternal ) m_3rd,
-                    gear1, gear2, blood1, blood2, treat1, treat2, price/10000000
+                    ifnull(gear1, '') gear1, 
+                    ifnull(gear2, '') gear2, 
+                    blood1, 
+                    blood2, 
+                    treat1, 
+                    treat2, 
+                    price/10000000
                 FROM exp011	a,
                     horse		b,
                     exp012 c
@@ -1701,12 +1707,14 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
         cursor = connection.cursor()
 
         strSql = """ 
-              select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, b.jockey, a.wdate, a.year_per
+              select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, b.jockey, a.wdate, a.year_per, CONCAT(debut, ' ', age) debut
               from
               (
-                SELECT wdate, jockey, year_per
-                FROM The1.jockey_w 
+                SELECT wdate, jockey, cast( year_per as DECIMAL(4,1))*10 year_per, debut, 
+                        ( select concat( max(age) , ' ', max(tot_1st) ) from The1.jockey_w c where c.jockey = d.jockey and c.wdate < '""" + i_rdate + """' ) age
+                FROM The1.jockey_w d
                 where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 88 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                and wdate < '""" + i_rdate + """'
               ) a  right outer join  The1.expect b  on a.jockey = b.jockey 
               where b.rdate = '""" + i_rdate + """' and b.rcity = '""" + i_rcity + """' and b.rno = """ + str(i_rno) + """
               order by b.rank, a.wdate desc
@@ -1727,7 +1735,7 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
     # result = dict[result]
 
     col = ['예상', '마번', '실순', '인기',
-           'horse', '기수', 'wdate', 'year_per']
+           'horse', '기수', 'wdate', 'year_per', '데뷔']
     data = list(result)
     # print(data)
 
@@ -1736,7 +1744,7 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
 
     pdf1 = pd.pivot_table(df,                # 피벗할 데이터프레임
                           index=('예상', '마번', '실순', '인기',
-                                 'horse', '기수'),    # 행 위치에 들어갈 열
+                                 'horse', '기수', '데뷔'),    # 행 위치에 들어갈 열
                           columns='wdate',    # 열 위치에 들어갈 열
                           values='year_per', aggfunc='sum')     # 데이터로 사용할 열
 

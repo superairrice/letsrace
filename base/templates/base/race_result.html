@@ -148,8 +148,12 @@
           {% endif %}
           </span>
           <span style="text-align:left; font-family: Arial; font-size: 1.4rem;">{{r_condition.rstate}}&nbsp;{{r_condition.rmoisture}}</span>
+          {% if r_condition.race_speed %}
           <span style="text-align:left; font-family: Arial; font-size: 1.3rem;">&nbsp;주로 빠르기:</span>
-          <span style="text-align:left; font-family: Arial; font-size: 1.5rem; color:var(--color-light)">{{r_condition.race_speed}}</span>
+          <span style="text-align:left; font-family: Arial; font-size: 1.5rem; color:var(--color-light)">
+            {{r_condition.race_speed}}
+          </span>
+          {% endif %}
         </div>
         
         <div class="room__topRight">
@@ -236,7 +240,7 @@
               <th><span class="visible-big">adv</span></th>
               <th><span class="visible-big">조교사</span></th>
               <th><span class="visible-big">adv</span></th>
-              <th><span class="visible-big">프로그램</span></th>
+              <th><span class="visible-big blink"><a href="{% url 'prediction_race' r_condition.rcity r_condition.rdate r_condition.rno 0 'awardee' %} onclick="  onclick="window.open(this.href, '_blank', 'width=1400, height=1000, toolbars=no, scrollbars=yes'); return false;">프로그램</a></span></th>
               <th><span class="visible-big">예상</span></th>
 
               <th><span class="visible-big">연식</span></th>
@@ -336,23 +340,33 @@
               </td>
               <td align="center" style="font-family: Arial; font-size: 1.2rem ">
                 
-                {% if r.horse == hname %}
-                <div style="font-family: Arial; text-align:left; color: var(--color-r3); font-size: 1.2rem; font-style: italic;">{{r.h_weight}}</div>
-                <div style="font-family: Arial; text-align:right; color: var(--color-r3); font-size: 1.2rem;">
+   
+                <div style="text-align:center">
+                
+                  {# 경주마 체중 증감 #}
+                  {% if r.h_weight <= 440 %} 
+                  <span style="font-family: Arial; color:var(--color-r5);">{{r.h_weight}}㎏</span>
+                  {% elif r.h_weight >= 500 %}
+                  <span style="font-family: Arial; color:var(--color-r2);">{{r.h_weight}}㎏</span>
+                  {% else %}
+                  <span style="font-family: Arial; color:var(--color-gray);">{{r.h_weight}}㎏</span>
+                  {% endif %}
+                
+                </div>
+
+                <div style="font-family: Arial; text-align:right; color: var(--color-r5); font-size: 1.2rem;">
                   <span style="font-family: Arial; border-radius: 5px; background-color:var(--color-bg);">{{r.w_change}}</span>
                 </div>
-                {%else%}
-                <div style="font-family: Arial; text-align:left">{{r.h_weight}}</div>
-                <div style="font-family: Arial; text-align:right; color: var(--color-main);">
-                  <span style="font-family: Arial; border-radius: 5px; background-color:var(--color-bg);">{{r.w_change}}</span>
-                </div>
-                {%endif%}
+  
+       
                 
               </td>
               <td align="center" style="font-size: 1.2rem ">
                 
-                <div style="font-family: Arial; text-align:center; color:var(--color-light)">{{r.handycap}}</div>
+                <div style="font-family: Arial; text-align:center; color:var(--color-light-gray)">{{r.handycap}}</div>
                 <div style="font-family: Arial; text-align:right; color:var(--color-gray); font-size: 1.0rem;">{{r.burden_w|floatformat:1}}</div>
+
+                
                 
               </td>
 
@@ -556,17 +570,22 @@
 
               {%endif%}
 
-              <td align="left" style="font-size: 1.1rem;">
-                {% if r.gear1 != None %}
+              <td align="left" style="font-size: 0.9rem;">
+                <!-- {% if r.gear1 != None %}
                 {% if r.horse == hname %}
                 <div style="color:var(--color-r3); font-weight: 500; font-family: Arial, sans-serif;">
-                  {%else%}
-                  <div>
-                    {%endif%}
-                    {{r.gear1|slice:"0:4"}}<br>{{r.gear2|slice:"0:4"}}</div>
-                  {%else%}
-              
+                {%else%}
+                <div>
                   {%endif%}
+                  {{r.gear1|slice:"0:5"}}<br>{{r.gear2|slice:"0:5"}}</div>
+                {%else%}
+            
+                {%endif%} -->
+
+                <div style="font-family: Arial; font-size:0.9rem; color:var(--color-light-gray); text-align: right;">{{r.gear1|slice:"0:5"}}
+                </div>
+                <div style="font-family: Arial; font-size:0.9rem; color:var(--color-light-gray); text-align: right;">{{r.gear2|slice:"0:5"}}
+                </div>
               </td>
         
             </tr>
@@ -593,6 +612,8 @@
                         <th rowspan="2"><span class="visible-small" title="Current">s1f</span><span class="visible-big">착<br>차</span></th>
                         <th><span class="visible-small" title="Current">인기</span><span class="visible-big">인기</span></th>
                         <th><span class="visible-small" title="Current">단식</span><span class="visible-big">단식</span></th>
+
+                        <th rowspan="2"><span class="visible-small" title="Current">마필<br>장구</span><span class="visible-big">마필<br>장구</span></th>
                         
                       </tr>
                       <tr>
@@ -676,7 +697,20 @@
                         {# 마체중 #}
                         <td style="font-size: 1.2rem;">
                           {% if hr.h_weight %}
-                          <div style="text-align:right; font-family: Arial; text-align: left;">{{hr.h_weight}}</div>
+                          {# 경주마 체중 증감 #}
+                          <div style="text-align:center">
+              
+                            {% if hr.h_weight|slice:"0:3" == '0 0' %}
+                            <span style="font-family: Arial; color:var(--color-gray);">-</span>
+                            {% elif hr.h_weight|slice:"0:3" <= '440' %} 
+                            <span style="font-family: Arial; color:var(--color-r5);">{{hr.h_weight|slice:"0:3"}}㎏</span>
+                            {% elif hr.h_weight|slice:"0:3" >= '500' %}
+                            <span style="font-family: Arial; color:var(--color-r2);">{{hr.h_weight|slice:"0:3"}}㎏</span>
+                            {% else %}
+                            <span style="font-family: Arial; color:var(--color-gray);">{{hr.h_weight|slice:"0:3"}}㎏</span>
+                            {% endif %}
+                      
+                          </div>
                           <div style="text-align:right; font-family: Arial; font-size: 1.1rem;">
                             {% if hr.w_change|slice:"0:1" == '-' %}
                             <span style="font-family: Arial; color:var(--color-r1); font-weight: 500;">{{hr.w_change}}</span>
@@ -922,7 +956,14 @@
                         {%endif%}
                         </td>
 
-                        
+                        <td align="center">
+
+                          <div style="font-family: Arial; font-size:0.9rem; color:var(--color-r5); text-align: right;">{{hr.gear1|slice:"0:5"}}
+                          </div>
+                          <div style="font-family: Arial; font-size:0.9rem; color:var(--color-r5); text-align: right;">{{hr.gear2|slice:"0:5"}}
+                          </div>
+
+                        </td>
 
                         
                       </tr>

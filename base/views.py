@@ -593,7 +593,14 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     judged_horse = get_judged_horse(rcity, rdate, rno)
     judged_jockey = get_judged_jockey(rcity, rdate, rno)
 
-    trend_j = get_jockey_trend(rcity, rdate, rno)
+    trend_jockey = get_jockey_trend(rcity, rdate, rno)
+
+    # print(trend_j.to_html())
+
+    trend_j = trend_jockey.values.tolist()
+    trend_j_title = trend_jockey.columns.tolist()
+
+    # print(trend_j_title)
 
     trainer_double_check = get_trainer_double_check(rcity, rdate, rno)
 
@@ -644,8 +651,8 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         #     classes="rwd-table",
         #     table_id="rwd-table",
         # ),
-        'trend_j': trend_j,
-        #  'pdf1': pdf1,
+        "trend_j": trend_j,
+        "trend_j_title": trend_j_title,
     }
 
     return render(request, "base/prediction_race.html", context)
