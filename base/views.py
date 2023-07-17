@@ -584,7 +584,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
 
     # print(treat)
 
-    h_audit = get_train_audit(rcity, rdate, rno)
+    # h_audit = get_train_audit(rcity, rdate, rno)      # get_treat_horse 함수 통합
 
     popularity_rate = get_popularity_rate(rcity, rdate, rno)  # 인기순위별 승률
     popularity_rate_t = get_popularity_rate_t(rcity, rdate, rno)  # 인기순위별 승률
@@ -642,7 +642,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         "train": train,
         "treat": treat,
         #    'swim': swim,
-        "h_audit": h_audit,
+        # "h_audit": h_audit,
         "trainer_double_check": str(trainer_double_check),
         # "trend_j": trend_j.to_html(
         #     index=False,

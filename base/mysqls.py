@@ -863,19 +863,73 @@ def get_swim_horse(i_rcity, i_rdate, i_rno):
     return result
 
 
+# def get_treat_horse(i_rcity, i_rdate, i_rno):
+#     try:
+#         cursor = connection.cursor()
+
+#         strSql = """ 
+#                     select distinct horse, tdate, team, hospital, disease
+#                     from treat a 
+#                     where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
+#                     and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 60 DAY), '%Y%m%d') and '""" + i_rdate + """'
+#                     order by  a.horse, a.tdate desc
+#             ;"""
+
+#         print(strSql)
+#         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+#         result = cursor.fetchall()
+
+#         connection.commit()
+#         connection.close()
+
+#     except:
+#         connection.rollback()
+#         print("Failed selecting in 마필병력 히스토리 ")
+
+#     return result
+
+
 def get_treat_horse(i_rcity, i_rdate, i_rno):
     try:
         cursor = connection.cursor()
 
         strSql = """ 
-                    select distinct horse, tdate, team, hospital, disease
-                    from treat a 
-                    where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
-                    and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 60 DAY), '%Y%m%d') and '""" + i_rdate + """'
-                    order by  a.horse, a.tdate desc
+                    select horse, tdate, max(disease) disease, max(laps) laps,  max(t_time) t_time, max(canter) canter,  max(strong) strong, 
+                            max(audit) audit, max(rider) rider, max(judge) judge,
+                            weekday(tdate) days
+                    from
+                    (
+                        select distinct  horse, tdate, if( length(disease) > 2, trim(disease), trim(hospital) ) disease, '' laps,  '' t_time, '' canter,  '' strong, '' audit, '' rider, '' judge
+                        from treat 
+                        where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
+                        and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 60 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                        union all
+                        select horse, tdate, '', laps, '', '', '', '', '', ''
+                        from swim 
+                        where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
+                        and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 60 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                        union all
+                        select horse, tdate, '', '', t_time, canter, strong, '', '', ''
+                        from train 
+                        where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
+                        and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 60 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                        union all
+                        select horse, tdate, '', '', '', '', '', '출발', rider, judge
+                        from start_train 
+                        where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
+                        and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 60 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                        union all
+                        select horse, rdate, '', '', '', '', '', '발주', rider, judge
+                        from start_audit 
+                        where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
+                        and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 60 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                    ) a
+                    group by horse, tdate
+                    order by tdate desc
+                    
             ;"""
 
-        # print(strSql)
+        print(strSql)
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
 

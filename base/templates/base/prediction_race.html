@@ -2544,83 +2544,47 @@
               </td>
       
             </tr>
+
             <tr class="fold">
-              <td colspan="4">
+
+
+              <td colspan="7">
                 <div class="fold-content" style="position:static" >
                   <table class="small-friendly" align="Top">
                     <thead>
                   
                       <tr>
-                        <th width="25%"><span class="visible-small">Date</span><span class="visible-big">Date</span></th>
-                        <th width="15%"><span class="visible-small">구분</span><span class="visible-big">구분</span></th>
-                        <th width="25%"><span class="visible-small">기승</span><span class="visible-big">기승</span></th>
-                        <th width="35%"><span class="visible-small">부마</span><span class="visible-big">Judge</span></th>
+                        <th width="14%" style="font-size: 1.1rem;"><span class="visible-small">Date</span><span class="visible-big">Date</span></th>
+                        <th width="36%" style="font-size: 1.1rem;"><span class="visible-small">진료내역(최근60일)</span><span class="visible-big">진료내역(근60일)</span></th>
+                        <th width="10%" style="font-size: 1.1rem;"><span class="visible-small">조교(분)</span><span class="visible-big">조교(분)</span></th>
+                        <th width="5%" style="font-size: 1.1rem;"><span class="visible-small">구보</span><span class="visible-big">구보</span></th>
+                        <th width="5%" style="font-size: 1.1rem;"><span class="visible-small">습보</span><span class="visible-big">습보</span></th>
+                        <th width="5%" style="font-size: 1.1rem;"><span class="visible-small">수영</span><span class="visible-big">수영</span></th>
+                        <th width="5%" style="font-size: 1.1rem;"><span class="visible-small">심사</span><span class="visible-big">심사</span></th>
+                        <th width="8%" style="font-size: 1.1rem;"><span class="visible-small">기승</span><span class="visible-big">기승</span></th>
+                        <th width="12%" style="font-size: 1.1rem;"><span class="visible-small">Judge</span><span class="visible-big">Judge</span></th>
+
                       </tr>
                   
                     </thead>
                     <tbody>
-                      {% for gate, rank, r_rank, hname, jockey, trainer, s_audit, rider, rider_k, judge, tdate in h_audit %}
+                      {% for hname, tdate, disease, laps, t_time, canter, strong, audit, rider, judge, days in treat %}
                       {% if horse == hname %}
                       <tr class="view">
-                        <td align="center">
-                          <div style="font-size:1.2rem; font-family: Arial;">'{{tdate|slice:"2:4"}}.{{tdate|slice:"4:6"}}.{{tdate|slice:"6:8"}}</div>
-                        </td>
 
                         <td align="center">
-                          {% if s_audit == '발주심사' %}
-                          <div style="font-size:1.2rem; color:red;">{{s_audit|slice:"0:2"}}</div>
-                          {% else %}
-                          <div style="font-size:1.2rem;">{{s_audit|slice:"0:2"}}</div>
+                          <div style="font-size:1.1rem; font-family: Arial;">'{{tdate|slice:"2:4"}}.{{tdate|slice:"4:6"}}.{{tdate|slice:"6:8"}}
+                          {% if days == 0 %}(일)
+                          {% elif days == 1 %}(월)
+                          {% elif days == 2 %}(화)
+                          {% elif days == 3 %}(수)
+                          {% elif days == 4 %}(목)
+                          {% elif days == 5 %}(금)
+                          {% elif days == 6 %}(토)
+                          {% else %}-
                           {% endif %}
-                        </td>
-                        
-                        <td align="left">
-                          {% if jockey == rider %}
-                          <div style="font-size:1.2rem; color:var(--color-r1);">{{rider}}</div>
-                          {% else %}
-                          <div style="font-size:1.2rem;">{{rider}}</div>
-                          {% endif %}
-                        </td>
-                        
-                        <td align="left">
-                          <div style="font-size:1.2rem;">
-                            {% if judge == '합격' or judge == '양호' %}
-                            <span style="color:var(--color-r5);">{{judge}}</span>
-                            {% else %}
-                            <span style="color:var(--color-r1);">{{judge}}</span>
-                            {% endif %}
+
                           </div>
-                          
-                        </td>
-                  
-                      </tr>
-                      {% endif %}
-                  
-                      {% endfor %}
-                  
-                    </tbody>
-                  </table>
-                </div>
-              </td>
-              <td colspan="3">
-                <div class="fold-content" style="position:static" >
-                  <table class="small-friendly" align="Top">
-                    <thead>
-                  
-                      <tr>
-                        <th width="10%"><span class="visible-small">Date</span><span class="visible-big">Date</span></th>
-                        <th width="70%"><span class="visible-small">진료내역(최근60일)</span><span class="visible-big">진료내역(최근60일)</span></th>
-                        <th width="20%"><span class="visible-small">병원</span><span class="visible-big">병원</span></th>
-                      </tr>
-                  
-                    </thead>
-                    <tbody>
-                      {% for hname, tdate, team, hospital, disease in treat %}
-                      {% if horse == hname %}
-                      <tr class="view">
-
-                        <td align="center">
-                          <div style="font-size:1.1rem; font-family: Arial;">'{{tdate|slice:"2:4"}}.{{tdate|slice:"4:6"}}.{{tdate|slice:"6:8"}}</div>
                         </td>
 
                         <td align="left">
@@ -2631,17 +2595,51 @@
                           {% elif '관절염' in disease %}
                           <span style="color:var(--color-r4); font-family: Arial; font-size:1.1rem;">{{disease}}</span>
                           {%else%}
-                            {% if disease|length > 2 %}
-                            <span style="font-family: Arial; font-size:1.1rem;">{{disease}}</span>
-                            {% else %}
-                            <span style="font-family: Arial; font-size:1.1rem; color:var(--color-r5);">{{hospital}}</span>
-                            {% endif %}
+                          {% if disease|length > 2 %}
+                          <span style="font-family: Arial; font-size:1.1rem;">{{disease}}</span>
+                          {% else %}
+                          <span style="font-family: Arial; font-size:1.1rem; color:var(--color-r5);">{{hospital}}</span>
+                          {% endif %}
                           {%endif%}
                         </td>
-
+                        
                         <td align="center">
-                          <div style="font-size:1.0rem;">{{hospital|slice:"0:4"}}</div>
+                          <div style="font-size:1.1rem;">{{t_time}}</div>
                         </td>
+                        <td align="center">
+                          <div style="font-size:1.1rem;">{{canter}}</div>
+                        </td>
+                        <td align="center">
+                          <div style="font-size:1.1rem;">{{strong}}</div>
+                        </td>
+                        
+                        <td align="center">
+                          <div style="font-size:1.1rem;">{{laps}}</div>
+                        </td>
+                        <td align="center">
+                          {% if audit == '발주' %}
+                          <div style="font-size:1.1rem; color:red;">{{audit}}</div>
+                          {% else %}
+                          <div style="font-size:1.1rem;">{{audit}}</div>
+                          {% endif %}
+                        </td>
+                        <td align="center">
+                          {% if jockey == rider %}
+                          <div style="font-size:1.1rem; color:var(--color-r1)1">{{rider|slice:"0:3"}}</div>
+                          {% else %}
+                          <div style="font-size:1.1rem;">{{rider|slice:"0:3"}}</div>
+                          {% endif %}
+                        </td>
+                        <td align="center">
+                          <div style="font-size:1.1rem;">
+                            {% if judge == '합격' or judge == '양호' %}
+                            <span style="color:var(--color-r5);">{{judge}}</span>
+                            {% else %}
+                            <span style="color:var(--color-r1);">{{judge}}</span>
+                            {% endif %}
+                          </div>
+                        </td>
+
                         
                         
                         
@@ -2654,51 +2652,44 @@
                   </table>
                 </div>
               </td>
+
               <td colspan="4">
-                <div class="fold-content">
-                  <table class="fsmall-friendly" style="position:static;" >
+                <div class="fold-content" style="position:static">
+                  {# 재결사항 #}
+                  <table class="fsmall-friendly" style="position:static;">
                     <thead>
                   
                       <tr>
-                        
-                        <th width="10%"><span class="visible-small" title="Jockey">경주일</span><span class="visible-big">경주일</span></th>
-                        <th width="12%"><span class="visible-small" title="Jockey">기수</span><span class="visible-big">기수</span></th>
-                        <th width="8%"><span class="visible-small" title="rmonth1">대상</span><span class="visible-big">대상</span></th>
-                        <th width="70%"><span class="visible-small" title="Jockey">재결내용</span><span class="visible-big">재결내용</span></th>
+                  
+                        <th width="14%" style="font-size: 1.1rem;"><span class="visible-small">경주일</span><span class="visible-big">경주일</span></th>
+                        <th width="20%" style="font-size: 1.1rem;"><span class="visible-small">대상</span><span class="visible-big">대상</span></th>
+                        <th width="66%" style="font-size: 1.1rem;"><span class="visible-small">재결내용</span><span class="visible-big">재결내용</span></th>
                       </tr>
                   
                     </thead>
                     <tbody>
-
+                  
                       {% for rank, gate, hname, rdate, horse_b, jname, trainer, t_sort, t_type, t_detail, t_reason in judged_horse %}
                       {% if horse == hname %}
                       <tr class="view">
-
+                  
                         <td align="center">
-                          <div style="font-size:1.2rem; font-family: Arial, Helvetica, sans-serif; text-align: left;">'{{rdate|slice:"2:4"}}.{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</div>
+                          <div style="font-size:1.1rem; font-family: Arial, Helvetica, sans-serif; text-align: left;">'{{rdate|slice:"2:4"}}.{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</div>
                         </td>
                   
                         <td align="left">
                           {% if jockey == jname %}
-                          <div style="font-size:1.2rem; color:var(--color-r1);">{{jname}}</div>
+                          <div style="font-size:1.1rem; color:var(--color-r1);">{{jname}}</div>
                           {% else %}
-                          <div style="font-size:1.2rem;">{{jname}}</div>
+                          <div style="font-size:1.1rem;">{{jname}}</div>
                           {% endif %}
                         </td>
-                        <td align="center">
-                          {% if t_sort == '말' %}
-                          <div style="font-size:1.2rem; color:red;">{{t_sort}}</div>
-                          {% else %}
-                          <div style="font-size:1.2rem;">{{t_sort}}</div>
-                          {% endif %}
-                        </td>
-                  
                   
                         <td align="left">
-                          <div style="font-size:1.2rem;">
-                            <span style="font-size:1.2rem; color:var(--color-r1);">{{t_type}}</span>
-                            <span style="font-size:1.2rem; color:var(--color-r5);">{{t_detail}}</span>
-                            <span style="font-size:1.2rem;">{{t_reason}}</span>
+                          <div style="font-size:1.1rem;">
+                            <span style="font-size:1.1rem; color:var(--color-r1);">{{t_type}}</span>
+                            <span style="font-size:1.1rem; color:var(--color-r5);">{{t_detail}}</span>
+                            <span style="font-size:1.1rem;">{{t_reason}}</span>
                           </div>
                         </td>
                   
@@ -2712,7 +2703,7 @@
                   </table>
                 </div>
               </td>
-
+              
               <style>
                 .fold {
                   vertical-align: top;
