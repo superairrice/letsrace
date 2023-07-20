@@ -2184,7 +2184,7 @@ def set_race_review(i_rcity, i_rdate, i_rno, r_content):
                 print("Failed updating in exp011 : 경주마 체중")
 
 
-# 말진료현황 데이터 입력
+# 출전등록 시뮬레이션
 def insert_race_simulation(rcity, rcount, r_content):
     # print(r_content)
     # print(rcount)
@@ -2369,6 +2369,128 @@ def insert_race_simulation(rcity, rcount, r_content):
 
     return len(lines)
 
+# 심판위원 Report
+def insert_race_judged(rcity, r_content):
+    # print(r_content)
+    # print(rcount)
+
+    lines = r_content.split('\n')
+
+    rno = 0
+    judged = ''
+    committee = ''
+    for index, line in enumerate(lines):
+        items = line.split('\t')
+
+        # print(items[0])
+
+        if items[0]:
+
+            if index == 0:
+                # print(items[0][14:16])
+                if items[0][14:16] == '서울':
+                    rcity = '서울'
+                else:
+                    rcity = '부산'
+                # print(items[1])
+
+            elif index == 5:
+                rdate = items[1][0:4] + items[1][6:8] + items[1][10:12]
+            elif index > 5:
+
+                # print(items[0][-4:])
+                if items[0][-2:] == '경주':
+                    rno = items[0][-4:][0:2]
+                    judged = ''     # 경주별로 재경사항 초기화 
+                elif items[0][0:2] == '심판':
+                    committee = items[1]
+                elif items[0][0:1] == '●':
+                    judged =  judged + '\n' + items[0]
+                else:
+                    if items[0][0:8] == '경주번호, 등급' or items[0][0:7] == '기수변경 내역' or items[0][0:5] == '제재 내역' :
+
+                        if rno == 0:                                # 추가 재결사항 update
+                            # print(rcity, rdate, rno, judged)
+                            # print( judged)
+                            lst = judged.split('●')
+                            
+                            for i in range(1,len(lst)):             # 첫번째 라인 스킵
+                                str = lst[i].replace(' ', '')
+                                # print(str)
+
+                                rdate_add = lst[i][0:5].replace(' ', '') + lst[i][6:8].replace(' ', '0') + lst[i][9:11].replace(' ', '0')
+                                rno_add = lst[i][18:19]
+                                judged_add = lst[i][22:]
+                                ret = insert_race_judged_sql(rcity, rdate_add, int(rno_add), '', judged_add, committee)
+                        else:
+                            print(rdate)
+                            ret = insert_race_judged_sql(rcity, rdate, rno, judged, '', committee)
+
+    return len(lines)
+
+def insert_race_judged_sql(rcity, rdate, rno, judged, judged_add, committee):
+    # print(committee)
+    try:
+        cursor = connection.cursor()
+
+        strSql = """    select count(*) from rec013
+                        where rcity = '""" + rcity + """'
+                        and rdate = '""" + rdate + """'
+                        and rno = """ + str(rno) + """
+                        ; """
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        ret = cursor.fetchall()
+
+        print((ret[0][0]))
+
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed select error in rec013")
+
+    if ret[0][0] == 0:
+        try:
+            cursor = connection.cursor()
+
+            strSql = """ insert into rec013
+                            ( rcity, rdate, rno, judged )
+                            values ( '""" + rcity + """', '""" + rdate + """', """ + str(rno) + """, '""" + judged + """' )
+                            ; """
+            print(strSql)
+
+            r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+            ret = cursor.fetchall()
+
+            connection.commit()
+            connection.close()
+
+        except:
+            connection.rollback()
+            print("Failed inserting in rec013 ")
+    else:
+        try:
+            cursor = connection.cursor()
+
+            strSql = """ update rec013
+                            set judged_add = '""" + judged_add + """'
+                        where rcity = '""" + rcity + """' and rdate = '""" + rdate + """' and rno = """ + str(rno) + """
+                            ; """
+            print(strSql)
+            r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+            ret = cursor.fetchall()
+
+            connection.commit()
+            connection.close()
+
+        except:
+            connection.rollback()
+            print("Failed updating in rec013")
+
+    return ret
 
 def get_jockey(horse):      # 출전등록 시뮬레이션 - 기수 select 
     try:

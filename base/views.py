@@ -54,6 +54,7 @@ from base.mysqls import (
     get_weeks,
     get_last2weeks,
     insert_horse_disease,
+    insert_race_judged,
     insert_race_simulation,
     insert_train_swim,
     set_changed_race_horse,
@@ -601,6 +602,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     trend_j_title = trend_jockey.columns.tolist()
 
     # print(trend_j_title)
+    # print(trend_j)
 
     trainer_double_check = get_trainer_double_check(rcity, rdate, rno)
 
@@ -1448,7 +1450,7 @@ def raceBreakingNews(request):
     elif fdata == "출전등록 시뮬레이션":
         result_cnt = insert_race_simulation(rcity, rcount, r_content)
     elif fdata == "심판위원 Report":
-        result_cnt = set_changed_race_rank(rcity, rdate, rno, r_content)
+        result_cnt = insert_race_judged(rcity, r_content)
 
     exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=86)
 
