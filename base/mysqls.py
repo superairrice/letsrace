@@ -31,6 +31,7 @@ def get_paternal_dist(rcity, rdate, rno):
                 order by a.rank, a.gate, c.distance
             ; """
 
+        print(strSql)
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
 
