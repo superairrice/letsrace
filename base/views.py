@@ -1154,12 +1154,22 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
     treat = get_treat_horse(rcity, rdate, rno)
 
-    h_audit = get_train_audit(rcity, rdate, rno)
+    # h_audit = get_train_audit(rcity, rdate, rno)
 
     pedigree = sorted(pedigree, key=lambda x: x[2] or 99)
-    # print(h_audit)
 
-    judged = get_judged(rcity, rdate, rno)
+    judged_list, judged = get_judged(rcity, rdate, rno)
+
+    # print(len(judged))
+    if len(judged) > 0:
+        judged = judged[0][0]
+
+    # lst = judged).split('●')
+                            
+    # for i in range(1,len(lst)):             # 첫번째 라인 스킵
+    #     str1 = lst[i].replace(' ', '')
+    #     print(str1)
+
 
     horses = Exp011.objects.values("horse").filter(rcity=rcity1, rdate=rdate1, rno=rno1)
 
@@ -1173,8 +1183,9 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
         "compare_r": compare_r,
         "hname": hname,
         "pedigree": pedigree,
-        "h_audit": h_audit,
+        # "h_audit": h_audit,
         "judged_horse": judged_horse,
+        "judged_list": judged_list,
         "judged": judged,
         "horses": horses,
     }

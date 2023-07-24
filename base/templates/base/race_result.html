@@ -982,6 +982,12 @@
           </tbody>
         </table>
 
+        <br>
+        <div class="form__group">
+          <label for="room_description">심판위원 Report</label>
+          <textarea name="description" cols="400" rows="100" id="id_description" style="height: 20rem; font-weight: 500; font-size: 1.3rem; color:var(--color-light-gray);">{{judged}}</textarea>
+        </div>
+
       </div>
 
       <div id="tab-12" class="tab-content1">
@@ -2679,7 +2685,7 @@
       
           </thead>
           <tbody>
-            {% for rank, gate, horse, horse, jockey, trainer, t_sort, t_type, t_detail, t_reason in judged %}
+            {% for rank, gate, horse, horse, jockey, trainer, t_sort, t_type, t_detail, t_reason in judged_list %}
             <tr class="view">
       
               {# rank #}
@@ -2777,140 +2783,16 @@
                 <div style="font-family: Arial; font-size:1.2rem; font-weight: 400; text-align: left;">{{t_reason}}</div>
               </td>
       
-           
+            </tr>
             
-
-
-      
-            </tr>
-            <tr class="fold">
-              <td colspan="4">
-                <div class="fold-content" style="position:static" >
-                  <table class="small-friendly" align="Top">
-                    <thead>
-                  
-                      <tr>
-                        <th width="25%"><span class="visible-small">Date</span><span class="visible-big">Date</span></th>
-                        <th width="15%"><span class="visible-small">구분</span><span class="visible-big">구분</span></th>
-                        <th width="25%"><span class="visible-small">기승</span><span class="visible-big">기승</span></th>
-                        <th width="35%"><span class="visible-small">부마</span><span class="visible-big">Judge</span></th>
-                      </tr>
-                  
-                    </thead>
-                    <tbody>
-                      {% for gate, rank, r_rank, hname, jockey, trainer, s_audit, rider, rider_k, judge, tdate in h_audit %}
-                      {% if horse == hname %}
-                      <tr class="view">
-                        <td align="center">
-                          <div style="font-size:1.2rem; font-family: Arial;">'{{tdate|slice:"2:4"}}.{{tdate|slice:"4:6"}}.{{tdate|slice:"6:8"}}</div>
-                        </td>
-
-                        <td align="center">
-                          {% if s_audit == '발주심사' %}
-                          <div style="font-size:1.2rem; color:red;">{{s_audit|slice:"0:2"}}</div>
-                          {% else %}
-                          <div style="font-size:1.2rem;">{{s_audit|slice:"0:2"}}</div>
-                          {% endif %}
-                        </td>
-                        
-                        <td align="left">
-                          {% if jockey == rider %}
-                          <div style="font-size:1.2rem; color:var(--color-r1);">{{rider}}</div>
-                          {% else %}
-                          <div style="font-size:1.2rem;">{{rider}}</div>
-                          {% endif %}
-                        </td>
-                        
-                        <td align="left">
-                          <div style="font-size:1.2rem;">
-                            {% if judge == '합격' or judge == '양호' %}
-                            <span style="color:var(--color-r5);">{{judge}}</span>
-                            {% else %}
-                            <span style="color:var(--color-r1);">{{judge}}</span>
-                            {% endif %}
-                          </div>
-                          
-                        </td>
-                  
-                      </tr>
-                      {% endif %}
-                  
-                      {% endfor %}
-                  
-                    </tbody>
-                  </table>
-                </div>
-              </td>
-              <td colspan="8">
-                <div class="fold-content">
-                  <table class="fsmall-friendly" style="position:static;" >
-                    <thead>
-                  
-                      <tr>
-                        
-                        <th width="10%"><span class="visible-small" title="Jockey">경주일</span><span class="visible-big">경주일</span></th>
-                        <th width="12%"><span class="visible-small" title="Jockey">기수</span><span class="visible-big">기수</span></th>
-                        <th width="8%"><span class="visible-small" title="rmonth1">대상</span><span class="visible-big">대상</span></th>
-                        <th width="70%"><span class="visible-small" title="Jockey">재결내용</span><span class="visible-big">재결내용</span></th>
-                      </tr>
-                  
-                    </thead>
-                    <tbody>
-
-                      {% for rank, gate, hname, rdate, horse_b, jname, trainer, t_sort, t_type, t_detail, t_reason in judged_horse %}
-                      {% if horse == hname %}
-                      <tr class="view">
-
-                        <td align="center">
-                          <div style="font-size:1.2rem; font-family: Arial, Helvetica, sans-serif; text-align: left;">'{{rdate|slice:"2:4"}}.{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</div>
-                        </td>
-                  
-                        <td align="left">
-                          {% if jockey == jname %}
-                          <div style="font-size:1.2rem; color:var(--color-r1);">{{jname}}</div>
-                          {% else %}
-                          <div style="font-size:1.2rem;">{{jname}}</div>
-                          {% endif %}
-                        </td>
-                        <td align="center">
-                          {% if t_sort == '말' %}
-                          <div style="font-size:1.2rem; color:red;">{{t_sort}}</div>
-                          {% else %}
-                          <div style="font-size:1.2rem;">{{t_sort}}</div>
-                          {% endif %}
-                        </td>
-                  
-                  
-                        <td align="left">
-                          <div style="font-size:1.2rem;">
-                            <span style="font-size:1.2rem; color:var(--color-r1);">{{t_type}}</span>
-                            <span style="font-size:1.2rem; color:var(--color-r5);">{{t_detail}}</span>
-                            <span style="font-size:1.2rem;">{{t_reason}}</span>
-                          </div>
-                        </td>
-                  
-                      </tr>
-                  
-                  
-                      {% endif %}
-                      {% endfor %}
-                  
-                    </tbody>
-                  </table>
-                </div>
-              </td>
-
-              <style>
-                .fold {
-                  vertical-align: top;
-                }
-
-              </style>
-            </tr>
             {% endfor %}
       
           </tbody>
         </table>
+  
+        
+
+      
       </div>
 
     </div>

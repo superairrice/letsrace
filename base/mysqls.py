@@ -31,7 +31,7 @@ def get_paternal_dist(rcity, rdate, rno):
                 order by a.rank, a.gate, c.distance
             ; """
 
-        print(strSql)
+        # print(strSql)
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
 
@@ -179,16 +179,37 @@ def get_judged(rcity, rdate, rno):
             ; """
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
-        result = cursor.fetchall()
+        rec015 = cursor.fetchall()
 
         connection.commit()
         connection.close()
 
     except:
         connection.rollback()
-        print("Failed selecting in BookListView")
+        print("Failed selecting in rec015")
 
-    return result
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+            SELECT judged
+            FROM rec013
+                where rcity = '""" + rcity + """'
+                AND rdate = '""" + rdate + """'
+                AND rno = """ + str(rno) + """
+            ; """
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        rec013 = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in rec013")
+
+    return rec015, rec013
 
 
 def get_pedigree(rcity, rdate, rno):
@@ -930,7 +951,7 @@ def get_treat_horse(i_rcity, i_rdate, i_rno):
                     
             ;"""
 
-        print(strSql)
+        # print(strSql)
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
 
@@ -2395,7 +2416,7 @@ def insert_race_judged(rcity, r_content):
                     rcity = '부산'
                 # print(items[1])
 
-            elif index == 5:
+            elif index == 3:
                 rdate = items[1][0:4] + items[1][6:8] + items[1][10:12]
             elif index > 5:
 
@@ -2408,23 +2429,26 @@ def insert_race_judged(rcity, r_content):
                 elif items[0][0:1] == '●':
                     judged =  judged + '\n' + items[0]
                 else:
-                    if items[0][0:8] == '경주번호, 등급' or items[0][0:7] == '기수변경 내역' or items[0][0:5] == '제재 내역' :
+                    # if items[0][0:8] == '경주번호, 등급' or items[0][0:7] == '기수변경 내역' or items[0][0:5] == '제재 내역' :
+                    if items[0][0:8] == '경주번호, 등급' or items[0][0:7] == '기수변경 내역' or items[0][0:5] == '제재 내역' or items[0][0:4] == '약물검사' :
 
                         if rno == 0:                                # 추가 재결사항 update
                             # print(rcity, rdate, rno, judged)
                             # print( judged)
-                            lst = judged.split('●')
+                            # lst = judged.split('●')
                             
-                            for i in range(1,len(lst)):             # 첫번째 라인 스킵
-                                str = lst[i].replace(' ', '')
-                                # print(str)
+                            # for i in range(1,len(lst)):             # 첫번째 라인 스킵
+                            #     str = lst[i].replace(' ', '')
+                            #     # print(str)
 
-                                rdate_add = lst[i][0:5].replace(' ', '') + lst[i][6:8].replace(' ', '0') + lst[i][9:11].replace(' ', '0')
-                                rno_add = lst[i][18:19]
-                                judged_add = lst[i][22:]
-                                ret = insert_race_judged_sql(rcity, rdate_add, int(rno_add), '', judged_add, committee)
+                            #     rdate_add = lst[i][0:5].replace(' ', '') + lst[i][6:8].replace(' ', '0') + lst[i][9:11].replace(' ', '0')
+                            #     rno_add = lst[i][18:19]
+                            #     judged_add = lst[i][22:]
+                            #     ret = insert_race_judged_sql(rcity, rdate_add, int(rno_add), '', judged_add, committee)
+                            pass
+
                         else:
-                            print(rdate)
+                            # print(rdate)
                             ret = insert_race_judged_sql(rcity, rdate, rno, judged, '', committee)
 
     return len(lines)
@@ -2443,7 +2467,7 @@ def insert_race_judged_sql(rcity, rdate, rno, judged, judged_add, committee):
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         ret = cursor.fetchall()
 
-        print((ret[0][0]))
+        # print((ret[0][0]))      # 재결사항 입력 여부
 
 
         connection.commit()
@@ -2461,7 +2485,7 @@ def insert_race_judged_sql(rcity, rdate, rno, judged, judged_add, committee):
                             ( rcity, rdate, rno, judged )
                             values ( '""" + rcity + """', '""" + rdate + """', """ + str(rno) + """, '""" + judged + """' )
                             ; """
-            print(strSql)
+            # print(strSql)
 
             r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
             ret = cursor.fetchall()
@@ -2477,10 +2501,10 @@ def insert_race_judged_sql(rcity, rdate, rno, judged, judged_add, committee):
             cursor = connection.cursor()
 
             strSql = """ update rec013
-                            set judged_add = '""" + judged_add + """'
+                            set judged = '""" + judged + """'
                         where rcity = '""" + rcity + """' and rdate = '""" + rdate + """' and rno = """ + str(rno) + """
                             ; """
-            print(strSql)
+            # print(strSql)
             r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
             ret = cursor.fetchall()
 
