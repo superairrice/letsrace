@@ -62,7 +62,7 @@ def get_paternal(rcity, rdate, rno, distance):
                     sum(r2) r2,
                     sum(r3) r3,
                     sum(rtot) rtot,
-                    b.price/1000
+                    b.price/1000, b.tot_prize/1000000
                 FROM exp011	a,
                     horse		b right outer join paternal c on b.paternal = c.paternal 
                 where  a.horse = b.horse
@@ -1970,10 +1970,11 @@ def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
             try:
                 cursor = connection.cursor()
 
-                strSql = """ update exp011
-                              set h_weight = '""" + weight + """'
-                          where rdate = '""" + rdate + """' and horse = '""" + horse + """'
-                      ; """
+                strSql = """ 
+                            update exp011
+                            set h_weight = '""" + weight + """'
+                            where rdate = '""" + rdate + """' and horse = '""" + horse + """'
+                        ; """
 
                 # print(strSql)
                 r_cnt = cursor.execute(strSql)         # 결과값 개수 반환

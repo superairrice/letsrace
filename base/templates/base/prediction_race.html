@@ -405,9 +405,11 @@
                   
                 </div>
 
+                {% if r.h_weight|slice:"4:" %}
                 <div style="text-align:right; font-style: italic; font-size: 1.2rem;">
-                  <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-bg);">{{r.h_weight|slice:"4:"}}</span>
+                  <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-bg);">({{r.h_weight|slice:"4:"}})</span>
                 </div>
+                {% endif %}
 
               </td>
 
@@ -761,9 +763,9 @@
                           <div style="text-align:right; font-family: Arial; text-align: left;">{{hr.h_weight}}</div>
                           <div style="text-align:right; font-family: Arial; font-size: 1.1rem;">
                             {% if hr.w_change|slice:"0:1" == '-' %}
-                            <span style="font-family: Arial; color:var(--color-r1); font-weight: 500;">{{hr.w_change}}</span>
+                            <span style="font-family: Arial; color:var(--color-r1); font-weight: 500;">({{hr.w_change}})</span>
                             {% else %}
-                            <span style="font-family: Arial; color:var(--color-r5); font-weight: 500;">{{hr.w_change}}</span>
+                            <span style="font-family: Arial; color:var(--color-r5); font-weight: 500;">({{hr.w_change}})</span>
                             {% endif %}
                           </div>
                           
@@ -1172,6 +1174,10 @@
                 </div>
 
                 <div style="font-family: Arial; font-size:1.1rem; color:var(--color-r5); text-align: right;">
+
+                  <!-- <div>
+                    <progress value={{r_pop}} max="99" style="width: 5.7rem"></progress>
+                  </div> -->
                   
                   {% if r_pop > 80 %}
                   <span style="font-family: Arial; font-size:1.1rem; color:var(--color-r1)">★&nbsp;{{r_pop}}</span>
@@ -1211,8 +1217,8 @@
             
                 </div>
 
-                <div style="text-align:right; font-style: italic; font-size: 1.2rem;">
-                  <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-bg);">{{h_weight|slice:"4:"}}</span>
+                <div style="text-align:right; font-style: italic; font-size: 1.2rem; color:var(--color-gray);">
+                  <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-bg);">({{h_weight|slice:"4:"}})</span>
                 </div>
               
               </td>
@@ -1678,8 +1684,8 @@
                     
                       <tr>
                         <th rowspan="2" colspan="1" valign="center"><span class="visible-small">Race.</span><span class="visible-big">Race</span></th>
-                        <th rowspan="2"><span class="visible-small">마번</span><span class="visible-big">마번</span></th>
-                        <th rowspan="1"><span class="visible-small">예상</span><span class="visible-big">예상</span></th>
+                        <th rowspan="1"><span class="visible-small">마번</span><span class="visible-big">마번</span></th>
+                        <th rowspan="2"><span class="visible-small">예상</span><span class="visible-big">예상</span></th>
                         <th rowspan="2"><span class="visible-small" title="Jockey">Pop.</span><span class="visible-big">Pop.</span></th>
                         <th rowspan="2"><span class="visible-small" title="Jockey">마체중</span><span class="visible-big">마체중</span></th>
                     
@@ -1744,6 +1750,20 @@
                           <div style="font-family: Arial; font-size:1.4rem; font-weight: 700; font-style: italic;">
                             {{gate}}
                           </div>
+
+                          {% if r_rank == 1 %}
+                          <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r1); text-align: right;">{{r_rank}}</div>
+                          {% elif r_rank == 2 %}
+                          <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r2); text-align: right;">{{r_rank}}</div>
+                          {% elif r_rank == 3 %}
+                          <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r3); text-align: right;">{{r_rank}}</div>
+                          {% elif r_rank == 4 %}
+                          <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r4); text-align: right;">{{r_rank}}</div>
+                          {% elif r_rank == 5 %}
+                          <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r5); text-align: right;">{{r_rank}}</div>
+                          {% else %}
+                          <div style="font-family: Arial; font-size:1.2rem; color:var(--color-gray); text-align: right;">{{r_rank}}</div>
+                          {% endif %}
                           
                         </td>
                   
@@ -1776,19 +1796,7 @@
                             {% endif %}
                             &nbsp;
                           </div>
-                          {% if r_rank == 1 %}
-                          <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r1); text-align: right;">{{r_rank}}</div>
-                          {% elif r_rank == 2 %}
-                          <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r2); text-align: right;">{{r_rank}}</div>
-                          {% elif r_rank == 3 %}
-                          <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r3); text-align: right;">{{r_rank}}</div>
-                          {% elif r_rank == 4 %}
-                          <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r4); text-align: right;">{{r_rank}}</div>
-                          {% elif r_rank == 5 %}
-                          <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r5); text-align: right;">{{r_rank}}</div>
-                          {% else %}
-                          <div style="font-family: Arial; font-size:1.2rem; color:var(--color-gray); text-align: right;">{{r_rank}}</div>
-                          {% endif %}
+                          
                         </td>
                         
                         <td align="center">
@@ -1823,8 +1831,8 @@
                         
                           </div>
                         
-                          <div style="text-align:right; font-style: italic;">
-                            <span style="font-family: Arial;">{{h_weight|slice:"4:"}}</span>
+                          <div style="text-align:right; font-style: italic; color:var(--color-gray);">
+                            <span style="font-family: Arial;">({{h_weight|slice:"4:"}})</span>
                           </div>
                         
                         </td>
@@ -2297,6 +2305,8 @@
       </div>
 
       <div id="tab-13" class="tab-content1">
+      
+      
         <table class="fold-table">
           <thead>
       
@@ -2723,6 +2733,8 @@
       
           </tbody>
         </table>
+    
+
       </div>
 
       <div id="tab-14" class="tab-content1">
@@ -2994,6 +3006,7 @@
                 <span style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w12|div:10}}</span>
                 {% endif %}
               </td>
+             
             </tr>
 
             <tr class="fold">
@@ -3719,7 +3732,7 @@
             
           </thead>
           <tbody>
-            {% for gate, rank, horse, paternal, rd1, rd2, rd3, rdtot, r1, r2, r3, rtot, price in paternal %}
+            {% for gate, rank, horse, paternal, rd1, rd2, rd3, rdtot, r1, r2, r3, rtot, price, tot_prize in paternal %}
             <tr class="view">
       
               <td>
