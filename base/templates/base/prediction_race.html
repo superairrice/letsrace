@@ -1083,7 +1083,7 @@
         
           </thead>
           <tbody>
-            {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14, laps in train %}
+            {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight, distance, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14, laps in train %}
 
             {% if rdate == r_condition.rdate %}
             
@@ -1685,8 +1685,7 @@
                       <tr>
                         <th rowspan="2" colspan="1" valign="center"><span class="visible-small">Race.</span><span class="visible-big">Race</span></th>
                         <th rowspan="1"><span class="visible-small">마번</span><span class="visible-big">마번</span></th>
-                        <th rowspan="2"><span class="visible-small">예상</span><span class="visible-big">예상</span></th>
-                        <th rowspan="2"><span class="visible-small" title="Jockey">Pop.</span><span class="visible-big">Pop.</span></th>
+                        <th rowspan="1"><span class="visible-small">예상</span><span class="visible-big">예상</span></th>
                         <th rowspan="2"><span class="visible-small" title="Jockey">마체중</span><span class="visible-big">마체중</span></th>
                     
                         <th rowspan="1"><span class="visible-small" title="Jockey">기수</span><span class="visible-big">기수</span></th>
@@ -1710,6 +1709,8 @@
                       <tr>
                     
                         <th rowspan="1"><span class="visible-small" title="Jockey">실순</span><span class="visible-big">실순</span></th>
+                        <th rowspan="1"><span class="visible-small" title="Jockey">Pop.</span><span class="visible-big">Pop.</span></th>
+
                         <th><span class="visible-small" title="Jockey">조교사</span><span class="visible-big">조교사</span></th>
                         <th rowspan="1"><span class="visible-small" title="Jockey">C/S</span><span class="visible-big">C/S</span></th>
                         <th rowspan="1"><span class="visible-small" title="Jockey" style="font-size:1.1rem;">T/C/S</span><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
@@ -1729,7 +1730,7 @@
                     
                     </thead>
                     <tbody>
-                      {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, hname, jockey, trainer, j_per, t_per, jt_per, h_weight, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14, laps in train %}
+                      {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, hname, jockey, trainer, j_per, t_per, jt_per, h_weight, distance, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14, laps in train %}
                       {% if r_condition.rdate > rdate and horse == hname %}
                   
                       <tr>
@@ -1741,10 +1742,11 @@
                               '{{rdate|slice:"2:4" }}.{{rdate|slice:"4:6" }}.{{rdate|slice:"6:8"}}<br>
                             </div>
                             <div style="font-size: 1.1rem; font-family: Arial, sans-serif; color:var(--color-main); font-weight: 500; text-align: right;">
-                              {{rcity}}﹆{{rno}}ᴿ
+                              {{rcity}}﹆{{rno}}ᴿ&nbsp;{{distance}}m
                             </div>
                           </a>
                         </td>
+    
 
                         <td align="center">
                           <div style="font-family: Arial; font-size:1.4rem; font-weight: 700; font-style: italic;">
@@ -1796,12 +1798,7 @@
                             {% endif %}
                             &nbsp;
                           </div>
-                          
-                        </td>
-                        
-                        <td align="center">
-
-                          <div style="font-family: Arial; font-size:1.2rem; color:var(--color-r5);"">
+                          <div style="font-family: Arial; font-size:1.2rem; color:var(--color-r2); text-align: right;">
                             {% if r_pop > 80 %}★&nbsp;{{r_pop}}
                             {% elif r_pop > 60 and r_pop <= 80 %}◎&nbsp;{{r_pop}}
                             {% elif r_pop > 40 and r_pop <= 60 %}○&nbsp;{{r_pop}}
@@ -1811,9 +1808,9 @@
                             {% endif %}
                           
                           </div>
-
+                          
                         </td>
-
+                        
                         {# 마체중 #}
                         <td style="font-family: Arial; font-size: 1.2rem ">
                         
