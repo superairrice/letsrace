@@ -1786,7 +1786,7 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
               select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, b.jockey, a.wdate, a.year_per, CONCAT(debut, ' ', age) debut
               from
               (
-                SELECT wdate, jockey, cast( year_per as DECIMAL(4,1))*10 year_per, debut, 
+                SELECT wdate, jockey, cast( year_3per as DECIMAL(4,1))*10 year_per, tot_1st, debut, 
                         ( select concat( max(age) , ' ', max(tot_1st) ) from The1.jockey_w c where c.jockey = d.jockey and c.wdate < '""" + i_rdate + """' ) age
                 FROM The1.jockey_w d
                 where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 88 DAY), '%Y%m%d') and '""" + i_rdate + """'
