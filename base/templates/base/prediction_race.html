@@ -243,11 +243,11 @@
               <td align="center" style="font-family: Arial; font-size: 1.3rem; color: var(--color-main-light);">
                 <div style="font-family: Arial;">{% if r.rank > 20 %}🐣{% else %} {{r.rank}} {% endif %}</div>
 
-                <div style="font-family: Arial; font-size: 1.2rem; text-align: right;">
+                <div style="font-family: Arial; font-size: 1.2rem; text-align: right; ">
                   {% if compare_r.rating__max == r.rating and r.rating != 0 %}
-                  <span style="font-family: Arial; color:var(--color-r1); font-weight: 700;">{{r.rating}}</span>
+                  <span style="font-family: Arial; color:var(--color-r1); font-weight: 700;border-radius: 10px; background-color:var(--color-bg);">{{r.rating}}</span>
                   {% else %}
-                  <span style="font-family: Arial; color:var(--color-gray);">{{r.rating}}</span>
+                  <span style="font-family: Arial; color:var(--color-gray);border-radius: 10px; background-color:var(--color-bg);">{{r.rating}}</span>
                   {% endif %}
                 </div>
               </td>
@@ -393,7 +393,7 @@
                 <div style="text-align:center">
 
                   {# 경주마 체중 증감 #}
-                  {% if r.h_weight|slice:"0:3" == '0 0' %}
+                  {% if r.h_weight|slice:"0:3" == '0 0' or r.rank == 99 %}
                   <span style="font-family: Arial; color:var(--color-gray);">-</span>
                   {% elif r.h_weight|slice:"0:3" <= '440' %}
                   <span style="font-family: Arial; color:var(--color-r5);">{{r.h_weight|slice:"0:3"}}㎏</span>
@@ -406,7 +406,7 @@
                 </div>
 
                 {% if r.h_weight|slice:"4:" %}
-                <div style="text-align:right; font-style: italic; font-size: 1.2rem;">
+                <div style="text-align:right; font-style: italic; font-size: 1.2rem;  color:var(--color-gray);">
                   <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-bg);">({{r.h_weight|slice:"4:"}})</span>
                 </div>
                 {% endif %}
@@ -664,6 +664,7 @@
                   <table class="small-friendly">
                     <thead style="font-size:1.2rem;">
                       <tr>
+                        <th colspan="1" rowspan="2"><span class="visible-small" title="t_rday">레<br>이<br>팅</span><span class="visible-big">레<br>이<br>팅</span></th>
                         <th colspan="1" rowspan="1"><span class="visible-small" style="color:var(--color-r5);">🐴&nbsp;&nbsp;{{r.horse}}</span><span class="visible-big" style="color:var(--color-r5);">🐴&nbsp;&nbsp;{{r.horse}}</span></th>
                         <th rowspan="2"><span class="visible-small" title="Insurance number">마<br>체중</span><span class="visible-big">마<br>체중</span></th>
                         <th rowspan="2"><span class="visible-small" title="Insurance number">부담<br>중량</span><span class="visible-big">부담<br>중량</span></th>
@@ -677,13 +678,15 @@
                         <th rowspan="2"><span class="visible-small" title="Current">코너 전개</span><span class="visible-big">코너 전개</span></th>
                         <th rowspan="2"><span class="visible-small" title="Current">순<br>위</span><span class="visible-big">순<br>위</span></th>
 
-                        <th rowspan="2"><span class="visible-small" title="Current">s1f</span><span class="visible-big">착<br>차</span></th>
+                        <th rowspan="2"><span class="visible-small" title="Current">s1f</span><span class="visible-big">착<br>차<br>(전)</span></th>
+                        <th rowspan="2"><span class="visible-small" title="Current">s1f</span><span class="visible-big">착<br>차<br>(후)</span></th>
                         <th><span class="visible-small" title="Current">인기</span><span class="visible-big">인기</span></th>
                         <th><span class="visible-small" title="Current">단식</span><span class="visible-big">단식</span></th>
                         <th rowspan="2"><span class="visible-small" title="Current">마필<br>장구</span><span class="visible-big">마필<br>장구</span></th>
                         
                       </tr>
                       <tr>
+                        
                         <th colspan="1" rowspan="1"><span class="visible-small" title="t_rday">경주정보</span><span class="visible-big">경주정보</span></th>
                         <th><span class="visible-small" title="Insurance number">조교사</span><span class="visible-big">조교사</span></th>
 
@@ -708,7 +711,15 @@
                       {% for hr in hr_records %}
                       {% if r.horse == hr.horse %}
 
-                      <tr align="center" style="font-size: 1.2rem;">
+                      <tr align="center" style="font-size: 1.1rem;">
+
+                        <td>{# 기수 복승율 / 경주마 rating #}
+                          {% if hr.rating %}
+                          <div style="font-style: italic; padding:2px; color:var(--color-r3); font-family: Arial; border-radius: 15px; background-color:var(--color-bg);">{{hr.rating}}</div>
+                          {% else %}
+                          <div>&nbsp;</div>
+                          {% endif %}
+                        </td>
 
                         <td>
 
@@ -947,6 +958,12 @@
                         <td>
                           {% if hr.alloc1r != None %}
                           <div style="font-size: 1.1rem; font-weight: 500; font-family: Arial;">{{hr.gap}}</div>
+                          {%endif%}
+                        </td>
+                        <td>
+                          {% if hr.alloc1r != None %}
+                          <div style="font-size: 1.1rem; font-weight: 500; font-family: Arial;">{{hr.gap_b}}</div>
+
                           {%endif%}
                         </td>
 
