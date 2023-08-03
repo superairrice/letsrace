@@ -716,6 +716,8 @@
                           </div>
                   
                           {% endif %}
+
+                          
                         </td>
                   
                         {# 부담중량 #}
@@ -748,16 +750,18 @@
                   
                         {# 조교사 / 마주 #}
                         <td style="font-size: 1.2rem">
-                          {% if r.trainer == hr.trainer %}
-                          <div style="text-align: left;">{{hr.trainer}}</div>
-                          {%else%}
-                          <div style="color:var(--color-r1);  text-align: left;">{{hr.trainer}}</div>
-                          {%endif%}
-                  
-                          {% if r.host == hr.host %}
-                          <div style="color:var(--color-gray); text-align: right; font-size: 1.1rem">{{hr.host|slice:"0:4"}}</div>
-                          {%else%}
-                          <div style="color:var(--color-r1); text-align: right; font-size: 1.1rem;">{{hr.host|slice:"0:4"}}</div>
+                          {% if hr.trainer %}
+                            {% if r.trainer == hr.trainer %}
+                            <div style="text-align: left;">{{hr.trainer}}</div>
+                            {%else%}
+                            <div style="color:var(--color-r1);  text-align: left;">{{hr.trainer}}</div>
+                            {%endif%}
+                          
+                            {% if r.host == hr.host %}
+                            <div style="color:var(--color-gray); text-align: right; font-size: 1.1rem">{{hr.host|slice:"0:4"}}</div>
+                            {%else%}
+                            <div style="color:var(--color-r1); text-align: right; font-size: 1.1rem;">{{hr.host|slice:"0:4"}}</div>
+                            {%endif%}
                           {%endif%}
                         </td>
                   
@@ -1715,7 +1719,7 @@
                           {% elif r_rank == 5 %}
                           <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r5); text-align: right;">{{r_rank}}</div>
                           {% else %}
-                          <div style="font-family: Arial; font-size:1.2rem; color:var(--color-gray); text-align: right;">{{r_rank}}</div>
+                          <div style="font-family: Arial; font-size:1.2rem; color:var(--color-gray); text-align: right;">{% if r_rank %}{{r_rank}}{% endif %}</div>
                           {% endif %}
                           
                         </td>
@@ -1765,23 +1769,26 @@
                         {# 마체중 #}
                         <td style="font-family: Arial; font-size: 1.2rem ">
                         
+                          {% if h_weight %}
                           <div style="text-align:center">
                         
                             {# 경주마 체중 증감 #}
                             {% if h_weight|slice:"0:3" == '0 0' %}
                             <span style="font-family: Arial; color:var(--color-gray);">-</span>
-                            {% elif h_weight|slice:"0:3" <= '440' %} <span style="font-family: Arial; color:var(--color-r5);">{{h_weight|slice:"0:3"}}㎏</span>
-                              {% elif h_weight|slice:"0:3" >= '500' %}
-                              <span style="font-family: Arial; color:var(--color-r2);">{{h_weight|slice:"0:3"}}㎏</span>
-                              {% else %}
-                              <span style="font-family: Arial; color:var(--color-gray);">{{h_weight|slice:"0:3"}}㎏</span>
-                              {% endif %}
+                            {% elif h_weight|slice:"0:3" <= '440' %} 
+                            <span style="font-family: Arial; color:var(--color-r5);">{{h_weight|slice:"0:3"}}㎏</span>
+                            {% elif h_weight|slice:"0:3" >= '500' %}
+                            <span style="font-family: Arial; color:var(--color-r2);">{{h_weight|slice:"0:3"}}㎏</span>
+                            {% else %}
+                            <span style="font-family: Arial; color:var(--color-gray);">{{h_weight|slice:"0:3"}}㎏</span>
+                            {% endif %}
                         
                           </div>
                         
                           <div style="text-align:right; font-style: italic; color:var(--color-gray);">
                             <span style="font-family: Arial;">({{h_weight|slice:"4:"}})</span>
                           </div>
+                          {% endif %}
                         
                         </td>
                   
