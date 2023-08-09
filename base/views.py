@@ -48,6 +48,7 @@ from base.mysqls import (
     get_train_audit,
     get_train_horse,
     get_trainer_double_check,
+    get_trainer_trend,
     get_training,
     get_status_training,
     get_treat_horse,
@@ -595,11 +596,15 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     judged_jockey = get_judged_jockey(rcity, rdate, rno)
 
     trend_jockey = get_jockey_trend(rcity, rdate, rno)
+    trend_trainer = get_trainer_trend(rcity, rdate, rno)
 
     # print(trend_j.to_html())
 
     trend_j = trend_jockey.values.tolist()
     trend_j_title = trend_jockey.columns.tolist()
+
+    trend_t = trend_trainer.values.tolist()
+    trend_t_title = trend_trainer.columns.tolist()
 
     # print(trend_j_title)
     # print(trend_j)
@@ -655,6 +660,8 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         # ),
         "trend_j": trend_j,
         "trend_j_title": trend_j_title,
+        "trend_t": trend_t,
+        "trend_t_title": trend_t_title,
     }
 
     return render(request, "base/prediction_race.html", context)

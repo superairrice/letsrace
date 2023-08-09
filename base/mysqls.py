@@ -1105,9 +1105,15 @@ def get_last2weeks(i_rdate, i_awardee):
                   lw2_sat1, lw2_sat2, lw2_sat3, lw2_sat,
                   lw2_sun1, lw2_sun2, lw2_sun3, lw2_sun, award,
                   
-                  ( select year_per from """ + i_awardee + """_w 
-                    where wdate = ( select max(wdate) from """ + i_awardee + """_w where wdate <= '""" + i_rdate + """' ) 
-                      and """ + i_awardee + """ = aa.""" + i_awardee + """ ) year_per
+                  ( select year_1st from """ + i_awardee + """_w 
+                    where wdate = ( select max(wdate) from """ + i_awardee + """_w where wdate < '""" + i_rdate + """' ) 
+                      and """ + i_awardee + """ = aa.""" + i_awardee + """ ) year_per,
+
+                  ( select count(*) from rec011
+                    where rdate between '""" + i_rdate[0:4] + """0101'  and '""" + i_rdate + """%' 
+                    and rank = 1
+                    and alloc1r > 0 
+                    and """ + i_awardee + """ = aa.""" + i_awardee + """ ) wcnt
               from
               (
                 select b.rcity, a.rcity rcity_in, b.""" + i_awardee + """, rcnt, r1cnt, r2cnt, r3cnt, r4cnt, r5cnt, rmonth1, rmonth2, rmonth3, rdate1, rdate2, rdate3
@@ -1176,7 +1182,7 @@ def get_last2weeks(i_rdate, i_awardee):
                     and grade != '주행검사'
                   group by """ + i_awardee + """
                 ) c on aa.""" + i_awardee + """ = c.""" + i_awardee + """
-                order by rcity desc, rmonth1 + rmonth2 + rmonth3 desc
+                order by rcity desc, wcnt desc, year_per desc
                 ; """
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
@@ -1199,10 +1205,10 @@ def get_last2weeks_loadin(i_rdate):
 
         strSql = """ 
                   select 'J' flag, jockey, cast(load_in as decimal) from jockey_w 
-                  where wdate = ( select max(wdate) from jockey_w where wdate <= '""" + i_rdate + """' ) 
+                  where wdate = ( select max(wdate) from jockey_w where wdate < '""" + i_rdate + """' ) 
                   union all 
-                  select 'T', trainer, year_1st from trainer_w 
-                  where wdate = ( select max(wdate) from trainer_w where wdate <= '""" + i_rdate + """' ) 
+                  select 'T', trainer, tot_1st from trainer_w 
+                  where wdate = ( select max(wdate) from trainer_w where wdate < '""" + i_rdate + """' ) 
                 ; """
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
@@ -1783,11 +1789,14 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
         cursor = connection.cursor()
 
         strSql = """ 
-              select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, b.jockey, a.wdate, a.year_per, CONCAT(debut, ' ', age) debut
+              select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, b.jockey, a.wdate, a.year_per, CONCAT(debut, ' ', age, '_', wcnt) debut
               from
               (
                 SELECT wdate, jockey, cast( year_3per as DECIMAL(4,1))*10 year_per, tot_1st, debut, 
-                        ( select concat( max(age) , ' ', max(tot_1st) ) from The1.jockey_w c where c.jockey = d.jockey and c.wdate < '""" + i_rdate + """' ) age
+                        ( select concat( max(age) , ' ', max(tot_1st) ) from The1.jockey_w c where c.jockey = d.jockey and c.wdate < '""" + i_rdate + """' ) age,
+                        ( select count(*) from exp011 
+                            where jockey = d.jockey and r_rank = 1 
+                            and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and '""" + i_rdate + """' ) wcnt
                 FROM The1.jockey_w d
                 where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 88 DAY), '%Y%m%d') and '""" + i_rdate + """'
                 and wdate < '""" + i_rdate + """'
@@ -1807,6 +1816,68 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
     except:
         connection.rollback()
         print("Failed selecting in Jockey Trend")
+
+    # result = dict[result]
+
+    col = ['예상', '마번', '실순', '인기',
+           'horse', '기수', 'wdate', 'year_per', '데뷔']
+    data = list(result)
+    # print(data)
+
+    df = pd.DataFrame(data=data, columns=col)
+    # print(df)
+
+    pdf1 = pd.pivot_table(df,                # 피벗할 데이터프레임
+                          index=('예상', '마번', '실순', '인기',
+                                 'horse', '기수', '데뷔'),    # 행 위치에 들어갈 열
+                          columns='wdate',    # 열 위치에 들어갈 열
+                          values='year_per', aggfunc='sum')     # 데이터로 사용할 열
+
+    # pdf1.columns = ['/'.join(col) for col in pdf1.columns]
+    pdf1.columns = [''.join(col)[4:6] + '.' + ''.join(col)[6:8]
+                    for col in pdf1.columns]
+
+    # print(((pdf1)))
+
+    pdf1 = pdf1.reset_index()
+
+    # print(pdf1)
+
+    return pdf1
+
+def get_trainer_trend(i_rcity, i_rdate, i_rno):
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+              select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, b.trainer, a.wdate, a.year_per, CONCAT(debut, ' ', age, '_', wcnt) debut
+              from
+              (
+                SELECT wdate, trainer, cast( year_3per as DECIMAL(4,1))*10 year_per, tot_1st, debut, 
+                        ( select concat( max(age) , ' ', max(tot_1st) ) from The1.trainer_w c where c.trainer = d.trainer and c.wdate < '""" + i_rdate + """' ) age,
+                        ( select count(*) from exp011 
+                            where trainer = d.trainer and r_rank = 1 
+                            and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and '""" + i_rdate + """' ) wcnt
+                FROM The1.trainer_w d
+                where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 88 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                and wdate < '""" + i_rdate + """'
+              ) a  right outer join  The1.expect b  on a.trainer = b.trainer 
+              where b.rdate = '""" + i_rdate + """' and b.rcity = '""" + i_rcity + """' and b.rno = """ + str(i_rno) + """
+              order by b.rank, a.wdate desc
+              ; """
+
+        # print(strSql)
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in Trainer Trend")
 
     # result = dict[result]
 
