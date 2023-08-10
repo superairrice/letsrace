@@ -104,6 +104,7 @@
       
         <tr>
           <th rowspan="2" colspan="1"><span class="visible-small" title="Jockey">&nbsp;<br>Trainer<br>&nbsp;</span><span class="visible-big">&nbsp;<br>Trainer<br>&nbsp;</span></th>
+          <th rowspan="2" colspan="1"><span class="visible-small" title="Jockey">&nbsp;<br>조<br>&nbsp;</span><span class="visible-big">&nbsp;<br>조<br>&nbsp;</span></th>
           <th rowspan="1" colspan="3"><span class="visible-small" title="Jockey">1위 횟수</span><span class="visible-big">1위 횟수</span></th>
           <th colspan="2" align="center"><span class="visible-small" title="rmonth1">출주.</span><span class="visible-big">출주횟수</span></th>
           <th colspan="6"><span class="visible-small" title="rmonth1">상금현황.</span><span class="visible-big">최근 3개월 상금현황(백만)</span></th>
@@ -140,25 +141,40 @@
             {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 15000 and rmonth1 < rmonth2|add:rmonth3|div:2 %}
             
               {% if jname1|slice:"-2:" == awardee|slice:"-2:" or jname2|slice:"-2:" == awardee|slice:"-2:" or jname3|slice:"-2:" == awardee|slice:"-2:" %}
-              <span style="font-size:1.3rem; color:tomato; font-weight: 700;" class = "blink">{{awardee}}</span>
+              <span style="font-size:1.23rem; color:tomato; font-weight: 700;" class = "blink">{{awardee}}</span>
               {% else %}
-              <span style="font-size:1.3rem; color:tomato; font-weight: 700;">{{awardee}}</span>
+              <span style="font-size:1.23rem; color:tomato; font-weight: 700;">{{awardee}}</span>
               {% endif %}
 
             {% else %}
               {% if jname1|slice:"-2:" == awardee|slice:"-2:" or jname2|slice:"-2:" == awardee|slice:"-2:" or jname3|slice:"-2:" == awardee|slice:"-2:" %}
-              <span style="font-size:1.3rem;" class="blink">{{awardee}}</span>
+              <span style="font-size:1.23rem;" class="blink">{{awardee}}</span>
               {% else %}
-              <span style="font-size:1.3rem;">{{awardee}}</span>
+              <span style="font-size:1.23rem;">{{awardee}}</span>
               {% endif %}
             {% endif %}
             </div>
           </td>
           
           <td align="right">
-            {% for flag, jockey, load_in in loadin %}
+            {% for flag, jockey, tot_1st, load_in in loadin %}
             {% if flag == 'T' and awardee == jockey %}
-              <span style="font-family: Arial; font-size: 1.2rem; padding: 1px; border-radius: 5px; background-color: var(--color-bg); ">{{load_in}}</span>
+            <span style="font-family: Arial; font-size: 1.2rem; padding: 1px; border-radius: 5px; background-color: var(--color-bg); color: var(--color-gray);">{{load_in}}</span>
+            {% endif %}
+            {% endfor %}
+          </td>
+          
+          <td align="right">
+            
+            {% for flag, jockey, tot_1st, load_in in loadin %}
+            {% if flag == 'T' and awardee == jockey %}
+              {% if tot_1st|mod:100 >= 96 %}
+              <span style="font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r1); border-radius: 5px; background-color: var(--color-bg);">{{tot_1st}}</span>
+              {% elif tot_1st|mod:100 >= 91 and tot_1st|mod:100 < 96 %}
+              <span style="font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r3); border-radius: 5px; background-color: var(--color-bg);">{{tot_1st}}</span>
+              {% else %}
+              <span style="font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-gray); border-radius: 5px; background-color: var(--color-bg);">{{tot_1st}}</span>
+              {% endif %}
             {% endif %}
             {% endfor %}
           </td>
@@ -187,46 +203,46 @@
             {% endif %}
           </td>
           
-          <td align="center" style="font-family: Arial; font-size: 1.3rem;">{{rdate2}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem;">{{rdate3}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.23rem;">{% if rdate2 > 0 %}{{rdate2}}{% else %}-{% endif %}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.23rem;">{% if rdate3 > 0 %}{{rdate3}}{% else %}-{% endif %}</td>
           
           {% if rmonth1 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem ">0</td>
           {%else%}
             {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 10000 and rmonth1 > rmonth2|add:rmonth3|div:2 %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|intcomma}}</td>
             {% else %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-light-gray);">{{rmonth1|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-light-gray);">{{rmonth1|intcomma}}</td>
             {% endif %}
           {% endif %}
 
           {% if rmonth2 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem ">0</td>
           {%else%}
             {% if rmonth2|add:rmonth3|div:2 > 200000 and rmonth2 > 200000 %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:tomato; font-weight: 700;">{{rmonth2|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:tomato; font-weight: 700;">{{rmonth2|intcomma}}</td>
             {% else %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-light-gray);">{{rmonth2|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-light-gray);">{{rmonth2|intcomma}}</td>
             {% endif %}
           {% endif %}
 
           {% if rmonth3 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem ">0</td>
           {%else%}
             {% if rmonth2|add:rmonth3|div:2 > 200000 and rmonth3 > 200000 %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:tomato; font-weight: 700;">{{rmonth3|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:tomato; font-weight: 700;">{{rmonth3|intcomma}}</td>
             {% else %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-light-gray);">{{rmonth3|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-light-gray);">{{rmonth3|intcomma}}</td>
             {% endif %}
           {% endif %}
 
           {% if rmonth1|add:rmonth2|add:rmonth3 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem ">0</td>
           {%else%}
             {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 15000  %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</td>
             {% else %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-light-gray);">{{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-light-gray);">{{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</td>
             {% endif %}
           {% endif %}
 
@@ -234,39 +250,39 @@
           <td>-</td>
           <td>-</td>
           {%else%}
-          <td align="right" style="font-family: Arial; font-size: 1.3rem ">{{rcnt}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray); ">{{r1cnt}}-{{r2cnt}}-{{r3cnt}}-{{r4cnt}}-{{r5cnt}}</td>
+          <td align="right" style="font-family: Arial; font-size: 1.23rem ">{{rcnt}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-gray); ">{{r1cnt}}-{{r2cnt}}-{{r3cnt}}-{{r4cnt}}-{{r5cnt}}</td>
           {%endif%}
 
           {% if rmonth1|add:rmonth2|add:rmonth3 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem ">0</td>
           {%else%}
             {% if rmonth1|add:rmonth2|add:rmonth3|div:3 > 200000  %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|add:rmonth2|add:rmonth3|div:3|floatformat:0|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|add:rmonth2|add:rmonth3|div:3|floatformat:0|intcomma}}</td>
             {% else %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-light-gray);">{{rmonth1|add:rmonth2|add:rmonth3|div:3|floatformat:0|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-light-gray);">{{rmonth1|add:rmonth2|add:rmonth3|div:3|floatformat:0|intcomma}}</td>
             {% endif %}
           {% endif %}
 
           {% if award > rmonth1|add:rmonth2|add:rmonth3|div:3  %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem; color:rgb(0, 128, 255) ">{{award|floatformat:0|intcomma}}</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem; color:rgb(0, 128, 255) ">{{award|floatformat:0|intcomma}}</td>
           {% elif award < rmonth1|add:rmonth2|add:rmonth3|div:6  %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-r1) ">{{award|floatformat:0|intcomma}}</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-r1) ">{{award|floatformat:0|intcomma}}</td>
           {% else %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-light-gray) ">{{award|floatformat:0|intcomma}}</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-light-gray) ">{{award|floatformat:0|intcomma}}</td>
           {% endif %}
 
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw1_sat|add:lw1_sun}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw1_sat1|add:lw1_sun1|add:lw1_sat2|add:lw1_sun2|add:lw1_sat3|add:lw1_sun3}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray); font-style: italic; ">{{lw1_sat1|add:lw1_sun1}}-{{lw1_sat2|add:lw1_sun2}}-{{lw1_sat3|add:lw1_sun3}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw1_sat|add:lw1_sun}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw1_sat1|add:lw1_sun1|add:lw1_sat2|add:lw1_sun2|add:lw1_sat3|add:lw1_sun3}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-gray); font-style: italic; ">{{lw1_sat1|add:lw1_sun1}}-{{lw1_sat2|add:lw1_sun2}}-{{lw1_sat3|add:lw1_sun3}}</td>
 
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw2_sat|add:lw2_sun}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw2_sat1|add:lw2_sun1|add:lw2_sat2|add:lw2_sun2|add:lw2_sat3|add:lw2_sun3}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray); font-style: italic; ">{{lw2_sat1|add:lw2_sun1}}-{{lw2_sat2|add:lw2_sun2}}-{{lw2_sat3|add:lw2_sun3}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw2_sat|add:lw2_sun}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw2_sat1|add:lw2_sun1|add:lw2_sat2|add:lw2_sun2|add:lw2_sat3|add:lw2_sun3}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-gray); font-style: italic; ">{{lw2_sat1|add:lw2_sun1}}-{{lw2_sat2|add:lw2_sun2}}-{{lw2_sat3|add:lw2_sun3}}</td>
 
         </tr>
         <tr class="fold">
-          <td colspan="20">
+          <td colspan="21">
             <div class="fold-content">
               <table class="small-friendly">
                 <thead>
@@ -945,6 +961,7 @@
       
         <tr>
           <th rowspan="2" colspan="1"><span class="visible-small" title="Jockey">&nbsp;<br>Trainer<br>&nbsp;</span><span class="visible-big">&nbsp;<br>Trainer<br>&nbsp;</span></th>
+          <th rowspan="2" colspan="1"><span class="visible-small" title="Jockey">&nbsp;<br>조<br>&nbsp;</span><span class="visible-big">&nbsp;<br>조<br>&nbsp;</span></th>
           <th rowspan="1" colspan="3"><span class="visible-small" title="Jockey">1위 횟수</span><span class="visible-big">1위 횟수</span></th>
           <th colspan="2" align="center"><span class="visible-small" title="rmonth1">출주.</span><span class="visible-big">출주횟수</span></th>
           <th colspan="6"><span class="visible-small" title="rmonth1">상금현황.</span><span class="visible-big">최근 3개월 상금현황(백만)</span></th>
@@ -982,24 +999,40 @@
             {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 15000 and rmonth1 < rmonth2|add:rmonth3|div:2 %}
             
               {% if jname1|slice:"-2:" == awardee|slice:"-2:" or jname2|slice:"-2:" == awardee|slice:"-2:" or jname3|slice:"-2:" == awardee|slice:"-2:" %}
-              <span style="font-size:1.3rem; color:tomato; font-weight: 700;" class = "blink">{{awardee}}</span>
+              <span style="font-size:1.23rem; color:tomato; font-weight: 700;" class = "blink">{{awardee}}</span>
               {% else %}
-              <span style="font-size:1.3rem; color:tomato; font-weight: 700;">{{awardee}}</span>
+              <span style="font-size:1.23rem; color:tomato; font-weight: 700;">{{awardee}}</span>
               {% endif %}
 
             {% else %}
               {% if jname1|slice:"-2:" == awardee|slice:"-2:" or jname2|slice:"-2:" == awardee|slice:"-2:" or jname3|slice:"-2:" == awardee|slice:"-2:" %}
-              <span style="font-size:1.3rem;" class="blink">{{awardee}}</span>
+              <span style="font-size:1.23rem;" class="blink">{{awardee}}</span>
               {% else %}
-              <span style="font-size:1.3rem;">{{awardee}}</span>
+              <span style="font-size:1.23rem;">{{awardee}}</span>
               {% endif %}
             {% endif %}
             </div>
           </td>
+          
           <td align="right">
-            {% for flag, jockey, load_in in loadin %}
+            {% for flag, jockey, tot_1st, load_in in loadin %}
             {% if flag == 'T' and awardee == jockey %}
-              <span style="font-family: Arial; font-size: 1.2rem; padding: 1px; border-radius: 5px; background-color: var(--color-bg); ">{{load_in}}</span>
+              <span style="font-family: Arial; font-size: 1.2rem; padding: 1px; border-radius: 5px; background-color: var(--color-bg); color: var(--color-gray);">{{load_in}}</span>
+            {% endif %}
+            {% endfor %}
+          </td>
+
+          <td align="right">
+            
+            {% for flag, jockey, tot_1st, load_in in loadin %}
+            {% if flag == 'T' and awardee == jockey %}
+              {% if tot_1st|mod:100 >= 96 %}
+              <span style="font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r1); border-radius: 5px; background-color: var(--color-bg);">{{tot_1st}}</span>
+              {% elif tot_1st|mod:100 >= 91 and tot_1st|mod:100 < 96 %}
+              <span style="font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r3); border-radius: 5px; background-color: var(--color-bg);">{{tot_1st}}</span>
+              {% else %}
+              <span style="font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-gray); border-radius: 5px; background-color: var(--color-bg);">{{tot_1st}}</span>
+              {% endif %}
             {% endif %}
             {% endfor %}
           </td>
@@ -1028,46 +1061,46 @@
             {% endif %}
           </td>
           
-          <td align="center" style="font-family: Arial; font-size: 1.3rem;">{{rdate1}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem;">{{rdate3}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.23rem;">{% if rdate1 > 0 %}{{rdate1}}{% else %}-{% endif %}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.23rem;">{% if rdate3 > 0 %}{{rdate3}}{% else %}-{% endif %}</td>
           
           {% if rmonth1 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem ">0</td>
           {%else%}
             {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 10000 and rmonth1 > rmonth2|add:rmonth3|div:2 %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|intcomma}}</td>
             {% else %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-light-gray);">{{rmonth1|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-light-gray);">{{rmonth1|intcomma}}</td>
             {% endif %}
           {% endif %}
 
           {% if rmonth2 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem ">0</td>
           {%else%}
             {% if rmonth2|add:rmonth3|div:2 > 200000 and rmonth2 > 200000 %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:tomato; font-weight: 700;">{{rmonth2|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:tomato; font-weight: 700;">{{rmonth2|intcomma}}</td>
             {% else %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-light-gray);">{{rmonth2|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-light-gray);">{{rmonth2|intcomma}}</td>
             {% endif %}
           {% endif %}
 
           {% if rmonth3 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem ">0</td>
           {%else%}
             {% if rmonth2|add:rmonth3|div:2 > 200000 and rmonth3 > 200000 %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:tomato; font-weight: 700;">{{rmonth3|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:tomato; font-weight: 700;">{{rmonth3|intcomma}}</td>
             {% else %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-light-gray);">{{rmonth3|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-light-gray);">{{rmonth3|intcomma}}</td>
             {% endif %}
           {% endif %}
 
           {% if rmonth1|add:rmonth2|add:rmonth3 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem ">0</td>
           {%else%}
             {% if rmonth1|add:rmonth2|add:rmonth3|div:rcnt > 15000  %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</td>
             {% else %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-light-gray);">{{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-light-gray);">{{rmonth1|add:rmonth2|add:rmonth3|intcomma}}</td>
             {% endif %}
           {% endif %}
 
@@ -1075,39 +1108,39 @@
           <td>-</td>
           <td>-</td>
           {%else%}
-          <td align="right" style="font-family: Arial; font-size: 1.3rem ">{{rcnt}}</td>
-          <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray); ">{{r1cnt}}-{{r2cnt}}-{{r3cnt}}-{{r4cnt}}-{{r5cnt}}</td>
+          <td align="right" style="font-family: Arial; font-size: 1.23rem ">{{rcnt}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-gray); ">{{r1cnt}}-{{r2cnt}}-{{r3cnt}}-{{r4cnt}}-{{r5cnt}}</td>
           {%endif%}
 
           {% if rmonth1|add:rmonth2|add:rmonth3 == None %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem ">0</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem ">0</td>
           {%else%}
             {% if rmonth1|add:rmonth2|add:rmonth3|div:3 > 200000  %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|add:rmonth2|add:rmonth3|div:3|floatformat:0|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:rgb(0, 128, 255); font-weight: 700;">{{rmonth1|add:rmonth2|add:rmonth3|div:3|floatformat:0|intcomma}}</td>
             {% else %}
-            <td class="cur" align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-light-gray);">{{rmonth1|add:rmonth2|add:rmonth3|div:3|floatformat:0|intcomma}}</td>
+            <td class="cur" align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-light-gray);">{{rmonth1|add:rmonth2|add:rmonth3|div:3|floatformat:0|intcomma}}</td>
             {% endif %}
           {% endif %}
 
           {% if award > rmonth1|add:rmonth2|add:rmonth3|div:3  %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem; color:rgb(0, 128, 255) ">{{award|floatformat:0|intcomma}}</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem; color:rgb(0, 128, 255) ">{{award|floatformat:0|intcomma}}</td>
           {% elif award < rmonth1|add:rmonth2|add:rmonth3|div:6  %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-r1) ">{{award|floatformat:0|intcomma}}</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-r1) ">{{award|floatformat:0|intcomma}}</td>
           {% else %}
-            <td align="right" style="font-family: Arial; font-size: 1.3rem; color:var(--color-light-gray) ">{{award|floatformat:0|intcomma}}</td>
+            <td align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-light-gray) ">{{award|floatformat:0|intcomma}}</td>
           {% endif %}
 
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw1_fri|add:lw1_sun}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw1_fri1|add:lw1_sun1|add:lw1_fri2|add:lw1_sun2|add:lw1_fri3|add:lw1_sun3}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray); font-style: italic; ">{{lw1_fri1|add:lw1_sun1}}-{{lw1_fri2|add:lw1_sun2}}-{{lw1_fri3|add:lw1_sun3}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw1_fri|add:lw1_sun}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw1_fri1|add:lw1_sun1|add:lw1_fri2|add:lw1_sun2|add:lw1_fri3|add:lw1_sun3}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-gray); font-style: italic; ">{{lw1_fri1|add:lw1_sun1}}-{{lw1_fri2|add:lw1_sun2}}-{{lw1_fri3|add:lw1_sun3}}</td>
 
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw2_fri|add:lw2_sun}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-main-light); font-style: italic; ">{{lw2_fri1|add:lw2_sun1|add:lw2_fri2|add:lw2_sun2|add:lw2_fri3|add:lw2_sun3}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color:var(--color-gray); font-style: italic; ">{{lw2_fri1|add:lw2_sun1}}-{{lw2_fri2|add:lw2_sun2}}-{{lw2_fri3|add:lw2_sun3}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw2_fri|add:lw2_sun}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw2_fri1|add:lw2_sun1|add:lw2_fri2|add:lw2_sun2|add:lw2_fri3|add:lw2_sun3}}</td>
+            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-gray); font-style: italic; ">{{lw2_fri1|add:lw2_sun1}}-{{lw2_fri2|add:lw2_sun2}}-{{lw2_fri3|add:lw2_sun3}}</td>
 
         </tr>
         <tr class="fold">
-          <td colspan="20">
+          <td colspan="21">
             <div class="fold-content">
               <table class="small-friendly">
                 <thead>

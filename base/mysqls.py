@@ -1204,11 +1204,13 @@ def get_last2weeks_loadin(i_rdate):
         cursor = connection.cursor()
 
         strSql = """ 
-                  select 'J' flag, jockey, cast(load_in as decimal) from jockey_w 
-                  where wdate = ( select max(wdate) from jockey_w where wdate < '""" + i_rdate + """' ) 
-                  union all 
-                  select 'T', trainer, tot_1st from trainer_w 
-                  where wdate = ( select max(wdate) from trainer_w where wdate < '""" + i_rdate + """' ) 
+                    select 'J' flag, jockey, tot_1st, cast(load_in as decimal) 
+                    from jockey_w 
+                    where wdate = ( select max(wdate) from jockey_w where wdate < '""" + i_rdate + """' ) 
+                    union all 
+                    select 'T', trainer, tot_1st, team
+                    from trainer_w 
+                    where wdate = ( select max(wdate) from trainer_w where wdate < '""" + i_rdate + """' ) 
                 ; """
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
