@@ -94,8 +94,8 @@ def get_judged_jockey(rcity, rdate, rno):
 
         strSql = """ 
               SELECT distinct a.rank, a.gate, a.horse, b.rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
-                FROM The1.exp011     a,
-                      The1.rec015     b
+                FROM exp011     a,
+                      rec015     b
                 where a.jockey = b.jockey 
                 AND b.t_sort = '기수'
                 AND b.rdate between date_format(DATE_ADD('""" + rdate + """', INTERVAL - 100 DAY), '%Y%m%d') and '""" + rdate + """'
@@ -107,8 +107,8 @@ def get_judged_jockey(rcity, rdate, rno):
             #   union
 
             #   SELECT distinct a.rank, a.gate, a.horse, b.rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
-            #     FROM The1.exp011     a,
-            #           The1.rec015     b
+            #     FROM exp011     a,
+            #           rec015     b
             #     where a.jockey = b.jockey 
             #     AND b.t_sort = '조교사'
             #     AND b.rdate between date_format(DATE_ADD('""" + rdate + """', INTERVAL - 100 DAY), '%Y%m%d') and '""" + rdate + """'
@@ -138,8 +138,8 @@ def get_judged_horse(rcity, rdate, rno):
 
         strSql = """ 
               SELECT distinct a.rank, a.gate, a.horse, b.rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
-                FROM The1.exp011     a,
-                      The1.rec015     b
+                FROM exp011     a,
+                      rec015     b
                 where a.horse = b.horse 
                 AND b.rdate between date_format(DATE_ADD('""" + rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and '""" + rdate + """'
                 AND a.rcity = '""" + rcity + """'
@@ -449,7 +449,7 @@ def get_training(i_rcity, i_rdate, i_rno):
                           if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 12 DAY), '%Y%m%d'), substr(t_time,3,2), 0 ) d12,
                           if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 13 DAY), '%Y%m%d'), substr(t_time,3,2), 0 ) d13,
                           if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d'), substr(t_time,3,2), 0 ) d14
-                        from training a right outer join  ( select gate, rank, horse, jockey, trainer from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.horse = b.horse
+                        from training a right outer join  ( select gate, rank, horse, jockey, trainer from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.horse = b.horse
                         and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d') and '""" + i_rdate + """'
                       ) a
                       group by gate, rank, horse, jockey, trainer
@@ -550,7 +550,7 @@ def get_train(i_rcity, i_rdate, i_rno):
                           if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 12 DAY), '%Y%m%d'), strong, 0 ) s12,
                           if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 13 DAY), '%Y%m%d'), strong, 0 ) s13,
                           if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d'), strong, 0 ) s14
-                        from train a right outer join  ( select gate, rank, horse, jockey, trainer from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.horse = b.horse
+                        from train a right outer join  ( select gate, rank, horse, jockey, trainer from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.horse = b.horse
                         and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d') and '""" + i_rdate + """'
                       ) a
                       group by gate, rank, horse, jockey, trainer
@@ -585,7 +585,7 @@ def get_train_audit(i_rcity, i_rdate, i_rno):
                                 rider_k		rider_k,
                                 judge		judge, 
                                 tdate		tdate
-                            from The1.start_train
+                            from start_train
                           where tdate between DATE_FORMAT( subdate( str_to_date( '""" + i_rdate + """', '%Y%m%d' ) , 100 ),'%Y%m%d')  and '""" + i_rdate + """' 
                           union all
                           select '발주심사'		s_audit,
@@ -594,9 +594,9 @@ def get_train_audit(i_rcity, i_rdate, i_rno):
                                 rider_k		rider_k,
                                 judge		judge, 
                                 rdate		tdate
-                            from The1.start_audit
+                            from start_audit
                           where rdate between DATE_FORMAT( subdate( str_to_date( '""" + i_rdate + """', '%Y%m%d' ) , 100 ),'%Y%m%d')  and '""" + i_rdate + """' 
-                        ) a right outer join  ( select gate, rank, r_rank, horse, jockey, trainer from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.horse = b.horse
+                        ) a right outer join  ( select gate, rank, r_rank, horse, jockey, trainer from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.horse = b.horse
                       order by rank, tdate desc
                         ;"""
 
@@ -697,8 +697,8 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), strong, 0 ) s14
                         from train a ,
                             ( select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight, distance
-                                from The1.expect  
-                              where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) ) b 
+                                from expect  
+                              where horse in ( select horse from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) ) b 
                         where a.horse = b.horse
                         and tdate between date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d') and rdate
                       ) a
@@ -801,8 +801,8 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
 #                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), strong, 0 ) s14
 #                         from train a ,
 #                             ( select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight
-#                                 from The1.exp011
-#                               where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) ) b
+#                                 from exp011
+#                               where horse in ( select horse from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) ) b
 #                         where a.horse = b.horse
 #                         and tdate between date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d') and rdate
 #                       ) a
@@ -862,8 +862,8 @@ def get_swim_horse(i_rcity, i_rdate, i_rno):
                             if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), laps, 0 ) s14
                         from swim a ,
                             ( select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight
-                                from The1.exp011 
-                                where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) ) b 
+                                from exp011 
+                                where horse in ( select horse from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) ) b 
                         where a.horse = b.horse
                         and tdate between date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d') and rdate
                         ) a
@@ -892,7 +892,7 @@ def get_swim_horse(i_rcity, i_rdate, i_rno):
 #         strSql = """ 
 #                     select distinct horse, tdate, team, hospital, disease
 #                     from treat a 
-#                     where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
+#                     where horse in ( select horse from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
 #                     and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 60 DAY), '%Y%m%d') and '""" + i_rdate + """'
 #                     order by  a.horse, a.tdate desc
 #             ;"""
@@ -923,27 +923,27 @@ def get_treat_horse(i_rcity, i_rdate, i_rno):
                     (
                         select distinct  horse, tdate, if( length(disease) > 2, trim(disease), trim(hospital) ) disease, '' laps,  '' t_time, '' canter,  '' strong, '' audit, '' rider, '' judge
                         from treat 
-                        where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
+                        where horse in ( select horse from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
                         and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 60 DAY), '%Y%m%d') and '""" + i_rdate + """'
                         union all
                         select horse, tdate, '', laps, '', '', '', '', '', ''
                         from swim 
-                        where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
+                        where horse in ( select horse from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
                         and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 60 DAY), '%Y%m%d') and '""" + i_rdate + """'
                         union all
                         select horse, tdate, '', '', t_time, canter, strong, '', '', ''
                         from train 
-                        where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
+                        where horse in ( select horse from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
                         and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 60 DAY), '%Y%m%d') and '""" + i_rdate + """'
                         union all
                         select horse, tdate, '', '', '', '', '', '출발', rider, judge
                         from start_train 
-                        where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
+                        where horse in ( select horse from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
                         and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 60 DAY), '%Y%m%d') and '""" + i_rdate + """'
                         union all
                         select horse, rdate, '', '', '', '', '', '발주', rider, judge
                         from start_audit 
-                        where horse in ( select horse from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
+                        where horse in ( select horse from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
                         and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 60 DAY), '%Y%m%d') and '""" + i_rdate + """'
                     ) a
                     group by horse, tdate
@@ -1012,7 +1012,7 @@ def get_award_race(i_rcity, i_rdate, i_rno, i_awardee):
                             sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -2 MONTH) , '%Y%m%d'), 1, 6), award, 0)) j_rmonth3,
                             '' trainer, 0 t_rcnt, 0 t_rmonth1, 0 t_rmonth2, 0 t_rmonth3,
                             '' host, 0 h_rcnt, 0 h_rmonth1, 0 h_rmonth2, 0 h_rmonth3
-                    from award a right outer join  ( select gate, rank, jockey from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.jockey = b.jockey
+                    from award a right outer join  ( select gate, rank, jockey from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.jockey = b.jockey
                     and rmonth between substr(date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 MONTH), '%Y%m%d'), 1, 6) and substr('""" + i_rdate + """', 1, 6)
                     group by jockey, gate, rank
                     
@@ -1024,7 +1024,7 @@ def get_award_race(i_rcity, i_rdate, i_rno, i_awardee):
                             sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -1 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth2,
                             sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -2 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth3,
                             '', 0, 0, 0, 0
-                    from award a right outer join  ( select gate, rank, trainer from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.trainer = b.trainer
+                    from award a right outer join  ( select gate, rank, trainer from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.trainer = b.trainer
                     and rmonth between substr(date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 MONTH), '%Y%m%d'), 1, 6) and substr('""" + i_rdate + """', 1, 6)
                     group by trainer, gate, rank
 
@@ -1034,7 +1034,7 @@ def get_award_race(i_rcity, i_rdate, i_rno, i_awardee):
                             sum( if( rmonth = substr( '""" + i_rdate + """', 1, 6), award, 0 )) rmonth1,
                             sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -1 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth2,
                             sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -2 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth3
-                    from award a right outer join  ( select gate, rank, host from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.host = b.host
+                    from award a right outer join  ( select gate, rank, host from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.host = b.host
                     and rmonth between substr(date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 MONTH), '%Y%m%d'), 1, 6) and substr('""" + i_rdate + """', 1, 6)
                     group by host, gate, rank
                   ) a
@@ -1050,7 +1050,7 @@ def get_award_race(i_rcity, i_rdate, i_rno, i_awardee):
                             sum( if( rmonth = substr( '""" + i_rdate + """', 1, 6), award, 0 )) rmonth1,
                             sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -1 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth2,
                             sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -2 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth3
-                    from award a right outer join  ( select gate, jockey from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.jockey = b.jockey
+                    from award a right outer join  ( select gate, jockey from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.jockey = b.jockey
                     and rmonth between substr(date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 MONTH), '%Y%m%d'), 1, 6) and substr('""" + i_rdate + """', 1, 6)
                     group by jockey, gate
                     
@@ -1060,7 +1060,7 @@ def get_award_race(i_rcity, i_rdate, i_rno, i_awardee):
                             sum( if( rmonth = substr( '""" + i_rdate + """', 1, 6), award, 0 )) rmonth1,
                             sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -1 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth2,
                             sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -2 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth3
-                    from award a right outer join  ( select gate, trainer from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.trainer = b.trainer
+                    from award a right outer join  ( select gate, trainer from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.trainer = b.trainer
                     and rmonth between substr(date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 MONTH), '%Y%m%d'), 1, 6) and substr('""" + i_rdate + """', 1, 6)
                     group by trainer, gate
 
@@ -1070,7 +1070,7 @@ def get_award_race(i_rcity, i_rdate, i_rno, i_awardee):
                             sum( if( rmonth = substr( '""" + i_rdate + """', 1, 6), award, 0 )) rmonth1,
                             sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -1 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth2,
                             sum( if( rmonth = substr( date_format( DATE_ADD( '""" + i_rdate + """', INTERVAL -2 MONTH) , '%Y%m%d'), 1, 6), award, 0)) rmonth3
-                    from award a right outer join  ( select gate, host from The1.exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.host = b.host
+                    from award a right outer join  ( select gate, host from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """) b on a.host = b.host
                     and rmonth between substr(date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 MONTH), '%Y%m%d'), 1, 6) and substr('""" + i_rdate + """', 1, 6)
                     group by host, gate
                   ) a
@@ -1177,7 +1177,7 @@ def get_last2weeks(i_rdate, i_awardee):
                       if(a.rank = 3, r3award + sub3award, 0) +
                       if(a.rank = 4, r4award, 0) +
                       if(a.rank = 5, r5award, 0) ) award
-                    from The1.record a
+                    from record a
                   where rdate between DATE_FORMAT(CAST('""" + i_rdate + """' AS DATE) - INTERVAL 14 DAY,  '%Y%m%d') and  DATE_FORMAT(CAST('""" + i_rdate + """' AS DATE) - INTERVAL 1 DAY,  '%Y%m%d')
                     and grade != '주행검사'
                   group by """ + i_awardee + """
@@ -1280,7 +1280,7 @@ def get_status_training(i_rdate):
                         from training a right outer join  
                         ( 
                           select rcity, rdate, rday, rno, trainer, jockey, jt_per, gate, rank, r_rank, r_pop, horse, handycap
-                            from The1.expect 
+                            from expect 
                           where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
                         ) b on a.horse = b.horse
                         and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d') and '""" + i_rdate + """'
@@ -1387,7 +1387,7 @@ def get_status_train(i_rdate):
                         from train a right outer join  
                         ( 
                           select rcity, rdate, rday, rno, trainer, jockey, jt_per, gate, rank, r_rank, r_pop, horse, handycap
-                            from The1.expect 
+                            from expect 
                           where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
                         ) b on a.horse = b.horse
                         and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d') and '""" + i_rdate + """'
@@ -1424,7 +1424,7 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
                         SELECT jockey, sum( if( rank = 1, 1, 0 )) r1_1, sum( if( rank = 2, 1, 0 )) r1_2, sum( if( rank = 3, 1, 0 )) r1_3, count(*) r1_cnt,
                                     0 r3_1, 0 r3_2, 0 r3_3, 0 r3_cnt,
                                     0 gt_1, 0 gt_2, 0 gt_3, 0 gt_cnt
-                        FROM The1.rec011 a
+                        FROM rec011 a
                         where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d')
                         and pop_rank = 1
                         group by jockey 
@@ -1434,7 +1434,7 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
                         SELECT jockey, 0, 0, 0, 0,
                                         sum( if( rank = 1, 1, 0 )) r1, sum( if( rank = 2, 1, 0 )) r2, sum( if( rank = 3, 1, 0 )) r3, count(*) rcnt,
                                         0, 0, 0, 0
-                        FROM The1.rec011 a
+                        FROM rec011 a
                         where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d')
                         and alloc3r <= 1.9 /* 연식 1.9이하 인기마 */
                         
@@ -1446,17 +1446,17 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
                         from
                         (
                           SELECT jockey, gate, sum( if( rank = 1, 1, 0 )) r1_1, sum( if( rank = 2, 1, 0 )) r1_2, sum( if( rank = 3, 1, 0 )) r1_3, count(*) r1_cnt
-                          FROM The1.record 
+                          FROM record 
                           where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d')
                           and grade != '주행검사'
                           group by jockey , gate	
-                          ) a  right outer join  The1.exp011 b  on a.jockey = b.jockey and a.gate = b.gate
+                          ) a  right outer join  exp011 b  on a.jockey = b.jockey and a.gate = b.gate
                         where b.rcity =  '""" + i_rcity + """'
                           and b.rdate = '""" + i_rdate + """'
                           and b.rno =  """ + str(i_rno) + """
 
 
-                      ) a  right outer join  The1.exp011 b  on a.jockey = b.jockey
+                      ) a  right outer join  exp011 b  on a.jockey = b.jockey
                     where b.rcity =  '""" + i_rcity + """'
                       and b.rdate = '""" + i_rdate + """'
                       and b.rno =  """ + str(i_rno) + """
@@ -1492,7 +1492,7 @@ def get_popularity_rate_t(i_rcity, i_rdate, i_rno):
                         SELECT trainer, sum( if( rank = 1, 1, 0 )) r1_1, sum( if( rank = 2, 1, 0 )) r1_2, sum( if( rank = 3, 1, 0 )) r1_3, count(*) r1_cnt,
                                     0 r3_1, 0 r3_2, 0 r3_3, 0 r3_cnt,
                                     0 gt_1, 0 gt_2, 0 gt_3, 0 gt_cnt
-                        FROM The1.rec011 a
+                        FROM rec011 a
                         where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d')
                         and pop_rank = 1
                         group by trainer 
@@ -1502,7 +1502,7 @@ def get_popularity_rate_t(i_rcity, i_rdate, i_rno):
                         SELECT trainer, 0, 0, 0, 0,
                                         sum( if( rank = 1, 1, 0 )) r1, sum( if( rank = 2, 1, 0 )) r2, sum( if( rank = 3, 1, 0 )) r3, count(*) rcnt,
                                         0, 0, 0, 0
-                        FROM The1.rec011 a
+                        FROM rec011 a
                         where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d')
                         and alloc3r <= 1.9 /* 연식 1.9이하 인기마 */
                         
@@ -1514,17 +1514,17 @@ def get_popularity_rate_t(i_rcity, i_rdate, i_rno):
                         from
                         (
                           SELECT trainer, gate, sum( if( rank = 1, 1, 0 )) r1_1, sum( if( rank = 2, 1, 0 )) r1_2, sum( if( rank = 3, 1, 0 )) r1_3, count(*) r1_cnt
-                          FROM The1.record 
+                          FROM record 
                           where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d')
                           and grade != '주행검사'
                           group by trainer , gate	
-                          ) a  right outer join  The1.exp011 b  on a.trainer = b.trainer and a.gate = b.gate
+                          ) a  right outer join  exp011 b  on a.trainer = b.trainer and a.gate = b.gate
                         where b.rcity =  '""" + i_rcity + """'
                           and b.rdate = '""" + i_rdate + """'
                           and b.rno =  """ + str(i_rno) + """
 
 
-                      ) a  right outer join  The1.exp011 b  on a.trainer = b.trainer
+                      ) a  right outer join  exp011 b  on a.trainer = b.trainer
                     where b.rcity =  '""" + i_rcity + """'
                       and b.rdate = '""" + i_rdate + """'
                       and b.rno =  """ + str(i_rno) + """
@@ -1573,8 +1573,9 @@ def get_print_prediction(i_rcity, i_rdate):
 
         strSql = """
                 select rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex,
-                      ( select complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = 5 ) complex5, 
-                      ( select i_complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = a.rank + 1 ) - i_complex, cast(jt_per as decimal) jt_per
+
+                    complex5, gap,
+                    cast(jt_per as decimal) jt_per
                   from expect a
                 where rcity = '""" + i_rcity + """'
                   and rdate = '""" + i_rdate + """' 
@@ -1795,14 +1796,14 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
               from
               (
                 SELECT wdate, jockey, cast( year_3per as DECIMAL(4,1))*10 year_per, tot_1st, debut, 
-                        ( select concat( max(age) , ' ', max(tot_1st) ) from The1.jockey_w c where c.jockey = d.jockey and c.wdate < '""" + i_rdate + """' ) age,
+                        ( select concat( max(age) , ' ', max(tot_1st) ) from jockey_w c where c.jockey = d.jockey and c.wdate < '""" + i_rdate + """' ) age,
                         ( select count(*) from exp011 
                             where jockey = d.jockey and r_rank = 1 
                             and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and '""" + i_rdate + """' ) wcnt
-                FROM The1.jockey_w d
+                FROM jockey_w d
                 where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 88 DAY), '%Y%m%d') and '""" + i_rdate + """'
                 and wdate < '""" + i_rdate + """'
-              ) a  right outer join  The1.expect b  on a.jockey = b.jockey 
+              ) a  right outer join  expect b  on a.jockey = b.jockey 
               where b.rdate = '""" + i_rdate + """' and b.rcity = '""" + i_rcity + """' and b.rno = """ + str(i_rno) + """
               order by b.rank, a.wdate desc
               ; """
@@ -1857,14 +1858,14 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
               from
               (
                 SELECT wdate, trainer, cast( year_3per as DECIMAL(4,1))*10 year_per, tot_1st, debut, 
-                        ( select concat( max(age) , ' ', max(tot_1st) ) from The1.trainer_w c where c.trainer = d.trainer and c.wdate < '""" + i_rdate + """' ) age,
+                        ( select concat( max(age) , ' ', max(tot_1st) ) from trainer_w c where c.trainer = d.trainer and c.wdate < '""" + i_rdate + """' ) age,
                         ( select count(*) from exp011 
                             where trainer = d.trainer and r_rank = 1 
                             and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and '""" + i_rdate + """' ) wcnt
-                FROM The1.trainer_w d
+                FROM trainer_w d
                 where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 88 DAY), '%Y%m%d') and '""" + i_rdate + """'
                 and wdate < '""" + i_rdate + """'
-              ) a  right outer join  The1.expect b  on a.trainer = b.trainer 
+              ) a  right outer join  expect b  on a.trainer = b.trainer 
               where b.rdate = '""" + i_rdate + """' and b.rcity = '""" + i_rcity + """' and b.rno = """ + str(i_rno) + """
               order by b.rank, a.wdate desc
               ; """

@@ -176,6 +176,8 @@ class Exp011(models.Model):
         max_digits=4, decimal_places=1, blank=True, null=True
     )
     reason = models.CharField(max_length=45, blank=True, null=True)
+    complex5 = models.CharField(max_length=6, blank=True, null=True)
+    gap = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = True

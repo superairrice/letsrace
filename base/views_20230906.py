@@ -525,15 +525,15 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     else:
         return render(request, "base/home.html")
 
-    # if exp011s.values("rank")[4].get("rank") > 90:  # 신마일경우 skip
-    #     complex5 = "0:00.0"
-    # else:
-    #     complex5 = exp011s.values("complex")[4]
+    if exp011s.values("rank")[4].get("rank") > 90:  # 신마일경우 skip
+        complex5 = "0:00.0"
+    else:
+        complex5 = exp011s.values("complex")[4]
 
-    #     if complex5:
-    #         pass
-    #     else:
-    #         return render(request, "base/home.html")
+        if complex5:
+            pass
+        else:
+            return render(request, "base/home.html")
 
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
@@ -566,7 +566,6 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         Max("jt_per"),
         Min("recent5"),
         Min("recent3"),
-        Min("convert_r"),
     )
 
     try:
@@ -632,7 +631,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     context = {
         "exp011s": exp011s,
         "r_condition": r_condition,
-        # "complex5": complex5,
+        "complex5": complex5,
         "hr_records": hr_records,
         "compare_r": compare_r,
         "alloc": alloc,
