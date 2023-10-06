@@ -41,8 +41,8 @@
   <ul class="tabs2" style="font-size:1.4rem">
     <li class="tab-link current" data-tab="tab-left1" style="padding: 6px 12px;">금</li>
     <li class="tab-link" data-tab="tab-left2" style="padding: 6px 12px;">토</li>
-    <li class="tab-link" data-tab="tab-left3" style="padding: 6px 12px;">일(서울)</li>
-    <li class="tab-link" data-tab="tab-left4" style="padding: 6px 12px;">일(부산)</li>
+    <li class="tab-link" data-tab="tab-left3" style="padding: 6px 12px;">일</li>
+    <li class="tab-link" data-tab="tab-left4" style="padding: 6px 12px;">월</li>
   </ul>
 
   <div id="tab-left1" class="tab-content2 current">
@@ -292,13 +292,18 @@
       </thead>
       <tbody>
 
-        {% for rcity, rdate, rno, rday, rseq,distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime, r1award, r2award, r3award, r4award, r5award, sub1award, sub2award, sub3award, rcnt in racings %}
-        {% if rday == '일' and rcity == '서울' %}
+        {% for rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime, r1award, r2award, r3award, r4award, r5award, sub1award, sub2award, sub3award, rcnt in racings %}
+        {% if rday == '일' %}
         
         <tr class="view">
           <td align="center" >
-            <div style="font-size: 0.9rem;">{{rcity|slice:"0:1"}}</div>
-            <div style="font-size: 0.9rem;">{{rcity|slice:"1:2"}}</div>
+            {% if rcity == '부산' %}
+            <div style="font-size: 0.9rem; color:aqua;">{{rcity|slice:"0:1"}}</div>
+            <div style="font-size: 0.9rem; color:aqua;">{{rcity|slice:"1:2"}}</div>
+            {% else %}
+            <div style="font-size: 0.9rem; color: var(--color-r3);">{{rcity|slice:"0:1"}}</div>
+            <div style="font-size: 0.9rem; color: var(--color-r3);">{{rcity|slice:"1:2"}}</div>
+            {% endif %}
           </td>
           <td align="center" >
             <a href="{% url 'prediction_race' rcity rdate rno 0 'awardee' %}">
@@ -404,10 +409,10 @@
       <tbody>
 
         {% for rcity, rdate, rno, rday, rseq,distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime, r1award, r2award, r3award, r4award, r5award, sub1award, sub2award, sub3award, rcnt in racings %}
-        {% if rday == '일' and rcity == '부산' %}
+        {% if rday == '월'  %}
         
         <tr class="view">
-          <td align="center" >
+          <td align="center">
             <div style="font-size: 0.9rem;">{{rcity|slice:"0:1"}}</div>
             <div style="font-size: 0.9rem;">{{rcity|slice:"1:2"}}</div>
           </td>
