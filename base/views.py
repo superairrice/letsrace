@@ -444,7 +444,9 @@ def home(request):
     #     Q(jockey6__icontains=q) |
     #     Q(jockey7__icontains=q)).order_by('rdate', 'rcity', 'rno')
 
-    race, expects, award_j = get_prediction(i_rdate)
+    race, expects, award_j, rdays = get_prediction(i_rdate)
+
+    # print(rdays)
 
     name = get_client_ip(request)
 
@@ -478,7 +480,7 @@ def home(request):
         "race": race,
         "q": q,
         "t_count": t_count,
-        #    'u_count': u_count,
+        "rdays": rdays,
     }
 
     return render(request, "base/home.html", context)
@@ -1173,11 +1175,10 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
         judged = judged[0][0]
 
     # lst = judged).split('●')
-                            
+
     # for i in range(1,len(lst)):             # 첫번째 라인 스킵
     #     str1 = lst[i].replace(' ', '')
     #     print(str1)
-
 
     horses = Exp011.objects.values("horse").filter(rcity=rcity1, rdate=rdate1, rno=rno1)
 

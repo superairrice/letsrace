@@ -1679,8 +1679,29 @@ def get_prediction(i_rdate):
         print("Failed selecting in BookListView")
     # print(r_cnt)
     # print(type(weeks[0]))
+    
+    try:
+        cursor = connection.cursor()
 
-    return race, expects, award_j
+        strSql = """ 
+                select a.rdate, a.rday, date_format( curdate(), '%Y%m%d' ), rcity
+                from exp010 a
+                where a.rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 4 DAY), '%Y%m%d')
+                group by a.rdate, a.rday, a.rcity
+                order by a.rdate, a.rday, a.rcity desc 
+                ; """
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        rdays = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting rdays")
+
+    return race, expects, award_j, rdays
 
 
 def get_report_code(i_rcity, i_rdate, i_rno):

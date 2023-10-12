@@ -210,7 +210,7 @@ WSGI_APPLICATION = "letsrace.wsgi.application"
 # DATABASES = {
 #     "default": {
 #         "ENGINE": "django.db.backends.mysql",  # [1]
-#         "NAME": "The2",  # [2]
+#         "NAME": "The1",  # [2]
 #         "USER": "letslove",  # [3]
 #         "PASSWORD": "Ruddksp!23",  # [4]
 #         "HOST": "super007.synology.me",  # [5]
@@ -219,9 +219,9 @@ WSGI_APPLICATION = "letsrace.wsgi.application"
 #         "PORT": "3307",  # [6]
 #     }
 # }
-# DEBUG = True
+DEBUG = True
 
-DEBUG = False
+# DEBUG = False
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",  # [1]
