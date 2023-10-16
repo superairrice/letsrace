@@ -446,7 +446,14 @@ def home(request):
 
     race, expects, award_j, rdays = get_prediction(i_rdate)
 
-    # print(rdays)
+    rflag = False       # 경마일, 비경마일 구분
+    for r in rdays:
+        print(r[0], r[2])
+        if r[0] == r[2]:
+            rflag = True
+            break
+
+    # print(rflag)
 
     name = get_client_ip(request)
 
@@ -481,6 +488,7 @@ def home(request):
         "q": q,
         "t_count": t_count,
         "rdays": rdays,
+        "rflag": rflag,     # 경마일, 비경마일 구분
     }
 
     return render(request, "base/home.html", context)

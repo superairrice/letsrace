@@ -4,16 +4,16 @@
 
 <div clss="roomListRoom">
 
-  <!-- <ul class="tabs">
+  {% if rflag == False %}
+  <ul class="tabs">
     <li class="tab-link current" data-tab="tab-1" style="padding: 6px 25px;">금</li>
     <li class="tab-link" data-tab="tab-2" style="padding: 6px 25px;">토</li>
     <li class="tab-link" data-tab="tab-3" style="padding: 6px 25px;">일(서울)</li>
     <li class="tab-link" data-tab="tab-4" style="padding: 6px 25px;">일(부산)</li>
-    <li class="tab-link" data-tab="tab-5" style="padding: 6px 25px;">월</li>
-  </ul> -->
+    {% if rdays.4.0 %}<li class="tab-link" data-tab="tab-5" style="padding: 6px 25px;">월</li>{% endif %} {# 월요일 경마 에외처리 20231009 only #}
+  </ul>
 
-
-
+  {% else %}
 
   <ul class="tabs">
     {% for rdate, rday, today, rcity in rdays %}
@@ -21,8 +21,9 @@
     {% endfor %}
 
   </ul>
+  {% endif %}
 
-  <div id="tab-1" class="tab-content {% if rdays.0.0  == rdays.0.2 %}current{% endif %} ">
+  <div id="tab-1" class="tab-content {% if rdays.0.0  == rdays.0.2 or rflag == False %}current{% endif %} "> {# 경마일 당일 이거나 비경마일이면 current tab #}
 
     <table class="rwd-table" style="background-color: var(--color-dark);">
       
@@ -851,7 +852,7 @@
     
   </div>
 
-  <div id="tab-4" class="tab-content {% if rdays.2.0  == rdays.0.2 and rdays.2.3 == '서울' %}current{% endif %}">
+  <div id="tab-4" class="tab-content">
 
     <table class="rwd-table" style="background-color: var(--color-dark);">
     
@@ -1128,7 +1129,7 @@
     
   </div>
 
-  <div id="tab-5" class="tab-content {% if rdays.3.0  == rdays.0.2 %}current{% endif %}">
+  <div id="tab-5" class="tab-content">
 
     <table class="rwd-table" style="background-color: var(--color-dark);">
     
