@@ -709,6 +709,8 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
+        
+        # print(strSql)
 
         connection.commit()
         connection.close()
@@ -925,27 +927,27 @@ def get_treat_horse(i_rcity, i_rdate, i_rno):
                         select distinct  horse, tdate, if( length(disease) > 2, trim(disease), trim(hospital) ) disease, '' laps,  '' t_time, '' canter,  '' strong, '' audit, '' rider, '' judge
                         from treat 
                         where horse in ( select horse from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
-                        and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 100 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                        and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 99 DAY), '%Y%m%d') and '""" + i_rdate + """'
                         union all
                         select horse, tdate, '', laps, '', '', '', '', '', ''
                         from swim 
                         where horse in ( select horse from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
-                        and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 100 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                        and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 99 DAY), '%Y%m%d') and '""" + i_rdate + """'
                         union all
                         select horse, tdate, '', '', t_time, canter, strong, '', '', ''
                         from train 
                         where horse in ( select horse from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
-                        and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 100 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                        and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 99 DAY), '%Y%m%d') and '""" + i_rdate + """'
                         union all
                         select horse, tdate, '', '', '', '', '', '출발', rider, judge
                         from start_train 
                         where horse in ( select horse from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
-                        and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 100 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                        and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 99 DAY), '%Y%m%d') and '""" + i_rdate + """'
                         union all
                         select horse, rdate, '', '', '', '', '', '발주', rider, judge
                         from start_audit 
                         where horse in ( select horse from exp011 where rdate = '""" + i_rdate + """' and rcity = '""" + i_rcity + """' and rno = """ + str(i_rno) + """ )
-                        and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 100 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                        and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 99 DAY), '%Y%m%d') and '""" + i_rdate + """'
                     ) a
                     group by horse, tdate
                     order by tdate desc

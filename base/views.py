@@ -78,6 +78,7 @@ from .models import (
     JockeyW,
     JtRate,
     Message,
+    PRecord,
     RaceResult,
     Racing,
     Rec010,
@@ -446,7 +447,7 @@ def home(request):
 
     race, expects, award_j, rdays = get_prediction(i_rdate)
 
-    rflag = False       # 경마일, 비경마일 구분
+    rflag = False  # 경마일, 비경마일 구분
     for r in rdays:
         print(r[0], r[2])
         if r[0] == r[2]:
@@ -488,7 +489,7 @@ def home(request):
         "q": q,
         "t_count": t_count,
         "rdays": rdays,
-        "rflag": rflag,     # 경마일, 비경마일 구분
+        "rflag": rflag,  # 경마일, 비경마일 구분
     }
 
     return render(request, "base/home.html", context)
@@ -551,7 +552,9 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     #     rdate__lt=rdate, horse=horse.horse).order_by('-rdate')
 
     hr_records = RecordS.objects.filter(
-        rdate__lt=rdate, horse__in=exp011s.values("horse")
+        # hr_records = PRecord.objects.filter(
+        rdate__lt=rdate,
+        horse__in=exp011s.values("horse"),
     ).order_by("horse", "-rdate")
 
     # hr_pedigree = Exp012.objects.filter(
