@@ -1055,7 +1055,7 @@
         
           </thead>
           <tbody>
-            {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight, distance, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14, laps in train %}
+            {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight, distance, grade, rating, dividing, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14, laps in train %}
 
             {% if rdate == r_condition.rdate %}
             
@@ -1685,19 +1685,53 @@
                     
                     </thead>
                     <tbody>
-                      {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, hname, jockey, trainer, j_per, t_per, jt_per, h_weight, distance, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14, laps in train %}
+                      {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, hname, jockey, trainer, j_per, t_per, jt_per, h_weight, distance, grade, rating, dividing, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14, laps in train %}
                       {% if r_condition.rdate >= rdate and horse == hname %}
                   
                       <tr>
                         <td align="center">
                           
-                          <a style="text-decoration:underline" href="{% url 'race_result' rcity rdate rno horse r_condition.rcity r_condition.rdate r_condition.rno %}" 
-                          onclick="window.open(this.href, '_blank', 'width=1000, height=1000, toolbars=no, scrollbars=yes'); return false;">
-                            <div style="font-size: 1.2rem; font-family: Arial, sans-serif; font-weight: 500; color:ve(--color-main); text-align: left; color:dodgerblue; font-style: italic;">
-                              '{{rdate|slice:"2:4" }}.{{rdate|slice:"4:6" }}.{{rdate|slice:"6:8"}}<br>
+                          <a style="text-decoration:underline" href="{% url 'race_result' rcity rdate rno horse r_condition.rcity r_condition.rdate r_condition.rno %}"
+                            onclick="window.open(this.href, '_blank', 'width=1000, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
+                          
+                            <div style="text-align: left; color:dodgerblue; font-style: italic; text-align: left;">
+                              <span style="font-size: 1.2rem; font-family: Arial;">'{{rdate|slice:"2:4" }}.{{rdate|slice:"4:6" }}.{{rdate|slice:"6:8"}}</span>
+                              ­­­»
+                              {% if r_condition.distance == distance %}
+                              <span style="font-size: 1.2rem; font-family: Arial; color:tomato; font-weight: 700;">{{distance}}ᵐ</span>
+                              {%else%}
+                              <span style="font-size: 1.2rem; font-family: Arial; font-weight: 300;">{% if distance %}{{distance}}ᵐ{% else %}취소{% endif %}</span>
+                              {%endif%}
+                              &nbsp;
                             </div>
-                            <div style="font-size: 1.1rem; font-family: Arial, sans-serif; color:var(--color-main); font-weight: 500; text-align: right;">
-                              {{rcity}}﹆{{rno}}ᴿ&nbsp;{{distance}}m
+                          
+                            {# 경주정보 #}
+                            <div style="text-align: right; font-style: italic;">
+                          
+                              {% if grade %}
+                              {% if grade|slice:"0:2" == '주행'%}
+                              <span style="font-size: 1.1rem; color:var(--color-r4)">{{grade|slice:"0:4"}}</span>
+                              {%else%}
+                          
+                              {% if grade|slice:"0:2" == r_condition.grade|slice:"0:2" %}
+                              <span style="font-size: 1.1rem; color:tomato;">{{grade|slice:"0:2"}}</span>
+                              {% else %}
+                              <span style="font-size: 1.1rem;">{{grade|slice:"0:2"}}</span>
+                              {% endif %}
+                          
+                              {% if dividing|slice:"0:2" == r_condition.dividing|slice:"0:2"%}
+                              <span style="font-size: 1.1rem; color:tomato;">{{dividing|slice:"0:2"}}</span>
+                              {% else %}
+                              <span style="font-size: 1.1rem;">{{dividing|slice:"0:2"}}</span>
+                              {% endif %}
+                          
+                              {%endif%}
+                              {%endif%}
+                          
+                              <span style="font-size: 1.0rem; font-family: Arial">&nbsp;[{{rcity}}</span>
+                              <span style="font-size: 1.0rem; font-family: Arial">{{rno}}ᴿ]</span>
+                              <span style="font-size: 1.3rem; color:tomato ">{% if race_speed %}&nbsp;{{race_speed}}{% else %}&nbsp;&nbsp;{% endif %}</span>
+                          
                             </div>
                           </a>
                         </td>
