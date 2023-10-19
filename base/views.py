@@ -449,7 +449,7 @@ def home(request):
 
     rflag = False  # 경마일, 비경마일 구분
     for r in rdays:
-        print(r[0], r[2])
+        # print(r[0], r[2])
         if r[0] == r[2]:
             rflag = True
             break
