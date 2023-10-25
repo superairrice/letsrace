@@ -1578,7 +1578,7 @@ def get_print_prediction(i_rcity, i_rdate):
         strSql = """
                 select rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex,
 
-                    complex5, gap,
+                    complex5, gap_back,
                     cast(jt_per as decimal) jt_per
                   from expect a
                 where rcity = '""" + i_rcity + """'
@@ -1630,10 +1630,11 @@ def get_prediction(i_rdate):
 
         strSql = """
                 select rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex,
-                      ( select complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = 5 ) complex5, 
-                      ( select i_complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = a.rank + 1 ) - i_complex, 
-                      cast(jt_per as decimal) jt_per,
-                      rcount
+                    --  ( select complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = 5 ) complex5, 
+                    --  ( select i_complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = a.rank + 1 ) - i_complex, 
+                    complex5, gap_back, 
+                    cast(jt_per as decimal) jt_per,
+                    rcount
                   from expect a
                 where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 4 DAY), '%Y%m%d')
                 and rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98 )
