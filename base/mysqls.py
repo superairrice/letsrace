@@ -1937,6 +1937,61 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
     return pdf1
 
 
+# 경주 변경 내용 update - 금주의경마 출전표변경
+def set_changed_race(i_rcity, i_rdate, i_rno, r_content):
+    # print(r_content)
+
+    lines = r_content.split('\n')
+
+    for index, line in enumerate(lines):
+        items = line.split('\t')
+        # print(index, items)
+
+        if items[0]:
+            rdate = items[0][0:4] + items[0][5:7] + items[0][8:10]
+            rno = items[1]
+
+            horse = items[3]
+            if horse[0:1] == '[':
+                horse = horse[3:]
+
+            jockey_old = items[4]
+            handy_old = items[5]
+            jockey_new = items[6]
+            handy_new = items[7]
+            reason = items[8]
+
+            # print(rdate, rno, horse, jockey_old,
+                #   handy_old, jockey_new, handy_new, reason)
+
+            try:
+                cursor = connection.cursor()
+
+                strSql = """ update exp011
+                            set jockey = '""" + jockey_new + """',
+                                handycap = """ + handy_new + """,
+                                jockey_old =  '""" + jockey_old + """',
+                                handycap_old = """ + handy_old + """,
+                                reason = '""" + reason + """'
+                        where rdate = '""" + rdate + """' and rno = """ + str(rno) + """ and horse = '""" + horse + """'
+                    ; """
+
+                # print(strSql)
+                r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                awards = cursor.fetchall()
+
+                connection.commit()
+                connection.close()
+
+                # return render(request, 'base/update_popularity.html', context)
+                # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+
+            except:
+                connection.rollback()
+                print("Failed updating in exp011 : 기수변경")
+
+    return len(lines)
+
 # 경주 변경 내용 update - 기수변경
 def set_changed_race_jockey(i_rcity, i_rdate, i_rno, r_content):
     # print(r_content)

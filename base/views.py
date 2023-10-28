@@ -58,6 +58,7 @@ from base.mysqls import (
     insert_race_judged,
     insert_race_simulation,
     insert_train_swim,
+    set_changed_race,
     set_changed_race_horse,
     set_changed_race_jockey,
     set_changed_race_rank,
@@ -1466,6 +1467,8 @@ def raceBreakingNews(request):
     if fdata == "-":
         result_cnt = 0
         pass
+    elif fdata == "출전표변경":
+        result_cnt = set_changed_race(rcity, rdate, rno, r_content)
     elif fdata == "마체중":
         result_cnt = set_changed_race_weight(rcity, rdate, rno, r_content)
     elif fdata == "경주순위":
