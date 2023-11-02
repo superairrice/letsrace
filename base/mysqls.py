@@ -365,6 +365,7 @@ def get_race(i_rdate, i_awardee):
                   from expect
                 where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
                 and rno < 80
+                order by rdate, rcity, rno
                 ; """
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
@@ -1548,6 +1549,71 @@ def get_popularity_rate_t(i_rcity, i_rdate, i_rno):
 
     return popularity
 
+def get_popularity_rate_h(i_rcity, i_rdate, i_rno):
+    try:
+        cursor = connection.cursor()
+
+        strSql = """select b.rank, b.gate, b.jockey, b.trainer, b.host,
+                                  sum(r1_1) r1_1, sum(r1_2) r1_2, sum(r1_3) r1_3, sum(r1_cnt) r1_cnt, 
+                                  sum(r3_1) r1_1, sum(r3_2) r2_2, sum(r3_3) r3_3, sum(r3_cnt) r3_cnt,
+                                  sum(gt_1) r1_1, sum(gt_2) r2_2, sum(gt_3) gt_3, sum(gt_cnt) gt_cnt
+                      from
+                      (
+                        SELECT host, sum( if( rank = 1, 1, 0 )) r1_1, sum( if( rank = 2, 1, 0 )) r1_2, sum( if( rank = 3, 1, 0 )) r1_3, count(*) r1_cnt,
+                                    0 r3_1, 0 r3_2, 0 r3_3, 0 r3_cnt,
+                                    0 gt_1, 0 gt_2, 0 gt_3, 0 gt_cnt
+                        FROM rec011 a
+                        where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d')
+                        and pop_rank = 1
+                        group by host 
+
+                        union all
+
+                        SELECT host, 0, 0, 0, 0,
+                                        sum( if( rank = 1, 1, 0 )) r1, sum( if( rank = 2, 1, 0 )) r2, sum( if( rank = 3, 1, 0 )) r3, count(*) rcnt,
+                                        0, 0, 0, 0
+                        FROM rec011 a
+                        where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d')
+                        and alloc3r <= 1.9 /* 연식 1.9이하 인기마 */
+                        
+                        group by host 
+
+                        union all
+    
+                        select b.host,   0, 0, 0, 0,  0, 0, 0, 0, r1_1,  r1_2,  r1_3,  r1_cnt
+                        from
+                        (
+                          SELECT host, gate, sum( if( rank = 1, 1, 0 )) r1_1, sum( if( rank = 2, 1, 0 )) r1_2, sum( if( rank = 3, 1, 0 )) r1_3, count(*) r1_cnt
+                          FROM record 
+                          where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d')
+                          and grade != '주행검사'
+                          group by host , gate	
+                          ) a  right outer join  exp011 b  on a.host = b.host and a.gate = b.gate
+                        where b.rcity =  '""" + i_rcity + """'
+                          and b.rdate = '""" + i_rdate + """'
+                          and b.rno =  """ + str(i_rno) + """
+
+
+                      ) a  right outer join  exp011 b  on a.host = b.host
+                    where b.rcity =  '""" + i_rcity + """'
+                      and b.rdate = '""" + i_rdate + """'
+                      and b.rno =  """ + str(i_rno) + """
+                    group by b.rank, b.gate, b.host
+                    order by b.rank, b.gate, b.host
+                        ;"""
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        popularity = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in BookListView")
+
+    return popularity
+
 
 def get_print_prediction(i_rcity, i_rdate):
 
@@ -1823,8 +1889,8 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
               (
                 SELECT wdate, jockey, cast( year_3per as DECIMAL(4,1))*10 year_per, tot_1st, debut, 
                         ( select concat( max(age) , ' ', max(tot_1st) ) from jockey_w c where c.jockey = d.jockey and c.wdate < '""" + i_rdate + """' ) age,
-                        ( select count(*) from exp011 
-                            where jockey = d.jockey and r_rank = 1 
+                        ( select concat( sum(if( r_rank = 1, 1, 0)),'_', sum(if( r_rank = 2, 1, 0)), '_', sum(if( r_rank = 3, 1, 0))) from exp011 
+                            where jockey = d.jockey and r_rank <= 3 
                             and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and '""" + i_rdate + """' ) wcnt
                 FROM jockey_w d
                 where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 88 DAY), '%Y%m%d') and '""" + i_rdate + """'
@@ -1834,7 +1900,7 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
               order by b.rank, a.wdate desc
               ; """
 
-        # print(strSql)
+        print(strSql)
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
@@ -1885,8 +1951,8 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
               (
                 SELECT wdate, trainer, cast( year_3per as DECIMAL(4,1))*10 year_per, tot_1st, debut, 
                         ( select concat( max(age) , ' ', max(tot_1st) ) from trainer_w c where c.trainer = d.trainer and c.wdate < '""" + i_rdate + """' ) age,
-                        ( select count(*) from exp011 
-                            where trainer = d.trainer and r_rank = 1 
+                        ( select concat( sum(if( r_rank = 1, 1, 0)),'_', sum(if( r_rank = 2, 1, 0)), '_', sum(if( r_rank = 3, 1, 0))) from exp011 
+                            where trainer = d.trainer and r_rank <= 3 
                             and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and '""" + i_rdate + """' ) wcnt
                 FROM trainer_w d
                 where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 88 DAY), '%Y%m%d') and '""" + i_rdate + """'
@@ -1936,6 +2002,32 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
 
     return pdf1
 
+def get_jockey_result(i_rcity, i_rdate, i_rno):
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+                select a.trainer
+                  from exp011 a
+                where a.rcity =  '""" + i_rcity + """'
+                and a.rdate = '""" + i_rdate + """'
+                and a.rno =  """ + str(i_rno) + """
+                group by a.rcity, a.rdate, a.rno, a.trainer
+                having count(*) >= 2
+
+                ; """
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        trainer_double_check = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in exp010 outer join rec010")
+
+    return trainer_double_check
 
 # 경주 변경 내용 update - 금주의경마 출전표변경
 def set_changed_race(i_rcity, i_rdate, i_rno, r_content):

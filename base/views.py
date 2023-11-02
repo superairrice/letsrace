@@ -36,6 +36,7 @@ from base.mysqls import (
     get_paternal_dist,
     get_pedigree,
     get_popularity_rate,
+    get_popularity_rate_h,
     get_popularity_rate_t,
     get_prediction,
     get_print_prediction,
@@ -605,21 +606,22 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
 
     popularity_rate = get_popularity_rate(rcity, rdate, rno)  # 인기순위별 승률
     popularity_rate_t = get_popularity_rate_t(rcity, rdate, rno)  # 인기순위별 승률
+    popularity_rate_h = get_popularity_rate_h(rcity, rdate, rno)  # 인기순위별 승률
 
     # judged = get_judged(rcity, rdate, rno)
     judged_horse = get_judged_horse(rcity, rdate, rno)
     judged_jockey = get_judged_jockey(rcity, rdate, rno)
 
-    trend_jockey = get_jockey_trend(rcity, rdate, rno)
-    trend_trainer = get_trainer_trend(rcity, rdate, rno)
+    # trend_jockey = get_jockey_trend(rcity, rdate, rno)
+    # trend_trainer = get_trainer_trend(rcity, rdate, rno)
 
-    # print(trend_j.to_html())
+    # # print(trend_j.to_html())
 
-    trend_j = trend_jockey.values.tolist()
-    trend_j_title = trend_jockey.columns.tolist()
+    # trend_j = trend_jockey.values.tolist()
+    # trend_j_title = trend_jockey.columns.tolist()
 
-    trend_t = trend_trainer.values.tolist()
-    trend_t_title = trend_trainer.columns.tolist()
+    # trend_t = trend_trainer.values.tolist()
+    # trend_t_title = trend_trainer.columns.tolist()
 
     # print(trend_j_title)
     # print(trend_j)
@@ -660,6 +662,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         # 'hr_pedigree': hr_pedigree,
         "popularity_rate": popularity_rate,
         "popularity_rate_t": popularity_rate_t,
+        "popularity_rate_h": popularity_rate_h,
         #    'training': training,
         "train": train,
         "treat": treat,
@@ -673,10 +676,10 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         #     classes="rwd-table",
         #     table_id="rwd-table",
         # ),
-        "trend_j": trend_j,
-        "trend_j_title": trend_j_title,
-        "trend_t": trend_t,
-        "trend_t_title": trend_t_title,
+        # "trend_j": trend_j,
+        # "trend_j_title": trend_j_title,
+        # "trend_t": trend_t,
+        # "trend_t_title": trend_t_title,
     }
 
     return render(request, "base/prediction_race.html", context)
@@ -1212,6 +1215,34 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     }
 
     return render(request, "base/race_result.html", context)
+
+
+def trendWinningRate(request, rcity, rdate, rno, awardee):
+    
+    if awardee == 'jockey':
+        
+        trend_data = get_jockey_trend(rcity, rdate, rno)
+        racings, race_detail, race_board = get_race(rdate, i_awardee="jockey")
+        
+    else:
+        
+        trend_data = get_trainer_trend(rcity, rdate, rno)
+        racings, race_detail, race_board = get_race(rdate, i_awardee="trainer")
+
+    trend_j = trend_data.values.tolist()
+    trend_j_title = trend_data.columns.tolist()
+    
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+        
+    context = {
+        "trend_j": trend_j,
+        "trend_j_title": trend_j_title,
+        "r_condition": r_condition,
+        "awardee": awardee,
+        "race_detail": race_detail,
+    }
+
+    return render(request, "base/trend_winning_rate.html", context)
 
 
 def raceTrain(request, rcity, rdate, rno):
