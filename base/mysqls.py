@@ -1890,7 +1890,7 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
                 SELECT wdate, jockey, cast( year_3per as DECIMAL(4,1))*10 year_per, tot_1st, debut, 
                         ( select concat( max(age) , ' ', max(tot_1st) ) from jockey_w c where c.jockey = d.jockey and c.wdate < '""" + i_rdate + """' ) age,
                         ( select concat( sum(if( r_rank = 1, 1, 0)),'_', sum(if( r_rank = 2, 1, 0)), '_', sum(if( r_rank = 3, 1, 0))) from exp011 
-                            where jockey = d.jockey and r_rank <= 3 
+                            where jockey = d.jockey -- and r_rank <= 3 
                             and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and '""" + i_rdate + """' ) wcnt
                 FROM jockey_w d
                 where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 88 DAY), '%Y%m%d') and '""" + i_rdate + """'
@@ -1900,7 +1900,7 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
               order by b.rank, a.wdate desc
               ; """
 
-        print(strSql)
+        # print(strSql)
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
@@ -1952,7 +1952,7 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
                 SELECT wdate, trainer, cast( year_3per as DECIMAL(4,1))*10 year_per, tot_1st, debut, 
                         ( select concat( max(age) , ' ', max(tot_1st) ) from trainer_w c where c.trainer = d.trainer and c.wdate < '""" + i_rdate + """' ) age,
                         ( select concat( sum(if( r_rank = 1, 1, 0)),'_', sum(if( r_rank = 2, 1, 0)), '_', sum(if( r_rank = 3, 1, 0))) from exp011 
-                            where trainer = d.trainer and r_rank <= 3 
+                            where trainer = d.trainer -- and r_rank <= 3 
                             and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and '""" + i_rdate + """' ) wcnt
                 FROM trainer_w d
                 where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 88 DAY), '%Y%m%d') and '""" + i_rdate + """'
@@ -2002,32 +2002,36 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
 
     return pdf1
 
-def get_jockey_result(i_rcity, i_rdate, i_rno):
+def get_solidarity(i_rcity, i_rdate, i_rno):
     try:
         cursor = connection.cursor()
 
         strSql = """ 
-                select a.trainer
-                  from exp011 a
-                where a.rcity =  '""" + i_rcity + """'
-                and a.rdate = '""" + i_rdate + """'
-                and a.rno =  """ + str(i_rno) + """
-                group by a.rcity, a.rdate, a.rno, a.trainer
-                having count(*) >= 2
-
+                    select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
+                        gate, rank, horse, h_weight, w_change, jockey, trainer, host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
+                        rs1f, rg3f, rg2f, rg1f
+                    from The1.record 
+                    where (( jockey, trainer ) in ( select jockey,  trainer from The1.exp011 where rcity = '""" + i_rcity + """' and rdate = '""" + i_rdate + """' and rno =  """ + str(i_rno) + """ ) or
+                        ( jockey, host ) in ( select jockey,  host from The1.exp011 where rcity = '""" + i_rcity + """' and rdate = '""" + i_rdate + """' and rno =  """ + str(i_rno) + """ ) or
+                        ( trainer, host ) in ( select trainer, host from The1.exp011 where rcity = '""" + i_rcity + """' and rdate = '""" + i_rdate + """' and rno =  """ + str(i_rno) + """ )) 
+                    and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d')
+                    and r1award > 0  
+                    order by rdate desc, rno, rcity
                 ; """
 
+        # print(strSql)
+        
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
-        trainer_double_check = cursor.fetchall()
+        result = cursor.fetchall()
 
         connection.commit()
         connection.close()
 
     except:
         connection.rollback()
-        print("Failed selecting in exp010 outer join rec010")
+        print("Failed selecting in 기수, 조교사, 마주 최근 1년 연대현황")
 
-    return trainer_double_check
+    return result
 
 # 경주 변경 내용 update - 금주의경마 출전표변경
 def set_changed_race(i_rcity, i_rdate, i_rno, r_content):

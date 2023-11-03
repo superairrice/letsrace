@@ -43,6 +43,7 @@ from base.mysqls import (
     get_race,
     get_race_center_detail_view,
     get_report_code,
+    get_solidarity,
     get_status_train,
     get_swim_horse,
     get_train,
@@ -1222,13 +1223,16 @@ def trendWinningRate(request, rcity, rdate, rno, awardee):
     if awardee == 'jockey':
         
         trend_data = get_jockey_trend(rcity, rdate, rno)
-        racings, race_detail, race_board = get_race(rdate, i_awardee="jockey")
+        solidarity = get_solidarity(rcity, rdate, rno)      # 기수, 조교사, 마주 연대현황 최근1년
         
     else:
         
         trend_data = get_trainer_trend(rcity, rdate, rno)
-        racings, race_detail, race_board = get_race(rdate, i_awardee="trainer")
+        solidarity = get_solidarity(rcity, rdate, rno)      # 기수, 조교사, 마주 연대현황 최근1년
 
+
+    # print(solidarity)
+    
     trend_j = trend_data.values.tolist()
     trend_j_title = trend_data.columns.tolist()
     
@@ -1239,7 +1243,7 @@ def trendWinningRate(request, rcity, rdate, rno, awardee):
         "trend_j_title": trend_j_title,
         "r_condition": r_condition,
         "awardee": awardee,
-        "race_detail": race_detail,
+        "solidarity": solidarity,
     }
 
     return render(request, "base/trend_winning_rate.html", context)
