@@ -27,6 +27,7 @@ from base.data_management import (
 from base.mysqls import (
     get_award,
     get_award_race,
+    get_axis,
     get_jockey_trend,
     get_judged,
     get_judged_horse,
@@ -628,6 +629,9 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     # print(trend_j)
 
     trainer_double_check = get_trainer_double_check(rcity, rdate, rno)
+    
+    axis = get_axis(rcity, rdate, rno)
+    
 
     name = get_client_ip(request)
 
@@ -670,6 +674,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         #    'swim': swim,
         # "h_audit": h_audit,
         "trainer_double_check": str(trainer_double_check),
+        "axis": axis,
         # "trend_j": trend_j.to_html(
         #     index=False,
         #     header=True,

@@ -73,7 +73,36 @@
             &nbsp;&nbsp;&nbsp;&nbsp;'{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}})
           </span>
           
-          <span style="font-size:1.4rem; color: var(--color-main-light); font-weight: 500;">{{r_condition.rcity}}&nbsp;&nbsp;{{r_condition.rno}}®</span>
+          <span class="tooltip" style="font-size:1.4rem; color: var(--color-main-light); font-weight: 500;">{{r_condition.rcity}}&nbsp;&nbsp;{{r_condition.rno}}®
+            <span class="tooltip-text">
+              <table style="z-index: 999;">
+                <thead>
+                  <tr>
+                    <th colspan="4" style="font-family: Arial; text-align: left; font-size: 1.2rem;">{{exp011s.jockey.0.0}}</th>
+                  </tr>
+
+                  <tr>
+                    <th style="font-family: Arial; font-size: 1.2rem;">Gate</th>
+                    <th style="font-family: Arial; font-size: 1.2rem;">Cnt</th>
+                    <th style="font-family: Arial; font-size: 1.2rem;">3위권</th>
+                    <th style="font-family: Arial; font-size: 1.2rem;">3위%</th>
+              
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for gate, cnt, w3rd, w3per in axis %}
+                  <tr>
+                    <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{gate}}</td>
+                    <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{cnt}}</td>
+                    <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{w3rd}}</td>
+                    <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{w3per|floatformat:1}}</td>
+                  </tr>
+                  {% endfor %}
+              
+                </tbody>
+              </table>
+            </span>
+          </span>
 
           <span class="tooltip"
             style="font-size:1.4rem; color: var(--color-main); font-weight: 500;">&nbsp;&nbsp;{{r_condition.grade|slice:"0:2"}}&nbsp;&nbsp;{{r_condition.rcon1}}&nbsp;&nbsp;
@@ -202,11 +231,11 @@
       </ul>
       
       <div id="tab-11" class="tab-content1 current">
-
         <table class="fold-table">
           <thead>
             <tr>
               <th rowspan="1" width="6%" valign="center"><span class="visible-small">예상</span><span class="visible-big">예상</span></th>
+              
               {% if alloc.r2alloc %}
               <th rowspan="1"><span class="visible-small">마번</span><span class="visible-big">마번</span></th>
               {% else %}
