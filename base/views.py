@@ -1220,14 +1220,15 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
 def trendWinningRate(request, rcity, rdate, rno, awardee):
     
+    
     if awardee == 'jockey':
         
-        trend_data = get_jockey_trend(rcity, rdate, rno)
+        trend_data, trend_title = get_jockey_trend(rcity, rdate, rno)
         solidarity = get_solidarity(rcity, rdate, rno)      # 기수, 조교사, 마주 연대현황 최근1년
         
     else:
         
-        trend_data = get_trainer_trend(rcity, rdate, rno)
+        trend_data, trend_title = get_trainer_trend(rcity, rdate, rno)
         solidarity = get_solidarity(rcity, rdate, rno)      # 기수, 조교사, 마주 연대현황 최근1년
 
 
@@ -1241,6 +1242,7 @@ def trendWinningRate(request, rcity, rdate, rno, awardee):
     context = {
         "trend_j": trend_j,
         "trend_j_title": trend_j_title,
+        "trend_title": trend_title,
         "r_condition": r_condition,
         "awardee": awardee,
         "solidarity": solidarity,

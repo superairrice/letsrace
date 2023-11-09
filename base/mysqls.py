@@ -1884,10 +1884,10 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
         cursor = connection.cursor()
 
         strSql = """ 
-              select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, b.jockey, a.wdate, a.year_per, CONCAT(debut, ' ', age, '_', wcnt) debut
+              select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, CONCAT( RPAD(b.jockey, 5),RPAD( b.trainer, 5), b.host), a.wdate, a.year_per, CONCAT(debut, ' ', age, '_', wcnt) debut, weeks
               from
               (
-                SELECT wdate, jockey, cast( year_3per as DECIMAL(4,1))*10 year_per, tot_1st, debut, 
+                SELECT wdate, jockey, cast( year_3per as DECIMAL(4,1))*10 year_per, tot_1st, debut, CONCAT(wrace, '`', w1st, '`', w2nd, '`', w3rd) weeks, 
                         ( select concat( max(age) , ' ', max(tot_1st) ) from jockey_w c where c.jockey = d.jockey and c.wdate < '""" + i_rdate + """' ) age,
                         ( select concat( sum(if( r_rank = 1, 1, 0)),'_', sum(if( r_rank = 2, 1, 0)), '_', sum(if( r_rank = 3, 1, 0))) from exp011 
                             where jockey = d.jockey -- and r_rank <= 3 
@@ -1912,10 +1912,8 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
         connection.rollback()
         print("Failed selecting in Jockey Trend")
 
-    # result = dict[result]
-
     col = ['예상', '마번', '실순', '인기',
-           'horse', '기수', 'wdate', 'year_per', '데뷔']
+           'horse', '기수', 'wdate', 'year_per', '데뷔', 'Weeks']
     data = list(result)
     # print(data)
 
@@ -1926,7 +1924,7 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
                           index=('예상', '마번', '실순', '인기',
                                  'horse', '기수', '데뷔'),    # 행 위치에 들어갈 열
                           columns='wdate',    # 열 위치에 들어갈 열
-                          values='year_per', aggfunc='sum')     # 데이터로 사용할 열
+                          values=('year_per', 'Weeks'), aggfunc='max')     # 데이터로 사용할 열
 
     # pdf1.columns = ['/'.join(col) for col in pdf1.columns]
     pdf1.columns = [''.join(col)[4:6] + '.' + ''.join(col)[6:8]
@@ -1937,8 +1935,33 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
     pdf1 = pdf1.reset_index()
 
     # print(pdf1)
+    
+    try:
+        cursor = connection.cursor()
 
-    return pdf1
+        strSql = """ 
+              SELECT distinct distinct CONCAT( substr(wdate,5,2), '.', substr(wdate,7,2) )
+                FROM jockey_w d
+                where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 88 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                and wdate < '""" + i_rdate + """'
+                order by wdate
+              ; """
+
+        # print(strSql)
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        trend_title = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in Jockey Trend Title")
+    # result = dict[result]
+    
+
+    return pdf1, trend_title
 
 def get_trainer_trend(i_rcity, i_rdate, i_rno):
 
@@ -1946,10 +1969,10 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
         cursor = connection.cursor()
 
         strSql = """ 
-              select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, b.trainer, a.wdate, a.year_per, CONCAT(debut, ' ', age, '_', wcnt) debut
+              select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, CONCAT( RPAD(b.trainer, 5),RPAD( b.jockey, 5), b.host), a.wdate, a.year_per, CONCAT(debut, ' ', age, '_', wcnt) debut, weeks
               from
               (
-                SELECT wdate, trainer, cast( year_3per as DECIMAL(4,1))*10 year_per, tot_1st, debut, 
+                SELECT wdate, trainer, cast( year_3per as DECIMAL(4,1))*10 year_per, tot_1st, debut, CONCAT(wrace, '`', w1st, '`', w2nd, '`', w3rd) weeks,
                         ( select concat( max(age) , ' ', max(tot_1st) ) from trainer_w c where c.trainer = d.trainer and c.wdate < '""" + i_rdate + """' ) age,
                         ( select concat( sum(if( r_rank = 1, 1, 0)),'_', sum(if( r_rank = 2, 1, 0)), '_', sum(if( r_rank = 3, 1, 0))) from exp011 
                             where trainer = d.trainer -- and r_rank <= 3 
@@ -1977,7 +2000,7 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
     # result = dict[result]
 
     col = ['예상', '마번', '실순', '인기',
-           'horse', '기수', 'wdate', 'year_per', '데뷔']
+           'horse', '기수', 'wdate', 'year_per', '데뷔', 'Weeks']
     data = list(result)
     # print(data)
 
@@ -1988,19 +2011,43 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
                           index=('예상', '마번', '실순', '인기',
                                  'horse', '기수', '데뷔'),    # 행 위치에 들어갈 열
                           columns='wdate',    # 열 위치에 들어갈 열
-                          values='year_per', aggfunc='sum')     # 데이터로 사용할 열
+                          values=('year_per', 'Weeks'), aggfunc='max')     # 데이터로 사용할 열
 
     # pdf1.columns = ['/'.join(col) for col in pdf1.columns]
     pdf1.columns = [''.join(col)[4:6] + '.' + ''.join(col)[6:8]
                     for col in pdf1.columns]
 
     # print(((pdf1)))
+    
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+              SELECT distinct CONCAT( substr(wdate,5,2), '.', substr(wdate,7,2) )
+                FROM jockey_w d
+                where wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 88 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                and wdate < '""" + i_rdate + """'
+                order by wdate
+              ; """
+
+        # print(strSql)
+
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        trend_title = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in Jockey Trend Title")
+    # result = dict[result]
 
     pdf1 = pdf1.reset_index()
 
     # print(pdf1)
 
-    return pdf1
+    return pdf1, trend_title
 
 def get_solidarity(i_rcity, i_rdate, i_rno):
     try:
