@@ -1229,12 +1229,12 @@ def trendWinningRate(request, rcity, rdate, rno, awardee):
     if awardee == 'jockey':
         
         trend_data, trend_title = get_jockey_trend(rcity, rdate, rno)
-        solidarity = get_solidarity(rcity, rdate, rno)      # 기수, 조교사, 마주 연대현황 최근1년
+        solidarity = get_solidarity(rcity, rdate, rno, 'jockey')      # 기수, 조교사, 마주 연대현황 최근1년
         
     else:
         
         trend_data, trend_title = get_trainer_trend(rcity, rdate, rno)
-        solidarity = get_solidarity(rcity, rdate, rno)      # 기수, 조교사, 마주 연대현황 최근1년
+        solidarity = get_solidarity(rcity, rdate, rno, 'trainer')      # 기수, 조교사, 마주 연대현황 최근1년
 
 
     # print(solidarity)
