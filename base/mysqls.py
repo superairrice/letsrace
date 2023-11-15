@@ -2060,12 +2060,12 @@ def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee):
                         rs1f, rg3f, rg2f, rg1f, race_speed
                     from record 
                     where ( '""" + i_awardee + """' ) in ( select '""" + i_awardee + """' from exp011 where rcity = '""" + i_rcity + """' and rdate = '""" + i_rdate + """' and rno =  """ + str(i_rno) + """ ) 
-                    and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 99 DAY), '%Y%m%d')
-                    and r1award > 0  
+                    and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 99 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                    -- and r1award > 0  
                     order by rdate desc, rno desc, rcity
                 ; """
 
-        # print(strSql)
+        print(strSql)
         
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
