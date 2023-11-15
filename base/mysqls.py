@@ -2065,7 +2065,7 @@ def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee):
                     order by rdate desc, rno desc, rcity
                 ; """
 
-        print(strSql)
+        # print(strSql)
         
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
