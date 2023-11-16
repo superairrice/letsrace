@@ -79,14 +79,14 @@
           </a>&nbsp;
 
           {% if awardee == 'jockey' %}
-          <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:-1 'jockey' %}">
+          <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:-1 'jockey' '99' %}">
             <span class="tooltip">◀︎
               <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
                 이전 경주
               </span>
             </span>
           </a>
-          <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:1 'jockey' %}">
+          <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:1 'jockey' '99' %}">
             <span class="tooltip">▶︎
               <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
                 다음 경주
@@ -94,14 +94,14 @@
             </span>
           </a>
           {% else %}
-          <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:-1 'trainer' %}">
+          <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:-1 'trainer' '99' %}">
             <span class="tooltip">◀︎
               <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
                 이전 경주
               </span>
             </span>
           </a>
-          <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:1 'trainer' %}">
+          <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:1 'trainer' '99' %}">
             <span class="tooltip">▶︎
               <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
                 다음 경주
@@ -234,29 +234,52 @@
 
             <tr>
       
-              <th rowspan="2" width="6%" valign="center"><span class="visible-small">예상<br>순위.</span><span class="visible-big" style="padding:0.95rem">예상<br>순위</span></th>
-              <th rowspan="1" width="5%"><span class="visible-small">마번</span><span class="visible-big">마번</span></th>
-              <th rowspan="1" width="10%"><span class="visible-small">Horse</span><span class="visible-big">Horse</span></th>
-              <th rowspan="1" width="9%"><span class="visible-small">이름(나이)</span><span class="visible-big">이름(나이)</span></th>
+              <th rowspan="2" width="6%" valign="center"><span class="visible-big" style="padding:0.95rem">예상<br>순위</span></th>
+              <th rowspan="1" width="5%"><span class="visible-big">마번</span></th>
+              <th rowspan="1" width="10%"><span class="visible-big">Horse</span></th>
+              <th rowspan="1" width="9%"><span class="visible-big">이름(나이)</span></th>
+              <th colspan="12">
+                <span class="visible-big">
+                  🏇&nbsp;&nbsp;최근 99일 경주성적 필터링: &nbsp;
+                  {% if awardee == 'jockey' %}
+                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '1' %}">1위</a>&nbsp;
+                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '2' %}">2위</a>&nbsp;
+                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '3' %}">3위</a>&nbsp;
+                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '4' %}">4위</a>&nbsp;
+                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '5' %}">5위</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '99' %}">ALL</a>
+                  {% else %}
+                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '1' %}">1위</a>&nbsp;
+                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '2' %}">2위</a>&nbsp;
+                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '3' %}">3위</a>&nbsp;
+                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '4' %}">4위</a>&nbsp;
+                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '5' %}">5위</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '99' %}">ALL</a>
+                  {% endif %}
+
+                </span>
+              </th>
       
-              <th rowspan="2" width="5.5%"><span class="visible-small">{{trend_title.0.0}}</span><span class="visible-big">{{trend_title.0.0}}</span></th>
-              <th rowspan="2" width="5.5%"><span class="visible-small">{{trend_title.1.0}}</span><span class="visible-big">{{trend_title.1.0}}</span></th>
-              <th rowspan="2" width="5.5%"><span class="visible-small">{{trend_title.2.0}}</span><span class="visible-big">{{trend_title.2.0}}</span></th>
-              <th rowspan="2" width="5.5%"><span class="visible-small">{{trend_title.3.0}}</span><span class="visible-big">{{trend_title.3.0}}</span></th>
-              <th rowspan="2" width="5.5%"><span class="visible-small">{{trend_title.4.0}}</span><span class="visible-big">{{trend_title.4.0}}</span></th>
-              <th rowspan="2" width="5.5%"><span class="visible-small">{{trend_title.5.0}}</span><span class="visible-big">{{trend_title.5.0}}</span></th>
-              <th rowspan="2" width="5.5%"><span class="visible-small">{{trend_title.6.0}}</span><span class="visible-big">{{trend_title.6.0}}</span></th>
-              <th rowspan="2" width="5.5%"><span class="visible-small">{{trend_title.7.0}}</span><span class="visible-big">{{trend_title.7.0}}</span></th>
-              <th rowspan="2" width="5.5%"><span class="visible-small">{{trend_title.8.0}}</span><span class="visible-big">{{trend_title.8.0}}</span></th>
-              <th rowspan="2" width="5.5%"><span class="visible-small">{{trend_title.9.0}}</span><span class="visible-big">{{trend_title.9.0}}</span></th>
-              <th rowspan="2" width="5.5%"><span class="visible-small">{{trend_title.10.0}}</span><span class="visible-big">{{trend_title.10.0}}</span></th>
-              <th rowspan="2" width="5.5%"><span class="visible-small">{{trend_title.11.0}}</span><span class="visible-big">{{trend_title.11.0}}</span></th>
+              
       
             </tr>
             <tr>
-              <th rowspan="1"><span class="visible-small">(실순)</span><span class="visible-big">(실순)</span></th>
-              <th rowspan="1"><span class="visible-small">인기도(데뷔)</span><span class="visible-big">인기도(데뷔)</span></th>
-              <th rowspan="1"><span class="visible-small">총1위_금주</span><span class="visible-big">총1위_금주</span></th>
+              <th rowspan="1"><span class="visible-big">(실순)</span></th>
+              <th rowspan="1"><span class="visible-big">인기도(데뷔)</span></th>
+              <th rowspan="1"><span class="visible-big">총1위_금주</span></th>
+
+              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.0.0}}</span></th>
+              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.1.0}}</span></th>
+              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.2.0}}</span></th>
+              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.3.0}}</span></th>
+              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.4.0}}</span></th>
+              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.5.0}}</span></th>
+              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.6.0}}</span></th>
+              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.7.0}}</span></th>
+              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.8.0}}</span></th>
+              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.9.0}}</span></th>
+              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.10.0}}</span></th>
+              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.11.0}}</span></th>
             </tr>
       
           </thead>
@@ -786,17 +809,18 @@
                             </div>
                           {% endif %}
                         </td>
+
                         <td style="font-size: 1.2rem; font-family: Arial;">
                           {% if rank == 1 %}
-                          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-main); color:var(--color-r1); padding: 2px 4px;">
+                          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-r1); color:var(--color-bg); padding: 2px 4px;">
                             {% if rank > 20 %}﹆{% else %} {{rank}} {% endif %}
                           </span>
                           {% elif rank == 2 %}
-                          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-main); color:var(--color-r2); padding: 2px 4px;">
+                          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-r2); color:var(--color-bg); padding: 2px 4px;">
                             {% if rank > 20 %}﹆{% else %} {{rank}} {% endif %}
                           </span>
                           {% elif rank == 3 %}
-                          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-main); color:var(--color-r3); padding: 2px 4px;">
+                          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-r3); color:var(--color-bg); padding: 2px 4px;">
                             {% if rank > 20 %}﹆{% else %} {{rank}} {% endif %}
                           </span>
                           

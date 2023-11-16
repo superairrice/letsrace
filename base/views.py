@@ -42,6 +42,7 @@ from base.mysqls import (
     get_prediction,
     get_print_prediction,
     get_race,
+    get_race_awardee,
     get_race_center_detail_view,
     get_report_code,
     get_solidarity,
@@ -1222,19 +1223,19 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
     return render(request, "base/race_result.html", context)
 
-
-def trendWinningRate(request, rcity, rdate, rno, awardee):
+# 기수 or 조교사 최근 12주 성적 / 99일 경주결과
+def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
     
     
     if awardee == 'jockey':
         
         trend_data, trend_title = get_jockey_trend(rcity, rdate, rno)
-        solidarity = get_solidarity(rcity, rdate, rno, 'jockey')      # 기수, 조교사, 마주 연대현황 최근1년
+        solidarity = get_solidarity(rcity, rdate, rno, 'jockey', i_filter)      # 기수, 조교사, 마주 연대현황 최근1년
         
     else:
         
         trend_data, trend_title = get_trainer_trend(rcity, rdate, rno)
-        solidarity = get_solidarity(rcity, rdate, rno, 'trainer')      # 기수, 조교사, 마주 연대현황 최근1년
+        solidarity = get_solidarity(rcity, rdate, rno, 'trainer', i_filter)      # 기수, 조교사, 마주 연대현황 최근1년
 
 
     # print(solidarity)
@@ -1254,6 +1255,20 @@ def trendWinningRate(request, rcity, rdate, rno, awardee):
     }
 
     return render(request, "base/trend_winning_rate.html", context)
+
+# 기수 or 조교사 or 마주 99일 경주결과
+def getRaceAwardee(request, rdate, awardee, i_name):
+    
+    solidarity = get_race_awardee(rdate, awardee, i_name)      # 기수, 조교사, 마주 연대현황 최근1년
+
+    # print(solidarity)
+        
+    context = {
+        "solidarity": solidarity,
+        "awardee": awardee,
+    }
+
+    return render(request, "base/get_race_awardee.html", context)
 
 
 def raceTrain(request, rcity, rdate, rno):

@@ -2049,7 +2049,8 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
 
     return pdf1, trend_title
 
-def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee):
+# 기수 or 조교사 최근 99일 경주결과
+def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee, i_filter):
     
     try:
         cursor = connection.cursor()
@@ -2061,7 +2062,38 @@ def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee):
                     from record 
                     where ( '""" + i_awardee + """' ) in ( select '""" + i_awardee + """' from exp011 where rcity = '""" + i_rcity + """' and rdate = '""" + i_rdate + """' and rno =  """ + str(i_rno) + """ ) 
                     and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 99 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                    and rank <= """ + i_filter + """
                     -- and r1award > 0  
+                    order by rdate desc, rno desc, rcity
+                ; """
+
+        # print(strSql)
+        
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in 기수, 조교사, 마주 최근 1년 연대현황")
+
+    return result
+
+# 기수 or 조교사 or 마주 최근 99일 경주결과
+def get_race_awardee( i_rdate, i_awardee, i_name):
+    
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+                    select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
+                        gate, rank, horse, h_weight, w_change, jockey, trainer, host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
+                        rs1f, rg3f, rg2f, rg1f, race_speed
+                    from record 
+                    where """ + i_awardee + """ = '""" + i_name + """'
+                    and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 30 DAY), '%Y%m%d') and '""" + i_rdate + """'
                     order by rdate desc, rno desc, rcity
                 ; """
 

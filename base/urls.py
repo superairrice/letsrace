@@ -89,8 +89,11 @@ urlpatterns = [
 
     path('send_email/', views.send_email, name='send_email'),
     
-    path('trend_winning_rate/<str:rcity>/<str:rdate>/<int:rno>/<str:awardee>',
+    path('trend_winning_rate/<str:rcity>/<str:rdate>/<int:rno>/<str:awardee>/<str:i_filter>',
          views.trendWinningRate, name="trend_winning_rate"),  # id 전달
+    
+    path('get_race_awardee/<str:rdate>/<str:awardee>/<str:i_name>',
+         views.getRaceAwardee, name="get_race_awardee"),  # id 전달
 
 
 ]
