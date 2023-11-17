@@ -2082,7 +2082,7 @@ def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee, i_filter):
     return result
 
 # 기수 or 조교사 or 마주 최근 99일 경주결과
-def get_race_awardee( i_rdate, i_awardee, i_name):
+def get_race_awardee1( i_rdate, i_awardee, i_name):
     
     try:
         cursor = connection.cursor()

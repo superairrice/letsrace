@@ -986,12 +986,12 @@
 
                         {# 기수 / 복승율 #}
                         <td style="font-size: 1.2rem">
-                          <a href="{% url 'get_race_awardee' hr.rdate 'jockey' hr.jockey %}"
-                            onclick="window.open(this.href, '_blank', 'width=1000, height=500, toolbars=no, scrollbars=yes'); return false;">
+                          <a href="{% url 'get_race_awardee' hr.rdate 'jockey' hr.jockey hr.jockey r.trainer r.host %}"
+                            onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
 
                           {% if hr.jockey %}
                             {% if r.jockey == hr.jockey %}
-                            <div style="color:var(--color-r1); text-align: left;">{{hr.jockey}}</div>
+                            <div style="text-align: left; color:var(--color-r1);">{{hr.jockey}}</div>
                             {%else%}
                             <div style="text-align: left;">{{hr.jockey}}</div>
                             {%endif%}
@@ -1007,16 +1007,35 @@
                         {# 조교사 / 마주 #}
                         <td style="font-size: 1.15rem">
                           {% if hr.trainer %}
+                          
                             {% if r.trainer == hr.trainer %}
-                            <div style="text-align: left;">{{hr.trainer}}</div>
+                            <div style="text-align: left; color:var(--color-gray);">
+                              <a href="{% url 'get_race_awardee' hr.rdate 'trainer' hr.trainer r.jockey hr.trainer r.host %}" onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                              {{hr.trainer}}
+                              </a>
+                            </div>
                             {%else%}
-                            <div style="color:var(--color-r1);  text-align: left;">{{hr.trainer}}</div>
+                            <div style="color:var(--color-r1);  text-align: left;">
+                              <a href="{% url 'get_race_awardee' hr.rdate 'trainer' hr.trainer r.jockey hr.trainer r.host %}" onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                                {{hr.trainer}}
+                              </a>
+                            </div>
                             {%endif%}
                           
                             {% if r.host == hr.host %}
-                            <div style="color:var(--color-gray); text-align: right; font-size: 1.15rem">{{hr.host|slice:"0:4"}}</div>
+                            <div style="color:var(--color-gray); text-align: right; font-size: 1.15rem">
+                              <a href="{% url 'get_race_awardee' hr.rdate 'host' hr.host r.jockey r.trainer hr.host %}" onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                                {{hr.host|slice:"0:4"}}
+                              </a>
+                            </div>
                             {%else%}
-                            <div style="color:var(--color-r1); text-align: right; font-size: 1.15rem;">{{hr.host|slice:"0:4"}}</div>
+                            <div style="color:var(--color-r1); text-align: right; font-size: 1.15rem;">
+                              {% if hr.host %}
+                              <a href="{% url 'get_race_awardee' hr.rdate 'host' hr.host r.jockey r.trainer hr.host %}" onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                              {{hr.host|slice:"0:4"}}
+                              </a>
+                              {% endif %}
+                            </div>
                             {%endif%}
                           {%endif%}
                         </td>

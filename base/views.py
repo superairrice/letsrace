@@ -42,7 +42,7 @@ from base.mysqls import (
     get_prediction,
     get_print_prediction,
     get_race,
-    get_race_awardee,
+    get_race_awardee1,
     get_race_center_detail_view,
     get_report_code,
     get_solidarity,
@@ -1257,15 +1257,18 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
     return render(request, "base/trend_winning_rate.html", context)
 
 # 기수 or 조교사 or 마주 99일 경주결과
-def getRaceAwardee(request, rdate, awardee, i_name):
+def getRaceAwardee(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host):
     
-    solidarity = get_race_awardee(rdate, awardee, i_name)      # 기수, 조교사, 마주 연대현황 최근1년
+    solidarity = get_race_awardee1(rdate, awardee, i_name)      # 기수, 조교사, 마주 연대현황 최근1년
 
     # print(solidarity)
         
     context = {
         "solidarity": solidarity,
         "awardee": awardee,
+        "i_jockey": i_jockey,
+        "i_trainer": i_trainer,
+        "i_host": i_host,
     }
 
     return render(request, "base/get_race_awardee.html", context)
