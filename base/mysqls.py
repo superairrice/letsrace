@@ -2057,7 +2057,7 @@ def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee, i_filter):
 
         strSql = """ 
                     select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
-                        gate, rank, horse, h_weight, w_change, jockey, trainer, host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
+                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( host = '', ' ', host), rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
                         rs1f, rg3f, rg2f, rg1f, race_speed
                     from record 
                     where ( '""" + i_awardee + """' ) in ( select '""" + i_awardee + """' from exp011 where rcity = '""" + i_rcity + """' and rdate = '""" + i_rdate + """' and rno =  """ + str(i_rno) + """ ) 
@@ -2118,7 +2118,9 @@ def get_axis(i_rcity, i_rdate, i_rno):
 
         strSql = """ 
                     select gate, count(*), sum( if ( a.r_rank <= 3, 1, 0)), sum( if ( a.r_rank <= 3	, 1, 0))/count(*)*100,        
-                    sum( if(a.alloc3r <= 1.9, 1, 0)),  sum( if ( a.r_rank <= 3 and a.alloc3r <= 3, 1, 0)), sum( if ( a.r_rank <= 3 and a.alloc3r <= 3, 1, 0))/ sum( if(a.alloc3r <= 1.9, 1, 0))*100
+                    -- sum( if(a.alloc3r <= 1.9, 1, 0)),  sum( if ( a.r_rank <= 3 and a.alloc3r <= 1.9, 1, 0)), sum( if ( a.r_rank <= 3 and a.alloc3r <= 1.9, 1, 0))/ sum( if(a.alloc3r <= 1.9, 1, 0))*100
+                    sum( if(a.jt_per >= a.j_per, 1, 0)),  sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0)), sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0))/ sum( if(a.jt_per >= a.j_per, 1, 0))*100,
+                    sum( if(a.jt_per < a.j_per, 1, 0)),  sum( if ( a.r_rank <= 3 and a.jt_per < a.j_per, 1, 0)), sum( if ( a.r_rank <= 3 and a.jt_per < a.j_per, 1, 0))/ sum( if(a.jt_per < a.j_per, 1, 0))*100
                     from The1.expect a
                     where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and '""" + i_rdate + """'
                     and ( rcity, rdate, rno ) not in ( select rcity, rdate, rno from The1.expect where rank = 98  group by rcity, rdate, rno having count(*) >= 2 ) 
@@ -2130,13 +2132,14 @@ def get_axis(i_rcity, i_rdate, i_rno):
                     union all
                     
                     select 'TOT', count(*), sum( if ( a.r_rank <= 3, 1, 0)), sum( if ( a.r_rank <= 3	, 1, 0))/count(*)*100,
-                    sum( if(a.alloc3r <= 1.9, 1, 0)),  sum( if ( a.r_rank <= 3 and a.alloc3r <= 3, 1, 0)), sum( if ( a.r_rank <= 3 and a.alloc3r <= 3, 1, 0))/ sum( if(a.alloc3r <= 1.9, 1, 0))*100
+                    -- sum( if(a.alloc3r <= 1.9, 1, 0)),  sum( if ( a.r_rank <= 3 and a.alloc3r <= 1.9, 1, 0)), sum( if ( a.r_rank <= 3 and a.alloc3r <= 1.9, 1, 0))/ sum( if(a.alloc3r <= 1.9, 1, 0))*100
+                    sum( if(a.jt_per >= a.j_per, 1, 0)),  sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0)), sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0))/ sum( if(a.jt_per >= a.j_per, 1, 0))*100,
+                    sum( if(a.jt_per < a.j_per, 1, 0)),  sum( if ( a.r_rank <= 3 and a.jt_per < a.j_per, 1, 0)), sum( if ( a.r_rank <= 3 and a.jt_per < a.j_per, 1, 0))/ sum( if(a.jt_per < a.j_per, 1, 0))*100
                     from The1.expect a
                     where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 365 DAY), '%Y%m%d') and '""" + i_rdate + """'
                     and ( rcity, rdate, rno ) not in ( select rcity, rdate, rno from The1.expect where rank = 98  group by rcity, rdate, rno having count(*) >= 2 ) 
                     and rank = 1
                     and jockey = ( select jockey from exp011 where rcity = '""" + i_rcity + """' and rdate = '""" + i_rdate + """' and rno =  """ + str(i_rno) + """ and rank = 1) 
-   
                 ; """
 
         # print(strSql)

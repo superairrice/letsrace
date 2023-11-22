@@ -585,6 +585,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         Min("recent5"),
         Min("recent3"),
         Min("convert_r"),
+        Min("s1f_rank"),
     )
 
     try:
