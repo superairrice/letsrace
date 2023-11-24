@@ -42,9 +42,6 @@
 
 <main class="profile-page layout layout--2">
 
-  <div class="loader">
-  </div>
-
   <div class="container">
     
     <div class="roomList" style="height: auto;">
@@ -425,7 +422,7 @@
 
                   {# 출주주기 #}
                   {% if r.r_rank == 99 %}
-                  <span style="font-size:0.9rem; color:gray;">{{r.reason}}
+                  <span style="font-size:0.9rem; color:gray;">{{r.reason|slice:"0:8"}}
                   </span>
                   {% else %}
 
@@ -619,10 +616,12 @@
                 <div style="font-family: Arial; color:var(--color-light-gray);">{{r.cs1f}}</div>
                 {% endif %}
 
-                {% if compare_r.s1f_rank__min == r.s1f_rank %}
-                <div style="font-family: Arial; text-align: right; font-size: 1.1rem; color:var(--color-r1); font-weight: 600;">{{r.s1f_rank}}</div>
-                {% else %}
-                <div style="font-family: Arial; text-align: right; font-size: 1.1rem; color:var(--color-gray);">{{r.s1f_rank}}</div>
+                {% if r.s1f_rank %}
+                  {% if compare_r.s1f_rank__min == r.s1f_rank %}
+                  <div style="font-family: Arial; text-align: right; font-size: 1.1rem; color:var(--color-r1); font-weight: 600;">{{r.s1f_rank}}</div>
+                  {% else %}
+                  <div style="font-family: Arial; text-align: right; font-size: 1.1rem; color:var(--color-gray);">{{r.s1f_rank}}</div>
+                  {% endif %}
                 {% endif %}
 
               </td>
@@ -2018,7 +2017,7 @@
                     
                     </thead>
                     <tbody>
-                      {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, hname, jockey, trainer, j_per, t_per, jt_per, h_weight, distance, grade, rating, dividing, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14, laps in train %}
+                      {% for rcity, rdate, rno, gate, rank, r_rank, r_pop, hname, jockey_a, trainer_a, j_per, t_per, jt_per, h_weight, distance, grade, rating, dividing, r1, d1, c1, s1, r2, d2, c2, s2, r3, d3, c3, s3, r4, d4, c4, s4, r5, d5, c5, s5, r6, d6, c6, s6, r7, d7, c7, s7, r8, d8, c8, s8, r9, d9, c9, s9, r10, d10, c10, s10, r11, d11, c11, s11, r12, d12, c12, s12, r13, d13, c13, s13, r14, d14, c14, s14, laps in train %}
                       {% if r_condition.rdate > rdate and horse == hname %}
                   
                       <tr>
@@ -2070,26 +2069,27 @@
     
 
                         <td align="center">
-                          <div style="font-family: Arial; font-size:1.4rem; font-weight: 700; font-style: italic;">
+                          <div style="font-family: Arial; font-size:1.4rem; font-style: italic;">
                             {{gate}}
                           </div>
 
                           {% if r_rank == 1 %}
-                          <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r1); text-align: right;">{{r_rank}}</div>
+                          <div style="font-family: Arial; font-size:1.3rem; font-style: italic; color:var(--color-r1); text-align: right;">{{r_rank}}</div>
                           {% elif r_rank == 2 %}
-                          <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r2); text-align: right;">{{r_rank}}</div>
+                          <div style="font-family: Arial; font-size:1.3rem; font-style: italic; color:var(--color-r2); text-align: right;">{{r_rank}}</div>
                           {% elif r_rank == 3 %}
-                          <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r3); text-align: right;">{{r_rank}}</div>
+                          <div style="font-family: Arial; font-size:1.3rem; font-style: italic; color:var(--color-r3); text-align: right;">{{r_rank}}</div>
                           {% elif r_rank == 4 %}
-                          <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r4); text-align: right;">{{r_rank}}</div>
+                          <div style="font-family: Arial; font-size:1.3rem; font-style: italic; color:var(--color-r4); text-align: right;">{{r_rank}}</div>
                           {% elif r_rank == 5 %}
-                          <div style="font-family: Arial; font-size:1.3rem; font-weight: 500; font-style: italic; color:var(--color-r5); text-align: right;">{{r_rank}}</div>
+                          <div style="font-family: Arial; font-size:1.3rem; font-style: italic; color:var(--color-r5); text-align: right;">{{r_rank}}</div>
                           {% else %}
                           <div style="font-family: Arial; font-size:1.2rem; color:var(--color-gray); text-align: right;">{% if r_rank %}{{r_rank}}{% endif %}</div>
                           {% endif %}
                           
                         </td>
                   
+                        {# 프로그램 예상순위 / 인기도 #}
                         <td>
                           <div align="center" style="font-family: Arial; font-size:1.3rem;">
                             {% if rank == 1 %}
@@ -2112,6 +2112,10 @@
                             <span style="font-style: italic; color:var(--color-r5); font-weight: 500;">
                               {{rank}}
                             </span>
+                            {% elif rank == 98 %}
+                            <span style="font-style: italic; color:var(--color-r5); font-weight: 500; font-size: 1.0rem;">
+                              🐣
+                            </span>
                             {% else %}
                             <span style="font-style: normal;">
                               {{rank}}
@@ -2119,15 +2123,8 @@
                             {% endif %}
                             &nbsp;
                           </div>
-                          <div style="font-family: Arial; font-size:1.2rem; color:var(--color-r2); text-align: right;">
-                            {% if r_pop > 80 %}★&nbsp;{{r_pop}}
-                            {% elif r_pop > 60 and r_pop <= 80 %}◎&nbsp;{{r_pop}}
-                            {% elif r_pop > 40 and r_pop <= 60 %}○&nbsp;{{r_pop}}
-                            {% elif r_pop > 20 and r_pop <= 20 %}▲&nbsp;{{r_pop}}
-                            {% elif r_pop > 0 %}※&nbsp;{{r_pop}}
-                            {% else %}−
-                            {% endif %}
-                          
+                          <div>
+                            <progress value={{r_pop}} max="99" style="width: 2.0rem"></progress>
                           </div>
                           
                         </td>
@@ -2166,9 +2163,40 @@
                         
                         </td>
                   
-                        <td align="center">
-                          <div style="font-family: Arial; font-size:1.2rem; font-weight: 550; text-align: left;">{{jockey}}</div>
-                          <div style="font-family: Arial; font-size:1.2rem; color:var(--color-gray); font-weight: 400; text-align: right;">{{trainer}}</div>
+                        {# 기수 / 복승율 #}
+                        <td style="font-size: 1.2rem">
+                          <a href="{% url 'get_race_awardee' rdate 'jockey' jockey_a jockey_a trainer ' ' %}"
+                            onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+
+                            {% if jockey_a %}
+                              {% if jockey == jockey_a %}
+                              <div style="text-align: left; color:var(--color-r1);">{{jockey_a}}</div>
+                              {%else%}
+                              <div style="text-align: left;">{{jockey_a}}</div>
+                              {%endif%}
+                              {% if jockey_a %}
+                              <div style="font-size: 1.1rem; color:var(--color-gray); font-family: Arial; text-align: right;">{{jockey_a_w|floatformat:1}}</div>
+                              {% endif %}
+                            
+                            {%endif%}
+                          </a>
+                          {% if trainer_a %}
+                          
+                            {% if r.trainer == trainer_a %}
+                            <div style="text-align: right; color:var(--color-gray);">
+                              <a href="{% url 'get_race_awardee' rdate 'trainer' trainer_a jockey trainer_a ' ' %}" onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                              {{trainer_a}}
+                              </a>
+                            </div>
+                            {%else%}
+                            <div style="color:var(--color-r1);  text-align: right;">
+                              <a href="{% url 'get_race_awardee' rdate 'trainer' trainer_a jockey trainer_a ' ' %}" onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                                {{trainer_a}}
+                              </a>
+                            </div>
+                            {%endif%}
+    
+                          {%endif%}
                         </td>
                   
                         <td align="center">
@@ -3089,8 +3117,6 @@
       <div class="room__top">
         
         <div class="room__topLeft">
-          <!-- <a href="{% url 'update_popularity' r_condition.rcity r_condition.rdate r_condition.rno %}" onclick="window.open(this.href, '_blank', 'width=900, height=800, toolbars=no, scrollbars=yes'); return false;">
-          </a> -->
 
           <nav class="header__menu">
           
@@ -4261,15 +4287,6 @@
 
     })
   </script>
-
-  <script>
-    $(window).load(function () {
-      $('.loader').fadeOut();
-    });
-  </script>
-
-
-
 
 </main>
 {% endblock %}
