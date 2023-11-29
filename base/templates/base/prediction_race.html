@@ -7,7 +7,6 @@
 
 <html lang="en">
 
-
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -41,6 +40,8 @@
 {% block content %}
 
 <main class="profile-page layout layout--2">
+
+  <div class="loader"></div>
 
   <div class="container">
     
@@ -181,7 +182,7 @@
           <span style="color: var(--color-main); padding:0.4rem;">
             <a href="{% url 'race_result' r_condition.rcity r_condition.rdate r_condition.rno 0 0 0 0 %}"
               onclick="window.open(this.href, '_blank', 'width=1000, height=1000, toolbars=no, scrollbars=yes'); return false;">
-              <span class="tooltip" style="font-size: 1.35rem; font-weight: 400;">📜
+              <span class="tooltip" style="font-size: 1.35rem; font-weight: 400;">📃
                 <span class="tooltip-text">경주결과</span>
               </span>
           </a>
@@ -269,7 +270,11 @@
                       <thead>
                         <tr>
                           <th colspan="4" style="text-align: left; font-size: 1.25rem;">
-                            <div style="font-size: 1.2rem; padding-bottom: 10px;">📌&nbsp;{{exp011s.0.jockey}}</div>
+                            <a href="{% url 'get_race_awardee' exp011s.0.rdate 'jockey' exp011s.0.jockey exp011s.0.jockey exp011s.0.trainer exp011s.0.host %}"
+                              onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                              <div style="font-size: 1.2rem; padding-bottom: 10px;">📌&nbsp;{{exp011s.0.jockey}}</div>
+                            </a>
+
                             <div style="font-size: 1.1rem; font-family: Arial;">프로그램 1위 기준 Gate별 연승률</div>
                             <div style="font-size: 1.1rem; font-family: Arial; color:var(--color-r1)">조교사 기수 복승율 ⩾ 기수 복승율</div>
                             <div style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5)">조교사 기수 복승율 ⪪ 기수 복승율</div>
@@ -581,7 +586,27 @@
 
                 {% if r.jockey_old %}
                   {# 기수가 변경되었으면 기존 기수의 기록을 삭제 #}
-                  <div class="blink" style="font-size: 1.1rem; text-align:center; color:gray">기수<br>변경</div>
+                  {% if r.jt_cnt %}
+                  <div style="font-size: 1.3rem;">
+                    {% if r.jt_per > r.j_per and r.jt_per > r.t_per %}
+                    <span style="font-family: Arial; color: var(--color-r1); text-decoration:line-through;">{{r.jt_per|rjust:"5"}}</span>
+                    {% elif r.jt_per > r.j_per and r.jt_per <= r.t_per %} <span style="font-family: Arial; color: var(--color-r4); text-decoration:line-through;">{{r.jt_per|rjust:"5"}}</span>
+                      {% else %}
+                      <span style="font-family: Arial; color:var(--color-gray); text-decoration:line-through;">{{r.jt_per|rjust:"5"}}</span>
+                      {% endif %}
+                      <span style="color:var(--color-gray); font-size:1.1rem; text-decoration:line-through;">%</span>
+                  </div>
+                  {% endif %}
+                  
+                  {# 기수 조교사 연대 출주 복승 회수 #}
+                  <div style="font-size: 1.1rem; color:gray; text-decoration:line-through;">
+                    <!-- <span style="font-family: Arial; color:var(--color-r5)">{{r.jt_1st}}</span> -->
+                    <span style="font-family: Arial; color:var(--color-r3); text-decoration:line-through;">{{r.jt_2nd}}</span>
+                    <!-- <span style="font-family: Arial; color:var(--color-r5)">{{r.jt_3rd}}</span> -->
+                    <span style="font-family: Arial; color:var(--color-gray); text-decoration:line-through;">/</span>
+                  
+                    <span style="font-family: Arial; color:var(--color-r3); text-decoration:line-through;">{{r.jt_cnt}}</span>
+                  </div>
                 {% else %}
                   {% if r.jt_cnt %}
                     <div style="font-size: 1.3rem;">
@@ -596,15 +621,15 @@
                     </div>
                   {% endif %}
                 
-                {# 기수 조교사 연대 출주 복승 회수 #}
-                <div style="font-size: 1.1rem; color:gray ">
-                  <!-- <span style="font-family: Arial; color:var(--color-r5)">{{r.jt_1st}}</span> -->
-                  <span style="font-family: Arial; color:var(--color-r3)">{{r.jt_2nd}}</span>
-                  <!-- <span style="font-family: Arial; color:var(--color-r5)">{{r.jt_3rd}}</span> -->
-                  <span style="font-family: Arial; color:var(--color-gray)">/</span>
+                  {# 기수 조교사 연대 출주 복승 회수 #}
+                  <div style="font-size: 1.1rem; color:gray ">
+                    <!-- <span style="font-family: Arial; color:var(--color-r5)">{{r.jt_1st}}</span> -->
+                    <span style="font-family: Arial; color:var(--color-r3)">{{r.jt_2nd}}</span>
+                    <!-- <span style="font-family: Arial; color:var(--color-r5)">{{r.jt_3rd}}</span> -->
+                    <span style="font-family: Arial; color:var(--color-gray)">/</span>
 
-                  <span style="font-family: Arial; color:var(--color-r3)">{{r.jt_cnt}}</span>
-                </div>
+                    <span style="font-family: Arial; color:var(--color-r3)">{{r.jt_cnt}}</span>
+                  </div>
               {% endif %}
               </td>
               
@@ -847,7 +872,12 @@
                     <thead style="font-size:1.2rem;">
                       <tr>
                         <th colspan="1" rowspan="2" ><span class="visible-big" style="background-color: bisque;">레<br>이<br>팅</span></th>
-                        <th colspan="1" rowspan="1"><span class="visible-big" style="color:var(--color-r5);">🐴&nbsp;&nbsp;{{r.horse|slice:"0;6"}}</span></th>
+                        <th colspan="1" rowspan="1">
+                          <a href="{% url 'get_race_horse' exp011s.0.rdate 'horse' r.horse r.jockey r.trainer r.host %}"
+                            onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                            <span class="visible-big" style="color:var(--color-r5);">🐴&nbsp;&nbsp;{{r.horse|slice:"0;6"}}</span>
+                          </a>
+                        </th>
                         <th rowspan="2"><span class="visible-big">마<br>체중</span></th>
                         <th rowspan="2"><span class="visible-big">부담<br>중량</span></th>
 
@@ -890,7 +920,7 @@
                         <th><span class="visible-big">G3F</span></th>
                         <th><span class="visible-big">G2F</span></th>
                         <th><span class="visible-big">G1F</span></th>
-                        <th rowspan="1"><span class="visible-big">프로그램</span></th>
+                        <th rowspan="1"><span class="visible-big" style="color:var(--color-light-gray);">프로그램</span></th>
                         <th rowspan="1"><span class="visible-big">◀️</span></th>
                         <th rowspan="1"><span class="visible-big">▶️</span></th>
 
@@ -1126,9 +1156,9 @@
                             <div style="font-size: 1.2rem; font-family: Arial;">{{hr.rg1f|slice:"-4:"}}</div>
                             {%endif%}
                           {% endif %}
-                            
-                          
                         </td>
+
+                        {# 경주기록/예상기록 #}
                         <td>
                           {% if hr.record %}
                           {% if hr.rank == 1 %}
@@ -1150,13 +1180,14 @@
                           </div>
                           {% endif %}
 
-                          <div style="text-align: right; color:gray; font-weight: 500; font-size: 1.1rem; font-family: Arial; font-style: italic;">
+                          <div style="text-align: right; color:var(--color-light-gray); font-weight: 500; font-size: 1.1rem; font-family: Arial; font-style: italic;">
                             {% if hr.rank > 20 or hr.grade|slice:"0:2" == '주행' %}{% else %} {{hr.p_record|slice:"0:1"}}&nbsp;{{hr.p_record|slice:"1:6"}} {% endif %}
                           </div>
                           {%endif%}
 
                         </td>
                         
+                        {# gate #}
                         <td style="font-size: 1.25rem;">
                           
                           <span style="font-family: Arial; border-radius: 10px; background-color:bisque; padding: 3px;">
@@ -1164,6 +1195,8 @@
                           </span>
                           
                         </td>
+
+                        {# corners #}
                         <td style="font-size: 1.15rem; font-family: Arial;">
                           {% if hr.corners %}
                             <div style="color:rgb(0, 128, 255); text-align: left; font-style: italic; font-family: Arial;">
@@ -1174,18 +1207,28 @@
                             </div>
                           {% endif %}
                         </td>
+
+                        {# rank #}
                         <td style="font-size: 1.2rem; font-family: Arial;">
                           {% if hr.rank %}
                           {% if hr.rank == 1 %}
-                          <span style="font-family: Arial; border-radius: 10px; background-color:aqua; padding: 3px;"">
+                          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-r1); color:var(--color-light); padding: 2px 4px;">
                             {% if hr.rank > 20 %}﹆{% else %} {{hr.rank}} {% endif %}
                           </span>
                           {% elif hr.rank == 2 %}
-                          <span style="font-family: Arial; border-radius: 10px; background-color:aqua; padding: 3px;"">
+                          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-r2); color:var(--color-light); padding: 2px 4px;">
                             {% if hr.rank > 20 %}﹆{% else %} {{hr.rank}} {% endif %}
                           </span>
                           {% elif hr.rank == 3 %}
-                          <span style="font-family: Arial; border-radius: 10px; background-color:aqua; padding: 3px;"">
+                          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-r3); color:var(--color-bg); padding: 2px 4px;">
+                            {% if hr.rank > 20 %}﹆{% else %} {{hr.rank}} {% endif %}
+                          </span>
+                          {% elif hr.rank == 4 %}
+                          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-r4); color:var(--color-bg); padding: 2px 4px;">
+                            {% if hr.rank > 20 %}﹆{% else %} {{hr.rank}} {% endif %}
+                          </span>
+                          {% elif hr.rank == 5 %}
+                          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-r5); color:var(--color-light); padding: 2px 4px;">
                             {% if hr.rank > 20 %}﹆{% else %} {{hr.rank}} {% endif %}
                           </span>
                           
@@ -1973,7 +2016,12 @@
                     <thead>
                     
                       <tr>
-                        <th colspan="1" rowspan="1"><span class="visible-big" style="color:var(--color-r5);">🐴&nbsp;&nbsp;{{horse|slice:"0;6"}}</span></th>
+                        <th colspan="1" rowspan="1">
+                          <a href="{% url 'get_race_horse' exp011s.0.rdate 'horse' horse jockey trainer ' ' %}"
+                            onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                            <span class="visible-big" style="color:var(--color-r5);">🐴&nbsp;&nbsp;{{horse|slice:"0;6"}}</span>
+                          </a>
+                        </th>
                         <th rowspan="1"><span class="visible-big">마번</span></th>
                         <th rowspan="1"><span class="visible-big">예상</span></th>
                         <th rowspan="2"><span class="visible-big">&nbsp;<br>마체중<br>&nbsp;</span></th>
@@ -2021,6 +2069,7 @@
                       {% if r_condition.rdate > rdate and horse == hname %}
                   
                       <tr>
+                        {# 경주번호 / 경주정보 #}
                         <td align="center">
                           <a style="text-decoration:underline" href="{% url 'race_result' rcity rdate rno horse r_condition.rcity r_condition.rdate r_condition.rno %}"
                             onclick="window.open(this.href, '_blank', 'width=1000, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
@@ -2067,66 +2116,68 @@
                           </a>
                         </td>
     
-
+                        {# 마번/실순 #}
                         <td align="center">
-                          <div style="font-family: Arial; font-size:1.4rem; font-style: italic;">
+                          <div style="font-family: Arial; font-size:1.3rem; font-style: italic;">
                             {{gate}}
                           </div>
 
-                          {% if r_rank == 1 %}
-                          <div style="font-family: Arial; font-size:1.3rem; font-style: italic; color:var(--color-r1); text-align: right;">{{r_rank}}</div>
-                          {% elif r_rank == 2 %}
-                          <div style="font-family: Arial; font-size:1.3rem; font-style: italic; color:var(--color-r2); text-align: right;">{{r_rank}}</div>
-                          {% elif r_rank == 3 %}
-                          <div style="font-family: Arial; font-size:1.3rem; font-style: italic; color:var(--color-r3); text-align: right;">{{r_rank}}</div>
-                          {% elif r_rank == 4 %}
-                          <div style="font-family: Arial; font-size:1.3rem; font-style: italic; color:var(--color-r4); text-align: right;">{{r_rank}}</div>
-                          {% elif r_rank == 5 %}
-                          <div style="font-family: Arial; font-size:1.3rem; font-style: italic; color:var(--color-r5); text-align: right;">{{r_rank}}</div>
-                          {% else %}
-                          <div style="font-family: Arial; font-size:1.2rem; color:var(--color-gray); text-align: right;">{% if r_rank %}{{r_rank}}{% endif %}</div>
-                          {% endif %}
+                          <div style="text-align: right;">
+                            {% if r_rank == 1 %}
+                            <span style="font-family: Arial; border-radius: 7px; background-color:antiquewhite; padding: 1.5px 3px; font-size:1.1rem; font-weight: 700; color:var(--color-r1); text-align: right;">{{r_rank}}</span>
+                            {% elif r_rank == 2 %}
+                            <span style="font-family: Arial; border-radius: 7px; background-color:antiquewhite; padding: 1.5px 3px; font-size:1.1rem; font-weight: 700; color:var(--color-r2); text-align: right;">{{r_rank}}</span>
+                            {% elif r_rank == 3 %}
+                            <span style="font-family: Arial; border-radius: 7px; background-color:antiquewhite; padding: 1.5px 3px; font-size:1.1rem; font-weight: 700; color:var(--color-r3); text-align: right;">{{r_rank}}</span>
+                            {% elif r_rank == 4 %}
+                            <span style="font-family: Arial; border-radius: 7px; background-color:antiquewhite; padding: 1.5px 3px; font-size:1.1rem; font-weight: 700; color:var(--color-r4); text-align: right;">{{r_rank}}</span>
+                            {% elif r_rank == 5 %}
+                            <span style="font-family: Arial; border-radius: 7px; background-color:antiquewhite; padding: 1.5px 3px; font-size:1.1rem; font-weight: 700; color:var(--color-r5); text-align: right;">{{r_rank}}</span>
+                            {% else %}
+                            <span style="font-family: Arial; border-radius: 7px; background-color:antiquewhite; padding: 1.5px 3px; font-size:1.1rem; font-weight: 700; color:var(--color-gray); text-align: right;">{% if r_rank %}{{r_rank}}{% endif %}</span>
+                            {% endif %}
+                          </div>
                           
                         </td>
                   
                         {# 프로그램 예상순위 / 인기도 #}
                         <td>
-                          <div align="center" style="font-family: Arial; font-size:1.3rem;">
+                          <div align="center" style="font-family: Arial; font-size:1.2rem;">
                             {% if rank == 1 %}
-                            <span style="font-style: italic; color:var(--color-r1); font-weight: 500;">
+                            <span style="color:var(--color-r1); font-family: Arial; border-radius: 7px; background-color:antiquewhite; padding: 1.5px 3px; font-weight: 500;">
                               {{rank}}
                             </span>
                             {% elif rank == 2 %}
-                            <span style="font-style: italic; color:var(--color-r2); font-weight: 500;">
+                            <span style="color:var(--color-r2); font-family: Arial; border-radius: 7px; background-color:antiquewhite; padding: 1.5px 3px; font-weight: 500;">
                               {{rank}}
                             </span>
                             {% elif rank == 3 %}
-                            <span style="font-style: italic; color:var(--color-r3); font-weight: 500;">
+                            <span style="color:var(--color-r3); font-family: Arial; border-radius: 7px; background-color:antiquewhite; padding: 1.5px 3px; font-weight: 500;">
                               {{rank}}
                             </span>
                             {% elif rank == 4 %}
-                            <span style="font-style: italic; color:var(--color-r4); font-weight: 500;">
+                            <span style="color:var(--color-r4); font-family: Arial; border-radius: 7px; background-color:antiquewhite; padding: 1.5px 3px; font-weight: 500;">
                               {{rank}}
                             </span>
                             {% elif rank == 5 %}
-                            <span style="font-style: italic; color:var(--color-r5); font-weight: 500;">
+                            <span style="color:var(--color-r5); font-family: Arial; border-radius: 7px; background-color:antiquewhite; padding: 1.5px 3px; font-weight: 500;">
                               {{rank}}
                             </span>
                             {% elif rank == 98 %}
-                            <span style="font-style: italic; color:var(--color-r5); font-weight: 500; font-size: 1.0rem;">
+                            <span style="color:var(--color-r5); font-family: Arial; border-radius: 7px; background-color:antiquewhite; padding: 1.5px 3px; font-weight: 500; font-size: 1.0rem;">
                               🐣
                             </span>
                             {% else %}
-                            <span style="font-style: normal;">
+                            <span style="font-style: normal; font-family: Arial; border-radius: 7px; background-color:antiquewhite; padding: 1.5px 3px;">
                               {{rank}}
                             </span>
                             {% endif %}
-                            &nbsp;
+                        
                           </div>
                           <div>
                             <progress value={{r_pop}} max="99" style="width: 2.0rem"></progress>
                           </div>
-                          
+                        
                         </td>
                         
                         {# 마체중 #}
@@ -2203,7 +2254,7 @@
                           <div style="font-family: Arial; font-size:1.2rem; font-style: italic;">
                             <span>{{d1|add:d2|add:d3|add:d4|add:d5|add:d6|add:d7|add:d8|add:d9|add:d10|add:d11|add:d12|add:d13|add:d14}}</span>
                             {% if laps %}
-                            <span class="blink" style="font-size:1.1rem; color:var(--color-main-light); border-radius: 90px; background-color:var(--color-r5); padding:1px;">{{laps}}</span>
+                            <span class="blink" style="font-family: Arial; color:var(--color-main-light); border-radius: 7px; background-color:var(--color-r5); padding: 1px 2px;">{{laps}}</span>
                             {% else %}
                             <span style="font-size:1.1rem; color:gray">0</span>
                             {% endif %}
@@ -2669,10 +2720,10 @@
       
             <tr>
               <th rowspan="2" width="6%"><span class="visible-big" style="padding:0.9rem">예상<br>순위</span></th>
-              <th rowspan="1" width="6%"><span class="visible-big">마번</span></th>
+              <th rowspan="1" width="5%"><span class="visible-big">마번</span></th>
               <th rowspan="1" width="11%"><span class="visible-big">Horse</span></th>
       
-              <th rowspan="2" width="12%"><span class="visible-big"><br>보조장구<br></span></th>
+              <th rowspan="2" width="13%"><span class="visible-big"><br>보조장구<br></span></th>
               <th rowspan="2" width="7%"><span class="visible-big"><br>진료일<br></span></th>
               <th rowspan="2" width="23%"><span class="visible-big"><br>진료사항<br></span></th>
 
@@ -2681,7 +2732,7 @@
               <th colspan="3" width="17%"><span class="visible-big">최근 1년 연승률</span></th>
             </tr>
             <tr>
-              <th rowspan="1"><span class="visible-big">(실순)</span></th>
+              <th rowspan="1"><span class="visible-big" style="color:var(--color-bg);">(실순)</span></th>
               <th rowspan="1"><span class="visible-big">(인기도)</span></th>
               <th width="14%"><span class="visible-big">모마[maternal]</span></th>
               <th width="6%"><span class="visible-big">%</span></th>
@@ -4286,6 +4337,12 @@
       })
 
     })
+  </script>
+
+  <script>
+    $(window).on('load', function () {
+      $('.loader').fadeOut();
+    });
   </script>
 
 </main>

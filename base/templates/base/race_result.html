@@ -211,7 +211,7 @@
         <table class="fold-table">
           <thead>
             <tr>
-              <th rowspan="1" width="6%" valign="center"><span class="visible-big">예상</span></th>
+              <th rowspan="1" valign="center"><span class="visible-big">순위</span></th>
               <th rowspan="2"><span class="visible-big">마<br>번</span></th>
               <th colspan="2"><span class="visible-big">Horse</span></th>
               <th rowspan="1"><span class="visible-big">부중</span></th>
@@ -233,7 +233,16 @@
               <th rowspan="2"><span class="visible-big">코너전개</span></th>
 
               <th rowspan="1"><span class="visible-big">경주기록</span></th>
-              <th rowspan="2"><span class="visible-big">착차</span></th>
+              
+              <th rowspan="2"><span class="visible-big">
+
+                <a href="{% url 'prediction_race' r_condition.rcity r_condition.rdate r_condition.rno 0 'awardee' %}"
+                  onclick="window.open(this.href, '_blank', 'width=1400, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                  <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">프로그램
+                    <span class="tooltip-text">thethe9.com 프로그램 예상</span>
+                  </span>
+                </a>
+              </th>
 
               <th rowspan="1"><span class="visible-big">인기</span></th>
               <th><span class="visible-big">단식</span></th>
@@ -257,14 +266,7 @@
               </th>
               <th><span class="visible-big">adv</span></th>
               <th>
-                
-                <a href="{% url 'prediction_race' r_condition.rcity r_condition.rdate r_condition.rno 0 'awardee' %}"  
-                  onclick="window.open(this.href, '_blank', 'width=1400, height=1000, toolbars=no, scrollbars=yes'); return false;">
-                  <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">프로그램
-                    <span class="tooltip-text">thethe9.com 프로그램 예상</span>
-                  </span>
-                </a>
-                
+                <span style="font-size: 1.2rem; font-weight: 400;">도착차</span>
               </th>
               <th><span class="visible-big">예상</span></th>
 
@@ -352,6 +354,7 @@
                 </div>
                 
               </td>
+              {# 경주마 체중 증감#}
               <td align="center" style="font-family: Arial; font-size: 1.2rem ">
                 
                 <div style="text-align:center">
@@ -372,6 +375,8 @@
                 </div>
   
               </td>
+
+              {# 부담중량 #}
               <td align="center" style="font-size: 1.2rem ">
                 
                 <div style="font-family: Arial; text-align:center; color:var(--color-light-gray)">{{r.handycap}}</div>
@@ -379,20 +384,21 @@
                 
               </td>
 
+              {# 기수/조교사 #}
               <td>
                 {% if r.horse == hname %}
-                <div style="text-align:left; color: var(--color-r3); font-size: 1.3rem; font-style: italic;">{{r.jockey}}</div>
+                <div style="text-align:left; color: var(--color-r3); font-size: 1.2rem; font-style: italic;">{{r.jockey}}</div>
                 {%else%}
-                <div style="text-align:left; font-size: 1.3rem;">{{r.jockey}}</div>
+                <div style="text-align:left; font-size: 1.2rem;">{{r.jockey}}</div>
                 {%endif%}
                 <div style="text-align:right; color: var(--color-gray); font-size: 1.2rem;">{{r.trainer}}</div>
               </td>
 
-              <td align="right" style="font-size: 1.3rem ">
+              <td align="right">
                 {% if r.horse == hname %}
-                <div style="font-family: Arial; color: var(--color-r3); font-size: 1.3rem; font-style: italic;">{{r.jockey_w|floatformat:1}}</div>
+                <div style="font-family: Arial; color: var(--color-r3); font-size: 1.2rem; font-style: italic;">{{r.jockey_w|floatformat:1}}</div>
                 {%else%}
-                <div style="font-family: Arial;">{{r.jockey_w|floatformat:1}}</div>
+                <div style="font-family: Arial; font-size: 1.2rem;">{{r.jockey_w|floatformat:1}}</div>
                 {%endif%}
                 <div style="font-family: Arial; text-align:right; color:var(--color-gray); font-size: 1.0rem;">{{r.adv_jockey|floatformat:1}}</div>
 
@@ -408,7 +414,7 @@
               <td>-</td>
               <td>-</td>
               <td>-</td>
-   
+  
               {%else%}
               
               <td align="center" style="font-size: 1.3rem ">
@@ -462,6 +468,16 @@
               </td>
 
               <td align="center">
+
+                {% if r.gap %}
+                  
+                  {% if r.horse == hname %}
+                  <div style="font-size: 1.0rem; text-align: right; color:var(--color-r3); font-weight: 400; font-family: Arial; border-radius: 10px; background-color: var(--color-bg);">{{r.gap}}</div>
+                  {%else%}
+                  <div style="font-size: 1.0rem; text-align: right; color:var(--color-gray); font-family: Arial;">{{r.gap}}</div>
+                  {%endif%}
+                      
+                {%endif%}
                 <div style=" font-size: 1.3rem ">
                   {% if r.horse == hname %}
                   <span style="font-family: Arial; color:var(--color-r3); font-weight:700; font-family: Arial; font-style: italic;">{{r.record|slice:"0:1"}}&nbsp;{{r.record|slice:"1:6"}}</span>
@@ -469,36 +485,23 @@
                   <span style="font-family: Arial;">{{r.record|slice:"0:1"}}&nbsp;{{r.record|slice:"1:6"}}</span>
                   {% endif %}
                 </div>
-                {% if r.r_record == None %}
-                {% else %}
-                <div style="font-family: Arial; font-family: Arial; font-size: 1.1rem; color:var(--color-gray);text-align: right;">{{r.r_record}}</div>
-                {%endif%}
-                
-                {% if r.p_rank == 1 %}
-                <div style="font-family: Arial; font-family: Arial; font-size: 1.15rem; color:var(--color-r1);text-align: right;">{{r.p_record}}</div>
-                {% elif r.p_rank == 2 %}
-                <div style="font-family: Arial; font-family: Arial; font-size: 1.1rem; color:var(--color-r2);text-align: right;">{{r.p_record}}</div>
-                {% elif r.p_rank == 3 %}
-                <div style="font-family: Arial; font-family: Arial; font-size: 1.1rem; color:var(--color-r3);text-align: right;">{{r.p_record}}</div>
-                {% elif r.p_rank == 4 %}
-                <div style="font-family: Arial; font-family: Arial; font-size: 1.1rem; color:var(--color-r4);text-align: right;">{{r.p_record}}</div>
-                {% elif r.p_rank == 5 %}
-                <div style="font-family: Arial; font-family: Arial; font-size: 1.1rem; color:var(--color-r5);text-align: right;">{{r.p_record}}</div>
-                {% else %}
-                <div style="font-family: Arial; font-family: Arial; font-size: 1.1rem; color:var(--color-gray);text-align: right;">{% if r.p_record %}{{r.p_record}}{% endif %}</div>
-                {% endif %}
+
               </td>
 
-              <td align="center" style="font-size: 1.1rem;">
-                {% if r.gap %}
-                  
-                  {% if r.horse == hname %}
-                  <div style="color:var(--color-r3); font-weight: 400; font-family: Arial; border-radius: 10px; background-color: var(--color-bg);">{{r.gap}}</div>
-                  {%else%}
-                  <div style="font-family: Arial;">{{r.gap}}</div>
-                  {%endif%}
-                      
-                {%endif%}
+              <td align="center">
+                {% if r.p_rank == 1 %}
+                <div style="font-family: Arial; font-family: Arial; font-size: 1.2rem; color:var(--color-r1);">{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}</div>
+                {% elif r.p_rank == 2 %}
+                <div style="font-family: Arial; font-family: Arial; font-size: 1.2rem; color:var(--color-r2);">{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}</div>
+                {% elif r.p_rank == 3 %}
+                <div style="font-family: Arial; font-family: Arial; font-size: 1.2rem; color:var(--color-r3);">{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}</div>
+                {% elif r.p_rank == 4 %}
+                <div style="font-family: Arial; font-family: Arial; font-size: 1.2rem; color:var(--color-r4);">{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}</div>
+                {% elif r.p_rank == 5 %}
+                <div style="font-family: Arial; font-family: Arial; font-size: 1.2rem; color:var(--color-r5);">{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}</div>
+                {% else %}
+                <div style="font-family: Arial; font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">{% if r.p_record %}{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}{% endif %}</div>
+                {% endif %}
               </td>
 
               <td align="center">
@@ -559,8 +562,6 @@
                   
               </td>
 
-              
-
               <td align="right">
                 {% if r.horse == hname %}
                 <div style="color:var(--color-r3); font-size: 1.2rem; font-family: Arial;">
@@ -578,10 +579,7 @@
                 </div>
                 {%endif%}
               
-              </td>
-              
-              
-              
+              </td>           
               {%endif%}
 
               <td align="left" style="font-size: 0.9rem;">
@@ -1055,9 +1053,9 @@
           <thead>
         
             <tr>
-              <th rowspan="2"><span class="visible-small" title="Jockey">순<br>위</span><span class="visible-big">순<br>위</span></th>
-              <th rowspan="1"><span class="visible-small" title="Jockey">마번</span><span class="visible-big">마번</span></th>
-              <th rowspan="1" colspan="2"><span class="visible-small" title="Jockey">Horse</span><span class="visible-big">Horse</span></th>
+              <th rowspan="1"><span class="visible-big">순위</span></th>
+              <th rowspan="1"><span class="visible-big">마번</span></th>
+              <th rowspan="1" colspan="2"><span class="visible-big">Horse</span></th>
 
               <th rowspan="1">
                 <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '99' %}"
@@ -1066,27 +1064,26 @@
                     <span class="tooltip-text">기수 연승율 현황 🔑</span>
                 </a>
               </th>
-              <th rowspan="1"><span class="visible-small" title="Jockey">Tot</span><span class="visible-big">Tot</span></th>
-              <!-- <th rowspan="2"><span class="visible-small" title="Jockey">일<br>평균</span><span class="visible-big">일<br>평균</span></th> -->
-              <th rowspan="1"><span class="visible-small" title="Jockey">D-1</span><span class="visible-big">D-1</span></th>
-              <th rowspan="1"><span class="visible-small" title="Jockey">D-2</span><span class="visible-big">D-2</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth1">D-3</span><span class="visible-big">D-3</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth2">D-4</span><span class="visible-big">D-4</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3">D-5</span><span class="visible-big">D-5</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3">D-6</span><span class="visible-big">D-6</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3">D-7</span><span class="visible-big">D-7</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3">D-8</span><span class="visible-big">D-8</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3">D-9</span><span class="visible-big">D-9</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3">D-10</span><span class="visible-big">D-10</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3">D-11</span><span class="visible-big">D-11</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3">D-12</span><span class="visible-big">D-12</span></th>
-              <!-- <th rowspan="2"><span class="visible-small" title="rmonth3">D-12</span><span class="visible-big">D-12</span></th>
-              <th rowspan="2"><span class="visible-small" title="rmonth3">D-13</span><span class="visible-big">D-13</span></th> -->
+              <th rowspan="1"><span class="visible-big">Tot</span></th>
+              <th rowspan="1"><span class="visible-big">D-1</span></th>
+              <th rowspan="1"><span class="visible-big">D-2</span></th>
+              <th rowspan="1"><span class="visible-big">D-3</span></th>
+              <th rowspan="1"><span class="visible-big">D-4</span></th>
+              <th rowspan="1"><span class="visible-big">D-5</span></th>
+              <th rowspan="1"><span class="visible-big">D-6</span></th>
+              <th rowspan="1"><span class="visible-big">D-7</span></th>
+              <th rowspan="1"><span class="visible-big">D-8</span></th>
+              <th rowspan="1"><span class="visible-big">D-9</span></th>
+              <th rowspan="1"><span class="visible-big">D-10</span></th>
+              <th rowspan="1"><span class="visible-big">D-11</span></th>
+              <th rowspan="1"><span class="visible-big">D-12</span></th>
+
             </tr>
             <tr>
-              <th rowspan="1"><span class="visible-small" title="Jockey">예상</span><span class="visible-big">예상</span></th>
-              <th rowspan="1"><span class="visible-small" title="Jockey">Pop.</span><span class="visible-big">Pop.</span></th>
-              <th rowspan="1"><span class="visible-small" title="Jockey">체중</span><span class="visible-big">체중</span></th>
+              <th rowspan="1"><span class="visible-big">Rate</span></th>
+              <th rowspan="1"><span class="visible-big" style="font-size: 1.1rem;">(예상)</span></th>
+              <th rowspan="1"><span class="visible-big">Pop.</span></th>
+              <th rowspan="1"><span class="visible-big">체중</span></th>
 
               <th>
                 <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '99' %}"
@@ -1095,19 +1092,19 @@
                     <span class="tooltip-text">조교사 연승율 현황 🔑</span>
                 </a>
               </th>
-              <th rowspan="1"><span class="visible-small" title="Jockey">C/S</span><span class="visible-big">C/S</span></th>
-              <th rowspan="1"><span class="visible-small" title="Jockey" style="font-size:1.1rem;">T/C/S</span><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
-              <th rowspan="1"><span class="visible-small" title="Jockey" style="font-size:1.1rem;">T/C/S</span><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth1" style="font-size:1.1rem;">T/C/S</span><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth2" style="font-size:1.1rem;">T/C/S</span><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3" style="font-size:1.1rem;">T/C/S</span><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3" style="font-size:1.1rem;">T/C/S</span><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3" style="font-size:1.1rem;">T/C/S</span><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3" style="font-size:1.1rem;">T/C/S</span><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3" style="font-size:1.1rem;">T/C/S</span><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3" style="font-size:1.1rem;">T/C/S</span><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3" style="font-size:1.1rem;">T/C/S</span><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
-              <th rowspan="1"><span class="visible-small" title="rmonth3" style="font-size:1.1rem;">T/C/S</span><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
+              <th rowspan="1"><span class="visible-big">C/S</span></th>
+              <th rowspan="1"><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
+              <th rowspan="1"><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
+              <th rowspan="1"><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
+              <th rowspan="1"><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
+              <th rowspan="1"><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
+              <th rowspan="1"><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
+              <th rowspan="1"><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
+              <th rowspan="1"><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
+              <th rowspan="1"><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
+              <th rowspan="1"><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
+              <th rowspan="1"><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
+              <th rowspan="1"><span class="visible-big" style="font-size:1.1rem;">T/C/S</span></th>
               
             </tr>
         
@@ -2390,22 +2387,22 @@
         <table class="fold-table">
           <thead>
             <tr>
-              <th rowspan="2" width="6%"><span class="visible-big">순<br>위</span></th>
-              <th rowspan="1" width="6%"><span class="visible-big">마번</span></th>
+              <th rowspan="2" width="4%"><span class="visible-big" style="padding:10px 1px">순<br>위</span></th>
+              <th rowspan="1" width="5%"><span class="visible-big">마번</span></th>
               <th rowspan="1" width="11%"><span class="visible-big">Horse</span></th>
             
-              <th rowspan="2" width="12%"><span class="visible-big"></span><br>보조장구<br></span></th>
+              <th rowspan="2" width="13%"><span class="visible-big"></span><br>보조장구<br></span></th>
               <th rowspan="2" width="7%"><span class="visible-big"><br>진료일<br></span></th>
               <th rowspan="2" width="23%"><span class="visible-big"><br>진료사항<br></span></th>
             
               <th rowspan="2" width="4%"><span class="visible-big"><br><br></span></th>
-              <th rowspan="1" width="14%"><span class="visible-big" style="font-size: 1.2rem;">부마[paternal]</span></th>
+              <th rowspan="1" width="16%"><span class="visible-big" style="font-size: 1.2rem;">부마[paternal]</span></th>
               <th colspan="3" width="17%"><span class="visible-big">최근 1년 연승률</span></th>
             </tr>
             <tr>
               <th rowspan="1"><span class="visible-big" style="font-size: 1.2rem;">(예상)</span></th>
               <th rowspan="1"><span class="visible-big" style="font-size: 1.2rem;">(인기도)</span></th>
-              <th width="14%"><span class="visible-big" style="font-size: 1.2rem;">모마[maternal]</span></th>
+              <th width="16%"><span class="visible-big" style="font-size: 1.2rem;">모마[maternal]</span></th>
               <th width="6%"><span class="visible-big" style="font-size: 1.2rem;">%</span></th>
               <th width="6%"><span class="visible-big" style="font-size: 1.2rem;">Tot</span></th>
               <th width="5%"><span class="visible-big" style="font-size: 1.2rem;">3rd</span></th>
@@ -2805,22 +2802,22 @@
           <thead>
       
             <tr>
-              <th rowspan="2" width="6%" valign="center"><span class="visible-small">순<br>위.</span><span class="visible-big">순<br>위</span></th>
-              <th rowspan="2" width="4%"><span class="visible-small">마<br>번</span><span class="visible-big">마<br>번</span></th>
-              <th rowspan="1" width="11%"><span class="visible-small" title="Jockey">Horse</span><span class="visible-big">Horse</span></th>
+              <th rowspan="2" width="6%" valign="center"><span class="visible-big" style="padding:10px">순<br>위</span></th>
+              <th rowspan="2" width="4%"><span class="visible-big" style="padding:10px">마<br>번</span></th>
+              <th rowspan="1" width="11%"><span class="visible-big">Horse</span></th>
       
-              <th rowspan="1" width="6%"><span class="visible-small" title="Jockey">기수</span><span class="visible-big" >기수</span></th>
-              <th rowspan="2" width="6%"><span class="visible-small" title="Jockey">구분</span><span class="visible-big">구분</span></th>
-              <th rowspan="2" width="7%"><span class="visible-small" title="Jockey">처분종류</span><span class="visible-big">처분종류</span></th>
+              <th rowspan="1" width="6%"><span class="visible-big" >기수</span></th>
+              <th rowspan="2" width="6%"><span class="visible-big" style="padding:10px">구분</span></th>
+              <th rowspan="2" width="7%"><span class="visible-big" style="padding:10px">처분종류</span></th>
 
-              <th rowspan="2" width="14%"><span class="visible-small" title="Jockey">처분내용</span><span class="visible-big">처분내용</span></th>
-              <th rowspan="2" width="46%"><span class="visible-small" title="Jockey">세부내용</span><span class="visible-big">세부내용</span></th>
+              <th rowspan="2" width="14%"><span class="visible-big" style="padding:10px">처분내용</span></th>
+              <th rowspan="2" width="46%"><span class="visible-big" style="padding:10px">세부내용</span></th>
               
       
             </tr>
             <tr>
-              <th><span class="visible-small" title="Jockey">인기도</span><span class="visible-big">인기도</span></th>
-              <th><span class="visible-small" title="Jockey">조교사</span><span class="visible-big">조교사</span></th>
+              <th><span class="visible-big">인기도</span></th>
+              <th><span class="visible-big">조교사</span></th>
             </tr>
       
           </thead>
@@ -2924,8 +2921,10 @@
               </td>
       
             </tr>
-            
+            <tr class="fold"></tr>
             {% endfor %}
+
+            
       
           </tbody>
         </table>

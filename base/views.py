@@ -42,8 +42,9 @@ from base.mysqls import (
     get_prediction,
     get_print_prediction,
     get_race,
-    get_race_awardee1,
     get_race_center_detail_view,
+    get_recent_awardee,
+    get_recent_horse,
     get_report_code,
     get_solidarity,
     get_status_train,
@@ -1257,11 +1258,10 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
 
     return render(request, "base/trend_winning_rate.html", context)
 
-# 기수 or 조교사 or 마주 99일 경주결과
+# 기수 or 조교사 or 마주 44일 경주결과
 def getRaceAwardee(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host):
     
-    solidarity = get_race_awardee1(rdate, awardee, i_name)      # 기수, 조교사, 마주 연대현황 최근1년
-
+    solidarity = get_recent_awardee(rdate, awardee, i_name)      # 기수, 조교사, 마주 연대현황 최근1년
     # print(solidarity)
         
     context = {
@@ -1273,6 +1273,22 @@ def getRaceAwardee(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host)
     }
 
     return render(request, "base/get_race_awardee.html", context)
+
+# 기수 or 조교사 or 마주 44일 경주결과
+def getRaceHorse(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host):
+    
+    solidarity = get_recent_horse(rdate, awardee, i_name)      # 기수, 조교사, 마주 연대현황 최근1년
+    # print(solidarity)
+        
+    context = {
+        "solidarity": solidarity,
+        "awardee": awardee,
+        "i_jockey": i_jockey,
+        "i_trainer": i_trainer,
+        "i_host": i_host,
+    }
+
+    return render(request, "base/get_race_horse.html", context)
 
 
 def raceTrain(request, rcity, rdate, rno):
@@ -1401,10 +1417,9 @@ def awardStatusJockey(request):
         fdate = friday[0:4] + "-" + friday[4:6] + "-" + friday[6:8]
 
     else:
-        print(q[5:7] + "-" + q[8:10] + "-" + q[0:4])
+        # print(q[5:7] + "-" + q[8:10] + "-" + q[0:4])
         today = datetime.strptime(q[5:7] + "-" + q[8:10] + "-" + q[0:4], "%m-%d-%Y")
-        # friday =
-        print(today)
+        # print(today)
 
         if today.weekday() == 4:
             rdate = q[0:4] + q[5:7] + q[8:10]

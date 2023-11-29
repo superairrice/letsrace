@@ -90,10 +90,13 @@ urlpatterns = [
     path('send_email/', views.send_email, name='send_email'),
     
     path('trend_winning_rate/<str:rcity>/<str:rdate>/<int:rno>/<str:awardee>/<str:i_filter>',
-         views.trendWinningRate, name="trend_winning_rate"),  # id 전달
+         views.trendWinningRate, name="trend_winning_rate"), 
     
     path('get_race_awardee/<str:rdate>/<str:awardee>/<str:i_name>/<str:i_jockey>/<str:i_trainer>/<str:i_host>',
-         views.getRaceAwardee, name="get_race_awardee"),  # id 전달
+         views.getRaceAwardee, name="get_race_awardee"), 
+    
+    path('get_race_horse/<str:rdate>/<str:awardee>/<str:i_name>/<str:i_jockey>/<str:i_trainer>/<str:i_host>',
+         views.getRaceHorse, name="get_race_horse"), 
 
 
 ]

@@ -1311,7 +1311,7 @@ def get_status_train(i_rdate):
     try:
         cursor = connection.cursor()
 
-        strSql = """ select rcity, rdate, rno, rday, gate, rank, r_rank, r_pop, horse, trainer, jockey, jt_per, handycap,
+        strSql = """ select rcity, rdate, rno, rday, gate, rank, r_rank, r_pop, horse, trainer, jockey, jt_per, handycap, j_per, t_per, h_weight, distance, grade, rating, dividing, host,
                                             max(r1), max(d1), max(c1), max(s1), 
                                             max(r2), max(d2), max(c2), max(s2), 
                                             max(r3), max(d3), max(c3), max(s3), 
@@ -1329,7 +1329,7 @@ def get_status_train(i_rdate):
                                             ( select sum(laps) from swim aa where aa.horse = a.horse and aa.tdate between date_format(DATE_ADD(a.rdate, INTERVAL - 14 DAY), '%Y%m%d') and a.rdate ) laps
                       from
                       (
-                        select b.rcity, b.rdate, b.rday, b.rno, b.gate, b.rank, b.r_rank, b.r_pop, a.horse, b.trainer, b.jockey, b.jt_per, b.handycap,
+                        select b.rcity, b.rdate, b.rday, b.rno, b.gate, b.rank, b.r_rank, b.r_pop, a.horse, b.trainer, b.jockey, b.jt_per, b.handycap, b.j_per, b.t_per, b.h_weight, b.distance, b.grade, b.rating, b.dividing, b.host,
                           if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 1 DAY), '%Y%m%d'), rider, '' ) r1,
                           if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 DAY), '%Y%m%d'), rider, '' ) r2,
                           if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d'), rider, '' ) r3,
@@ -1391,7 +1391,7 @@ def get_status_train(i_rdate):
                           if( tdate = date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 14 DAY), '%Y%m%d'), strong, 0 ) s14
                         from train a right outer join  
                         ( 
-                          select rcity, rdate, rday, rno, trainer, jockey, jt_per, gate, rank, r_rank, r_pop, horse, handycap
+                          select rcity, rdate, rday, rno, trainer, jockey, jt_per, gate, rank, r_rank, r_pop, horse, handycap, j_per, t_per, h_weight, distance, grade, rating, dividing, host
                             from expect 
                           where rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
                         ) b on a.horse = b.horse
@@ -2058,8 +2058,9 @@ def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee, i_filter):
         strSql = """ 
                     select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
                         gate, rank, horse, h_weight, w_change, jockey, trainer, if( host = '', ' ', host), rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
-                        rs1f, rg3f, rg2f, rg1f, race_speed
-                    from record 
+                        rs1f, rg3f, rg2f, rg1f,
+                        (select i_cycle from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) i_cycle
+                    from record a
                     where ( '""" + i_awardee + """' ) in ( select '""" + i_awardee + """' from exp011 where rcity = '""" + i_rcity + """' and rdate = '""" + i_rdate + """' and rno =  """ + str(i_rno) + """ ) 
                     and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 99 DAY), '%Y%m%d') and '""" + i_rdate + """'
                     and rank <= """ + i_filter + """
@@ -2081,19 +2082,52 @@ def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee, i_filter):
 
     return result
 
-# 기수 or 조교사 or 마주 최근 99일 경주결과
-def get_race_awardee1( i_rdate, i_awardee, i_name):
+# 기수 or 조교사 or 마주 최근 44일 경주결과
+def get_recent_awardee( i_rdate, i_awardee, i_name):
     
     try:
         cursor = connection.cursor()
 
         strSql = """ 
                     select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
-                        gate, rank, horse, h_weight, w_change, jockey, trainer, host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
-                        rs1f, rg3f, rg2f, rg1f, race_speed
-                    from record 
+                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( host = '', ' ', host) host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
+                        rs1f, rg3f, rg2f, rg1f, 
+                        (select i_cycle from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) i_cycle
+                    from record a
                     where """ + i_awardee + """ = '""" + i_name + """'
-                    and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 30 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                    and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 44 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                    order by rdate desc, rno desc, rcity
+                ; """
+
+        # print(strSql)
+        
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in 기수, 조교사, 마주 최근 1년 연대현황")
+
+    return result
+
+# 기수 or 조교사 or 마주 최근 44일 경주결과
+def get_recent_horse( i_rdate, i_awardee, i_name):
+    
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+                    select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
+                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( host = '', ' ', host) host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
+                        rs1f, rg3f, rg2f, rg1f, 
+                        (select i_cycle from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) i_cycle
+                    from record a
+                    where """ + i_awardee + """ = '""" + i_name + """'
+                    -- and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 1000 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                    and rdate < '""" + i_rdate + """'
                     order by rdate desc, rno desc, rcity
                 ; """
 
