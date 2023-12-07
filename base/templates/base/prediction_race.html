@@ -906,7 +906,7 @@
                           </div>
                           {% endif %}
                           {% endfor %}
-                        </span>
+                          </span>
                         </th>
                         
                       </tr>
@@ -939,7 +939,7 @@
 
                       <tr align="center" style="font-size: 1.1rem;">
 
-                        <td>{# 기수 복승율 / 경주마 rating #}
+                        <td>{# rating #}
                           {% if hr.rating %}
                           <div style="font-style: italic; padding:2px; color:var(--color-r3); font-family: Arial; border-radius: 15px; background-color:var(--color-bg);">{{hr.rating}}</div>
                           {% else %}
@@ -991,19 +991,19 @@
                               &nbsp;&nbsp;
                               
                               {% if hr.race_speed == '③' %}
-                              <span style="font-weight: 600; font-size: 1.1rem; color:var(--color-r1);">3</span>
+                              <span style="font-weight: 400; font-style: normal; font-size: 1.1rem; border-radius: 7px; background-color: var(--color-r1); padding: 1px 3px; color:var(--color-light);">3</span>
                               {% elif hr.race_speed == '④' %}
-                              <span style="font-weight: 600; font-size: 1.1rem; color:var(--color-r2);">4</span>
+                              <span style="font-weight: 400; font-style: normal; font-size: 1.1rem; border-radius: 7px; background-color: var(--color-r2); padding: 1px 3px; color:var(--color-light);">4</span>
                               {% elif hr.race_speed == '⑤' %}
-                              <span style="font-weight: 600; font-size: 1.1rem; color:var(--color-bg);">5</span>
+                              <span style="font-weight: 400; font-style: normal; font-size: 1.1rem; border-radius: 7px; background-color: var(--color-r3); padding: 1px 3px; color:var(--color-bg);">5</span>
                               {% elif hr.race_speed == '⑥' %}
-                              <span style="font-weight: 600; font-size: 1.1rem; color:var(--color-gray);">6</span>
+                              <span style="font-weight: 400; font-style: normal; font-size: 1.1rem; border-radius: 7px; background-color: var(--color-r3); padding: 1px 3px; color:var(--color-dark-medium);">6</span>
                               {% elif hr.race_speed == '⑦' %}
-                              <span style="font-weight: 600; font-size: 1.1rem; color:var(--color-r3);">7</span>
+                              <span style="font-weight: 400; font-style: normal; font-size: 1.1rem; border-radius: 7px; background-color: var(--color-r1); padding: 1px 3px; color:var(--color-light);">7</span>
                               {% elif hr.race_speed == '⑧' %}
-                              <span style="font-weight: 600; font-size: 1.1rem; color:var(--color-r4);">8</span>
+                              <span style="font-weight: 400; font-style: normal; font-size: 1.1rem; border-radius: 7px; background-color: var(--color-r1); padding: 1px 3px; color:var(--color-light);">8</span>
                               {% else %}
-                              <span style="font-weight: 600; font-size: 1.1rem; color:var(--color-r5);">{% if hr.race_speed %}{{hr.race_speed}}{% else %}&nbsp;{% endif %}</span>
+                              <span>{% if hr.race_speed %}{{hr.race_speed}}{% else %}{% endif %}</span>
                               {% endif %}
                               
                             </div>
@@ -1189,7 +1189,7 @@
                         </td>
                         
                         {# gate #}
-                        <td style="font-size: 1.25rem;">
+                        <td style="font-size: 1.2rem;">
                           
                           <span style="font-family: Arial; border-radius: 10px; background-color:bisque; padding: 3px;">
                             {% if hr.rank > 20 %}﹆{% else %} {{hr.gate}} {% endif %}
@@ -1198,7 +1198,7 @@
                         </td>
 
                         {# corners #}
-                        <td style="font-size: 1.15rem; font-family: Arial;">
+                        <td style="font-size: 1.1rem; font-family: Arial;">
                           {% if hr.corners %}
                             <div style="color:rgb(0, 128, 255); text-align: left; font-style: italic; font-family: Arial;">
                               {{hr.corners|slice:"0:10"}}
@@ -1312,10 +1312,21 @@
                         </td>
 
                         <td align="center">
+                          {% if request.user.username == 'admin' %}
+                          <a href="{% url 'write_significant' hr.rdate hr.horse %}"
+                            onclick="window.open(this.href, 'w_significant', 'top=0, left=0, width=550, height=440'); return false;">
+                            
+                            <div style="font-family: Arial; font-size:0.9rem; color:var(--color-gray); text-align: right;">{% if hr.r_etc %}{{hr.r_etc|slice:"0:5"}}{% else %}{{hr.gear1|slice:"0:5"}}{% endif %}
+                            </div>
+                            <div style="font-family: Arial; font-size:0.9rem; color:var(--color-gray); text-align: right;">{% if hr.r_etc %}{{hr.r_etc|slice:"5:10"}}{% else %}{{hr.gear2|slice:"0:5"}}{% endif %}
+                            </div>
+                          </a>
+                          {% else %}
                           <div style="font-family: Arial; font-size:0.9rem; color:var(--color-gray); text-align: right;">{% if hr.gear1 %}{{hr.gear1|slice:"0:5"}}{% endif %}
                           </div>
                           <div style="font-family: Arial; font-size:0.9rem; color:var(--color-gray); text-align: right;">{% if hr.gear2 %}{{hr.gear2|slice:"0:5"}}{% endif %}
                           </div>
+                          {% endif %}
                         </td>
                         
                       </tr>

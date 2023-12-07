@@ -632,9 +632,8 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     # print(trend_j)
 
     trainer_double_check = get_trainer_double_check(rcity, rdate, rno)
-    
+
     axis = get_axis(rcity, rdate, rno)
-    
 
     name = get_client_ip(request)
 
@@ -1225,28 +1224,28 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
     return render(request, "base/race_result.html", context)
 
+
 # 기수 or 조교사 최근 12주 성적 / 99일 경주결과
 def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
-    
-    
-    if awardee == 'jockey':
-        
+    if awardee == "jockey":
         trend_data, trend_title = get_jockey_trend(rcity, rdate, rno)
-        solidarity = get_solidarity(rcity, rdate, rno, 'jockey', i_filter)      # 기수, 조교사, 마주 연대현황 최근1년
-        
-    else:
-        
-        trend_data, trend_title = get_trainer_trend(rcity, rdate, rno)
-        solidarity = get_solidarity(rcity, rdate, rno, 'trainer', i_filter)      # 기수, 조교사, 마주 연대현황 최근1년
+        solidarity = get_solidarity(
+            rcity, rdate, rno, "jockey", i_filter
+        )  # 기수, 조교사, 마주 연대현황 최근1년
 
+    else:
+        trend_data, trend_title = get_trainer_trend(rcity, rdate, rno)
+        solidarity = get_solidarity(
+            rcity, rdate, rno, "trainer", i_filter
+        )  # 기수, 조교사, 마주 연대현황 최근1년
 
     # print(solidarity)
-    
+
     trend_j = trend_data.values.tolist()
     trend_j_title = trend_data.columns.tolist()
-    
+
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
-        
+
     context = {
         "trend_j": trend_j,
         "trend_j_title": trend_j_title,
@@ -1258,12 +1257,12 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
 
     return render(request, "base/trend_winning_rate.html", context)
 
+
 # 기수 or 조교사 or 마주 44일 경주결과
 def getRaceAwardee(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host):
-    
-    solidarity = get_recent_awardee(rdate, awardee, i_name)      # 기수, 조교사, 마주 연대현황 최근1년
+    solidarity = get_recent_awardee(rdate, awardee, i_name)  # 기수, 조교사, 마주 연대현황 최근1년
     # print(solidarity)
-        
+
     context = {
         "solidarity": solidarity,
         "awardee": awardee,
@@ -1274,12 +1273,12 @@ def getRaceAwardee(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host)
 
     return render(request, "base/get_race_awardee.html", context)
 
+
 # 기수 or 조교사 or 마주 44일 경주결과
 def getRaceHorse(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host):
-    
-    solidarity = get_recent_horse(rdate, awardee, i_name)      # 기수, 조교사, 마주 연대현황 최근1년
+    solidarity = get_recent_horse(rdate, awardee, i_name)  # 기수, 조교사, 마주 연대현황 최근1년
     # print(solidarity)
-        
+
     context = {
         "solidarity": solidarity,
         "awardee": awardee,
@@ -1790,6 +1789,134 @@ def pyscriptTest(request):
     pass
 
     return render(request, "base/pyscript_test.html")
+
+
+def writeSignificant(request, rdate, horse):
+    
+    
+    
+    if request.method == "POST":
+        
+        start = request.POST.get("start")
+        corners = request.POST.get("corners")
+        finish = request.POST.get("finish")
+        wrapup = request.POST.get("wrapup")
+        r_etc = request.POST.get("r_etc")
+
+
+        # print(start, corners, finish, wrapup, r_etc)
+
+        try:
+            cursor = connection.cursor()
+
+            strSql = (
+                """ update rec011 
+                    set r_start = '""" + start + """',
+                        r_corners = '""" + corners + """',
+                        r_finish = '""" + finish + """',
+                        r_wrapup = '""" + wrapup + """',
+                        r_etc = '""" + r_etc + """'
+                    where rdate =  '""" + rdate + """'
+                    and horse =  '""" + horse + """'
+                    ; """
+            )
+
+            # print(strSql)
+            r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+            awards = cursor.fetchall()
+
+            connection.commit()
+            connection.close()
+
+            # return render(request, 'base/update_popularity.html', context)
+            # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+
+        except:
+            connection.rollback()
+            print("Failed updating in exp011")
+
+
+    try:
+        cursor = connection.cursor()
+        strSql = """ select r_start, r_corners, r_finish, r_wrapup, r_etc
+                    from rec011 
+                    where rdate = '""" + rdate + """'
+                    and horse =  '""" + horse + """'
+                    ;"""
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        r_significant = cursor.fetchall()
+        
+        # print(strSql)
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting start")
+        
+    try:
+        cursor = connection.cursor()
+        strSql = """ select r_code, r_name from race_cd where cd_type = 'R1' order by r_code; """
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        r_start = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting r_start")
+
+    try:
+        cursor = connection.cursor()
+        strSql = """ select r_code, r_name from race_cd where cd_type = 'R2' order by r_code; """
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        r_corners = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting r_corners")
+
+    try:
+        cursor = connection.cursor()
+        strSql = """ select r_code, r_name from race_cd where cd_type = 'R3' order by r_code; """
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        r_finish = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting r_finish")
+    try:
+        cursor = connection.cursor()
+        strSql = """ select r_code, r_name from race_cd where cd_type = 'R4' order by r_code; """
+        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        r_wrapup = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting r_wrapup")
+
+
+    context = {
+        "rdate": rdate,
+        "horse": horse,
+        "r_significant": r_significant,
+        "r_start": r_start,
+        "r_corners": r_corners,
+        "r_finish": r_finish,
+        "r_wrapup": r_wrapup,
+    }
+    return render(request, "base/write_significant.html", context)
 
 
 @login_required(login_url="login")

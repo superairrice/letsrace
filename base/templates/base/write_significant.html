@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
+  <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
+
+  <script src="{% static 'js/script.js' %}"></script>
+
+  <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
+
+  <title>경주 메모</title>
+
+</head>
+
+{% block content %}
+<br>
+
+<div class="container">
+
+  <div class="room__top">
+    <div class="room__topLeft">
+      <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">📆&nbsp;{{rdate|slice:"0:4"}}.{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
+      <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">🐴&nbsp;{{horse}} </span>
+      <span style="font-size:1.5rem; color: var(--color-light); font-weight: 600;">📋&nbsp;경주전개 분석</span>
+
+  
+    </div>
+  
+  </div>
+
+  <hr style="border: solid 1px gray;">
+
+  <form class="header__search" action="" method="POST">
+    {% csrf_token %}
+    <label style="padding-bottom: 0%;">
+      <div style="width:80px">✔︎&nbsp;Start :</div>
+      <div>
+      <select name="start" style="font-size: 1.25rem; width: 300px; border-radius: 5px;">
+        <option value="-" {% if start == '-' %} selected {% endif %}>&nbsp;</option>
+        {% for r_code, r_name in r_start %}
+        <option value="{{r_code}}" {% if r_code == r_significant.0.0 %} selected {% endif %}>{{r_name}}</option>
+        {% endfor %}
+      </select>
+      </div>
+    </label>
+
+    <label style="padding-bottom: 0%;">
+      <div style="width:80px">✔︎&nbsp;Corners :</div>
+      <div>
+      <select name="corners" style="font-size: 1.25rem; width: 300px; border-radius: 5px;">
+        <option value="-" {% if corners == '-' %} selected {% endif %}>&nbsp;</option>
+        {% for r_code, r_name in r_corners %}
+        <option value="{{r_code}}" {% if r_code == r_significant.0.1 %} selected {% endif %}>{{r_name}}</option>
+        {% endfor %}
+      </select>
+      </div>
+    </label>
+
+    <label style="padding-bottom: 0%;">
+      <div style="width:80px">✔︎&nbsp;Finish :</div>
+      <div>
+      <select name="finish" style="font-size: 1.25rem; width: 300px; border-radius: 5px;">
+        <option value="-" {% if finish == '-' %} selected {% endif %}>&nbsp;</option>
+        {% for r_code, r_name in r_finish %}
+        <option value="{{r_code}}" {% if r_code == r_significant.0.2 %} selected {% endif %}>{{r_name}}</option>
+        {% endfor %}
+      </select>
+      </div>
+    </label>
+    <label>
+      <div style="width:80px">✔︎&nbsp;Wrap up :</div>
+      <div>
+      <select name="wrapup" style="font-size: 1.25rem; width: 300px; border-radius: 5px;">
+        <option value="-" {% if wrapup == '-' %} selected {% endif %}>&nbsp;</option>
+        {% for r_code, r_name in r_wrapup %}
+        <option value="{{r_code}}" {% if r_code == r_significant.0.3 %} selected {% endif %}>{{r_name}}</option>
+        {% endfor %}
+      </select>
+      </div>
+    </label>
+
+
+    <label>
+      <div style="width:80px">✔︎&nbsp;Etc. :</div>
+      <div>
+        <textarea name="r_etc" rows="2" placeholder="Enter Your Text Here by Replacing it" style="font-size: 1.2rem; width: 300px; padding: 10px;">
+          {% if r_significant.0.3 %}{{r_significant.0.4}}{% else %}Enter Your Text Here by Replacing it{% endif %}
+        </textarea>
+      </div>
+
+    </label>
+
+    <button class="btn btn--link" type="submit" style="font-size: 1.3rem;">💾&nbsp;Save</button>
+
+    <div class="form__action">
+      <a class="btn btn--dark" onclick="window.close()">Close</a>
+    </div>
+
+  </form>
+
+
+</div>
+
+
+
+{% endblock content %}

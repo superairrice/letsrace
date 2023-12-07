@@ -181,7 +181,9 @@ class Exp011(models.Model):
     gap_back = models.IntegerField(blank=True, null=True)
     alloc1r = models.CharField(max_length=10, blank=True, null=True)
     alloc3r = models.CharField(max_length=10, blank=True, null=True)
-    s1f_rank = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    s1f_rank = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
 
     class Meta:
         managed = True
@@ -371,6 +373,21 @@ class RecordS(models.Model):
     )
     i_convert = models.DecimalField(
         max_digits=10, decimal_places=4, blank=True, null=True
+    )
+    r_start = models.CharField(
+        max_length=5, db_collation="euckr_korean_ci", blank=True, null=True
+    )
+    r_corners = models.CharField(
+        max_length=5, db_collation="euckr_korean_ci", blank=True, null=True
+    )
+    r_finish = models.CharField(
+        max_length=5, db_collation="euckr_korean_ci", blank=True, null=True
+    )
+    r_wrapup = models.CharField(
+        max_length=5, db_collation="euckr_korean_ci", blank=True, null=True
+    )
+    r_etc = models.CharField(
+        max_length=400, db_collation="euckr_korean_ci", blank=True, null=True
     )
     alloc1r = models.DecimalField(
         max_digits=10, decimal_places=4, blank=True, null=True

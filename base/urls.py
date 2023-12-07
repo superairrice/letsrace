@@ -97,6 +97,9 @@ urlpatterns = [
     
     path('get_race_horse/<str:rdate>/<str:awardee>/<str:i_name>/<str:i_jockey>/<str:i_trainer>/<str:i_host>',
          views.getRaceHorse, name="get_race_horse"), 
+    
+    path('write_significant/<str:rdate>/<str:horse>',
+         views.writeSignificant, name="write_significant"), 
 
 
 ]
