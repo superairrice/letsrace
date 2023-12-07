@@ -1815,7 +1815,7 @@ def writeSignificant(request, rdate, horse):
                         r_corners = '""" + corners + """',
                         r_finish = '""" + finish + """',
                         r_wrapup = '""" + wrapup + """',
-                        r_etc = '""" + r_etc + """'
+                        r_etc = '""" + r_etc.strip() + """'
                     where rdate =  '""" + rdate + """'
                     and horse =  '""" + horse + """'
                     ; """
