@@ -1311,14 +1311,17 @@
                         {%endif%}
                         </td>
 
+                        {# 마필장구, 경주 특이사항 등록 #}
                         <td align="center">
                           {% if request.user.username == 'admin' %}
                           <a href="{% url 'write_significant' hr.rdate hr.horse %}"
                             onclick="window.open(this.href, 'w_significant', 'top=0, left=0, width=550, height=440'); return false;">
                             
-                            <div style="font-family: Arial; font-size:0.9rem; color:var(--color-gray); text-align: right;">{% if hr.r_etc %}{{hr.r_etc|slice:"0:5"}}{% else %}{{hr.gear1|slice:"0:5"}}{% endif %}
+                            <div style="font-family: Arial; font-size:0.9rem; color:var(--color-gray); text-align: right;">
+                              {% if hr.r_etc %}{{hr.r_etc|slice:"0:5"}}{% else %}{% if hr.gear1 %}{{hr.gear1|slice:"0:5"}}{% else %}&nbsp;&nbsp;{% endif %}{% endif %}
                             </div>
-                            <div style="font-family: Arial; font-size:0.9rem; color:var(--color-gray); text-align: right;">{% if hr.r_etc %}{{hr.r_etc|slice:"5:10"}}{% else %}{{hr.gear2|slice:"0:5"}}{% endif %}
+                            <div style="font-family: Arial; font-size:0.9rem; color:var(--color-gray); text-align: right;">
+                              {% if hr.r_etc %}{{hr.r_etc|slice:"5:10"}}{% else %}{% if hr.gear2 %}{{hr.gear2|slice:"0:5"}}{% else %}&nbsp;&nbsp;{% endif %}{% endif %}
                             </div>
                           </a>
                           {% else %}

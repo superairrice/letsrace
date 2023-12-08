@@ -2059,7 +2059,8 @@ def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee, i_filter):
                     select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
                         gate, rank, horse, h_weight, w_change, jockey, trainer, if( host = '', ' ', host), rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
                         rs1f, rg3f, rg2f, rg1f,
-                        (select i_cycle from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) i_cycle
+                        (select i_cycle from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) i_cycle,
+                        (select jt_per from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) jt_per
                     from record a
                     where ( '""" + i_awardee + """' ) in ( select '""" + i_awardee + """' from exp011 where rcity = '""" + i_rcity + """' and rdate = '""" + i_rdate + """' and rno =  """ + str(i_rno) + """ ) 
                     and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 99 DAY), '%Y%m%d') and '""" + i_rdate + """'
@@ -2092,7 +2093,8 @@ def get_recent_awardee( i_rdate, i_awardee, i_name):
                     select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
                         gate, rank, horse, h_weight, w_change, jockey, trainer, if( host = '', ' ', host) host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
                         rs1f, rg3f, rg2f, rg1f, 
-                        (select i_cycle from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) i_cycle
+                        (select i_cycle from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) i_cycle,
+                        (select jt_per from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) jt_per
                     from record a
                     where """ + i_awardee + """ = '""" + i_name + """'
                     and rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 44 DAY), '%Y%m%d') and '""" + i_rdate + """'
