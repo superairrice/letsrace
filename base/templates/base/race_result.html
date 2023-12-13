@@ -666,7 +666,7 @@
                         <td align="right">
                   
                           <a style="text-decoration:underline" href="{% url 'race_result' hr.rcity hr.rdate hr.rno hr.horse r_condition.rcity r_condition.rdate r_condition.rno %}"
-                            onclick="window.open(this.href, '_blank', 'width=1000, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
+                            onclick="window.open(this.href, 'w_result', 'width=1000, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
                   
                             <div style="text-align: left; color:dodgerblue; font-style: italic; text-align: left;">
                               <span style="font-size: 1.2rem; font-family: Arial;">'{{hr.rdate|slice:"2:4" }}.{{hr.rdate|slice:"4:6" }}.{{hr.rdate|slice:"6:8"}}</span>
@@ -760,6 +760,7 @@
                   
                         {# 기수 / 복승율 #}
                         <td style="font-size: 1.2rem">
+                          {% if r.host %}
                           <a href="{% url 'get_race_awardee' hr.rdate 'jockey' hr.jockey hr.jockey r.trainer r.host %}"
                             onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
 
@@ -776,10 +777,25 @@
                           {%endif%}
 
                           </a>
+                          {% else %}
+                          {% if hr.jockey %}
+                            {% if r.jockey == hr.jockey %}
+                            <div style="text-align: left; color:var(--color-r1);">{{hr.jockey}}</div>
+                            {%else%}
+                            <div style="text-align: left;">{{hr.jockey}}</div>
+                            {%endif%}
+                            {% if hr.jockey %}
+                            <div style="font-size: 1.1rem; color:var(--color-gray); font-family: Arial; text-align: right;">{{hr.jockey_w|floatformat:1}}</div>
+                            {% endif %}
+                          
+                          {%endif%}
+
+                          {% endif%}
                         </td>
 
                         {# 조교사 / 마주 #}
                         <td style="font-size: 1.15rem">
+                          {% if r.host %}
                           {% if hr.trainer %}
                           
                             {% if r.trainer == hr.trainer %}
@@ -812,6 +828,22 @@
                             </div>
                             {%endif%}
                           {%endif%}
+                          {% else %}
+
+                          {% if hr.trainer %}
+                            {% if r.trainer == hr.trainer %}
+                            <div style="text-align: left; color:var(--color-r1);">{{hr.trainer}}</div>
+                            {%else%}
+                            <div style="text-align: left;">{{hr.trainer}}</div>
+                            {%endif%}
+                            {% if hr.trainer %}
+                            <div style="font-size: 1.1rem; color:var(--color-gray); font-family: Arial; text-align: right;">{{hr.jockey_w|floatformat:1}}</div>
+                            {% endif %}
+                          
+                          {%endif%}
+                            
+                          
+                          {% endif %}
                         </td>
                   
                         <td data-th="경주마" style="font-size: 1.2rem">
@@ -1758,7 +1790,7 @@
                         <td align="center">
                           
                           <a style="text-decoration:underline" href="{% url 'race_result' rcity rdate rno horse r_condition.rcity r_condition.rdate r_condition.rno %}"
-                            onclick="window.open(this.href, '_blank', 'width=1000, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
+                            onclick="window.open(this.href, 'w_result', 'width=1000, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
                           
                             <div style="text-align: left; color:dodgerblue; font-style: italic; text-align: left;">
                               <span style="font-size: 1.2rem; font-family: Arial;">'{{rdate|slice:"2:4" }}.{{rdate|slice:"4:6" }}.{{rdate|slice:"6:8"}}</span>

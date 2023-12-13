@@ -2057,7 +2057,7 @@ def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee, i_filter):
 
         strSql = """ 
                     select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
-                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( host = '', ' ', host), rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
+                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( grade = '주행검사', ' ', host), rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
                         rs1f, rg3f, rg2f, rg1f,
                         (select i_cycle from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) i_cycle,
                         (select jt_per from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) jt_per
@@ -2091,7 +2091,7 @@ def get_recent_awardee( i_rdate, i_awardee, i_name):
 
         strSql = """ 
                     select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
-                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( host = '', ' ', host) host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
+                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( grade = '주행검사', 'aa', host) host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
                         rs1f, rg3f, rg2f, rg1f, 
                         (select i_cycle from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) i_cycle,
                         (select jt_per from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) jt_per
@@ -2123,7 +2123,7 @@ def get_recent_horse( i_rdate, i_awardee, i_name):
 
         strSql = """ 
                     select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
-                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( host = '', ' ', host) host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
+                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( grade = '주행검사', ' ', host) host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
                         rs1f, rg3f, rg2f, rg1f, 
                         (select i_cycle from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) i_cycle,
                         (select jt_per from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) jt_per
