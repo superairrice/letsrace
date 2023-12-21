@@ -557,8 +557,10 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     # h_records = RecordS.objects.filter(
     #     rdate__lt=rdate, horse=horse.horse).order_by('-rdate')
 
+    # rdate_1year = str(int(rdate[0:4]) - 1) + rdate[4:8]  # 최근 1년 경주성적 조회조건 추가
     hr_records = RecordS.objects.filter(
         # hr_records = PRecord.objects.filter(
+        # rdate__gt=rdate_1year,
         rdate__lt=rdate,
         horse__in=exp011s.values("horse"),
     ).order_by("horse", "-rdate")
@@ -1792,17 +1794,12 @@ def pyscriptTest(request):
 
 
 def writeSignificant(request, rdate, horse):
-    
-    
-    
     if request.method == "POST":
-        
         start = request.POST.get("start")
         corners = request.POST.get("corners")
         finish = request.POST.get("finish")
         wrapup = request.POST.get("wrapup")
         r_etc = request.POST.get("r_etc")
-
 
         # print(start, corners, finish, wrapup, r_etc)
 
@@ -1811,13 +1808,27 @@ def writeSignificant(request, rdate, horse):
 
             strSql = (
                 """ update rec011 
-                    set r_start = '""" + start + """',
-                        r_corners = '""" + corners + """',
-                        r_finish = '""" + finish + """',
-                        r_wrapup = '""" + wrapup + """',
-                        r_etc = '""" + r_etc.strip() + """'
-                    where rdate =  '""" + rdate + """'
-                    and horse =  '""" + horse + """'
+                    set r_start = '"""
+                + start
+                + """',
+                        r_corners = '"""
+                + corners
+                + """',
+                        r_finish = '"""
+                + finish
+                + """',
+                        r_wrapup = '"""
+                + wrapup
+                + """',
+                        r_etc = '"""
+                + r_etc.strip()
+                + """'
+                    where rdate =  '"""
+                + rdate
+                + """'
+                    and horse =  '"""
+                + horse
+                + """'
                     ; """
             )
 
@@ -1835,17 +1846,22 @@ def writeSignificant(request, rdate, horse):
             connection.rollback()
             print("Failed updating in exp011")
 
-
     try:
         cursor = connection.cursor()
-        strSql = """ select r_start, r_corners, r_finish, r_wrapup, r_etc
+        strSql = (
+            """ select r_start, r_corners, r_finish, r_wrapup, r_etc
                     from rec011 
-                    where rdate = '""" + rdate + """'
-                    and horse =  '""" + horse + """'
+                    where rdate = '"""
+            + rdate
+            + """'
+                    and horse =  '"""
+            + horse
+            + """'
                     ;"""
-        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        )
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         r_significant = cursor.fetchall()
-        
+
         # print(strSql)
 
         connection.commit()
@@ -1854,11 +1870,11 @@ def writeSignificant(request, rdate, horse):
     except:
         connection.rollback()
         print("Failed selecting start")
-        
+
     try:
         cursor = connection.cursor()
         strSql = """ select r_code, r_name from race_cd where cd_type = 'R1' order by r_code; """
-        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         r_start = cursor.fetchall()
 
         connection.commit()
@@ -1871,7 +1887,7 @@ def writeSignificant(request, rdate, horse):
     try:
         cursor = connection.cursor()
         strSql = """ select r_code, r_name from race_cd where cd_type = 'R2' order by r_code; """
-        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         r_corners = cursor.fetchall()
 
         connection.commit()
@@ -1884,7 +1900,7 @@ def writeSignificant(request, rdate, horse):
     try:
         cursor = connection.cursor()
         strSql = """ select r_code, r_name from race_cd where cd_type = 'R3' order by r_code; """
-        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         r_finish = cursor.fetchall()
 
         connection.commit()
@@ -1896,7 +1912,7 @@ def writeSignificant(request, rdate, horse):
     try:
         cursor = connection.cursor()
         strSql = """ select r_code, r_name from race_cd where cd_type = 'R4' order by r_code; """
-        r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         r_wrapup = cursor.fetchall()
 
         connection.commit()
@@ -1905,7 +1921,6 @@ def writeSignificant(request, rdate, horse):
     except:
         connection.rollback()
         print("Failed selecting r_wrapup")
-
 
     context = {
         "rdate": rdate,
