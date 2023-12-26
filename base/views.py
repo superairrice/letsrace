@@ -543,7 +543,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         return render(request, "base/home.html")
 
     # if exp011s.values("rank")[4].get("rank") > 90:  # 신마일경우 skip
-    #     complex5 = "0:00.0"
+    #     complex5 = "0:00.0"``
     # else:
     #     complex5 = exp011s.values("complex")[4]
 
