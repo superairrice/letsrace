@@ -1175,6 +1175,11 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
         Min("i_g1f"),
         Min("i_g2f"),
         Min("i_g3f"),
+        Min("s1f_rank"),
+        Min("recent3"),
+        Min("recent5"),
+        Min("convert_r"),
+        Min("p_record"),
         Max("handycap"),
         Max("rating"),
     )

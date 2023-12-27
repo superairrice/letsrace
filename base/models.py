@@ -400,7 +400,27 @@ class RecordS(models.Model):
         max_length=6, db_collation="euckr_korean_ci", blank=True, null=True
     )
     pop_rank = models.IntegerField(blank=True, null=True)
-    s1f_rank = models.IntegerField(blank=True, null=True)
+    s1f_rank = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    recent3 = models.CharField(
+        max_length=6, db_collation="euckr_korean_ci", blank=True, null=True
+    )
+    recent5 = models.CharField(
+        max_length=6, db_collation="euckr_korean_ci", blank=True, null=True
+    )
+    fast_r = models.CharField(
+        max_length=6, db_collation="euckr_korean_ci", blank=True, null=True
+    )
+    slow_r = models.CharField(
+        max_length=6, db_collation="euckr_korean_ci", blank=True, null=True
+    )
+    avg_r = models.CharField(
+        max_length=6, db_collation="euckr_korean_ci", blank=True, null=True
+    )
+    convert_r = models.CharField(
+        max_length=6, db_collation="euckr_korean_ci", blank=True, null=True
+    )
     gap_b = models.CharField(
         max_length=20, db_collation="euckr_korean_ci", blank=True, null=True
     )
@@ -415,6 +435,9 @@ class RecordS(models.Model):
     )
     treat2 = models.CharField(
         max_length=40, db_collation="euckr_korean_ci", blank=True, null=True
+    )
+    jockey_old = models.CharField(
+        max_length=10, db_collation="euckr_korean_ci", blank=True, null=True
     )
 
     # flag = models.CharField(max_length=1, blank=True, null=True)
