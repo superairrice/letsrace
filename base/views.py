@@ -1247,6 +1247,7 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
         )  # 기수, 조교사, 마주 연대현황 최근1년
 
     # print(solidarity)
+    # print(trend_title)
 
     trend_j = trend_data.values.tolist()
     trend_j_title = trend_data.columns.tolist()
