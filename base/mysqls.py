@@ -2671,7 +2671,8 @@ def get_prediction(i_rdate):
                     --  ( select complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = 5 ) complex5, 
                     --  ( select i_complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = a.rank + 1 ) - i_complex, 
                     complex5, gap_back, 
-                    cast(jt_per as decimal) jt_per,
+                    -- cast(jt_per as decimal) jt_per,
+                    if( isnull(s1f_rank), 0, s1f_rank) jt_per,
                     rcount
                   from expect a
                 where rdate between date_format(DATE_ADD('"""
@@ -3167,7 +3168,7 @@ def get_recent_awardee(i_rdate, i_awardee, i_name):
         strSql = (
             """ 
                     select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
-                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( grade = '주행검사', 'aa', host) host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
+                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( grade = '주행검사', '주행', host) host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
                         rs1f, rg3f, rg2f, rg1f, 
                         (select i_cycle from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) i_cycle,
                         (select jt_per from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) jt_per

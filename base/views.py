@@ -141,19 +141,25 @@ def registerPage(request):
     form = MyUserCreationForm()
 
     if request.method == "POST":
-        form = MyUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.username = user.username.lower()
-            user.save()
-            # login(request, user)    # allauth 소셜로그인 적용전
-            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-            return redirect("home")
-        else:
-            messages.warning(request, form.errors)
+        # form = MyUserCreationForm(request.POST)
+        # if form.is_valid():
+        #     user = form.save(commit=False)
+        #     user.username = user.username.lower()
+        #     user.save()
+        #     # login(request, user)    # allauth 소셜로그인 적용전
+        #     login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        #     return redirect("home")
+        # else:
+        #     messages.warning(request, form.errors)
 
-            # print(form.errors)
-            # print(form.non_field_errors())
+        # print(form.errors)
+        # print(form.non_field_errors())
+
+        agree = request.POST.get("agree")
+        agree2 = request.POST.get("agree2")
+        agree3 = request.POST.get("agree3")
+
+        print("aaa", agree, agree2, agree3)
 
     return render(request, "base/login_register.html", {"form": form})
 
@@ -1391,12 +1397,15 @@ def awardStatusTrainer(request):
     loadin = get_last2weeks_loadin(friday)
     # status = get_status_training(rdate)
     status = get_status_train(rdate)
+    j_rdate = status[len(status)-1][1]
+    # print(len(status))
 
     context = {
         "weeks": weeks,
         "loadin": loadin,
         "status": status,
         "fdate": fdate,
+        "j_rdate": j_rdate,
         "jname1": jname1,
         "jname2": jname2,
         "jname3": jname3,
@@ -1446,11 +1455,15 @@ def awardStatusJockey(request):
     # status = get_status_training(rdate)
     status = get_status_train(rdate)
 
+    j_rdate = status[len(status)-1][1]
+    # print(len(status))
+
     context = {
         "weeks": weeks,
         "loadin": loadin,
         "status": status,
         "fdate": fdate,
+        "j_rdate": j_rdate,
         "jname1": jname1,
         "jname2": jname2,
         "jname3": jname3,
