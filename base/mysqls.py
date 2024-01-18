@@ -1330,7 +1330,7 @@ def get_treat_horse(i_rcity, i_rdate, i_rno):
             + i_rdate
             + """'
                         union all
-                        select horse, tdate, '', '', t_time, canter, strong, '', '', ''
+                        select horse, tdate, '', '', t_time, canter, strong, '', rider, ''
                         from train 
                         where horse in ( select horse from exp011 where rdate = '"""
             + i_rdate

@@ -809,15 +809,15 @@
 
                 <div style="font-size: 1.2rem; text-align: right; font-style: normal;">
                   {% if r.r_rank == 1 %}
-                  <span style="color:var(--color-r1); font-family: Arial;">{{r.alloc3r}}</span>
+                  <span style="color:var(--color-r1); font-family: Arial;">{% if r.alloc3r %} {{r.alloc3r}} {% endif %}</span>
                   {% elif r.r_rank == 2 %}
-                  <span style="color:var(--color-r2); font-family: Arial;">{{r.alloc3r}}</span>
+                  <span style="color:var(--color-r2); font-family: Arial;">{% if r.alloc3r %} {{r.alloc3r}} {% endif %}</span>
                   {% elif r.r_rank == 3 %}
-                  <span style="color:var(--color-r3); font-family: Arial;">{{r.alloc3r}}</span>
+                  <span style="color:var(--color-r3); font-family: Arial;">{% if r.alloc3r %} {{r.alloc3r}} {% endif %}</span>
                   {% elif r.r_rank == 4 %}
-                  <span style="color:var(--color-gray); font-family: Arial;">{{r.alloc3r}}</span>
+                  <span style="color:var(--color-gray); font-family: Arial;">{% if r.alloc3r %} {{r.alloc3r}} {% endif %}</span>
                   {% elif r.r_rank == 5 %}
-                  <span style="color:var(--color-gray); font-family: Arial;">{{r.alloc3r}}</span>
+                  <span style="color:var(--color-gray); font-family: Arial;">{% if r.alloc3r %} {{r.alloc3r}} {% endif %}</span>
                   {% else %}
                   <span style="font-family: Arial; color: var(--color-gray);">{% if r.alloc3r %} {{r.alloc3r}} {% endif %}</span>
                   {% endif %}
@@ -1012,9 +1012,9 @@
                           <div style="text-align:right; font-family: Arial; text-align: left;">{{hr.h_weight}}</div>
                           <div style="text-align:right; font-family: Arial; font-size: 1.1rem;">
                             {% if hr.w_change|slice:"0:1" == '-' %}
-                            <span style="font-family: Arial; font-style: italic; color:var(--color-r1); font-weight: 500;">{{hr.w_change}}</span>
+                            <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); padding:2px 1px; border-radius: 15px; background-color:var(--color-r5); ">{{hr.w_change}}</span>
                             {% else %}
-                            <span style="font-family: Arial; font-style: italic; color:var(--color-r5); font-weight: 500;">{{hr.w_change}}</span>
+                            <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); padding:2px 1px; border-radius: 15px; background-color:var(--color-r1); ">{{hr.w_change}}</span>
                             {% endif %}
                           </div>
                           
@@ -1040,11 +1040,25 @@
                             onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
 
                           {% if hr.jockey %}
-                            {% if r.jockey == hr.jockey %}
-                            <div style="text-align: left; color:var(--color-r1);">{{hr.jockey}}</div>
-                            {%else%}
-                            <div style="text-align: left;">{{hr.jockey}}</div>
+
+                            {% if hr.jockey_old %}  {# 기수변경 #}
+                              {% if r.jockey == hr.jockey %}
+                              <div style="text-align: left;">
+                                <span class="blink tooltip" style="color:var(--color-r1)">ⓒ{{hr.jockey|slice:"0:3"}}<span class="tooltip-text">🐴&nbsp;기수변경:&nbsp;'{{hr.jockey_old}}'에서</span></span>
+                              </div>
+                              {%else%}
+                              <div style="text-align: left;">
+                                <span class="blink tooltip" style="color:var(--color-r2)">ⓒ{{hr.jockey|slice:"0:3"}}<span class="tooltip-text">🐴&nbsp;기수변경:&nbsp;'{{hr.jockey_old}}'에서</span></span>
+                              </div>
+                              {%endif%}
+                            {% else %}
+                              {% if r.jockey == hr.jockey %}
+                              <div style="text-align: left; color:var(--color-r1);">{{hr.jockey}}</div>
+                              {%else%}
+                              <div style="text-align: left; color:var(--color-gray);">{{hr.jockey}}</div>
+                              {%endif%}
                             {%endif%}
+
                             {% if hr.jockey %}
                             <div style="font-size: 1.1rem; color:var(--color-gray); font-family: Arial; text-align: right;">{{hr.jockey_w|floatformat:1}}</div>
                             {% endif %}
@@ -2218,12 +2232,12 @@
                         
                             {% if h_weight|slice:"4:" %}
                               {% if h_weight|slice:"4:5" == '+' %}
-                              <div style="text-align:right; font-style: italic; font-size: 1.2rem;  color:var(--color-r5);">
-                                <span style="font-family: Arial;">{{h_weight|slice:"4:"}}</span>
+                              <div style="text-align: right; font-size: 1.1rem;">
+                                <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); padding:2px 1px; border-radius: 15px; background-color:var(--color-r1); ">{{h_weight|slice:"4:"}}</span>
                               </div>
                               {% else %}
-                              <div style="text-align:right; font-style: italic; font-size: 1.2rem;  color:var(--color-r1);">
-                                <span style="font-family: Arial;">{{h_weight|slice:"4:"}}</span>
+                              <div style="text-align: right; font-size: 1.1rem;">
+                                <span style="font-family: Arial; font-style: italic; color:var(--color-main-light); padding:2px 1px; border-radius: 15px; background-color:var(--color-r5); ">{{h_weight|slice:"4:"}}</span>
                               </div>
                               {% endif %}
                             {% endif %}
@@ -2987,7 +3001,7 @@
               <td colspan="7">
                 <div class="fold-content" style="position:static" >
                   <table class="small-friendly" align="Top">
-                    <thead>
+                    <thead style="background-color:var(--color-main);">
                   
                       <tr>
                         <th width="14%" style="font-size: 1.1rem;"><span class="visible-big">Date</span></th>
@@ -3069,7 +3083,7 @@
                         </td>
                         <td align="center">
                           {% if jockey == rider %}
-                          <div style="font-size:1.1rem; color:var(--color-r1)1">{{rider|slice:"0:3"}}</div>
+                          <div style="font-size:1.1rem; color:var(--color-r1);">{{rider|slice:"0:3"}}</div>
                           {% else %}
                           <div style="font-size:1.1rem;">{{rider|slice:"0:3"}}</div>
                           {% endif %}
@@ -3103,11 +3117,11 @@
                   <table class="fsmall-friendly" style="position:static;">
                     <thead>
                   
-                      <tr>
+                      <tr style="background-color:var(--color-main);">
                   
-                        <th width="14%" style="font-size: 1.1rem;"><span class="visible-big">경주일</span></th>
+                        <th width="15%" style="font-size: 1.1rem;"><span class="visible-big">경주일</span></th>
                         <th width="20%" style="font-size: 1.1rem;"><span class="visible-big">대상</span></th>
-                        <th width="66%" style="font-size: 1.1rem;"><span class="visible-big">재결내용</span></th>
+                        <th width="65%" style="font-size: 1.1rem;"><span class="visible-big">재결내용</span></th>
                       </tr>
                   
                     </thead>
@@ -3141,6 +3155,50 @@
                   
                   
                       {% endif %}
+                      {% endfor %}
+                  
+                    </tbody>
+                  </table>
+
+                  <br>
+                  <table class="small-friendly">
+                    <thead>
+                      <tr style="background-color:var(--color-main);">
+                        <th><span class="visible-big" style="padding-bottom: 3px; font-size: 1.1rem;">📅</span></th>
+                        <th colspan="2">
+                          <span class="visible-big" style="padding-bottom: 3px; font-size: 1.1rem;">{{jockey}}&nbsp;🐴&nbsp;최근재결</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for rank, gate, horse, rdate, horse_b, jockey_b, trainer, t_sort, t_type, t_detail, t_reason in judged_jockey %}
+                      {% if jockey == jockey_b %}
+                  
+                      <tr class="view">
+                  
+                        <td align="left">
+                          <div style="font-size:1.1rem; font-family: Arial, Helvetica, sans-serif;">
+                            {{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}
+                          </div>
+                          <div style="font-size:1.0rem; font-family: Arial, Helvetica, sans-serif; text-align: right;">
+                            '{{rdate|slice:"2:4"}}
+                          </div>
+                        </td>
+                        <td align="center">
+                          <div style="font-size:1.1rem;">{{t_type}}</div>
+                        </td>
+                        <td align="left">
+                          <div style="font-size:1.1rem; color:var(--color-main);">
+                            {{t_detail}}
+                          </div>
+                          <div style="font-size:1.1rem;">
+                            {{t_reason}}
+                          </div>
+                        </td>
+                  
+                        {% endif %}
+                      </tr>
+                  
                       {% endfor %}
                   
                     </tbody>
@@ -3489,47 +3547,6 @@
                       {% endif %}
                       {% endfor %}
 
-                    </tbody>
-                  </table>
-
-                  <table class="small-friendly">
-                    <thead>
-                      <tr style="background-color:var(--color-main);">
-                        <th><span class="visible-big">📅</span></th>
-                        <th colspan="2"><span class="visible-big">{{jockey}} 최근재결</span></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for rank, gate, horse, rdate, horse_b, jockey_b, trainer, t_sort, t_type, t_detail, t_reason in judged_jockey %}
-                      {% if jockey == jockey_b %}
-                  
-                      <tr class="view">
-                  
-                        <td align="left">
-                          <div style="font-size:1.1rem; font-family: Arial, Helvetica, sans-serif;">
-                            {{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}
-                          </div>
-                          <div style="font-size:1.0rem; font-family: Arial, Helvetica, sans-serif; text-align: right;">
-                            '{{rdate|slice:"2:4"}}
-                          </div>
-                        </td>
-                        <td align="center">
-                          <div style="font-size:1.1rem;">{{t_type}}</div>
-                        </td>
-                        <td align="left">
-                          <div style="font-size:1.1rem; color:var(--color-main);">
-                            {{t_detail}}
-                          </div>
-                          <div style="font-size:1.1rem;">
-                            {{t_reason}}
-                          </div>
-                        </td>
-                  
-                        {% endif %}
-                      </tr>
-                  
-                      {% endfor %}
-                  
                     </tbody>
                   </table>
 
