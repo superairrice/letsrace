@@ -134,27 +134,26 @@ def get_judged_jockey(rcity, rdate, rno):
                 AND a.rno = """
             + str(rno)
             + """
-                ORDER BY b.rdate desc
 
-            #   union
+              union
 
-            #   SELECT distinct a.rank, a.gate, a.horse, b.rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
-            #     FROM exp011     a,
-            #           rec015     b
-            #     where a.jockey = b.jockey 
-            #     AND b.t_sort = '조교사'
-            #     AND b.rdate between date_format(DATE_ADD('"""
+              SELECT distinct a.rank, a.gate, a.horse, b.rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
+                FROM exp011     a,
+                      rec015     b
+                where a.trainer = b.trainer 
+                AND b.t_sort = '조교사'
+                AND b.rdate between date_format(DATE_ADD('"""
             + rdate
             + """', INTERVAL - 100 DAY), '%Y%m%d') and '"""
             + rdate
             + """'
-            #     AND a.rcity = '"""
+                AND a.rcity = '"""
             + rcity
             + """'
-            #     AND a.rdate = '"""
+                AND a.rdate = '"""
             + rdate
             + """'
-            #     AND a.rno = """
+                AND a.rno = """
             + str(rno)
             + """
 
@@ -501,7 +500,7 @@ def get_race(i_rdate, i_awardee):
             """ 
                 select rcity,"""
             + i_awardee
-            + """ awardee, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey j_name, trainer t_name, host h_name, r_pop, distance, handycap, jt_per
+            + """ awardee, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey j_name, trainer t_name, host h_name, r_pop, distance, handycap, jt_per, s1f_rank
                   from expect
                 where rdate between date_format(DATE_ADD('"""
             + i_rdate
@@ -2311,23 +2310,33 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
             + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d')
-                        and pop_rank = 1
+                        and pop_rank between 1 and 3
                         group by jockey 
 
                         union all
 
-                        SELECT jockey, 0, 0, 0, 0,
-                                        sum( if( rank = 1, 1, 0 )) r1, sum( if( rank = 2, 1, 0 )) r2, sum( if( rank = 3, 1, 0 )) r3, count(*) rcnt,
-                                        0, 0, 0, 0
-                        FROM rec011 a
-                        where rdate between date_format(DATE_ADD('"""
+                        select b.jockey,   0, 0, 0, 0, r1_1,  r1_2,  r1_3,  r1_cnt,  0, 0, 0, 0
+                        from
+                        (
+                          SELECT jockey, distance, sum( if( rank = 1, 1, 0 )) r1_1, sum( if( rank = 2, 1, 0 )) r1_2, sum( if( rank = 3, 1, 0 )) r1_3, count(*) r1_cnt
+                          FROM record 
+                          where rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d')
-                        and alloc3r <= 1.9 /* 연식 1.9이하 인기마 */
-                        
-                        group by jockey 
+                          and grade != '주행검사'
+                          group by jockey , distance	
+                          ) a  right outer join  expect b  on a.jockey = b.jockey and a.distance = b.distance
+                        where b.rcity =  '"""
+            + i_rcity
+            + """'
+                          and b.rdate = '"""
+            + i_rdate
+            + """'
+                          and b.rno =  """
+            + str(i_rno)
+            + """
 
                         union all
     
@@ -2370,6 +2379,8 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
                         ;"""
         )
 
+
+
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         popularity = cursor.fetchall()
 
@@ -2406,23 +2417,33 @@ def get_popularity_rate_t(i_rcity, i_rdate, i_rno):
             + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d')
-                        and pop_rank = 1
+                        and pop_rank between 1 and 3
                         group by trainer 
 
                         union all
 
-                        SELECT trainer, 0, 0, 0, 0,
-                                        sum( if( rank = 1, 1, 0 )) r1, sum( if( rank = 2, 1, 0 )) r2, sum( if( rank = 3, 1, 0 )) r3, count(*) rcnt,
-                                        0, 0, 0, 0
-                        FROM rec011 a
-                        where rdate between date_format(DATE_ADD('"""
+                        select b.trainer,   0, 0, 0, 0, r1_1,  r1_2,  r1_3,  r1_cnt,  0, 0, 0, 0
+                        from
+                        (
+                          SELECT trainer, distance, sum( if( rank = 1, 1, 0 )) r1_1, sum( if( rank = 2, 1, 0 )) r1_2, sum( if( rank = 3, 1, 0 )) r1_3, count(*) r1_cnt
+                          FROM record 
+                          where rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d')
-                        and alloc3r <= 1.9 /* 연식 1.9이하 인기마 */
-                        
-                        group by trainer 
+                          and grade != '주행검사'
+                          group by trainer , distance	
+                          ) a  right outer join  expect b  on a.trainer = b.trainer and a.distance = b.distance
+                        where b.rcity =  '"""
+            + i_rcity
+            + """'
+                          and b.rdate = '"""
+            + i_rdate
+            + """'
+                          and b.rno =  """
+            + str(i_rno)
+            + """
 
                         union all
     
@@ -2498,7 +2519,7 @@ def get_popularity_rate_h(i_rcity, i_rdate, i_rno):
             + """', INTERVAL - 365 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d')
-                        and pop_rank = 1
+                        and pop_rank between 1 and 3
                         group by host 
 
                         union all
@@ -2604,9 +2625,8 @@ def get_print_prediction(i_rcity, i_rdate):
         strSql = (
             """
                 select rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex,
-
                     complex5, gap_back,
-                    cast(jt_per as decimal) jt_per
+                    cast(jt_per as decimal) jt_per, s1f_rank
                   from expect a
                 where rcity = '"""
             + i_rcity
@@ -3331,68 +3351,117 @@ def set_changed_race(i_rcity, i_rdate, i_rno, r_content):
 
     for index, line in enumerate(lines):
         items = line.split("\t")
-        # print(index, items)
+        # print(index, items[0], len(items))
 
-        if items[0]:
-            rdate = items[0][0:4] + items[0][5:7] + items[0][8:10]
-            rno = items[1]
+        if len(items) == 8:  # 말취소 아이템수 == 8
+            if items[0] == "서울" or items[0] == "부경":
+                # print(index, items)
 
-            horse = items[3]
-            if horse[0:1] == "[":
-                horse = horse[3:]
+                rdate = items[1][0:4] + items[1][5:7] + items[1][8:10]
+                rno = items[2]
+                horse = items[4]
+                if horse[0:1] == "[":
+                    horse = horse[3:]
+                reason = items[7]
 
-            jockey_old = items[4]
-            handy_old = items[5]
-            jockey_new = items[6]
-            handy_new = items[7]
-            reason = items[8]
+                # print(rdate, rno, horse, reason)
 
-            # print(rdate, rno, horse, jockey_old,
-            #   handy_old, jockey_new, handy_new, reason)
+                try:
+                    cursor = connection.cursor()
 
-            try:
-                cursor = connection.cursor()
+                    strSql = (
+                        """ update exp011
+                                set reason = '"""
+                        + reason
+                        + """',
+                                    r_rank = 99
+                            where rdate = '"""
+                        + rdate
+                        + """' and rno = """
+                        + str(rno)
+                        + """ and horse = '"""
+                        + horse
+                        + """'
+                        ; """
+                    )
 
-                strSql = (
-                    """ update exp011
-                            set jockey = '"""
-                    + jockey_new
-                    + """',
-                                handycap = """
-                    + handy_new
-                    + """,
-                                jockey_old =  '"""
-                    + jockey_old
-                    + """',
-                                handycap_old = """
-                    + handy_old
-                    + """,
-                                reason = '"""
-                    + reason
-                    + """'
-                        where rdate = '"""
-                    + rdate
-                    + """' and rno = """
-                    + str(rno)
-                    + """ and horse = '"""
-                    + horse
-                    + """'
-                    ; """
-                )
+                    # print(strSql)
+                    r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+                    awards = cursor.fetchall()
 
-                # print(strSql)
-                r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-                awards = cursor.fetchall()
+                    connection.commit()
+                    connection.close()
 
-                connection.commit()
-                connection.close()
+                    # return render(request, 'base/update_popularity.html', context)
+                    # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
 
-                # return render(request, 'base/update_popularity.html', context)
-                # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+                except:
+                    connection.rollback()
+                    print("Failed updating in exp011 : 경주마 취소")
 
-            except:
-                connection.rollback()
-                print("Failed updating in exp011 : 기수변경")
+        elif len(items) == 9:  # 기수변경 아이템수 == 9
+            if items[0] == "서울" or items[0] == "부경":
+                # print(index, items)
+
+                rdate = items[1][0:4] + items[1][5:7] + items[1][8:10]
+                rno = items[2]
+
+                horse = items[4]
+                if horse[0:1] == "[":
+                    horse = horse[3:]
+
+                jockey_old = items[5]
+                jockey_new = items[6]
+
+                # handy_old = items[]
+
+                handy_new = items[7]
+                reason = items[8]
+
+                # print(rdate, rno, horse, jockey_old,
+                #   handy_old, jockey_new, handy_new, reason)
+
+                try:
+                    cursor = connection.cursor()
+
+                    strSql = (
+                        """ update exp011
+                                set jockey = '"""
+                        + jockey_new
+                        + """',
+                                    handycap = """
+                        + handy_new
+                        + """,
+                                    jockey_old =  '"""
+                        + jockey_old
+                        + """',
+                                    handycap_old = handycap,
+                                    reason = '"""
+                        + reason
+                        + """'
+                            where rdate = '"""
+                        + rdate
+                        + """' and rno = """
+                        + str(rno)
+                        + """ and horse = '"""
+                        + horse
+                        + """'
+                        ; """
+                    )
+
+                    # print(strSql)
+                    r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+                    awards = cursor.fetchall()
+
+                    connection.commit()
+                    connection.close()
+
+                    # return render(request, 'base/update_popularity.html', context)
+                    # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+
+                except:
+                    connection.rollback()
+                    print("Failed updating in exp011 : 기수변경")
 
     return len(lines)
 
@@ -3482,7 +3551,7 @@ def set_changed_race_horse(i_rcity, i_rdate, i_rno, r_content):
     for index, line in enumerate(lines):
         items = line.split("\t")
 
-        print(index, items)
+        # print(index, items)
 
         if items[0]:
             rdate = items[1][0:4] + items[1][5:7] + items[1][8:10]
@@ -3541,11 +3610,11 @@ def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
     for index, line in enumerate(lines):
         items = line.split("\t")
 
-        # print(index, items)
+        # print(index, items, len(items))
 
         if items[0] and index == 0:
             rdate = items[0][0:4] + items[0][5:7] + items[0][8:10]
-        elif items[0] and index >= 8:
+        elif items[0] and len(items) == 10:
             horse = items[1]
             if horse[0:1] == "[":
                 horse = horse[3:]
@@ -3601,13 +3670,12 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
     for index, line in enumerate(lines):
         items = line.split("\t")
 
-        # print(index, items)
+        # print(index, items, len(items))
 
         if items[0] and index == 0:
             rdate = items[0][0:4] + items[0][6:8] + items[0][10:12]
-        elif items[0] and index >= 9:
+        elif items[0] != "순위" and len(items) == 16:
             r_rank = items[0]
-            print(r_rank)
             horse = items[2]
             if horse[0:1] == "[":
                 horse = horse[3:]
@@ -3642,7 +3710,7 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
 
             except:
                 connection.rollback()
-                print("Failed updating in exp011 : 경주마 체중")
+                print("Failed updating in exp011 : 경주마 순위")
 
     return len(lines)
 
