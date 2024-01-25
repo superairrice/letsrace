@@ -500,7 +500,7 @@ def get_race(i_rdate, i_awardee):
             """ 
                 select rcity,"""
             + i_awardee
-            + """ awardee, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey j_name, trainer t_name, host h_name, r_pop, distance, handycap, jt_per, s1f_rank
+            + """ awardee, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey j_name, trainer t_name, host h_name, r_pop, distance, handycap, jt_per, s1f_rank, jockey_old, reason
                   from expect
                 where rdate between date_format(DATE_ADD('"""
             + i_rdate

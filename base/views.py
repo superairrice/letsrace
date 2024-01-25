@@ -1191,7 +1191,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     )
 
     judged_horse = get_judged_horse(rcity, rdate, rno)
-    # judged_jockey = get_judged_jockey(rcity, rdate, rno)
+    judged_jockey = get_judged_jockey(rcity, rdate, rno)
 
     pedigree = get_pedigree(rcity, rdate, rno)
     # training = get_training(rcity, rdate, rno)
@@ -1230,6 +1230,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
         "pedigree": pedigree,
         # "h_audit": h_audit,
         "judged_horse": judged_horse,
+        "judged_jockey": judged_jockey,
         "judged_list": judged_list,
         "judged": judged,
         "horses": horses,
@@ -1397,7 +1398,7 @@ def awardStatusTrainer(request):
     loadin = get_last2weeks_loadin(friday)
     # status = get_status_training(rdate)
     status = get_status_train(rdate)
-    j_rdate = status[len(status)-1][1]
+    j_rdate = status[len(status) - 1][1]
     # print(len(status))
 
     context = {
@@ -1455,7 +1456,7 @@ def awardStatusJockey(request):
     # status = get_status_training(rdate)
     status = get_status_train(rdate)
 
-    j_rdate = status[len(status)-1][1]
+    j_rdate = status[len(status) - 1][1]
     # print(len(status))
 
     context = {
