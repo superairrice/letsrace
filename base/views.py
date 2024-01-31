@@ -1814,14 +1814,17 @@ def pyscriptTest(request):
 
 
 def writeSignificant(request, rdate, horse):
+    
     if request.method == "POST":
         start = request.POST.get("start")
         corners = request.POST.get("corners")
         finish = request.POST.get("finish")
         wrapup = request.POST.get("wrapup")
         r_etc = request.POST.get("r_etc")
+        r_flag = request.POST.get("r_flag")
 
         # print(start, corners, finish, wrapup, r_etc)
+        print(r_flag)
 
         try:
             cursor = connection.cursor()
@@ -1839,6 +1842,9 @@ def writeSignificant(request, rdate, horse):
                 + """',
                         r_wrapup = '"""
                 + wrapup
+                + """',
+                        r_flag = '"""
+                + r_flag
                 + """',
                         r_etc = '"""
                 + r_etc.strip()
@@ -1869,7 +1875,7 @@ def writeSignificant(request, rdate, horse):
     try:
         cursor = connection.cursor()
         strSql = (
-            """ select r_start, r_corners, r_finish, r_wrapup, r_etc
+            """ select r_start, r_corners, r_finish, r_wrapup, r_etc, r_flag
                     from rec011 
                     where rdate = '"""
             + rdate
@@ -1882,7 +1888,7 @@ def writeSignificant(request, rdate, horse):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         r_significant = cursor.fetchall()
 
-        # print(strSql)
+        print(r_significant)
 
         connection.commit()
         connection.close()
@@ -1929,6 +1935,7 @@ def writeSignificant(request, rdate, horse):
     except:
         connection.rollback()
         print("Failed selecting r_finish")
+        
     try:
         cursor = connection.cursor()
         strSql = """ select r_code, r_name from race_cd where cd_type = 'R4' order by r_code; """
@@ -1941,6 +1948,19 @@ def writeSignificant(request, rdate, horse):
     except:
         connection.rollback()
         print("Failed selecting r_wrapup")
+        
+    try:
+        cursor = connection.cursor()
+        strSql = """ select r_code, r_name from race_cd where cd_type = 'R0' order by r_code; """
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        r_flag = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting r_flag ; 집계 제외 사유")
 
     context = {
         "rdate": rdate,
@@ -1950,6 +1970,7 @@ def writeSignificant(request, rdate, horse):
         "r_corners": r_corners,
         "r_finish": r_finish,
         "r_wrapup": r_wrapup,
+        "r_flag": r_flag,
     }
     return render(request, "base/write_significant.html", context)
 

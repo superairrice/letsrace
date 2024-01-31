@@ -695,10 +695,17 @@
                       <tr>
                         <th colspan="1" rowspan="2" ><span class="visible-big" style="background-color: bisque;">레<br>이<br>팅</span></th>
                         <th colspan="1" rowspan="1">
+                          {% if hr.host %}
                           <a href="{% url 'get_race_horse' records.0.rdate 'horse' r.horse r.jockey r.trainer r.host %}"
                             onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
                             <span class="visible-big" style="color:var(--color-r5);">🐴&nbsp;&nbsp;{{r.horse|slice:"0:6"}}</span>
                           </a>
+                          {% else %}
+                          <a href="{% url 'get_race_horse' records.0.rdate 'horse' r.horse r.jockey r.trainer ' ' %}"
+                            onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                            <span class="visible-big" style="color:var(--color-r5);">🐴&nbsp;&nbsp;{{r.horse|slice:"0:6"}}</span>
+                          </a>
+                          {% endif %}
                         </th>
                         <th rowspan="2"><span class="visible-big">마<br>체중</span></th>
                         <th rowspan="2"><span class="visible-big">부담<br>중량</span></th>
@@ -853,8 +860,13 @@
 
                         {# 기수 / 복승율 #}
                         <td style="font-size: 1.2rem">
+                          {% if r.host %}
                           <a href="{% url 'get_race_awardee' hr.rdate 'jockey' hr.jockey hr.jockey r.trainer r.host %}"
                             onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                          {% else %}
+                          <a href="{% url 'get_race_awardee' hr.rdate 'jockey' hr.jockey hr.jockey r.trainer ' ' %}"
+                            onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                          {% endif %}
 
                           {% if hr.jockey %}
 
@@ -891,9 +903,15 @@
                           
                             {% if r.trainer == hr.trainer %}
                             <div style="text-align: left; color:var(--color-gray);">
+                              {% if r.host %}
                               <a href="{% url 'get_race_awardee' hr.rdate 'trainer' hr.trainer r.jockey hr.trainer r.host %}" onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
                               {{hr.trainer}}
                               </a>
+                              {% else %}
+                              <a href="{% url 'get_race_awardee' hr.rdate 'trainer' hr.trainer r.jockey hr.trainer ' ' %}" onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                              {{hr.trainer}}
+                              </a>
+                              {% endif %}
                             </div>
                             {%else%}
                             <div style="color:var(--color-r1);  text-align: left;">
@@ -905,9 +923,15 @@
                           
                             {% if r.host == hr.host %}
                             <div style="color:var(--color-gray); text-align: right; font-size: 1.15rem">
+                              {% if hr.host %}
                               <a href="{% url 'get_race_awardee' hr.rdate 'host' hr.host r.jockey r.trainer hr.host %}" onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
                                 {{hr.host|slice:"0:4"}}
                               </a>
+                              {% else %}
+                              <a href="{% url 'get_race_awardee' hr.rdate 'host' ' ' r.jockey r.trainer ' ' %}" onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                                {{hr.host|slice:"0:4"}}
+                              </a>
+                              {% endif %}
                             </div>
                             {%else%}
                             <div style="color:var(--color-r1); text-align: right; font-size: 1.15rem;">
