@@ -207,33 +207,33 @@ WSGI_APPLICATION = "letsrace.wsgi.application"
 # [ 5 ] : 실제 DB 주소, 따로 설정 안했으면 그대로 두면 됨
 # [ 6 ] : 포트번호, 따로 설정 안했으면 그대로 두면 됨
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",  # [1]
-        "NAME": "The1",  # [2]
-        "USER": "letslove",  # [3]
-        "PASSWORD": "Ruddksp!23",  # [4]
-        "HOST": "super007.synology.me",  # [5]
-        # 'HOST': '192.168.45.111',         # [5]
-        # 'HOST': '123.111.131.8',         # [5]
-        "PORT": "3307",  # [6]
-    }
-}
-DEBUG = True
-
-# DEBUG = False
 # DATABASES = {
 #     "default": {
 #         "ENGINE": "django.db.backends.mysql",  # [1]
 #         "NAME": "The1",  # [2]
-#         # "NAME": "thethe9",  # [2]
 #         "USER": "letslove",  # [3]
 #         "PASSWORD": "Ruddksp!23",  # [4]
-#         "HOST": "database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com",
-#         "PORT": "3306",  # [6]
-#         "OPTIONS": {"init_command": "SET sql_mode='STRICT_TRANS_TABLES'"},
+#         "HOST": "super007.synology.me",  # [5]
+#         # 'HOST': '192.168.45.111',         # [5]
+#         # 'HOST': '123.111.131.8',         # [5]
+#         "PORT": "3307",  # [6]
 #     }
 # }
+# DEBUG = True
+
+DEBUG = False
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",  # [1]
+        "NAME": "The1",  # [2]
+        # "NAME": "thethe9",  # [2]
+        "USER": "letslove",  # [3]
+        "PASSWORD": "Ruddksp!23",  # [4]
+        "HOST": "database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com",
+        "PORT": "3306",  # [6]
+        "OPTIONS": {"init_command": "SET sql_mode='STRICT_TRANS_TABLES'"},
+    }
+}
 
 # SECRET_KEY = get_secret("SECRET_KEY")
 
