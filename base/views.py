@@ -608,12 +608,12 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     pedigree = get_pedigree(rcity, rdate, rno)  # 병력
     # training = get_training(rcity, rdate, rno)
     # train = get_train(rcity, rdate, rno)
-    train = get_train_horse(rcity, rdate, rno)
+    train, training_cnt = get_train_horse(rcity, rdate, rno)
     treat = get_treat_horse(rcity, rdate, rno)
     # swim = get_swim_horse(rcity, rdate, rno)
     # train = sorted(train, key=lambda x: x[4] or 99)
 
-    # print(treat)
+    # print(training_cnt)
 
     # h_audit = get_train_audit(rcity, rdate, rno)      # get_treat_horse 함수 통합
 
@@ -680,6 +680,8 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         "popularity_rate_h": popularity_rate_h,
         #    'training': training,
         "train": train,
+        "training_cnt": training_cnt,
+        
         "treat": treat,
         #    'swim': swim,
         # "h_audit": h_audit,
@@ -1079,6 +1081,7 @@ def raceReport(request, rcity, rdate, rno):
 
 @login_required(login_url="login")
 def updateChangedRace(request, rcity, rdate, rno):
+
     r_content = (
         request.GET.get("r_content") if request.GET.get("r_content") != None else ""
     )
@@ -1100,7 +1103,6 @@ def updateChangedRace(request, rcity, rdate, rno):
         insert_horse_disease(r_content)
 
     exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno)
-    context = {"rcity": rcity, "exp011s": exp011s, "fdata": fdata}
 
     # user = request.user
     # form = UserForm(instance=user)
@@ -1123,6 +1125,9 @@ def updateChangedRace(request, rcity, rdate, rno):
                     + """,
                                     r_pop = """
                     + myDict[pop][1]
+                    + """,
+                                    bet = """
+                    + myDict[pop][2]
                     + """
                             where rdate = '"""
                     + rdate
@@ -1136,7 +1141,7 @@ def updateChangedRace(request, rcity, rdate, rno):
                         ; """
                 )
 
-                print(strSql)
+                # print(strSql)
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 awards = cursor.fetchall()
 
@@ -1149,13 +1154,10 @@ def updateChangedRace(request, rcity, rdate, rno):
             except:
                 connection.rollback()
                 print("Failed updating in exp011")
+                
+            exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno)
 
-        # form = Exp011(request.POST, request.FILES, rcity=rcity, rdate=rdate, rno=rno, instance=pop_1)
-        # if form.is_valid():
-        #     form.save()
-        #     redirect('user-profile', pk=rdate)
-
-    # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+    context = {"rcity": rcity, "exp011s": exp011s, "fdata": fdata}
     return render(request, "base/update_changed_race.html", context)
 
 
@@ -1195,7 +1197,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
     pedigree = get_pedigree(rcity, rdate, rno)
     # training = get_training(rcity, rdate, rno)
-    train = get_train_horse(rcity, rdate, rno)
+    train, training_cnt = get_train_horse(rcity, rdate, rno)
     train = sorted(train, key=lambda x: x[5] or 99)
 
     treat = get_treat_horse(rcity, rdate, rno)
@@ -1223,6 +1225,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
         "r_condition": r_condition,
         #    'training': training,
         "train": train,
+        "training_cnt": training_cnt,
         "treat": treat,
         "hr_records": hr_records,
         "compare_r": compare_r,
@@ -1814,7 +1817,6 @@ def pyscriptTest(request):
 
 
 def writeSignificant(request, rdate, horse):
-    
     if request.method == "POST":
         start = request.POST.get("start")
         corners = request.POST.get("corners")
@@ -1824,7 +1826,7 @@ def writeSignificant(request, rdate, horse):
         r_flag = request.POST.get("r_flag")
 
         # print(start, corners, finish, wrapup, r_etc)
-        print(r_flag)
+        # print(r_flag)
 
         try:
             cursor = connection.cursor()
@@ -1888,7 +1890,7 @@ def writeSignificant(request, rdate, horse):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         r_significant = cursor.fetchall()
 
-        print(r_significant)
+        # print(r_significant)
 
         connection.commit()
         connection.close()
@@ -1935,7 +1937,7 @@ def writeSignificant(request, rdate, horse):
     except:
         connection.rollback()
         print("Failed selecting r_finish")
-        
+
     try:
         cursor = connection.cursor()
         strSql = """ select r_code, r_name from race_cd where cd_type = 'R4' order by r_code; """
@@ -1948,7 +1950,7 @@ def writeSignificant(request, rdate, horse):
     except:
         connection.rollback()
         print("Failed selecting r_wrapup")
-        
+
     try:
         cursor = connection.cursor()
         strSql = """ select r_code, r_name from race_cd where cd_type = 'R0' order by r_code; """

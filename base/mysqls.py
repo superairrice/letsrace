@@ -992,7 +992,8 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
                                             max(r12), max(d12), max(c12), max(s12) , 
                                             max(r13), max(d13), max(c13), max(s13) , 
                                             max(r14), max(d14), max(c14), max(s14) ,
-                                            ( select sum(laps) from swim aa where aa.horse = a.horse and aa.tdate between date_format(DATE_ADD(a.rdate, INTERVAL - 14 DAY), '%Y%m%d') and a.rdate ) laps
+                    -- ( select count(*) from train aa where aa.horse = a.horse and aa.tdate between date_format(DATE_ADD(a.rdate, INTERVAL - 14 DAY), '%Y%m%d') and a.rdate and aa.rider = jockey ) laps
+                    ( select sum(laps) from swim aa where aa.horse = a.horse and aa.tdate between date_format(DATE_ADD(a.rdate, INTERVAL - 14 DAY), '%Y%m%d') and a.rdate ) swims
                     from
                     (
                         select rdate, gate, b.rank, r_rank, r_pop, a.horse, b.jockey, b.trainer, b.rcity, rno, j_per, t_per, jt_per,h_weight, distance, b.grade, rating, dividing,
@@ -1082,11 +1083,53 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
 
     except:
         connection.rollback()
+        print("Failed selecting in Train Horse")
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ select rider, lpad( cast( count(*) as char), 2, ' ') from The1.train 
+                where tdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 21 DAY), '%Y%m%d') and '"""
+            + i_rdate
+            + """'
+                and horse in ( select horse from exp011 where rdate = '"""
+            + i_rdate
+            + """' and rcity = '"""
+            + i_rcity
+            + """' and rno = """
+            + str(i_rno)
+            + """)
+                and rider in ( select jockey from exp011 where rdate = '"""
+            + i_rdate
+            + """' and rcity = '"""
+            + i_rcity
+            + """' and rno = """
+            + str(i_rno)
+            + """)
+                group by rider 
+            having count(*) >= 8
+            ;"""
+        )
+        # print(strSql)
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        training_cnt = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+        # print(training_cnt)
+    except:
+        connection.rollback()
         print("Failed selecting in BookListView")
 
-    return result
+    return result, training_cnt
 
-def get_train_horse_care(i_rcity, i_rdate, i_rno):              # 기수가 4주간 조교 회수가 많은 경주마 check
+
+def get_train_horse_care(i_rcity, i_rdate, i_rno):  # 기수가 4주간 조교 회수가 많은 경주마 check
     try:
         cursor = connection.cursor()
 
@@ -2410,11 +2453,11 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
 
         strSql = (
             """select b.rank, b.gate, b.jockey, b.trainer, b.host,
-                                  sum(r1_1) r1_1, sum(r1_2) r1_2, sum(r1_3) r1_3, sum(r1_cnt) r1_cnt, 
-                                  sum(r3_1) r1_1, sum(r3_2) r2_2, sum(r3_3) r3_3, sum(r3_cnt) r3_cnt,
-                                  sum(gt_1) r1_1, sum(gt_2) r2_2, sum(gt_3) gt_3, sum(gt_cnt) gt_cnt
-                      from
-                      (
+                    sum(r1_1) r1_1, sum(r1_2) r1_2, sum(r1_3) r1_3, sum(r1_cnt) r1_cnt, 
+                    sum(r3_1) r1_1, sum(r3_2) r2_2, sum(r3_3) r3_3, sum(r3_cnt) r3_cnt,
+                    sum(gt_1) r1_1, sum(gt_2) r2_2, sum(gt_3) gt_3, sum(gt_cnt) gt_cnt
+                from
+                (
                         SELECT jockey, sum( if( rank = 1, 1, 0 )) r1_1, sum( if( rank = 2, 1, 0 )) r1_2, sum( if( rank = 3, 1, 0 )) r1_3, count(*) r1_cnt,
                                     0 r3_1, 0 r3_2, 0 r3_3, 0 r3_cnt,
                                     0 gt_1, 0 gt_2, 0 gt_3, 0 gt_cnt
@@ -2492,8 +2535,6 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
                     order by b.rank, b.gate, b.jockey
                         ;"""
         )
-
-
 
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         popularity = cursor.fetchall()
@@ -2711,7 +2752,7 @@ def get_print_prediction(i_rcity, i_rdate):
 
         strSql = (
             """ 
-                select rcity, rdate, rday, rno, rtime, distance
+                select rcity, rdate, rday, rno, rtime, distance,  substr(grade,1,2) grade, substr(dividing,1,1) dividing
                   from exp010
                 where rcity = '"""
             + i_rcity

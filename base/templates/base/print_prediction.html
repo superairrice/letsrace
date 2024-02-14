@@ -185,7 +185,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for r_rcity, r_rdate, r_rday, r_rno, rtime, distance in race %}
+          {% for r_rcity, r_rdate, r_rday, r_rno, rtime, distance, grade, dividing in race %}
           
           <tr>
             <td style="text-align: right;">
@@ -195,7 +195,12 @@
             <td style="border-right: 1px solid #444444;">
               
               <div style="font-size:1.0rem; text-align:center; color:blue; font-family: Arial; padding-bottom: .3rem;">{{rtime}}</div>
-              <div style="font-family: Arial; text-align:center; font-size: 1.0rem; color: var(--color-gray);">{{distance}}</div>
+              <div style="font-family: Arial; text-align:center; font-size: 1.0rem; color: var(--color-r2);">{{distance}}</div>
+              <div style="font-family: Arial; text-align:center; font-size: 1.0rem; color: var(--color-r5);">
+                <span>{{grade}}</span>
+                <span>{{dividing}}</span>
+              </div>
+
               
             </td>
 
@@ -235,16 +240,7 @@
                 {% endif %}
               </div>
 
-              {% if jockey|slice:"-2:" == jname1|slice:"-2:" %}
-              <div style="font-size: 0.85rem; color: var(--color-r1); font-weight: 550;">{{jockey|slice:"-2:"}}</div>
-              {% elif jockey|slice:"-2:" == jname2|slice:"-2:" %}
-              <div style="font-size: 0.85rem; color: var(--color-r2); font-weight: 550;">{{jockey|slice:"-2:"}}</div>
-              {% elif jockey|slice:"-2:" == jname3|slice:"-2:" %}
-              <div style="font-size: 0.85rem; color: var(--color-r3); font-weight: 550;">{{jockey|slice:"-2:"}}</div>
-              {% else %}
-              <div style="font-size: 0.85rem; color: var(--color-dark)">{{jockey|slice:"-2:"}}</div>
-              {% endif %}
-
+              <div>
               {% if s1f_rank %}
                 {% if s1f_rank >= 7 %}
                 <div style="font-size: 0.85rem; font-family: Arial; color:var(--color-light-gray); ">{{s1f_rank}}</div>
@@ -256,51 +252,67 @@
                 <div style="font-size: 0.85rem; font-family: Arial; color:var(--color-gray);">-</div>
                 {% endif %}
               {% endif %}
+              </div>
 
+              <div style="font-size: 0.85rem; color: var(--color-r1); font-weight: 550; font-style: normal;">
+                {% if jockey|slice:"-2:" == jname1|slice:"-2:" %}
+                <span style="font-size: 0.85rem; color: var(--color-r1); font-weight: 550;">{{jockey|slice:"-2:"}}</span>
+                {% elif jockey|slice:"-2:" == jname2|slice:"-2:" %}
+                <span style="font-size: 0.85rem; color: var(--color-r2); font-weight: 550;">{{jockey|slice:"-2:"}}</span>
+                {% elif jockey|slice:"-2:" == jname3|slice:"-2:" %}
+                <span style="font-size: 0.85rem; color: var(--color-r3); font-weight: 550;">{{jockey|slice:"-2:"}}</span>
+                {% else %}
+                <span style="font-size: 0.85rem; color: var(--color-dark)">{{jockey|slice:"-2:"}}</span>
+                {% endif %}
+              </div>
+              
             </td>
+
             <td align="center" style="border-right: 1px solid gray;">
 
               {% if r_pop >= 90 %}
-              <div style="font-size: 0.85rem; font-family: Arial; color:white; border-radius: 7px; background-color:var(--color-r1);">{{r_pop}}</div>
-              {% elif r_pop >= 20 and r_pop < 90 %}
-              <div style="font-size: 0.85rem; font-family: Arial; color:var(--color-bg); border-radius: 7px; background-color:yellow;">{{r_pop}}</div>
+              <div style="font-size: 0.9rem; font-family: Arial; color:white; border-radius: 7px; background-color:var(--color-r1);">{{r_pop}}</div>
+              {% elif r_pop >= 60 and r_pop < 90 %}
+              <div style="font-size: 0.9rem; font-family: Arial; color:var(--color-bg); border-radius: 7px; background-color:var(--color-r3);">{{r_pop}}</div>
+              {% elif r_pop >= 20 and r_pop < 60 %}
+              <div style="font-size: 0.9rem; font-family: Arial; color:var(--color-bg); border-radius: 7px; background-color:yellow;">{{r_pop}}</div>
               {% elif r_pop >= 1 and r_pop < 20 %}
-              <div style="font-size: 0.85rem; font-family: Arial; color:var(--color-bg); border-radius: 7px; background-color:beige;">{{r_pop}}</div>
+              <div style="font-size: 0.9rem; font-family: Arial; color:var(--color-bg); border-radius: 7px; background-color:beige;">{{r_pop}}</div>
               {% else %}
-              <div style="font-size: 0.85rem; font-family: Arial; color:var(--color-light-gray);">-</div>
+              <div style="font-size: 0.9rem; font-family: Arial; color:var(--color-light-gray);">-</div>
               {% endif %}
 
-              {% if rank > 90 %}
-              <div style="padding-top:0.1rem; padding-bottom: 0.1rem; font-size: 0.7rem">🐣</div>
-              {% else %}
-                {% if i_complex %}
-
-                  {% if rank == 12 %}   {# 만약 12두 이상의 경주마가 출주했으면 줄임말 표시 #}
-                    <div class="blink tooltip" style="padding-top:0.1rem;  font-size: 0.8rem; animation: blink-effect 1.0s step-end infinite;">m..
-                      <div class="tooltip-text">출주마가 더 있습니다.</div></div>
-                  {% else %}
-                    {% if i_complex < 10 %} 
-                    <div style="padding-top:0.1rem; font-size: 0.8rem; color:red;">{{i_complex|floatformat:0}}</div>
+              <div style="padding-top:0.1rem; padding-bottom: 0.1rem;">
+                {% if rank > 90 %}
+                <span style="font-size: 0.7rem;">🐣</span>
+                {% else %}
+                  {% if i_complex %}
+                    {% if rank == 12 %}   {# 만약 12두 이상의 경주마가 출주했으면 줄임말 표시 #}
+                      <span class="blink tooltip" style=" font-size: 0.8rem; animation: blink-effect 1.0s step-end infinite;">m..
+                        <span class="tooltip-text">출주마가 더 있습니다.</span></span>
                     {% else %}
-                    <div style="padding-top:0.1rem; font-size: 0.8rem; color: blue;">{{i_complex|floatformat:0}}</div>
+                      {% if i_complex < 10 %} 
+                      <span style="font-size: 0.85rem; color:red;">{{i_complex|floatformat:0}}</span>
+                      {% else %}
+                      <span style="font-size: 0.85rem; color: var(--color-gray);">{{i_complex|floatformat:0}}</span>
+                      {% endif %}
                     {% endif %}
+                    
+                  {%else%}
+                    <span style="font-size: 0.85rem">-</span>
                   {% endif %}
-                  
-                {%else%}
-                  <div style="font-size: 0.8rem">-</div>
-
                 {% endif %}
-              {% endif %}
+              </div>
 
               {# 부담중량 즘감 #}
               <div style="text-align: left;">
                 {% if handycap|sub:i_prehandy == 0 or handycap|sub:i_prehandy >= 10 %}
-                <div style="padding-top:0.85rem; font-size: 0.85rem; font-family: Arial; color:blue; line-height:120%; text-align: center;">&nbsp;<br>-</div>
+                <div style="padding-top:0.1rem; font-size: 0.85rem; font-family: Arial; color:blue; line-height:120%; text-align: center;">&nbsp;<br>-</div>
                 {% else %}
                 {% if handycap|sub:i_prehandy > 0 %}
-                <div style="padding-top:0.85rem; font-size: 0.85rem; font-family: Arial; color:blue; line-height:120%;">✚<br>{{handycap|sub:i_prehandy}}</div>
+                <div style="padding-top:0.1rem; font-size: 0.85rem; font-family: Arial; color:blue; line-height:120%;">✚<br>{{handycap|sub:i_prehandy}}</div>
                 {% else %}
-                <div style="padding-top:0.85rem; font-size: 0.85rem; font-family: Arial; color:red; line-height:120%;">⊖<br>{{handycap|sub:i_prehandy|mul:-1}}</div>
+                <div style="padding-top:0.1rem; font-size: 0.85rem; font-family: Arial; color:red; line-height:120%;">⊖<br>{{handycap|sub:i_prehandy|mul:-1}}</div>
                 {% endif %}
                 {% endif %}
               </div>

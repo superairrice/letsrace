@@ -184,6 +184,7 @@ class Exp011(models.Model):
     s1f_rank = models.DecimalField(
         max_digits=4, decimal_places=1, blank=True, null=True
     )
+    bet = models.CharField(max_length=1, blank=True, null=True)
 
     class Meta:
         managed = True
@@ -285,6 +286,10 @@ class RecordS(models.Model):
     race_speed = models.CharField(
         max_length=2, db_collation="euckr_korean_ci", blank=True, null=True
     )
+    r_judge = models.CharField(
+        max_length=4, db_collation="euckr_korean_ci", blank=True, null=True
+    )
+    
     gate = models.IntegerField()
     rank = models.IntegerField(blank=True, null=True)
     horse = models.CharField(

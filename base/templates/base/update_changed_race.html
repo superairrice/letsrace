@@ -6,7 +6,6 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
   <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
 
@@ -14,7 +13,7 @@
 
   <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
 
-  <title>Let's Enjoy! 경주제반 </title>
+  <title>경주제반 입력</title>
 
 </head>
 
@@ -96,16 +95,30 @@
 
             <thead>
               <tr>
-                <th width="5%">마번</th>
-                <th width="15%">마명</th>
-                <th width="8%">예상순위</th>
-                <th width="8%">예상기록</th>
-                <th width="8%">조교사</th>
-                <th width="9%">기수</th>
-                <th width="8%">부담중량</th>
-                <th width="14%">마체중</th>
-                <th width="10%">경주순위</th>
-                <th width="15%">출주마 인기도</th>
+                <th rowspan="2" width="5%">마번</th>
+                <th rowspan="2" width="15%">마명</th>
+                
+                <th rowspan="2" width="8%">조교사</th>
+                <th rowspan="2" width="9%">기수</th>
+                <th rowspan="2" width="8%">부담중량</th>
+
+                <th rowspan="2" width="10%">마체중</th>
+                <th colspan="2" rowspan="1" width="12%">프로그램</th>
+                
+                <th rowspan="2" width="5%">경주순위</th>
+                <th rowspan="2" width="8%">인기도</th>
+                <th rowspan="1" colspan="6" width="15%">베팅 기준</th>
+              </tr>
+              <tr>
+                <th rowspan="1" width="8%">예상기록</th>
+                <th rowspan="1" width="5%">순위</th>
+
+                <th colspan="1" width="5%"></th>
+                <th colspan="1" width="3%">축</th>
+                <th colspan="1" width="3%">복</th>
+                <th colspan="1" width="3%">연</th>
+                <th colspan="1" width="3%">?</th>
+                <th colspan="1" width="3%">취</th>
 
               </tr>
                               
@@ -118,8 +131,6 @@
               <tr class="tr_common">
                 <td class="td_common" align="right">{{race.gate}}&nbsp;</td>
                 <td align="left">{{race.horse}}</td>
-                <td class="td_common" style="text-align: center;">{{race.rank}}</td>
-                <td class="td_common" style="text-align: center;">{{race.complex}}</td>
 
                 <td align="left" style="text-align: center;">{{race.trainer}}</td>
         
@@ -134,6 +145,9 @@
                   <span style="font-family: Arial, Helvetica, sans-serif; text-align: left;">{{race.h_weight|slice:"0:3"}}</span>
                   <span style="font-family: Arial, Helvetica, sans-serif; text-align: right;">{{race.h_weight|slice:"4:"}}</span>
                 </td>
+                <td class="td_common" style="text-align: center;">{{race.complex}}</td>
+
+                <td class="td_common" style="text-align: center;">{{race.rank}}</td>
                 
                 <td class="td_common" align="center">
                   <input name="pop_{{race.gate}}" style="text-align:right; font-family: Arial;" type="number" min="0" max="100" step="1" value="{{race.r_rank}}" />
@@ -142,6 +156,33 @@
                 <td class="td_common" align="center">
                   <input name="pop_{{race.gate}}" style="text-align:right; font-family: Arial;" type="number" min="0" max="100" step="1" value="{{race.r_pop}}" />
                 </td>
+        
+                <!-- <td class="td_common" align="center">
+                  <select name="pop_{{race.gate}}" style="font-size: 1.2rem; width: 70px; border-radius: 5px;">
+                    <option value="0" {% if race.bet == '0' %} selected {% endif %}>&nbsp;</option>
+                    <option value="1" {% if race.bet == '1' %} selected {% endif %}>축으로</option>
+                    <option value="2" {% if race.bet == '2' %} selected {% endif %}>복조</option>
+                    <option value="3" {% if race.bet == '3' %} selected {% endif %}>삼복조</option>
+                    <option value="4" {% if race.bet == '4' %} selected {% endif %}>수상한놈</option>
+                  </select>
+                </td> -->
+                <td></td>
+                <td class="td_common" align="center">
+                    <input type="radio" id="select" name="pop_{{race.gate}}" value="1" {% if race.bet == '1' %} checked {% endif%} style="width:1.2rem; height:1.2rem; border:1px;"><label for="select"></label>
+                </td>
+                <td class="td_common" align="center">
+                    <input type="radio" id="select1" name="pop_{{race.gate}}" value="2" {% if race.bet == '2' %} checked {% endif%} style="width:1.2rem; height:1.2rem; border:1px;"><label for="select1"></label>
+                </td>
+                <td class="td_common" align="center">
+                    <input type="radio" id="select2" name="pop_{{race.gate}}" value="3" {% if race.bet == '3' %} checked {% endif%} style="width:1.2rem; height:1.2rem; border:1px;"><label for="select2"></label>
+                </td>
+                <td class="td_common" align="center">
+                    <input type="radio" id="select3" name="pop_{{race.gate}}" value="4" {% if race.bet == '4' %} checked {% endif%} style="width:1.2rem; height:1.2rem; border:1px;"><label for="select3"></label>
+                </td>
+                <td class="td_common" align="center">
+                    <input type="radio" id="select4" name="pop_{{race.gate}}" value="0" {% if race.bet == '0' %} checked {% endif%} style="width:1.2rem; height:1.2rem; border:1px;"><label for="select4"></label>
+                </td>
+
               </tr>
 
               {% endfor %}
@@ -149,9 +190,11 @@
             </tbody>
           </table>
           <br>
+
+
           <style>
             .table_common {
-              font-size: 1.4rem;
+              font-size: 1.2rem;
               font-family: Arial, Helvetica, sans-serif;
             }
       
@@ -171,7 +214,41 @@
             textarea {
               padding: 10px;
             }
+
+
+            .select {
+              padding: 15px 10px;
+            }
+
+            select input[type=radio] {
+              display: none;
+            }
+
+            select input[type=radio]+label {
+              display: inline-block;
+              cursor: pointer;
+              height: 24px;
+              width: 90px;
+              border: 1px solid #333;
+              line-height: 24px;
+              text-align: center;
+              font-weight: bold;
+              font-size: 1.0rem;
+              
+            }
+
+            select input[type=radio]+label {
+              background-color: #fff;
+              color: #333;
+            }
+
+            select input[type=radio]:checked+label {
+              background-color: #333;
+              color: #fff;
+            }
           </style>
+
+          <!-- <button class="btn btn--link" type="submit" style="font-size: 1.3rem;">💾&nbsp;Save</button> -->
 
           <div class="form__action">
             <a class="btn btn--dark" onclick="window.close()">Cancel</a>
