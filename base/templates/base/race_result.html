@@ -6,7 +6,9 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon" />
+
+  <link rel="shortcut icon" type="image/x-icon" href="{% static '/images/number-9.png' %}" />
+
   <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
   <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
 
@@ -350,35 +352,45 @@
 
                 <div align="right" style="font-size: 1.2rem; color:var(--color-gray);">
 
-                  {# 출생지 #}
-                  {% if r.birthplace == '한' %}
-                  <span style="font-size: 1.2rem; color:var(--color-gray);border-radius: 10px; background-color:var(--color-bg);">{{r.birthplace}}</span>
-                  {% elif r.birthplace == '미' %}
-                  <span style="font-size: 1.2rem; color:var(--color-r2);border-radius: 10px; background-color:var(--color-bg);">{{r.birthplace}}</span>
-                  {%else%}
-                    {% if '포' in r.birthplace %}
-                    <span style="font-size: 1.2rem; color:var(--color-r4);border-radius: 10px; background-color:var(--color-bg);">포</span>
-                    {% else %}
-                    <span style="font-size: 1.2rem; color:var(--color-r4);border-radius: 10px; background-color:var(--color-bg);">{{r.birthplace}}</span>
-                    {% endif %}
-                  {%endif%}
-                  
-                  {# 성별 #}
-                  {% if r.h_sex == '암' %}
-                  <span style="font-size: 1.2rem; color:var(--color-r1);border-radius: 10px; background-color:var(--color-bg);">{{r.h_sex}}</span>
-                  {% elif r.h_sex == '거' %}
-                  <span style="font-size: 1.2rem; color:var(--color-r3);border-radius: 10px; background-color:var(--color-bg);">{{r.h_sex}}</span>
-                  {%else%}
-                  <span style="font-size: 1.2rem; color:var(--color-light-gray);border-radius: 10px; background-color:var(--color-bg);">{{r.h_sex}}</span>
-                  {%endif%}
-                  
-                  {# 나이 #}
-                  {% if r.h_age >= 6 %}
-                  <span style="font-size: 1.2rem; font-style: italic; color:var(--color-r1);border-radius: 10px; background-color:var(--color-bg);">{{r.h_age}}</span>
-                  {%else%}
-                  <span style="font-size: 1.2rem; font-style: italic; color:var(--color-gray);border-radius: 10px; background-color:var(--color-bg);">{{r.h_age}}</span>
-                  {%endif%}
+                  {# 출주주기 #}
+                  {% if r.r_rank == 99 %}
+                  <span style="font-size:0.9rem; color:gray;">{% if r.reason %}{{r.reason|slice:"0:8"}}{% endif %}
+                  </span>
+                  {% else %}
 
+                    
+                    {# 출생지 #}
+                    {% if r.birthplace == '한' %}
+                    <span style="font-size: 1.2rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 1px 2px;">{{r.birthplace}}</span>
+                    {% elif r.birthplace == '미' %}
+                    <span style="font-size: 1.2rem; color:var(--color-r2); border-radius: 10px; background-color:var(--color-bg); padding: 1px 2px;">{{r.birthplace}}</span>
+                    {%else%}
+                      {% if '포' in r.birthplace %}
+                      <span style="font-size: 1.2rem; color:var(--color-r4); border-radius: 10px; background-color:var(--color-bg); padding: 1px 2px;">포</span>
+                      {% else %}
+                      <span style="font-size: 1.2rem; color:var(--color-r4); border-radius: 10px; background-color:var(--color-bg); padding: 1px 2px;">{{r.birthplace}}</span>
+                      {% endif %}
+                    {%endif%}
+                    
+                    {# 성별 #}
+                    {% if r.h_sex == '암' %}
+                    <span style="font-size: 1.2rem; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding: 1px 2px;">{{r.h_sex}}</span>
+                    {% elif r.h_sex == '거' %}
+                    <span style="font-size: 1.2rem; color:var(--color-r3); border-radius: 10px; background-color:var(--color-bg); padding: 1px 2px;">{{r.h_sex}}</span>
+                    {%else%}
+                    <span style="font-size: 1.2rem; color:var(--color-light-gray); border-radius: 10px; background-color:var(--color-bg); padding: 1px 2px;">{{r.h_sex}}</span>
+                    {%endif%}
+                    
+                    {# 나이 #}
+                    {% if r.h_age >= 5.9 %}
+                    <span style="font-family: Arial; font-size: 1.2rem; font-style: italic; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding:1px 3px">{{r.h_age}}</span>
+                    {% elif r.h_age < 3 %}
+                    <span style="font-family: Arial; font-size: 1.2rem; font-style: italic; color:var(--color-r2); border-radius: 10px; background-color:var(--color-bg); padding:1px 3px">{{r.h_age}}</span>
+                    {%else%}
+                    <span style="font-family: Arial; font-size: 1.2rem; font-style: italic; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding:1px 3px">{{r.h_age}}</span>
+                    {%endif%}
+
+                  {% endif %}
                 </div>
                 
               </td>
@@ -922,7 +934,7 @@
                             </div>
                             {%else%}
                             <div style="color:var(--color-r1);  text-align: left;">
-                              <a href="{% url 'get_race_awardee' hr.rdate 'trainer' hr.trainer r.jockey hr.trainer r.host %}" onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                              <a href="{% url 'get_race_awardee' hr.rdate 'trainer' hr.trainer r.jockey hr.trainer ' ' %}" onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
                                 {{hr.trainer}}
                               </a>
                             </div>

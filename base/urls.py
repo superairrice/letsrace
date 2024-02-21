@@ -47,7 +47,11 @@ urlpatterns = [
     path('home_a/<str:rcity>/<str:rdate>', views.homePage_a, name="home_a"),
 
     path('prediction_race/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>',
-         views.predictionRace, name="prediction_race"),  # id 전달
+         views.predictionRace, name="prediction_race"),  # 로그인 후
+    
+    path('prediction_list/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>',
+         views.predictionList, name="prediction_list"),  # 로그인 전 
+    
     path('race_result/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:rcity1>/<str:rdate1>/<int:rno1>',
          views.raceResult, name="race_result"),  # id 전달
     path('race_train/<str:rcity>/<str:rdate>/<int:rno>',
