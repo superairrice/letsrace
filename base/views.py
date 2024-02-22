@@ -461,8 +461,10 @@ def home(request):
     #     Q(jockey6__icontains=q) |
     #     Q(jockey7__icontains=q)).order_by('rdate', 'rcity', 'rno')
 
-    race, expects, award_j, rdays = get_prediction(i_rdate)
-    
+    race, expects, award_j, rdays, judged_jockey = get_prediction(i_rdate)
+
+    # print(judged_jockey)
+
     rflag = False  # 경마일, 비경마일 구분
     for r in rdays:
         # print(r[0], r[2])
@@ -505,6 +507,7 @@ def home(request):
         "q": q,
         "t_count": t_count,
         "rdays": rdays,
+        "judged_jockey": judged_jockey,
         "rflag": rflag,  # 경마일, 비경마일 구분
     }
 
@@ -1611,7 +1614,7 @@ def awardStatusTrainer(request):
             ip_address=name,
             user_agent=request.META.get("HTTP_USER_AGENT"),
             # referrer=request.META.get('HTTP_REFERER'),
-            referer= fdate + " " + "마방 출주현황",
+            referer= fdate + " " + "마방 상금수득 현황",
             # timestamp=timezone.now()
         )
 
@@ -1685,7 +1688,7 @@ def awardStatusJockey(request):
             ip_address=name,
             user_agent=request.META.get("HTTP_USER_AGENT"),
             # referrer=request.META.get('HTTP_REFERER'),
-            referer= fdate + " " + "기수 출주현황",
+            referer= fdate + " " + "기수 상금수득 현황",
             # timestamp=timezone.now()
         )
 

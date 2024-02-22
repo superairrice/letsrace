@@ -17,6 +17,21 @@
   })
 </script>
 
+<!-- <script>
+  $(function () {
+    $(".fold-table tr.view").on("click", function () {
+      if ($(this).hasClass("open")) {
+        $(this).removeClass("open").next(".fold").removeClass("open");
+      } else {
+        $(".fold-table tr.view").removeClass("open").next(".fold").removeClass("open");
+        $(this).addClass("open").next(".fold").addClass("open");
+      }
+    });
+  });
+
+</script> -->
+
+
 <div class="activities">
 
   <ul class="tabs1">
@@ -115,8 +130,6 @@
             </div>
           </td>
           
-
-          
         </tr>
 
         <tr class="fold">
@@ -148,7 +161,7 @@
                     <td align="center" style="font-size: 1.1rem; font-family: Arial, Helvetica, sans-serif;">
                       <a href="{% url 'prediction_race' rcity rdate rno horse 'awardee' %}">
                         <span class="tooltip">{{rno}}ᴿ
-                          <span class="tooltip-text" style="text-align: left; font-size: 1.15rem;">&nbsp;&nbsp;🐎&nbsp;{{horse}}<br>» 경주거리&nbsp;:&nbsp;{{distance}}<br>» 최근성적&nbsp;:&nbsp;{{remark}}<br>» 부담중량&nbsp;:&nbsp;{{handycap}}</span>
+                          <span class="tooltip-text" style="text-align: left; font-size: 1.15rem; z-index: 999;">&nbsp;&nbsp;🐎&nbsp;{{horse}}<br>» 경주거리&nbsp;:&nbsp;{{distance}}<br>» 최근성적&nbsp;:&nbsp;{{remark}}<br>» 부담중량&nbsp;:&nbsp;{{handycap}}</span>
                         </span>
                       </a>
                     </td>
@@ -261,10 +274,58 @@
 
                 </tbody>
               </table>
+
+              <table class="small-friendly">
+                <thead>
+                  <tr style="background-color:var(--color-main);">
+                    <th><span class="visible-big" style="padding-bottom: 3px; font-size: 1.1rem;">📅</span></th>
+                    <th colspan="2">
+                      <span class="visible-big" style="padding-bottom: 3px; font-size: 1.1rem; color:var(--color-r1);">🐴&nbsp;{{jockey}}&nbsp;&nbsp;최근 100일 재결현황</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for rcity, rdate, rno, horse_b, jockey_b, trainer, t_sort, t_type, t_detail, t_reason in judged_jockey %}
+                  {% if jockey == jockey_b %}
+              
+                  <tr class="view">
+              
+                    <td align="left">
+                      <a style="text-decoration:underline" href="{% url 'race_result' rcity rdate rno horse_b 0 0 0 %}"
+                        onclick="window.open(this.href, 'w_result', 'width=1000, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
+                        <div style="font-size:1.0rem; font-family: Arial, Helvetica, sans-serif; text-align: right;">
+                          '{{rdate|slice:"2:4"}}
+                        </div>
+                        <div style="font-size:1.1rem; font-family: Arial, Helvetica, sans-serif;">
+                          '{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}
+                        </div>
+                        
+                      </a>
+                    </td>
+                    <td align="center">
+                      <div style="font-size:1.1rem;">{{t_type}}</div>
+                    </td>
+                    <td align="left">
+                      <div style="font-size:1.1rem; color:var(--color-r1);">
+                        {{t_detail}}
+                      </div>
+                      <div style="font-size:1.1rem;">
+                        {{t_reason}}
+                      </div>
+                    </td>
+                    
+                  </tr>
+                  {% endif %}
+              
+                  {% endfor %}
+              
+                </tbody>
+              </table>
+
             </div>
           </td>
         </tr>
-     
+  
         {%endif%}
         {% endfor %}
     
@@ -364,11 +425,10 @@
             </div>
           </td>
           
-
           
         </tr>
 
-        <tr class="fold">
+        <tr class="view">
           <td colspan="10">
             <div class="fold-content">
               <table class="small-friendly">
@@ -513,7 +573,8 @@
             </div>
           </td>
         </tr>
-     
+        
+        
         {%endif%}
         {% endfor %}
     
@@ -522,4 +583,8 @@
 
   </div>
 
+
 </div>
+
+
+

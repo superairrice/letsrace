@@ -115,9 +115,9 @@ def get_judged_jockey(rcity, rdate, rno):
 
         strSql = (
             """ 
-              SELECT distinct a.rank, a.gate, a.horse, b.rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
+                SELECT distinct a.rank, a.gate, a.horse, b.rdate b_rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason, b.rcity b_rcity, b.rno b_rno
                 FROM exp011     a,
-                      rec015     b
+                    rec015     b
                 where a.jockey = b.jockey 
                 AND b.t_sort = '기수'
                 AND b.rdate between date_format(DATE_ADD('"""
@@ -135,11 +135,11 @@ def get_judged_jockey(rcity, rdate, rno):
             + str(rno)
             + """
 
-              union
+            union
 
-              SELECT distinct a.rank, a.gate, a.horse, b.rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
+                SELECT distinct a.rank, a.gate, a.horse, b.rdate b_rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason, b.rcity b_rcity, b.rno b_rno
                 FROM exp011     a,
-                      rec015     b
+                    rec015     b
                 where a.trainer = b.trainer 
                 AND b.t_sort = '조교사'
                 AND b.rdate between date_format(DATE_ADD('"""
@@ -159,6 +159,8 @@ def get_judged_jockey(rcity, rdate, rno):
 
             ; """
         )
+        
+        # print(strSql)
 
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
@@ -2976,36 +2978,35 @@ def get_prediction(i_rdate):
         connection.rollback()
         print("Failed selecting rdays")
 
-    # try:
-    #     cursor = connection.cursor()
+    try:
+        cursor = connection.cursor()
 
-    #     strSql = (
-    #         """ 
-    #         SELECT distinct a.rank, a.gate, a.horse, b.rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
-    #             FROM exp011     a,
-    #                 rec015     b
-    #             where a.jockey = b.jockey 
-    #             AND b.t_sort = '기수'
-    #             AND b.rdate between date_format(DATE_ADD('"""
-    #         + i_rdate
-    #         + """', INTERVAL - 100 DAY), '%Y%m%d') and '"""
-    #         + i_rdate
-    #         + """'
+        strSql = (
+            """ 
+            SELECT distinct b.rcity, b.rdate, b.rno, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
+                FROM exp011     a,
+                    rec015     b
+                where a.jockey = b.jockey 
+                AND b.t_sort = '기수'
+                AND b.rdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 100 DAY), '%Y%m%d') and '""" + i_rdate + """'
+                AND a.rdate between '""" + i_rdate + """' and date_format(DATE_ADD('""" + i_rdate + """', INTERVAL + 3 DAY), '%Y%m%d')
+            ORDER BY b.rdate desc
 
-    #         ; """
-    #     )
+            ; """
+        )
 
-    #     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-    #     result = cursor.fetchall()
+        # print(strSql)
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        judged_jockey = cursor.fetchall()
 
-    #     connection.commit()
-    #     connection.close()
+        connection.commit()
+        connection.close()
 
-    # except:
-    #     connection.rollback()
-    #     print("Failed selecting in judged jockey")
+    except:
+        connection.rollback()
+        print("Failed selecting in judged jockey")
 
-    return race, expects, award_j, rdays
+    return race, expects, award_j, rdays, judged_jockey
 
 
 def get_report_code(i_rcity, i_rdate, i_rno):
