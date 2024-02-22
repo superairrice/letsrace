@@ -230,7 +230,10 @@ def passwordChange(request):
             messages.success(request, "Your password was successfully updated!")
             return redirect("home")
         else:
-            messages.error(request, "기존 비밀번호와 새 비밀번호를 규칙에 맞게 설정하십시오(툭수문자와 숫자포함 8자 이상)")
+            messages.error(
+                request,
+                "기존 비밀번호와 새 비밀번호를 규칙에 맞게 설정하십시오(툭수문자와 숫자포함 8자 이상)",
+            )
     else:
         form = PasswordChangeForm(request.user)
     return render(request, "account/password_change.html", {"form": form})
@@ -459,7 +462,7 @@ def home(request):
     #     Q(jockey7__icontains=q)).order_by('rdate', 'rcity', 'rno')
 
     race, expects, award_j, rdays = get_prediction(i_rdate)
-
+    
     rflag = False  # 경마일, 비경마일 구분
     for r in rdays:
         # print(r[0], r[2])
@@ -613,7 +616,9 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     # train = get_train(rcity, rdate, rno)
     train, training_cnt = get_train_horse(rcity, rdate, rno)
     treat = get_treat_horse(rcity, rdate, rno)
-    track = get_track_record(rcity, rdate, rno)         # 경주거리별 등급별 평균기록, 최고기록, 최저기록 
+    track = get_track_record(
+        rcity, rdate, rno
+    )  # 경주거리별 등급별 평균기록, 최고기록, 최저기록
     # swim = get_swim_horse(rcity, rdate, rno)
     # train = sorted(train, key=lambda x: x[4] or 99)
 
@@ -685,7 +690,6 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         #    'training': training,
         "train": train,
         "training_cnt": training_cnt,
-        
         "treat": treat,
         "track": track,
         #    'swim': swim,
@@ -706,6 +710,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     }
 
     return render(request, "base/prediction_race.html", context)
+
 
 def predictionList(request, rcity, rdate, rno, hname, awardee):
     exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
@@ -778,7 +783,9 @@ def predictionList(request, rcity, rdate, rno, hname, awardee):
     # train = get_train(rcity, rdate, rno)
     train, training_cnt = get_train_horse(rcity, rdate, rno)
     treat = get_treat_horse(rcity, rdate, rno)
-    track = get_track_record(rcity, rdate, rno)         # 경주거리별 등급별 평균기록, 최고기록, 최저기록 
+    track = get_track_record(
+        rcity, rdate, rno
+    )  # 경주거리별 등급별 평균기록, 최고기록, 최저기록
     # swim = get_swim_horse(rcity, rdate, rno)
     # train = sorted(train, key=lambda x: x[4] or 99)
 
@@ -850,7 +857,6 @@ def predictionList(request, rcity, rdate, rno, hname, awardee):
         #    'training': training,
         "train": train,
         "training_cnt": training_cnt,
-        
         "treat": treat,
         "track": track,
         #    'swim': swim,
@@ -1324,7 +1330,7 @@ def updateChangedRace(request, rcity, rdate, rno):
             except:
                 connection.rollback()
                 print("Failed updating in exp011")
-                
+
             exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno)
 
     context = {"rcity": rcity, "exp011s": exp011s, "fdata": fdata}
@@ -1342,7 +1348,9 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
     r_condition = Rec010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
-    rdate_1year = str(int(rdate[0:4]) - 1) + rdate[4:8]  # 최근 1년 경주성적 조회조건 추가
+    rdate_1year = (
+        str(int(rdate[0:4]) - 1) + rdate[4:8]
+    )  # 최근 1년 경주성적 조회조건 추가
 
     hr_records = RecordS.objects.filter(
         rdate__lt=rdate, rdate__gt=rdate_1year, horse__in=records.values("horse")
@@ -1448,7 +1456,9 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
 
 # 기수 or 조교사 or 마주 44일 경주결과
 def getRaceAwardee(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host):
-    solidarity = get_recent_awardee(rdate, awardee, i_name)  # 기수, 조교사, 마주 연대현황 최근1년
+    solidarity = get_recent_awardee(
+        rdate, awardee, i_name
+    )  # 기수, 조교사, 마주 연대현황 최근1년
     # print(solidarity)
 
     context = {
@@ -1464,7 +1474,9 @@ def getRaceAwardee(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host)
 
 # 기수 or 조교사 or 마주 44일 경주결과
 def getRaceHorse(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host):
-    solidarity = get_recent_horse(rdate, awardee, i_name)  # 기수, 조교사, 마주 연대현황 최근1년
+    solidarity = get_recent_horse(
+        rdate, awardee, i_name
+    )  # 기수, 조교사, 마주 연대현황 최근1년
     # print(solidarity)
 
     context = {
@@ -1527,6 +1539,22 @@ def printPrediction(request):
             "jname3": jname3,
         }
 
+    name = get_client_ip(request)
+    if name[0:6] != "15.177":
+        update_visitor_count(name)
+
+        # create a new Visitor instance
+        new_visitor = Visitor(
+            ip_address=name,
+            user_agent=request.META.get("HTTP_USER_AGENT"),
+            # referrer=request.META.get('HTTP_REFERER'),
+            referer=rcity + " " + rdate + " " + "Print Prediction",
+            # timestamp=timezone.now()
+        )
+
+        # insert the new_visitor object into the database
+        new_visitor.save()
+
     return render(request, "base/print_prediction.html", context)
 
 
@@ -1573,6 +1601,22 @@ def awardStatusTrainer(request):
     status = get_status_train(rdate)
     j_rdate = status[len(status) - 1][1]
     # print(len(status))
+    
+    name = get_client_ip(request)
+    if name[0:6] != "15.177":
+        update_visitor_count(name)
+
+        # create a new Visitor instance
+        new_visitor = Visitor(
+            ip_address=name,
+            user_agent=request.META.get("HTTP_USER_AGENT"),
+            # referrer=request.META.get('HTTP_REFERER'),
+            referer= fdate + " " + "마방 출주현황",
+            # timestamp=timezone.now()
+        )
+
+        # insert the new_visitor object into the database
+        new_visitor.save()
 
     context = {
         "weeks": weeks,
@@ -1631,6 +1675,22 @@ def awardStatusJockey(request):
 
     j_rdate = status[len(status) - 1][1]
     # print(len(status))
+
+    name = get_client_ip(request)
+    if name[0:6] != "15.177":
+        update_visitor_count(name)
+
+        # create a new Visitor instance
+        new_visitor = Visitor(
+            ip_address=name,
+            user_agent=request.META.get("HTTP_USER_AGENT"),
+            # referrer=request.META.get('HTTP_REFERER'),
+            referer= fdate + " " + "기수 출주현황",
+            # timestamp=timezone.now()
+        )
+
+        # insert the new_visitor object into the database
+        new_visitor.save()
 
     context = {
         "weeks": weeks,

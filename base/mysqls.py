@@ -2976,6 +2976,35 @@ def get_prediction(i_rdate):
         connection.rollback()
         print("Failed selecting rdays")
 
+    # try:
+    #     cursor = connection.cursor()
+
+    #     strSql = (
+    #         """ 
+    #         SELECT distinct a.rank, a.gate, a.horse, b.rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
+    #             FROM exp011     a,
+    #                 rec015     b
+    #             where a.jockey = b.jockey 
+    #             AND b.t_sort = '기수'
+    #             AND b.rdate between date_format(DATE_ADD('"""
+    #         + i_rdate
+    #         + """', INTERVAL - 100 DAY), '%Y%m%d') and '"""
+    #         + i_rdate
+    #         + """'
+
+    #         ; """
+    #     )
+
+    #     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+    #     result = cursor.fetchall()
+
+    #     connection.commit()
+    #     connection.close()
+
+    # except:
+    #     connection.rollback()
+    #     print("Failed selecting in judged jockey")
+
     return race, expects, award_j, rdays
 
 
