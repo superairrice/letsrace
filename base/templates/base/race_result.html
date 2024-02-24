@@ -16,7 +16,7 @@
 
   <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
 
-  <title>경주결과&nbsp;{% if hname %}'{{r_condition.rdate|slice:"2:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}}) {{hname}}{% endif %}</title>
+  <title>경주결과&nbsp;{% if hname %}'{{r_condition.rdate|slice:"2:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}}){{r_condition.rcity}} {{r_condition.rno}}경주{% endif %}</title>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-BFZZL101LZ"></script>
@@ -81,6 +81,21 @@
           <!-- <a href="{% url 'home' %}" class="header__logo" style="height:2.0rem; width: 2.2rem;"> -->
             <img src="{% static 'images/number-9.png' %}" />
           </a>&nbsp;
+
+          <a href="{% url 'race_result' r_condition.rcity r_condition.rdate r_condition.rno|add:-1 0 0 0 0 %}">
+            <span class="tooltip">◀︎
+              <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
+                이전 경주
+              </span>
+            </span>
+          </a>
+          <a href="{% url 'race_result' r_condition.rcity r_condition.rdate r_condition.rno|add:1 0 0 0 0 %}">
+            <span class="tooltip">▶︎
+              <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
+                다음 경주
+              </span>
+            </span>
+          </a>
           
           <span style="font-family: Arial, Helvetica, sans-serif; font-size:1.4rem; color: var(--color-main-light); font-weight: 500;">
             '{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}})
@@ -153,7 +168,7 @@
           </span>
           <span style="text-align:left; font-family: Arial; font-size: 1.4rem;">{{r_condition.rstate}}&nbsp;{{r_condition.rmoisture}}</span>
           {% if r_condition.race_speed %}
-          <span style="text-align:left; font-family: Arial; font-size: 1.3rem;">&nbsp;주로 빠르기:</span>
+          <span style="text-align:left; font-family: Arial; font-size: 1.3rem;">&nbsp;주로:</span>
           
           <span style="text-align:left; font-family: Arial; font-size: 1.5rem; color:var(--color-light)">
             {{r_condition.race_speed}}
@@ -489,10 +504,24 @@
                 <div style="font-family: Arial; color:var(--color-light-gray);">{% if r.rcity == '서울' %}{{r.rs1f|slice:"2:6"}}{% else %}{{ r.rs1f }}{% endif %}</div>
                 {% endif %}
 
-                {% if compare_r.s1f_rank__min == r.s1f_rank and r.s1f_rank %}
-                <div style="font-size: 1.2rem; font-family: Arial; color:var(--color-r1); text-align: right;">{% if r.s1f_rank %}{{r.s1f_rank}}{% endif %}</div>
-                {% else %}
-                <div style="font-size: 1.2rem; font-family: Arial; color:var(--color-light-gray);  text-align: right;">{% if r.s1f_rank %}{{r.s1f_rank}}{% endif %}</div>
+                {% if r.s1f_rank %}
+                  {% if compare_r.s1f_rank__min == r.s1f_rank %}
+                  <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-r1); font-weight: 600;">{{r.s1f_rank}}</div>
+                  {% else %}
+                  <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-gray);">
+                    
+                    {% if r.s1f_rank >= 6 %}
+                    <span style="font-size: 1.05rem; font-family: Arial; color:var(--color-gray);">{{r.s1f_rank}}</span>
+                    {% elif r.s1f_rank >= 3 and r.s1f_rank < 6 %}
+                    <span style="font-size: 1.05rem; font-family: Arial; color:var(--color-r2);">{{r.s1f_rank}}</span>
+                    {% elif r.s1f_rank > 0 and r.s1f_rank < 3 %}
+                    <span style="font-size: 1.05rem; font-family: Arial; color:var(--color-r1);">{{r.s1f_rank}}</span>
+                    {% else %}
+                    <span style="font-size: 1.05rem; font-family: Arial; color:var(--color-gray);">-</span>
+                    {% endif %}
+                  
+                  </div>
+                  {% endif %}
                 {% endif %}
 
 
@@ -517,6 +546,28 @@
                 <span style="font-family: Arial; color:var(--color-r1); font-weight: 600;">{% if r.rcity == '부산' %}{{r.rg1f|slice:"2:6"}}{% else %}{{ r.rg1f }}{% endif %}</span>
                 {% else %}
                 <span style="font-family: Arial; color:var(--color-light-gray);">{% if r.rcity == '부산' %}{{r.rg1f|slice:"2:6"}}{% else %}{{ r.rg1f }}{% endif %}</span>
+                {% endif %}
+
+
+                {% if r.g1f_rank %}
+                  {% if compare_r.g1f_rank__min == r.g1f_rank %}
+                  <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-r1); font-weight: 600;">{{r.g1f_rank}}</div>
+                  {% else %}
+                  <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-gray);">
+                    
+                    {% if r.g1f_rank >= 6 %}
+                    <span style="font-size: 1.05rem; font-family: Arial; color:var(--color-gray);">{{r.g1f_rank}}</span>
+                    {% elif r.g1f_rank >= 3 and r.g1f_rank < 6 %}
+                    <span style="font-size: 1.05rem; font-family: Arial; color:var(--color-r2);">{{r.g1f_rank}}</span>
+                    {% elif r.g1f_rank > 0 and r.g1f_rank < 3 %}
+                    <span style="font-size: 1.05rem; font-family: Arial; color:var(--color-r1);">{{r.g1f_rank}}</span>
+                    {% else %}
+                    <span style="font-size: 1.05rem; font-family: Arial; color:var(--color-gray);">-</span>
+                    {% endif %}
+                  
+                  </div>
+                  {% endif %}
+                  
                 {% endif %}
               </td>
 
