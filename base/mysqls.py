@@ -305,7 +305,7 @@ def get_pedigree(rcity, rdate, rno):
                     blood2, 
                     treat1, 
                     treat2, 
-                    price/10000000
+                    price/10000000, a.rating
                 FROM exp011	a,
                     horse		b,
                     exp012 c
@@ -448,7 +448,7 @@ def get_race_center_detail_view(i_rdate, i_awardee):
             + i_awardee
             + """ awardee, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey j_name, trainer t_name, host h_name, r_pop, distance, handycap,
                         cs1f, cg3f, cg2f, cg1f, complex, if ( i_prehandy = 0.0, 0, handycap - i_prehandy) i_pre
-                  from expect
+                from expect
                 where rdate in ( select distinct rdate from racing )
                 order by rcity, rdate, rno, rank, gate
                 ; """
@@ -475,8 +475,8 @@ def get_race(i_rdate, i_awardee):
         strSql = (
             """ 
                 select rcity, rdate, rno, rday, rseq,distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime, r1award/1000, r2award/1000, r3award/1000, r4award/1000, r5award/1000, sub1award/1000, sub2award/1000, sub3award/1000,
-                      ( select count(*) from rboard where a.rcity = rcity and a.rdate = rdate and a.rno = rno ) rcnt
-                  from exp010 a 
+                    ( select count(*) from rboard where a.rcity = rcity and a.rdate = rdate and a.rno = rno ) rcnt
+                from exp010 a 
                 where rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
@@ -3008,6 +3008,113 @@ def get_prediction(i_rdate):
 
     return race, expects, award_j, rdays, judged_jockey
 
+def get_expects(i_rdate):
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """
+                select rcity, jockey, count(*), 
+                        sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) + sum(if(r_rank = 3, 1, 0)) rr123_cnt, 
+                        sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) r123_cnt, 
+                        sum(if(r_rank = 1, 1, 0)) rr1, 
+                        sum(if(r_rank = 2, 1, 0)) rr2, 
+                        sum(if(r_rank = 3, 1, 0)) rr3,
+                        sum(if(rank = 1, 1, 0)) r1, 
+                        sum(if(rank = 2, 1, 0)) r2, 
+                        sum(if(rank = 3, 1, 0)) r3
+                from expect a
+                where rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL + 3 DAY), '%Y%m%d')
+                and rno < 80
+                group by rcity, jockey
+                order by rcity, sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) + sum(if(r_rank = 3, 1, 0)) desc,
+                                sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) desc,
+                                sum(if(r_rank = 1, 1, 0))  desc,
+                                sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) desc,
+                                sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0))  desc,
+                                sum(if(rank = 1, 1, 0)) desc
+                ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        award_j = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in award_j")
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+            SELECT distinct b.rcity, b.rdate, b.rno, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
+                FROM exp011     a,
+                    rec015     b
+                where a.jockey = b.jockey 
+                AND b.t_sort = '기수'
+                AND b.rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 100 DAY), '%Y%m%d') and '"""
+            + i_rdate
+            + """'
+                AND a.rdate between '"""
+            + i_rdate
+            + """' and date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL + 3 DAY), '%Y%m%d')
+            ORDER BY b.rdate desc
+
+            ; """
+        )
+
+        # print(strSql)
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        judged_jockey = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in judged jockey")
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+                select rcity, jockey, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey j_name, trainer t_name, host h_name, r_pop, distance, handycap, jt_per, s1f_rank, jockey_old, reason
+                from expect
+                where rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL + 3 DAY), '%Y%m%d')
+                and rno < 80
+                order by rdate, rcity, rno
+                ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        race_detail = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in expect : 경주별 Detail(약식)) ")
+
+    return award_j, race_detail, judged_jockey
 
 def get_report_code(i_rcity, i_rdate, i_rno):
     try:
