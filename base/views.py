@@ -48,6 +48,7 @@ from base.mysqls import (
     get_recent_horse,
     get_report_code,
     get_solidarity,
+    get_status_stable,
     get_status_train,
     get_swim_horse,
     get_track_record,
@@ -643,6 +644,12 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     popularity_rate = get_popularity_rate(rcity, rdate, rno)  # 인기순위별 승률
     popularity_rate_t = get_popularity_rate_t(rcity, rdate, rno)  # 인기순위별 승률
     popularity_rate_h = get_popularity_rate_h(rcity, rdate, rno)  # 인기순위별 승률
+
+    # stable = get_status_stable(rcity, rdate, rno)
+    # stable_list = stable.values.tolist()
+    # stable_title = stable.columns.tolist()
+
+    # print(stable_title)
 
     # judged = get_judged(rcity, rdate, rno)
     judged_horse = get_judged_horse(rcity, rdate, rno)
@@ -1514,21 +1521,19 @@ def awardStatusTrainer(request):
 
     if q == "":
         today = datetime.today()
-        if today.weekday() == 5:  # {0:월, 1:화, 2:수, 3:목, 4:금, 5:토, 6:일}
-            rdate = Racing.objects.values("rdate").distinct()[1]["rdate"]
-        elif today.weekday() == 6:
-            rdate = Racing.objects.values("rdate").distinct()[2]["rdate"]
-        else:
+        if today.weekday() == 4:  # {0:월, 1:화, 2:수, 3:목, 4:금, 5:토, 6:일}
             rdate = Racing.objects.values("rdate").distinct()[0]["rdate"]
+        elif today.weekday() == 5:
+            rdate = Racing.objects.values("rdate").distinct()[1]["rdate"]
+        else:
+            rdate = Racing.objects.values("rdate").distinct()[2]["rdate"]
 
-        friday = Racing.objects.values("rdate").distinct()[0]["rdate"]  # weeks 기준일
+        friday = Racing.objects.values("rdate").distinct()[2]["rdate"]  # weeks 기준일
         fdate = friday[0:4] + "-" + friday[4:6] + "-" + friday[6:8]
 
     else:
-        print(q[5:7] + "-" + q[8:10] + "-" + q[0:4])
+        # print(q[5:7] + "-" + q[8:10] + "-" + q[0:4])
         today = datetime.strptime(q[5:7] + "-" + q[8:10] + "-" + q[0:4], "%m-%d-%Y")
-        # friday =
-        print(today)
 
         if today.weekday() == 4:
             rdate = q[0:4] + q[5:7] + q[8:10]
@@ -1541,7 +1546,7 @@ def awardStatusTrainer(request):
             friday = rdate
             fdate = q
 
-            messages.warning(request, "선택된 날짜가 금요일이 아닙니다.")
+            # messages.warning(request, "선택된 날짜가 금요일이 아닙니다.")
 
     weeks = get_last2weeks(friday, i_awardee="trainer")
     loadin = get_last2weeks_loadin(friday)
@@ -1588,14 +1593,14 @@ def awardStatusJockey(request):
 
     if q == "":
         today = datetime.today()
-        if today.weekday() == 5:  # {0:월, 1:화, 2:수, 3:목, 4:금, 5:토, 6:일}
-            rdate = Racing.objects.values("rdate").distinct()[1]["rdate"]
-        elif today.weekday() == 6:
-            rdate = Racing.objects.values("rdate").distinct()[2]["rdate"]
-        else:
+        if today.weekday() == 4:  # {0:월, 1:화, 2:수, 3:목, 4:금, 5:토, 6:일}
             rdate = Racing.objects.values("rdate").distinct()[0]["rdate"]
+        elif today.weekday() == 5:
+            rdate = Racing.objects.values("rdate").distinct()[1]["rdate"]
+        else:
+            rdate = Racing.objects.values("rdate").distinct()[2]["rdate"]
 
-        friday = Racing.objects.values("rdate").distinct()[0]["rdate"]  # weeks 기준일
+        friday = Racing.objects.values("rdate").distinct()[2]["rdate"]  # weeks 기준일
         fdate = friday[0:4] + "-" + friday[4:6] + "-" + friday[6:8]
 
     else:

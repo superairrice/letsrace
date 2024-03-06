@@ -181,7 +181,7 @@ def get_judged_horse(rcity, rdate, rno):
 
         strSql = (
             """ 
-              SELECT distinct a.rank, a.gate, a.horse, b.rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
+              SELECT distinct a.rank, a.gate, a.horse, b.rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason, a.rcity, a.rno
                 FROM exp011     a,
                       rec015     b
                 where a.horse = b.horse 
@@ -3233,6 +3233,118 @@ def get_trainer_double_check(i_rcity, i_rdate, i_rno):
 
     return trainer_double_check
 
+# 마방 등급별 경주마 보유현황
+def stable_status(i_rcity, i_rdate, i_rno):
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+                SELECT wdate, trainer, grade, count(*)
+                FROM The1.horse_w a
+                where wdate  between '20240103' and  '20240303'
+                and trainer in ( select trainer from The1.exp011 where rcity = '서울' and rdate = '20240303' ) 
+                group by wdate desc, trainer, grade
+            ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in Jockey Trend")
+
+    col = ["예상", "마번", "실순", "인기", "기수", "마주", "마방", "등급", "두수"]
+    data = list(result)
+    # print(data)
+
+    df = pd.DataFrame(data=data, columns=col)
+
+    pdf1 = pd.pivot_table(
+        df,  # 피벗할 데이터프레임
+        index=(
+            "예상",
+            "마번",
+            "실순",
+            "인기",
+            "기수",
+            "마주",
+            "마방",
+        ),  # 행 위치에 들어갈 열
+        columns="등급",  # 열 위치에 들어갈 열
+        values=("두수"),
+        aggfunc="max",
+        fill_value=0,  # null 치환
+    )  # 데이터로 사용할 열
+
+    # pdf1.columns = ['/'.join(col) for col in pdf1.columns]
+    pdf1.columns = ["".join(col) for col in pdf1.columns]
+
+    pdf1 = pdf1.reset_index()
+    print(pdf1)
+
+    return pdf1
+
+
+# 경주별 마방 등급별 경주마 보유현황
+def get_status_stable(i_rcity, i_rdate, i_rno):
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+                SELECT b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, b.host, a.trainer, a.grade, count(*)
+                FROM horse_w a  right outer join  expect b  on a.trainer = b.trainer 
+                where a.wdate = ( select max(wdate) from horse_w where wdate < '""" + i_rdate + """' )
+                and b.rcity = '""" + i_rcity + """' and b.rdate = '""" + i_rdate + """' and b.rno = """ + str(i_rno) + """
+                group by b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, b.host, a.trainer, a.grade
+            ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in Jockey Trend")
+
+    col = ["예상", "마번", "실순", "인기", "기수", "마주", "마방", "등급", "두수"]
+    data = list(result)
+    # print(data)
+
+    df = pd.DataFrame(data=data, columns=col)
+
+    pdf1 = pd.pivot_table(
+        df,  # 피벗할 데이터프레임
+        index=(
+            "예상",
+            "마번",
+            "실순",
+            "인기",
+            "기수",
+            "마주",
+            "마방",
+        ),  # 행 위치에 들어갈 열
+        columns="등급",  # 열 위치에 들어갈 열
+        values=("두수"),
+        aggfunc="max",
+        fill_value=0,  # null 치환
+    )  # 데이터로 사용할 열
+
+    # pdf1.columns = ['/'.join(col) for col in pdf1.columns]
+    pdf1.columns = ["".join(col) for col in pdf1.columns]
+
+    pdf1 = pdf1.reset_index()
+    print(pdf1)
+
+    return pdf1
 
 def get_jockey_trend(i_rcity, i_rdate, i_rno):
     try:
