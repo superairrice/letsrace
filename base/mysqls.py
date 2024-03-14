@@ -2,6 +2,7 @@ import datetime
 import json
 from django.db import connection
 import pandas as pd
+import numpy as np
 from requests import session
 
 from django.db.models import Count, Max, Min, Q
@@ -115,7 +116,9 @@ def get_judged_jockey(rcity, rdate, rno):
 
         strSql = (
             """ 
-                SELECT distinct a.rank, a.gate, a.horse, b.rdate b_rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason, b.rcity b_rcity, b.rno b_rno
+                SELECT distinct rank, gate, a_horse, b_rdate, b_horse, jockey, trainer, t_sort, t_type, t_detail, t_reason, b_rcity, b_rno
+                FROM (
+                SELECT a.rank, a.gate, a.horse a_horse, b.rdate b_rdate, b.horse b_horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason, b.rcity b_rcity, b.rno b_rno
                 FROM exp011     a,
                     rec015     b
                 where a.jockey = b.jockey 
@@ -135,9 +138,9 @@ def get_judged_jockey(rcity, rdate, rno):
             + str(rno)
             + """
 
-            union
+            union all
 
-                SELECT distinct a.rank, a.gate, a.horse, b.rdate b_rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason, b.rcity b_rcity, b.rno b_rno
+                SELECT  a.rank, a.gate, a.horse, b.rdate b_rdate, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason, b.rcity b_rcity, b.rno b_rno
                 FROM exp011     a,
                     rec015     b
                 where a.trainer = b.trainer 
@@ -155,8 +158,9 @@ def get_judged_jockey(rcity, rdate, rno):
             + """'
                 AND a.rno = """
             + str(rno)
-            + """
-
+            + """ 
+            ) a
+            order by b_rdate desc
             ; """
         )
         
@@ -1092,7 +1096,7 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
         cursor = connection.cursor()
 
         strSql = (
-            """ select rider, lpad( cast( count(*) as char), 2, ' ') from The1.train 
+            """ select rider, lpad( cast( count(*) as char), 2, ' ') from train 
                 where tdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 21 DAY), '%Y%m%d') and '"""
@@ -1588,7 +1592,7 @@ def get_track_record(i_rcity, i_rdate, i_rno):
 
     except:
         connection.rollback()
-        print("Failed selecting in 마필병력 히스토리 ")
+        print("Failed selecting in 등급별 거리별 평균기록 ")
 
     return result
 
@@ -3241,9 +3245,9 @@ def stable_status(i_rcity, i_rdate, i_rno):
         strSql = (
             """ 
                 SELECT wdate, trainer, grade, count(*)
-                FROM The1.horse_w a
+                FROM horse_w a
                 where wdate  between '20240103' and  '20240303'
-                and trainer in ( select trainer from The1.exp011 where rcity = '서울' and rdate = '20240303' ) 
+                and trainer in ( select trainer from exp011 where rcity = '서울' and rdate = '20240303' ) 
                 group by wdate desc, trainer, grade
             ; """
         )
@@ -3285,42 +3289,77 @@ def stable_status(i_rcity, i_rdate, i_rno):
     pdf1.columns = ["".join(col) for col in pdf1.columns]
 
     pdf1 = pdf1.reset_index()
-    print(pdf1)
+    # print(pdf1)
 
     return pdf1
 
 
 # 경주별 마방 등급별 경주마 보유현황
 def get_status_stable(i_rcity, i_rdate, i_rno):
+
     try:
         cursor = connection.cursor()
 
         strSql = (
             """ 
-                SELECT b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, b.host, a.trainer, a.grade, count(*)
-                FROM horse_w a  right outer join  expect b  on a.trainer = b.trainer 
-                where a.wdate = ( select max(wdate) from horse_w where wdate < '""" + i_rdate + """' )
+                SELECT b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, b.host, b.horse, b.rating, a.trainer, a.grade, a.wdate, count(*) cnt, sum(a.year_1st) r1cnt
+                FROM horse_w a,
+                    expect b
+                where a.trainer = b.trainer 
+                -- and a.host = b.host
+                and a.wdate in (
+                    SELECT max(wdate) FROM trainer_w where wdate like '""" + i_rdate[0:6] + """%' and wdate <= '""" + i_rdate + """' 
+                    union all
+                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 1 MONTH), '%Y%m%')
+                    union all
+                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 2 MONTH), '%Y%m%')
+                    union all
+                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 3 MONTH), '%Y%m%')
+                    union all
+                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 4 MONTH), '%Y%m%')
+                    union all
+                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 5 MONTH), '%Y%m%')
+                    union all
+                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 6 MONTH), '%Y%m%')
+                    union all
+                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 7 MONTH), '%Y%m%')
+                    union all
+                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 8 MONTH), '%Y%m%')
+                    union all
+                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 9 MONTH), '%Y%m%')
+                    union all
+                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 10 MONTH), '%Y%m%')
+                    union all
+                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 11 MONTH), '%Y%m%')
+                    union all
+                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 12 MONTH), '%Y%m%')
+                )
                 and b.rcity = '""" + i_rcity + """' and b.rdate = '""" + i_rdate + """' and b.rno = """ + str(i_rno) + """
-                group by b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, b.host, a.trainer, a.grade
+                group by b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, b.host, b.horse, b.rating, a.trainer, a.grade, a.wdate
             ; """
         )
 
+        # print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
+
+        # print(result)
+        # print(r_cnt)
 
         connection.commit()
         connection.close()
 
     except:
         connection.rollback()
-        print("Failed selecting in Jockey Trend")
+        print("Failed selecting in status_stable")
 
-    col = ["예상", "마번", "실순", "인기", "기수", "마주", "마방", "등급", "두수"]
+    col = ["예상", "마번", "실순", "인기", "기수", "마주", "경주마", "레이팅", "마방", "등급", "wdate", "cnt", "r1cnt"]
     data = list(result)
-    # print(data)
-
     df = pd.DataFrame(data=data, columns=col)
 
+    # print(data[0:100])
+
+    #### 월별 마방 경주마 보유 추이
     pdf1 = pd.pivot_table(
         df,  # 피벗할 데이터프레임
         index=(
@@ -3330,21 +3369,77 @@ def get_status_stable(i_rcity, i_rdate, i_rno):
             "인기",
             "기수",
             "마주",
+            "경주마",
+            "레이팅",
             "마방",
         ),  # 행 위치에 들어갈 열
-        columns="등급",  # 열 위치에 들어갈 열
-        values=("두수"),
-        aggfunc="max",
+        values=("cnt", "r1cnt",),
+        columns="wdate",  # 열 위치에 들어갈 열
+        aggfunc={'cnt':np.sum, 'r1cnt':np.sum},
         fill_value=0,  # null 치환
     )  # 데이터로 사용할 열
 
-    # pdf1.columns = ['/'.join(col) for col in pdf1.columns]
-    pdf1.columns = ["".join(col) for col in pdf1.columns]
-
+    pdf1.columns = ["'" + "".join(col[1])[2:4] + "." + "".join(col[1])[4:6] for col in pdf1.columns]
     pdf1 = pdf1.reset_index()
-    print(pdf1)
 
-    return pdf1
+    #### 월별 등급별 마방 경주마 보유 추이
+    pdf2 = pd.pivot_table(
+        df,  # 피벗할 데이터프레임
+        index=[
+            "예상",
+            "마번",
+            "실순",
+            "인기",
+            "기수",
+            "마주",
+            "경주마",
+            "레이팅",
+            "마방",
+            "등급",
+        ],  # 행 위치에 들어갈 열
+        values=(
+            "cnt",
+            "r1cnt",
+        ),
+        columns="wdate",  # 열 위치에 들어갈 열
+        aggfunc={"cnt": np.sum, "r1cnt": np.sum},
+        fill_value=0,  # null 치환
+    )  # 데이터로 사용할 열
+
+    pdf2.columns = ["'" + "".join(col[1])[2:4] + "." + "".join(col[1])[4:6] for col in pdf2.columns]
+    pdf2 = pdf2.reset_index()
+
+    #### 마주 경주마 보유
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+                SELECT a.trainer, a.host, a.grade, if(a.horse = b.horse, 0, 1), count(*) cnt, sum(a.year_1st) year_1st, sum(a.year_2nd) year_2nd, sum(a.year_3rd) year_3rd, sum(a.year_race) year_cnt
+                FROM horse_w a,
+                expect b 
+                where a.trainer = b.trainer
+                and a.host = b.host
+                and a.wdate in (
+                    SELECT max(wdate) FROM trainer_w where wdate like '""" + i_rdate[0:6] + """%' and wdate <= '""" + i_rdate + """' 
+                )
+                and b.rcity = '""" + i_rcity + """' and b.rdate = '""" + i_rdate + """' and b.rno = """ + str(i_rno) + """
+                group by a.trainer, a.host, a.grade, if(a.horse = b.horse, 0, 1)
+            ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        result_h = cursor.fetchall()
+        # print(strSql)
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in host stable")
+
+    return pdf1, pdf2, result_h
 
 def get_jockey_trend(i_rcity, i_rdate, i_rno):
     try:
@@ -3412,6 +3507,7 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
         columns="wdate",  # 열 위치에 들어갈 열
         values=("year_per", "Weeks"),
         aggfunc="max",
+        fill_value=0,
     )  # 데이터로 사용할 열
 
     # pdf1.columns = ['/'.join(col) for col in pdf1.columns]
@@ -3526,6 +3622,7 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
         columns="wdate",  # 열 위치에 들어갈 열
         values=("year_per", "Weeks"),
         aggfunc="max",
+        fill_value=0,
     )  # 데이터로 사용할 열
 
     # pdf1.columns = ['/'.join(col) for col in pdf1.columns]
@@ -3581,9 +3678,8 @@ def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee, i_filter):
             """ 
                     select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
                         gate, rank, horse, h_weight, w_change, jockey, trainer, if( grade = '주행검사', ' ', host), rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
-                        rs1f, rg3f, rg2f, rg1f,
-                        (select i_cycle from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) i_cycle,
-                        (select jt_per from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) jt_per
+                        rs1f, rg3f, rg2f, rg1f, i_cycle,
+                        (select jt_per from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) jt_per, adv_track
                     from record a
                     where ( '"""
             + i_awardee
@@ -3633,8 +3729,7 @@ def get_recent_awardee(i_rdate, i_awardee, i_name):
             """ 
                     select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
                         gate, rank, horse, h_weight, w_change, jockey, trainer, if( grade = '주행검사', '주행', host) host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
-                        rs1f, rg3f, rg2f, rg1f, 
-                        (select i_cycle from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) i_cycle,
+                        rs1f, rg3f, rg2f, rg1f, i_cycle,
                         (select jt_per from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) jt_per
                     from record a
                     where """
@@ -3675,8 +3770,7 @@ def get_recent_horse(i_rdate, i_awardee, i_name):
             """ 
                     select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
                         gate, rank, horse, h_weight, w_change, jockey, trainer, if( grade = '주행검사', ' ', host) host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
-                        rs1f, rg3f, rg2f, rg1f, 
-                        (select i_cycle from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) i_cycle,
+                        rs1f, rg3f, rg2f, rg1f, i_cycle,
                         (select jt_per from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) jt_per
                     from record a
                     where """
@@ -3722,13 +3816,13 @@ def get_axis(i_rcity, i_rdate, i_rno):
                     -- sum( if(a.alloc3r <= 1.9, 1, 0)),  sum( if ( a.r_rank <= 3 and a.alloc3r <= 1.9, 1, 0)), sum( if ( a.r_rank <= 3 and a.alloc3r <= 1.9, 1, 0))/ sum( if(a.alloc3r <= 1.9, 1, 0))*100
                     sum( if(a.jt_per >= a.j_per, 1, 0)),  sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0)), sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0))/ sum( if(a.jt_per >= a.j_per, 1, 0))*100,
                     sum( if(a.jt_per < a.j_per, 1, 0)),  sum( if ( a.r_rank <= 3 and a.jt_per < a.j_per, 1, 0)), sum( if ( a.r_rank <= 3 and a.jt_per < a.j_per, 1, 0))/ sum( if(a.jt_per < a.j_per, 1, 0))*100
-                    from The1.expect a
+                    from expect a
                     where rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 365 DAY), '%Y%m%d') and '"""
             + i_rdate
             + """'
-                    and ( rcity, rdate, rno ) not in ( select rcity, rdate, rno from The1.expect where rank = 98  group by rcity, rdate, rno having count(*) >= 2 ) 
+                    and ( rcity, rdate, rno ) not in ( select rcity, rdate, rno from expect where rank = 98  group by rcity, rdate, rno having count(*) >= 2 ) 
                     and rank = 1
                     and jockey = ( select jockey from exp011 where rcity = '"""
             + i_rcity
@@ -3752,13 +3846,13 @@ def get_axis(i_rcity, i_rdate, i_rno):
                     -- sum( if(a.alloc3r <= 1.9, 1, 0)),  sum( if ( a.r_rank <= 3 and a.alloc3r <= 1.9, 1, 0)), sum( if ( a.r_rank <= 3 and a.alloc3r <= 1.9, 1, 0))/ sum( if(a.alloc3r <= 1.9, 1, 0))*100
                     sum( if(a.jt_per >= a.j_per, 1, 0)),  sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0)), sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0))/ sum( if(a.jt_per >= a.j_per, 1, 0))*100,
                     sum( if(a.jt_per < a.j_per, 1, 0)),  sum( if ( a.r_rank <= 3 and a.jt_per < a.j_per, 1, 0)), sum( if ( a.r_rank <= 3 and a.jt_per < a.j_per, 1, 0))/ sum( if(a.jt_per < a.j_per, 1, 0))*100
-                    from The1.expect a
+                    from expect a
                     where rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 365 DAY), '%Y%m%d') and '"""
             + i_rdate
             + """'
-                    and ( rcity, rdate, rno ) not in ( select rcity, rdate, rno from The1.expect where rank = 98  group by rcity, rdate, rno having count(*) >= 2 ) 
+                    and ( rcity, rdate, rno ) not in ( select rcity, rdate, rno from expect where rank = 98  group by rcity, rdate, rno having count(*) >= 2 ) 
                     and rank = 1
                     and jockey = ( select jockey from exp011 where rcity = '"""
             + i_rcity
@@ -4131,15 +4225,15 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
 
                 strSql = (
                     """ update exp011
-                              set r_rank = """
+                        set r_rank = """
                     + r_rank
                     + """
-                          where rdate = '"""
+                        where rdate = '"""
                     + rdate
                     + """' and horse = '"""
                     + horse
                     + """'
-                      ; """
+                ; """
                 )
 
                 # print(strSql)

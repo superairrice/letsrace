@@ -645,9 +645,10 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     popularity_rate_t = get_popularity_rate_t(rcity, rdate, rno)  # 인기순위별 승률
     popularity_rate_h = get_popularity_rate_h(rcity, rdate, rno)  # 인기순위별 승률
 
-    # stable = get_status_stable(rcity, rdate, rno)
-    # stable_list = stable.values.tolist()
-    # stable_title = stable.columns.tolist()
+    stable, stable_g, stable_h = get_status_stable(rcity, rdate, rno)
+    stable_list = stable.values.tolist()
+    stable_list_g = stable_g.values.tolist()
+    stable_title = stable.columns.tolist()
 
     # print(stable_title)
 
@@ -708,7 +709,10 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         "popularity_rate": popularity_rate,
         "popularity_rate_t": popularity_rate_t,
         "popularity_rate_h": popularity_rate_h,
-        #    'training': training,
+        'stable_list': stable_list,
+        'stable_list_g': stable_list_g,
+        'stable_title': stable_title,
+        'stable_h': stable_h,
         "train": train,
         "training_cnt": training_cnt,
         "treat": treat,
@@ -1335,6 +1339,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     train = sorted(train, key=lambda x: x[5] or 99)
 
     treat = get_treat_horse(rcity, rdate, rno)
+    track = get_track_record(rcity, rdate, rno)  # 경주거리별 등급별 평균기록,
 
     # h_audit = get_train_audit(rcity, rdate, rno)
 
@@ -1361,6 +1366,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
         "train": train,
         "training_cnt": training_cnt,
         "treat": treat,
+        "track": track,
         "hr_records": hr_records,
         "compare_r": compare_r,
         "hname": hname,

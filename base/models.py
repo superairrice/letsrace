@@ -435,6 +435,7 @@ class RecordS(models.Model):
     convert_r = models.CharField(
         max_length=6, db_collation="euckr_korean_ci", blank=True, null=True
     )
+    i_cycle = models.IntegerField(blank=True, null=True)
     gap_b = models.CharField(
         max_length=20, db_collation="euckr_korean_ci", blank=True, null=True
     )
@@ -453,7 +454,6 @@ class RecordS(models.Model):
     jockey_old = models.CharField(
         max_length=10, db_collation="euckr_korean_ci", blank=True, null=True
     )
-
     # flag = models.CharField(max_length=1, blank=True, null=True)
 
     class Meta:
