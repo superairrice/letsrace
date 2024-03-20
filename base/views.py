@@ -34,11 +34,12 @@ from base.mysqls import (
     get_judged_horse,
     get_judged_jockey,
     get_last2weeks_loadin,
+    get_loadin,
     get_paternal,
     get_paternal_dist,
     get_pedigree,
-    get_popularity_rate,
     get_popularity_rate_h,
+    get_popularity_rate_j,
     get_popularity_rate_t,
     get_prediction,
     get_print_prediction,
@@ -641,9 +642,9 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
 
     # h_audit = get_train_audit(rcity, rdate, rno)      # get_treat_horse 함수 통합
 
-    popularity_rate = get_popularity_rate(rcity, rdate, rno)  # 인기순위별 승률
-    popularity_rate_t = get_popularity_rate_t(rcity, rdate, rno)  # 인기순위별 승률
-    popularity_rate_h = get_popularity_rate_h(rcity, rdate, rno)  # 인기순위별 승률
+    popularity_rate, award_j = get_popularity_rate_j(rcity, rdate, rno)  # 인기순위별 승률
+    popularity_rate_t, award_t = get_popularity_rate_t(rcity, rdate, rno)  # 인기순위별 승률
+    popularity_rate_h, award_h = get_popularity_rate_h(rcity, rdate, rno)  # 인기순위별 승률
 
     stable, stable_g, stable_h = get_status_stable(rcity, rdate, rno)
     stable_list = stable.values.tolist()
@@ -651,6 +652,8 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     stable_title = stable.columns.tolist()
 
     # print(stable_title)
+
+    loadin = get_loadin(rdate)
 
     # judged = get_judged(rcity, rdate, rno)
     judged_horse = get_judged_horse(rcity, rdate, rno)
@@ -707,6 +710,9 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         "paternal_dist": paternal_dist,
         # 'hr_pedigree': hr_pedigree,
         "popularity_rate": popularity_rate,
+        "award_j": award_j,
+        "award_t": award_t,
+        "award_h": award_h,
         "popularity_rate_t": popularity_rate_t,
         "popularity_rate_h": popularity_rate_h,
         'stable_list': stable_list,
@@ -793,7 +799,7 @@ def predictionList(request, rcity, rdate, rno):
 
     # award_j, race_detail, judged_jockey = get_expects(rdate)
 
-    popularity_rate = get_popularity_rate(rcity, rdate, rno)                        # 인기순위별 승률
+    popularity_rate, award_j = get_popularity_rate_j(rcity, rdate, rno)                        # 인기순위별 승률
     popularity_rate = sorted(popularity_rate, key=lambda x: x[1] or 99)                 # 게이트 순으로 정렬
     popularity_rate_t = get_popularity_rate_t(rcity, rdate, rno)                    # 인기순위별 승률
     popularity_rate_t = sorted(popularity_rate_t, key=lambda x: x[1] or 99)             # 게이트 순으로 정렬
@@ -1435,6 +1441,9 @@ def getRaceAwardee(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host)
 
 # 기수 or 조교사 or 마주 44일 경주결과
 def getRaceHorse(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host):
+    if i_host == '': 
+        i_host = ' '
+        
     solidarity = get_recent_horse(
         rdate, awardee, i_name
     )  # 기수, 조교사, 마주 연대현황 최근1년
@@ -1554,13 +1563,17 @@ def awardStatusTrainer(request):
 
             # messages.warning(request, "선택된 날짜가 금요일이 아닙니다.")
 
-    weeks = get_last2weeks(friday, i_awardee="trainer")
+    weeks = get_last2weeks(
+        friday,
+        i_awardee="trainer",
+        i_friday=Racing.objects.values("rdate").distinct()[0]["rdate"],
+    )
     loadin = get_last2weeks_loadin(friday)
     # status = get_status_training(rdate)
     status = get_status_train(rdate)
     j_rdate = status[len(status) - 1][1]
     # print(len(status))
-    
+
     name = get_client_ip(request)
     if name[0:6] != "15.177":
         update_visitor_count(name)
@@ -1625,15 +1638,15 @@ def awardStatusJockey(request):
             friday = rdate
             fdate = q
 
-            messages.warning(request, "선택된 날짜가 금요일이 아닙니다.")
+            # messages.warning(request, "선택된 날짜가 금요일이 아닙니다.")
 
-    weeks = get_last2weeks(friday, i_awardee="jockey")
+    weeks = get_last2weeks(friday, i_awardee="jockey", i_friday=Racing.objects.values("rdate").distinct()[0]["rdate"])
+    
     loadin = get_last2weeks_loadin(friday)
     # status = get_status_training(rdate)
     status = get_status_train(rdate)
 
     j_rdate = status[len(status) - 1][1]
-    # print(len(status))
 
     name = get_client_ip(request)
     if name[0:6] != "15.177":

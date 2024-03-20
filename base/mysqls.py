@@ -1855,7 +1855,7 @@ def get_award_race(i_rcity, i_rdate, i_rno, i_awardee):
     return awards
 
 
-def get_last2weeks(i_rdate, i_awardee):
+def get_last2weeks(i_rdate, i_awardee, i_friday):
     try:
         cursor = connection.cursor()
 
@@ -1968,100 +1968,100 @@ def get_last2weeks(i_rdate, i_awardee):
             + """
                 ) aa left outer join 
                 (
-                  select """
+                select """
             + i_awardee
             + """, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 7 DAY,  '%Y%m%d'), if(a.rank = 1, 1, 0), 0)) lw1_fri1, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 7 DAY,  '%Y%m%d'), if(a.rank = 2, 1, 0), 0)) lw1_fri2, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 7 DAY,  '%Y%m%d'), if(a.rank = 3, 1, 0), 0)) lw1_fri3, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 7 DAY,  '%Y%m%d'), 1, 0)) lw1_fri, 
 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 6 DAY,  '%Y%m%d'), if(a.rank = 1, 1, 0), 0)) lw1_sat1, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 6 DAY,  '%Y%m%d'), if(a.rank = 2, 1, 0), 0)) lw1_sat2, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 6 DAY,  '%Y%m%d'), if(a.rank = 3, 1, 0), 0)) lw1_sat3, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 6 DAY,  '%Y%m%d'), 1, 0)) lw1_sat, 
 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 5 DAY,  '%Y%m%d'), if(a.rank = 1, 1, 0), 0)) lw1_sun1, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 5 DAY,  '%Y%m%d'), if(a.rank = 2, 1, 0), 0)) lw1_sun2, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 5 DAY,  '%Y%m%d'), if(a.rank = 3, 1, 0), 0)) lw1_sun3, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 5 DAY,  '%Y%m%d'), 1, 0)) lw1_sun, 
-                      
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 14 DAY,  '%Y%m%d'), if(a.rank = 1, 1, 0), 0)) lw2_fri1, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 14 DAY,  '%Y%m%d'), if(a.rank = 2, 1, 0), 0)) lw2_fri2, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 14 DAY,  '%Y%m%d'), if(a.rank = 3, 1, 0), 0)) lw2_fri3, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 14 DAY,  '%Y%m%d'), 1, 0)) lw2_fri, 
 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 13 DAY,  '%Y%m%d'), if(a.rank = 1, 1, 0), 0)) lw2_sat1, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 13 DAY,  '%Y%m%d'), if(a.rank = 2, 1, 0), 0)) lw2_sat2, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 13 DAY,  '%Y%m%d'), if(a.rank = 3, 1, 0), 0)) lw2_sat3, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 13 DAY,  '%Y%m%d'), 1, 0)) lw2_sat, 
 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 12 DAY,  '%Y%m%d'), if(a.rank = 1, 1, 0), 0)) lw2_sun1, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 12 DAY,  '%Y%m%d'), if(a.rank = 2, 1, 0), 0)) lw2_sun2, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 12 DAY,  '%Y%m%d'), if(a.rank = 3, 1, 0), 0)) lw2_sun3, 
-                      sum( if( rdate = DATE_FORMAT(CAST('"""
-            + i_rdate
+                sum( if( rdate = DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 12 DAY,  '%Y%m%d'), 1, 0)) lw2_sun, 
-                      
-                      sum( if(a.rank = 1, r1award + sub1award, 0) +
-                      if(a.rank = 2, r2award + sub2award, 0) +
-                      if(a.rank = 3, r3award + sub3award, 0) +
-                      if(a.rank = 4, r4award, 0) +
-                      if(a.rank = 5, r5award, 0) ) award
+                    
+                    sum( if(a.rank = 1, r1award + sub1award, 0) +
+                    if(a.rank = 2, r2award + sub2award, 0) +
+                    if(a.rank = 3, r3award + sub3award, 0) +
+                    if(a.rank = 4, r4award, 0) +
+                    if(a.rank = 5, r5award, 0) ) award
                     from record a
-                  where rdate between DATE_FORMAT(CAST('"""
-            + i_rdate
+                where rdate between DATE_FORMAT(CAST('"""
+            + i_friday
             + """' AS DATE) - INTERVAL 14 DAY,  '%Y%m%d') and  DATE_FORMAT(CAST('"""
-            + i_rdate
+            + i_friday
             + """' AS DATE) - INTERVAL 1 DAY,  '%Y%m%d')
                     and grade != '주행검사'
-                  group by """
+                group by """
             + i_awardee
             + """
                 ) c on aa."""
@@ -2075,17 +2075,19 @@ def get_last2weeks(i_rdate, i_awardee):
 
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         weeks = cursor.fetchall()
+        
+        
 
         connection.commit()
         connection.close()
 
     except:
         connection.rollback()
-        print("Failed selecting in BookListView")
+        print("Failed selecting in 상금 수득 현황")
 
     return weeks
 
-
+# 기승가능중량 or 마방 팀번호 ==> AwardStatusJockey
 def get_last2weeks_loadin(i_rdate):
     try:
         cursor = connection.cursor()
@@ -2118,6 +2120,31 @@ def get_last2weeks_loadin(i_rdate):
 
     return results
 
+# 기승가능중량 => PredictionRace
+def get_loadin(i_rdate):
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+            select jockey, cast(load_in as decimal) 
+            from jockey_w 
+            where wdate = ( select max(wdate) from jockey_w where wdate < '""" + i_rdate + """' ) 
+            ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        results = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in 기승가능중량")
+
+    return results
+
 
 def get_status_training(i_rdate):
     try:
@@ -2125,22 +2152,22 @@ def get_status_training(i_rdate):
 
         strSql = (
             """ select rcity, rdate, rno, rday, gate, rank, r_rank, r_pop, horse, trainer, jockey, jt_per, handycap,
-                                              max(r1), CAST( max(d1) AS INTEGER ), 
-                                              max(r2), CAST( max(d2) AS INTEGER ), 
-                                              max(r3), CAST( max(d3) AS INTEGER ), 
-                                              max(r4), CAST( max(d4) AS INTEGER ), 
-                                              max(r5), CAST( max(d5) AS INTEGER ), 
-                                              max(r6), CAST( max(d6) AS INTEGER ), 
-                                              max(r7), CAST( max(d7) AS INTEGER ), 
-                                              max(r8), CAST( max(d8) AS INTEGER ), 
-                                              max(r9), CAST( max(d9) AS INTEGER ), 
-                                              max(r10), CAST( max(d10) AS INTEGER ), 
-                                              max(r11), CAST( max(d11) AS INTEGER ), 
-                                              max(r12), CAST( max(d12) AS INTEGER ), 
-                                              max(r13), CAST( max(d13) AS INTEGER ), 
-                                              max(r14), CAST( max(d14) AS INTEGER )
-                      from
-                      (
+                                        max(r1), CAST( max(d1) AS INTEGER ), 
+                                        max(r2), CAST( max(d2) AS INTEGER ), 
+                                        max(r3), CAST( max(d3) AS INTEGER ), 
+                                        max(r4), CAST( max(d4) AS INTEGER ), 
+                                        max(r5), CAST( max(d5) AS INTEGER ), 
+                                        max(r6), CAST( max(d6) AS INTEGER ), 
+                                        max(r7), CAST( max(d7) AS INTEGER ), 
+                                        max(r8), CAST( max(d8) AS INTEGER ), 
+                                        max(r9), CAST( max(d9) AS INTEGER ), 
+                                        max(r10), CAST( max(d10) AS INTEGER ), 
+                                        max(r11), CAST( max(d11) AS INTEGER ), 
+                                        max(r12), CAST( max(d12) AS INTEGER ), 
+                                        max(r13), CAST( max(d13) AS INTEGER ), 
+                                        max(r14), CAST( max(d14) AS INTEGER )
+                from
+                (
                         select b.rcity, b.rdate, b.rday, b.rno, b.gate, b.rank, b.r_rank, b.r_pop, a.horse, b.trainer, b.jockey, b.jt_per, b.handycap,
                           if( tdate = date_format(DATE_ADD('"""
             + i_rdate
@@ -2493,7 +2520,7 @@ def get_status_train(i_rdate):
 # 기수 인기도 및 게이트 연대율
 
 
-def get_popularity_rate(i_rcity, i_rdate, i_rno):
+def get_popularity_rate_j(i_rcity, i_rdate, i_rno):
     try:
         cursor = connection.cursor()
 
@@ -2592,7 +2619,66 @@ def get_popularity_rate(i_rcity, i_rdate, i_rno):
         connection.rollback()
         print("Failed selecting in BookListView")
 
-    return popularity
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """
+            select b.rank, b.gate, b.jockey, b.trainer, b.host, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8
+            from
+            (
+                select jockey, count(*) rcnt, 
+                        sum(if(rank = 1, 1, 0)) r1, 
+                        sum(if(rank = 2, 1, 0)) r2, 
+                        sum(if(rank = 3, 1, 0)) r3,
+                        sum(if(rank = 4, 1, 0)) r4,
+                        sum(if(rank = 5, 1, 0)) r5,
+                        sum(if(rank = 6, 1, 0)) r6,
+                        sum(if(rank = 7, 1, 0)) r7,
+                        sum(if(rank >= 8, 1, 0)) r8,
+                        
+                        sum( if(r_rank = 1, 1, 0) + if(r_rank = 2, 1, 0) + if(r_rank = 3, 1, 0) ) rrcnt,
+                        sum(if(r_rank = 1, 1, 0)) rr1, 
+                        sum(if(r_rank = 2, 1, 0)) rr2, 
+                        sum(if(r_rank = 3, 1, 0)) rr3,
+                        sum(if(r_rank = 4, 1, 0)) rr4,
+                        sum(if(r_rank = 5, 1, 0)) rr5,
+                        sum(if(r_rank = 6, 1, 0)) rr6,
+                        sum(if(r_rank = 7, 1, 0)) rr7,
+                        sum(if(r_rank >= 8, 1, 0)) rr8
+                from expect a
+                where rdate between date_format(DATE_ADD('"""
+                    + i_rdate
+                    + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
+                    + i_rdate
+                    + """', INTERVAL + 3 DAY), '%Y%m%d')
+                and rno < 80
+                group by jockey
+                
+            ) a right outer join  exp011 b  on a.jockey = b.jockey
+            where b.rcity =  '"""
+            + i_rcity
+            + """'
+                    and b.rdate = '"""
+            + i_rdate
+            + """'
+                    and b.rno =  """
+            + str(i_rno)
+            + """
+                    order by b.rank, b.gate
+                ; """
+        )
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        award_j = cursor.fetchall()
+        
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in Award_j")
+
+    return popularity, award_j
 
 
 # 조교사 인기도 및 게이트 연대율
@@ -2697,7 +2783,66 @@ def get_popularity_rate_t(i_rcity, i_rdate, i_rno):
         connection.rollback()
         print("Failed selecting in BookListView")
 
-    return popularity
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """
+            select b.rank, b.gate, b.jockey, b.trainer, b.host, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8
+            from
+            (
+                select trainer, count(*) rcnt, 
+                        sum(if(rank = 1, 1, 0)) r1, 
+                        sum(if(rank = 2, 1, 0)) r2, 
+                        sum(if(rank = 3, 1, 0)) r3,
+                        sum(if(rank = 4, 1, 0)) r4,
+                        sum(if(rank = 5, 1, 0)) r5,
+                        sum(if(rank = 6, 1, 0)) r6,
+                        sum(if(rank = 7, 1, 0)) r7,
+                        sum(if(rank >= 8, 1, 0)) r8,
+                        
+                        sum( if(r_rank = 1, 1, 0) + if(r_rank = 2, 1, 0) + if(r_rank = 3, 1, 0) ) rrcnt,
+                        sum(if(r_rank = 1, 1, 0)) rr1, 
+                        sum(if(r_rank = 2, 1, 0)) rr2, 
+                        sum(if(r_rank = 3, 1, 0)) rr3,
+                        sum(if(r_rank = 4, 1, 0)) rr4,
+                        sum(if(r_rank = 5, 1, 0)) rr5,
+                        sum(if(r_rank = 6, 1, 0)) rr6,
+                        sum(if(r_rank = 7, 1, 0)) rr7,
+                        sum(if(r_rank >= 8, 1, 0)) rr8
+                from expect a
+                where rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL + 3 DAY), '%Y%m%d')
+                and rno < 80
+                group by trainer
+                
+            ) a right outer join  exp011 b  on a.trainer = b.trainer
+            where b.rcity =  '"""
+            + i_rcity
+            + """'
+                    and b.rdate = '"""
+            + i_rdate
+            + """'
+                    and b.rno =  """
+            + str(i_rno)
+            + """
+                    order by b.rank, b.gate
+                ; """
+        )
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        award_t = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in Award_t")
+
+    return popularity, award_t
 
 
 def get_popularity_rate_h(i_rcity, i_rdate, i_rno):
@@ -2788,8 +2933,67 @@ def get_popularity_rate_h(i_rcity, i_rdate, i_rno):
     except:
         connection.rollback()
         print("Failed selecting in BookListView")
+        
+    try:
+        cursor = connection.cursor()
 
-    return popularity
+        strSql = (
+            """
+            select b.rank, b.gate, b.jockey, b.trainer, b.host, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8
+            from
+            (
+                select host, count(*) rcnt, 
+                        sum(if(rank = 1, 1, 0)) r1, 
+                        sum(if(rank = 2, 1, 0)) r2, 
+                        sum(if(rank = 3, 1, 0)) r3,
+                        sum(if(rank = 4, 1, 0)) r4,
+                        sum(if(rank = 5, 1, 0)) r5,
+                        sum(if(rank = 6, 1, 0)) r6,
+                        sum(if(rank = 7, 1, 0)) r7,
+                        sum(if(rank >= 8, 1, 0)) r8,
+                        
+                        sum( if(r_rank = 1, 1, 0) + if(r_rank = 2, 1, 0) + if(r_rank = 3, 1, 0) ) rrcnt,
+                        sum(if(r_rank = 1, 1, 0)) rr1, 
+                        sum(if(r_rank = 2, 1, 0)) rr2, 
+                        sum(if(r_rank = 3, 1, 0)) rr3,
+                        sum(if(r_rank = 4, 1, 0)) rr4,
+                        sum(if(r_rank = 5, 1, 0)) rr5,
+                        sum(if(r_rank = 6, 1, 0)) rr6,
+                        sum(if(r_rank = 7, 1, 0)) rr7,
+                        sum(if(r_rank >= 8, 1, 0)) rr8
+                from expect a
+                where rdate between date_format(DATE_ADD('"""
+                    + i_rdate
+                    + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
+                    + i_rdate
+                    + """', INTERVAL + 3 DAY), '%Y%m%d')
+                and rno < 80
+                group by host
+                
+            ) a right outer join  exp011 b  on a.host = b.host
+            where b.rcity =  '"""
+            + i_rcity
+            + """'
+                    and b.rdate = '"""
+            + i_rdate
+            + """'
+                    and b.rno =  """
+            + str(i_rno)
+            + """
+                    order by b.rank, b.gate
+                ; """
+        )
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        award_h = cursor.fetchall()
+        
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in Award_j")
+
+    return popularity, award_h
 
 
 def get_print_prediction(i_rcity, i_rdate):
@@ -2926,7 +3130,7 @@ def get_prediction(i_rdate):
                         sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) r123_cnt, 
                         sum(if(r_rank = 1, 1, 0)) rr1, sum(if(r_rank = 2, 1, 0)) rr2, sum(if(r_rank = 3, 1, 0)) rr3,
                         sum(if(rank = 1, 1, 0)) r1, sum(if(rank = 2, 1, 0)) r2, sum(if(rank = 3, 1, 0)) r3
-                  from expect a
+                from expect a
                 where rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
