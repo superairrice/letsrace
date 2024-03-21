@@ -651,9 +651,8 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     stable_list_g = stable_g.values.tolist()
     stable_title = stable.columns.tolist()
 
-    # print(stable_title)
-
-    loadin = get_loadin(rdate)
+    loadin = get_loadin(rcity, rdate, rno)
+    # print(loadin)
 
     # judged = get_judged(rcity, rdate, rno)
     judged_horse = get_judged_horse(rcity, rdate, rno)
@@ -697,7 +696,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     context = {
         "exp011s": exp011s,
         "r_condition": r_condition,
-        # "complex5": complex5,
+        "loadin": loadin,               # 기수 기승가능 부딤중량
         "hr_records": hr_records,
         "compare_r": compare_r,
         "alloc": alloc,

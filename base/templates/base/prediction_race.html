@@ -513,7 +513,7 @@
               </td>
 
               {# 마체중 #}
-              <td style="font-family: Arial; font-size: 1.3rem ">
+              <td style="font-family: Arial; font-size: 1.3rem;">
                 
                 <div style="text-align:center">
 
@@ -547,16 +547,27 @@
               </td>
 
               {# 부담중량 #}
-              <td style="font-family: Arial; font-size: 1.3rem ">
+              <td style="font-family: Arial; font-size: 1.25rem;">
 
-                <div>
+                <div align="center">
                   {# 부담중량 #}
                   {% if r.handycap == compare_r.handycap__max %}
-                  <div style="font-family: Arial; text-align: center; color:var(--color-r1);">{{r.handycap}}&nbsp;</div>
+                  <span style="padding:2px 4px; font-family: Arial; color:var(--color-r1);">{{r.handycap}}</span>
                   {% else %}
-                  <div style="font-family: Arial; text-align: center; color:var(--color-light-gray);">{{r.handycap}}&nbsp;</div>
+                    {% for jname, load_in in loadin %}
+                    {% if jname == r.jockey %}
+                      {% if r.handycap|floatformat:0 <= load_in|mul:1|floatformat:0 %}
+                      <span style="padding:2px 4px; font-family: Arial; font-style:italic; font-size:1.15rem; color:var(--color-r3); border-radius:7px; background-color:var(--color-bg);">{{r.handycap}}</span>
+                      {% elif r.handycap|floatformat:0 <= load_in|mul:1|add:1|floatformat:0 %}
+                      <span style="padding:2px 4px; font-family: Arial; font-style:italic; font-size:1.15rem; color:var(--color-light-gray); border-radius:7px; background-color:var(--color-bg);">{{r.handycap}}</span>
+                      {% else %}
+                      <span style="padding:2px 4px; font-family: Arial; color:var(--color-gray);">{{r.handycap}}</span>
+                      {% endif %}
+                    {% endif %}
+                    {% endfor %}
                   {% endif %}
                 </div>
+
                 <div style="text-align: right; font-size: 1.1rem;">
                   {# 부담중량 증감 #}
                   {% if r.i_prehandy == 0.0 %}
@@ -912,18 +923,18 @@
 
               {# 환산기록 / 경주기록 #}
               <td>
-                <div style=" font-size: 1.2rem;">
+                <div style=" font-size: 1.2rem; text-align: center;">
                   {% if compare_r.convert_r__min == r.convert_r %}
-                  <span style="font-family: Arial; color: var(--color-r1); font-style: italic;">&nbsp;&nbsp;{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}</span>
+                  <span style="font-family: Arial; color: var(--color-r1); font-style: italic;">{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}</span>
                   {% else %}
 
                     {% if r.convert_r < r.complex5 %}
-                    <span style="font-family: Arial; color:var(--color-light); font-style: italic;">&nbsp;&nbsp;{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}</span>
+                    <span style="font-family: Arial; color:var(--color-light); font-style: italic;">{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}</span>
                     {% else %}
                       {% if r.convert_r < r.recent5 and r.convert_r < r.recent3 %}
-                      <span style="font-family: Arial; color: var(--color-light-gray);">&nbsp;&nbsp;{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}</span>
+                      <span style="font-family: Arial; color: var(--color-light-gray);">{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}</span>
                       {% else %}
-                      <span style="font-family: Arial; color: var(--color-gray);">&nbsp;&nbsp;{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}</span>
+                      <span style="font-family: Arial; color: var(--color-gray);">{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}</span>
                       {% endif %}
                     {% endif %}
                   {% endif %}
@@ -1850,7 +1861,6 @@
                 </div>
 
                 <div style="font-family: Arial; font-size:1.1rem; color:var(--color-r5); text-align: right;">
-
                   {% if r_pop > 80 %}
                   <span style="font-family: Arial; font-size:1.1rem; color:var(--color-r1)">★&nbsp;{{r_pop}}</span>
                   {% elif r_pop > 60 and r_pop <= 80 %}
@@ -4896,10 +4906,10 @@
 
                   <table class="small-friendly" style="z-index: 999;">
                     <thead>
-                      <tr style="background-color:var(--color-main);">
+                      <tr style="background-color:var(--color-dark-medium); color:var(--color-light-gray);">
                         <th><span class="visible-big" style="padding-bottom: 3px; font-size: 1.1rem;">📅</span></th>
                         <th colspan="2">
-                          <span class="visible-big" style="padding-bottom: 3px; font-size: 1.1rem; color:var(--color-r1);">🐴&nbsp;{{jockey}}&nbsp;&nbsp;최근 재결</span>
+                          <span class="visible-big" style="padding-bottom: 3px; font-size: 1.15rem; color:var(--color-r3);">🐴&nbsp;{{jockey}} 기수&nbsp;&nbsp;최근 재결</span>
                         </th>
                       </tr>
                     </thead>
@@ -5294,12 +5304,16 @@
 
                     </tbody>
                   </table>
+
+                  <br>
       
                   <table class="small-friendly">
                     <thead>
-                      <tr style="background-color:var(--color-main);">
-                        <th><span class="visible-big">📅</span></th>
-                        <th colspan="2"><span class="visible-big">{{trainer}} 최근재결</span></th>
+                      <tr style="background-color:var(--color-dark-medium); color:var(--color-light-gray);">
+                        <th><span class="visible-big" style="padding-bottom: 3px; font-size: 1.1rem;">📅</span></th>
+                        <th colspan="2">
+                          <span class="visible-big" style="padding-bottom: 3px; font-size: 1.15rem; color:var(--color-r3);">🐴&nbsp;{{trainer}} 마방&nbsp;&nbsp;최근 재결</span>
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -5575,10 +5589,6 @@
       
             <tr class="fold">
               <td colspan="10">
-                <div class="fold-content">
-
-                </div>
-
                 <div class="fold-content">
                   <table class="small-friendly">
                     <thead>

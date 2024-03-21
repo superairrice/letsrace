@@ -1064,7 +1064,8 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 13 DAY), '%Y%m%d'), strong, 0 ) s13,
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), strong, 0 ) s14
                         from train a ,
-                            ( select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight, distance, grade, rating, dividing
+                            ( select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, 
+                                    j_per, t_per, jt_per, h_weight, distance, grade, rating, dividing
                                 from expect  
                               where horse in ( select horse from exp011 where rdate = '"""
             + i_rdate
@@ -2121,7 +2122,7 @@ def get_last2weeks_loadin(i_rdate):
     return results
 
 # 기승가능중량 => PredictionRace
-def get_loadin(i_rdate):
+def get_loadin(i_rcity, i_rdate, i_rno):
     try:
         cursor = connection.cursor()
 
@@ -2130,6 +2131,7 @@ def get_loadin(i_rdate):
             select jockey, cast(load_in as decimal) 
             from jockey_w 
             where wdate = ( select max(wdate) from jockey_w where wdate < '""" + i_rdate + """' ) 
+            and jockey in ( select jockey from exp011 where rcity = '""" + i_rcity + """' and rdate = '""" + i_rdate + """' and rno = """ + str(i_rno) + """ )
             ; """
         )
 
