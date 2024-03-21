@@ -3926,7 +3926,7 @@ def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee, i_filter):
     return result
 
 
-# 기수 or 조교사 or 마주 최근 44일 경주결과
+# 기수 or 조교사 or 마주 최근 365일 경주결과
 def get_recent_awardee(i_rdate, i_awardee, i_name):
     try:
         cursor = connection.cursor()
@@ -3945,7 +3945,7 @@ def get_recent_awardee(i_rdate, i_awardee, i_name):
             + """'
                     and rdate between date_format(DATE_ADD('"""
             + i_rdate
-            + """', INTERVAL - 44 DAY), '%Y%m%d') and '"""
+            + """', INTERVAL - 365 DAY), '%Y%m%d') and '"""
             + i_rdate
             + """'
                     order by rdate desc, rno desc, rcity

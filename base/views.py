@@ -1433,6 +1433,8 @@ def getRaceAwardee(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host)
         rdate, awardee, i_name
     )  # 기수, 조교사, 마주 연대현황 최근1년
 
+    # print(solidarity)
+
     context = {
         "solidarity": solidarity,
         "awardee": awardee,
