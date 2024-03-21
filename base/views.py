@@ -801,10 +801,13 @@ def predictionList(request, rcity, rdate, rno):
 
     popularity_rate, award_j = get_popularity_rate_j(rcity, rdate, rno)                        # 인기순위별 승률
     popularity_rate = sorted(popularity_rate, key=lambda x: x[1] or 99)                 # 게이트 순으로 정렬
-    popularity_rate_t = get_popularity_rate_t(rcity, rdate, rno)                    # 인기순위별 승률
+    award_j = sorted(award_j, key=lambda x: x[1] or 99)  # 게이트 순으로 정렬
+    popularity_rate_t, award_t = get_popularity_rate_t(rcity, rdate, rno)                    # 인기순위별 승률
     popularity_rate_t = sorted(popularity_rate_t, key=lambda x: x[1] or 99)             # 게이트 순으로 정렬
-    popularity_rate_h = get_popularity_rate_h(rcity, rdate, rno)                    # 인기순위별 승률
+    award_t = sorted(award_t, key=lambda x: x[1] or 99)  # 게이트 순으로 정렬
+    popularity_rate_h, award_h = get_popularity_rate_h(rcity, rdate, rno)                    # 인기순위별 승률
     popularity_rate_h = sorted(popularity_rate_h, key=lambda x: x[1] or 99)             # 게이트 순으로 정렬
+    award_h = sorted(award_h, key=lambda x: x[1] or 99)  # 게이트 순으로 정렬
     paternal = get_paternal(rcity, rdate, rno, r_condition.distance)                # 부마 3착 성적
     paternal = sorted(paternal, key=lambda x: x[0] or 99)                               # 게이트 순으로 정렬
 
@@ -838,6 +841,9 @@ def predictionList(request, rcity, rdate, rno):
         "trainer_double_check": str(trainer_double_check),
         "paternal": paternal,
         "popularity_rate": popularity_rate,
+        "award_j": award_j,
+        "award_t": award_t,
+        "award_h": award_h,
         "popularity_rate_t": popularity_rate_t,
         "popularity_rate_h": popularity_rate_h,
     }
