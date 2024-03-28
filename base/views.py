@@ -63,6 +63,7 @@ from base.mysqls import (
     get_treat_horse,
     get_weeks,
     get_last2weeks,
+    get_weeks_status,
     insert_horse_disease,
     insert_race_judged,
     insert_race_simulation,
@@ -642,14 +643,15 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
 
     # h_audit = get_train_audit(rcity, rdate, rno)      # get_treat_horse 함수 통합
 
-    popularity_rate, award_j = get_popularity_rate_j(rcity, rdate, rno)  # 인기순위별 승률
-    popularity_rate_t, award_t = get_popularity_rate_t(rcity, rdate, rno)  # 인기순위별 승률
-    popularity_rate_h, award_h = get_popularity_rate_h(rcity, rdate, rno)  # 인기순위별 승률
-
-    stable, stable_g, stable_h = get_status_stable(rcity, rdate, rno)
-    stable_list = stable.values.tolist()
-    stable_list_g = stable_g.values.tolist()
-    stable_title = stable.columns.tolist()
+    popularity_rate, award_j = get_popularity_rate_j(
+        rcity, rdate, rno
+    )  # 인기순위별 승률
+    popularity_rate_t, award_t = get_popularity_rate_t(
+        rcity, rdate, rno
+    )  # 인기순위별 승률
+    popularity_rate_h, award_h = get_popularity_rate_h(
+        rcity, rdate, rno
+    )  # 인기순위별 승률
 
     loadin = get_loadin(rcity, rdate, rno)
     # print(loadin)
@@ -696,7 +698,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     context = {
         "exp011s": exp011s,
         "r_condition": r_condition,
-        "loadin": loadin,               # 기수 기승가능 부딤중량
+        "loadin": loadin,  # 기수 기승가능 부딤중량
         "hr_records": hr_records,
         "compare_r": compare_r,
         "alloc": alloc,
@@ -714,10 +716,6 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         "award_h": award_h,
         "popularity_rate_t": popularity_rate_t,
         "popularity_rate_h": popularity_rate_h,
-        'stable_list': stable_list,
-        'stable_list_g': stable_list_g,
-        'stable_title': stable_title,
-        'stable_h': stable_h,
         "train": train,
         "training_cnt": training_cnt,
         "treat": treat,
@@ -784,8 +782,8 @@ def predictionList(request, rcity, rdate, rno):
     except:
         alloc = None
 
-    train, training_cnt = get_train_horse(rcity, rdate, rno)    # 조교현황
-    train = sorted(train, key=lambda x: x[3] or 99)             # 게이트 순으로 정렬
+    train, training_cnt = get_train_horse(rcity, rdate, rno)  # 조교현황
+    train = sorted(train, key=lambda x: x[3] or 99)  # 게이트 순으로 정렬
 
     pedigree = get_pedigree(rcity, rdate, rno)  # 병력
     pedigree = sorted(pedigree, key=lambda x: x[0] or 99)
@@ -798,17 +796,29 @@ def predictionList(request, rcity, rdate, rno):
 
     # award_j, race_detail, judged_jockey = get_expects(rdate)
 
-    popularity_rate, award_j = get_popularity_rate_j(rcity, rdate, rno)                        # 인기순위별 승률
-    popularity_rate = sorted(popularity_rate, key=lambda x: x[1] or 99)                 # 게이트 순으로 정렬
+    popularity_rate, award_j = get_popularity_rate_j(
+        rcity, rdate, rno
+    )  # 인기순위별 승률
+    popularity_rate = sorted(
+        popularity_rate, key=lambda x: x[1] or 99
+    )  # 게이트 순으로 정렬
     award_j = sorted(award_j, key=lambda x: x[1] or 99)  # 게이트 순으로 정렬
-    popularity_rate_t, award_t = get_popularity_rate_t(rcity, rdate, rno)                    # 인기순위별 승률
-    popularity_rate_t = sorted(popularity_rate_t, key=lambda x: x[1] or 99)             # 게이트 순으로 정렬
+    popularity_rate_t, award_t = get_popularity_rate_t(
+        rcity, rdate, rno
+    )  # 인기순위별 승률
+    popularity_rate_t = sorted(
+        popularity_rate_t, key=lambda x: x[1] or 99
+    )  # 게이트 순으로 정렬
     award_t = sorted(award_t, key=lambda x: x[1] or 99)  # 게이트 순으로 정렬
-    popularity_rate_h, award_h = get_popularity_rate_h(rcity, rdate, rno)                    # 인기순위별 승률
-    popularity_rate_h = sorted(popularity_rate_h, key=lambda x: x[1] or 99)             # 게이트 순으로 정렬
+    popularity_rate_h, award_h = get_popularity_rate_h(
+        rcity, rdate, rno
+    )  # 인기순위별 승률
+    popularity_rate_h = sorted(
+        popularity_rate_h, key=lambda x: x[1] or 99
+    )  # 게이트 순으로 정렬
     award_h = sorted(award_h, key=lambda x: x[1] or 99)  # 게이트 순으로 정렬
-    paternal = get_paternal(rcity, rdate, rno, r_condition.distance)                # 부마 3착 성적
-    paternal = sorted(paternal, key=lambda x: x[0] or 99)                               # 게이트 순으로 정렬
+    paternal = get_paternal(rcity, rdate, rno, r_condition.distance)  # 부마 3착 성적
+    paternal = sorted(paternal, key=lambda x: x[0] or 99)  # 게이트 순으로 정렬
 
     name = get_client_ip(request)
 
@@ -1393,6 +1403,31 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     return render(request, "base/race_result.html", context)
 
 
+# 마방 경주마 보유현황
+def statusStable(request, rcity, rdate, rno):
+
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+    # print(r_condition)
+    
+
+    stable, stable_g, stable_h = get_status_stable(rcity, rdate, rno)
+    stable_list = stable.values.tolist()
+    stable_list_g = stable_g.values.tolist()
+    stable_title = stable.columns.tolist()
+
+    # print(stable_title)
+
+    context = {
+        "r_condition": r_condition,
+        "stable_list": stable_list,
+        "stable_list_g": stable_list_g,
+        "stable_title": stable_title,
+        "stable_h": stable_h,
+    }
+
+    return render(request, "base/status_stable.html", context)
+
+
 # 기수 or 조교사 최근 12주 성적 / 99일 경주결과
 def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
     if awardee == "jockey":
@@ -1446,11 +1481,24 @@ def getRaceAwardee(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host)
     return render(request, "base/get_race_awardee.html", context)
 
 
+# 주별 입상마 경주전개 현황
+def weeksStatus(request, rcity, rdate):
+    status = get_weeks_status(rcity, rdate)
+
+    # print(status)
+
+    context = {
+        "status": status,
+    }
+
+    return render(request, "base/weeks_status.html", context)
+
+
 # 기수 or 조교사 or 마주 44일 경주결과
 def getRaceHorse(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host):
-    if i_host == '': 
-        i_host = ' '
-        
+    if i_host == "":
+        i_host = " "
+
     solidarity = get_recent_horse(
         rdate, awardee, i_name
     )  # 기수, 조교사, 마주 연대현황 최근1년
@@ -1590,7 +1638,7 @@ def awardStatusTrainer(request):
             ip_address=name,
             user_agent=request.META.get("HTTP_USER_AGENT"),
             # referrer=request.META.get('HTTP_REFERER'),
-            referer= fdate + " " + "마방 상금수득 현황",
+            referer=fdate + " " + "마방 상금수득 현황",
             # timestamp=timezone.now()
         )
 
@@ -1647,8 +1695,12 @@ def awardStatusJockey(request):
 
             # messages.warning(request, "선택된 날짜가 금요일이 아닙니다.")
 
-    weeks = get_last2weeks(friday, i_awardee="jockey", i_friday=Racing.objects.values("rdate").distinct()[0]["rdate"])
-    
+    weeks = get_last2weeks(
+        friday,
+        i_awardee="jockey",
+        i_friday=Racing.objects.values("rdate").distinct()[0]["rdate"],
+    )
+
     loadin = get_last2weeks_loadin(friday)
     # status = get_status_training(rdate)
     status = get_status_train(rdate)
@@ -1664,7 +1716,7 @@ def awardStatusJockey(request):
             ip_address=name,
             user_agent=request.META.get("HTTP_USER_AGENT"),
             # referrer=request.META.get('HTTP_REFERER'),
-            referer= fdate + " " + "기수 상금수득 현황",
+            referer=fdate + " " + "기수 상금수득 현황",
             # timestamp=timezone.now()
         )
 

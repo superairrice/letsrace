@@ -417,6 +417,12 @@ class RecordS(models.Model):
     s1f_rank = models.DecimalField(
         max_digits=4, decimal_places=1, blank=True, null=True
     )
+    g3f_rank = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    g1f_rank = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
     recent3 = models.CharField(
         max_length=6, db_collation="euckr_korean_ci", blank=True, null=True
     )
