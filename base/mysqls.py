@@ -314,7 +314,7 @@ def get_pedigree(rcity, rdate, rno):
                     blood2, 
                     treat1, 
                     treat2, 
-                    a.prize_tot/1000, a.prize_year/1000, a.rating
+                    a.prize_tot/1000, a.prize_year/1000, a.rating, a.i_cycle
                 FROM exp011	a,
                     exp012 c
                 WHERE a.rcity = c.rcity
@@ -988,7 +988,7 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
         cursor = connection.cursor()
 
         strSql = (
-            """ select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight, distance, grade, rating, dividing,
+            """ select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight, distance, grade, rating, dividing, i_cycle,
                                             max(r1), max(d1), max(c1), max(s1) , 
                                             max(r2), max(d2), max(c2), max(s2) , 
                                             max(r3), max(d3), max(c3), max(s3) , 
@@ -1007,7 +1007,7 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
                     ( select sum(laps) from swim aa where aa.horse = a.horse and aa.tdate between date_format(DATE_ADD(a.rdate, INTERVAL - 14 DAY), '%Y%m%d') and a.rdate ) swims
                     from
                     (
-                        select rdate, gate, b.rank, r_rank, r_pop, a.horse, b.jockey, b.trainer, b.rcity, rno, j_per, t_per, jt_per,h_weight, distance, b.grade, rating, dividing,
+                        select rdate, gate, b.rank, r_rank, r_pop, a.horse, b.jockey, b.trainer, b.rcity, rno, j_per, t_per, jt_per,h_weight, distance, b.grade, rating, dividing, i_cycle,
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 1 DAY), '%Y%m%d'), rider, '' ) r1,
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 2 DAY), '%Y%m%d'), rider, '' ) r2,
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 3 DAY), '%Y%m%d'), rider, '' ) r3,
@@ -1069,7 +1069,7 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), strong, 0 ) s14
                         from train a ,
                             ( select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, 
-                                    j_per, t_per, jt_per, h_weight, distance, grade, rating, dividing
+                                    j_per, t_per, jt_per, h_weight, distance, grade, rating, dividing, i_cycle
                                 from expect  
                               where horse in ( select horse from exp011 where rdate = '"""
             + i_rdate
