@@ -314,7 +314,7 @@ def get_pedigree(rcity, rdate, rno):
                     blood2, 
                     treat1, 
                     treat2, 
-                    a.prize_tot/1000, a.prize_year/1000, a.rating, a.i_cycle
+                    a.prize_tot/1000, a.prize_year/1000, a.rating, a.i_cycle, reason, jockey_old, birthplace, h_sex, h_age, complex, complex5
                 FROM exp011	a,
                     exp012 c
                 WHERE a.rcity = c.rcity
@@ -511,15 +511,15 @@ def get_race(i_rdate, i_awardee):
             """ 
                 select rcity,"""
             + i_awardee
-            + """ awardee, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey j_name, trainer t_name, host h_name, r_pop, distance, handycap, jt_per, s1f_rank, jockey_old, reason
-                  from expect
+            + """ awardee, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey j_name, trainer t_name, host h_name, r_pop, distance, handycap, jt_per, s1f_rank, corners, g3f_rank, g1f_rank, alloc3r, jockey_old, reason
+                from expect
                 where rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL + 3 DAY), '%Y%m%d')
                 and rno < 80
-                order by rdate, rcity, rno
+                order by rdate, rtime, gate
                 ; """
         )
 
@@ -989,6 +989,7 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
 
         strSql = (
             """ select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, j_per, t_per, jt_per, h_weight, distance, grade, rating, dividing, i_cycle,
+                        reason, jockey_old, birthplace, h_sex, h_age, complex, complex5,
                                             max(r1), max(d1), max(c1), max(s1) , 
                                             max(r2), max(d2), max(c2), max(s2) , 
                                             max(r3), max(d3), max(c3), max(s3) , 
@@ -1008,6 +1009,7 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
                     from
                     (
                         select rdate, gate, b.rank, r_rank, r_pop, a.horse, b.jockey, b.trainer, b.rcity, rno, j_per, t_per, jt_per,h_weight, distance, b.grade, rating, dividing, i_cycle,
+                        reason, jockey_old, birthplace, h_sex, h_age, complex, complex5,
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 1 DAY), '%Y%m%d'), rider, '' ) r1,
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 2 DAY), '%Y%m%d'), rider, '' ) r2,
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 3 DAY), '%Y%m%d'), rider, '' ) r3,
@@ -1069,7 +1071,7 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
                           if( tdate = date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d'), strong, 0 ) s14
                         from train a ,
                             ( select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, 
-                                    j_per, t_per, jt_per, h_weight, distance, grade, rating, dividing, i_cycle
+                                    j_per, t_per, jt_per, h_weight, distance, grade, rating, dividing, i_cycle, reason, jockey_old, birthplace, h_sex, h_age, complex, complex5
                                 from expect  
                               where horse in ( select horse from exp011 where rdate = '"""
             + i_rdate
@@ -2140,13 +2142,7 @@ def get_loadin(i_rcity, i_rdate, i_rno):
             where wdate = ( select max(wdate) from jockey_w where wdate < '"""
             + i_rdate
             + """' ) 
-            and jockey in ( select jockey from exp011 where rcity = '"""
-            + i_rcity
-            + """' and rdate = '"""
-            + i_rdate
-            + """' and rno = """
-            + str(i_rno)
-            + """ )
+
             ; """
         )
 
@@ -2310,7 +2306,7 @@ def get_status_train(i_rdate):
         cursor = connection.cursor()
 
         strSql = (
-            """ select rcity, rdate, rno, rday, gate, rank, r_rank, r_pop, horse, trainer, jockey, jt_per, handycap, j_per, t_per, h_weight, distance, grade, rating, dividing, host,
+            """ select rcity, rdate, rno, rday, gate, rank, r_rank, r_pop, horse, trainer, jockey, jt_per, handycap, j_per, t_per, h_weight, distance, grade, rating, dividing, host, i_prehandy, jockey_old, reason,
                                             max(r1), max(d1), max(c1), max(s1), 
                                             max(r2), max(d2), max(c2), max(s2), 
                                             max(r3), max(d3), max(c3), max(s3), 
@@ -2328,7 +2324,8 @@ def get_status_train(i_rdate):
                                             ( select sum(laps) from swim aa where aa.horse = a.horse and aa.tdate between date_format(DATE_ADD(a.rdate, INTERVAL - 14 DAY), '%Y%m%d') and a.rdate ) laps
                       from
                       (
-                        select b.rcity, b.rdate, b.rday, b.rno, b.gate, b.rank, b.r_rank, b.r_pop, a.horse, b.trainer, b.jockey, b.jt_per, b.handycap, b.j_per, b.t_per, b.h_weight, b.distance, b.grade, b.rating, b.dividing, b.host,
+                        select b.rcity, b.rdate, b.rday, b.rno, b.gate, b.rank, b.r_rank, b.r_pop, a.horse, b.trainer, b.jockey, b.jt_per, b.handycap, b.j_per, b.t_per, b.h_weight,
+                        b.distance, b.grade, b.rating, b.dividing, b.host, b.i_prehandy, jockey_old, reason,
                           if( tdate = date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 1 DAY), '%Y%m%d'), rider, '' ) r1,
@@ -2502,7 +2499,8 @@ def get_status_train(i_rdate):
             + """', INTERVAL - 14 DAY), '%Y%m%d'), strong, 0 ) s14
                         from train a right outer join  
                         ( 
-                          select rcity, rdate, rday, rno, trainer, jockey, jt_per, gate, rank, r_rank, r_pop, horse, handycap, j_per, t_per, h_weight, distance, grade, rating, dividing, host
+                          select rcity, rdate, rday, rno, trainer, jockey, jt_per, gate, rank, r_rank, r_pop, horse, handycap, j_per, t_per, h_weight, distance, grade, rating, dividing, host, i_prehandy,
+                                jockey_old, reason
                             from expect 
                           where rdate between date_format(DATE_ADD('"""
             + i_rdate
