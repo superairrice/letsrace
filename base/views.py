@@ -2133,7 +2133,33 @@ def writeSignificant(request, rdate, horse):
 
         except:
             connection.rollback()
-            print("Failed updating in exp011")
+            print("Failed updating in rec011")
+
+    try:
+        cursor = connection.cursor()
+        strSql = (
+            """ update record_s set r_flag = '"""
+            + r_flag
+            + """'
+                    where rdate = '"""
+            + rdate
+            + """'
+                    and horse =  '"""
+            + horse
+            + """'
+                    ;"""
+        )
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        r_significant = cursor.fetchall()
+
+        # print(r_significant)
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed updating r_flag")
 
     try:
         cursor = connection.cursor()

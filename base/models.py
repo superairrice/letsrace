@@ -403,6 +403,9 @@ class RecordS(models.Model):
     r_etc = models.CharField(
         max_length=400, db_collation="euckr_korean_ci", blank=True, null=True
     )
+    r_flag = models.CharField(
+        max_length=5, db_collation="euckr_korean_ci", blank=True, null=True
+    )
     alloc1r = models.DecimalField(
         max_digits=10, decimal_places=4, blank=True, null=True
     )
