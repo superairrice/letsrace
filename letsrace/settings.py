@@ -220,7 +220,7 @@ WSGI_APPLICATION = "letsrace.wsgi.application"
 #     }
 # }
 # DEBUG = True
-
+#
 DEBUG = False
 DATABASES = {
     "default": {
