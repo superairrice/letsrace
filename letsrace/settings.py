@@ -218,7 +218,7 @@ WSGI_APPLICATION = "letsrace.wsgi.application"
 #         # 'HOST': '123.111.131.8',         # [5]
 #         "PORT": "3307",  # [6]
 #     }
-# }
+# # }
 # DEBUG = True
 #
 DEBUG = False

@@ -59,6 +59,12 @@
             </th>
             <th colspan="1" style="font-size: 1.2rem;"><span>R</span></th>
             <th colspan="1" style="font-size: 1.2rem;"><span>G</span></th>
+            <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><span>Horse</span></th>
+            <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><span>체중</span></th>
+            <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><span>증감</span></th>
+            <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><span>부중</span></th>
+            <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><span>기수</span></th>
+            <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><span>조교사</span></th>
             <th colspan="1" style="font-size: 1.2rem;"><sup style="font-size: 0.9rem; color:var(--color-r3);">s1f_r</sup>&nbsp;코너전개순위&nbsp;<sup style="font-size: 0.9rem; color:var(--color-r3);">g1f_r</sup></th>
             <th colspan="1" style="font-size: 1.2rem;"><sup style="font-size:0.9rem;">r</sup><span>S1F</span></th>
             <th colspan="1" style="font-size: 1.2rem;"><sup style="font-size:0.9rem;">r</sup><span>G3F</span></th>
@@ -70,14 +76,7 @@
             <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><sup style="font-size:0.9rem;">p</sup><span>S1F</span></th>
             <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><sup style="font-size:0.9rem;">p</sup><span>G3F</span></th>
             <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><sup style="font-size:0.9rem;">p</sup><span>G1F</span></th>
-
-            <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><span>Horse</span></th>
-            <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><span>체중</span></th>
-            <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><span>증감</span></th>
-            <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><span>부중</span></th>
-            <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><span>기수</span></th>
-            <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><span>조교사</span></th>
-
+            
           </tr>
 
           {% for rcity, rdate, rno, rday, distance, grade, dividing, horse, jockey, trainer, host, h_weight, handycap, gate, rank, r_rank, corners, r_s1f, r_g3f, r_g1f, s1f_rank, g3f_rank, g2f_rank, g1f_rank, cs1f, cg3f, cg1f,i_cycle, r_pop, alloc1r, alloc3r in status %}
@@ -89,12 +88,13 @@
           {% endif %}
 
             {# 경주번호 #}
-            <td>
+            <td style="border-right: 1px solid var(--color-bg);">
               {% if forloop.counter0|divisibleby:3 %}
               <a href="{% url 'race_result' rcity rdate rno horse 0 0 0 %}"
                 onclick="window.open(this.href, 'w_result', 'width=1000, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
                 <div style="text-align: left;">
-                  <span style="font-size: 1.1rem; font-family: Arial;">{{rday}}</span>
+                  <span style="font-size: 1.1rem; font-family: Arial;">'{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
+                  <span style="font-size: 1.1rem; font-family: Arial;">({{rday}})</span>
 
                   <span width="10px" style="font-size: 1.1rem; font-family: Arial; width:100px; text-align: right;">
                     {{rno}}ᴿ
@@ -148,6 +148,63 @@
               </span>
 
             </td>
+
+            {# 마명 #}
+            <td align="left" style="font-size: 1.1rem; border-right: 1px solid var(--color-bg);">
+              <a href="{% url 'get_race_horse' rdate 'horse' horse jockey trainer host %}">
+                <div style="font-family: Arial;">
+                  {{horse|slice:"0:5"}}
+                </div>
+              </a>
+            </td>
+
+            {# 체중 #}
+            <td align="center" style="border-right: 1px solid var(--color-bg);">
+              <div style="font-family: Arial; font-size:1.15rem;">
+                {% if h_weight|slice:"0:3" <= '440' %}
+                <span style="font-family: Arial; color:var(--color-r5);">{{h_weight|slice:"0:3"}}</span>
+                {% elif h_weight|slice:"0:3" >= '500' %}
+                <span style="font-family: Arial; color:var(--color-r2);">{{h_weight|slice:"0:3"}}</span>
+                {% else %}
+                <span style="font-family: Arial; color:var(--color-gray);">{{h_weight|slice:"0:3"}}</span>
+                {% endif %}
+              </div>
+            </td>
+
+            <td style="border-right: 1px solid var(--color-bg);">
+              <div style="font-family: Arial; text-align: right;">
+                {% if h_weight|slice:"4:" %}
+                  {% if h_weight|slice:"4:5" == '+' %}
+                  <div style="text-align:right; font-style: italic; font-size: 1.1rem;  color:var(--color-r5);">
+                    <span style="font-family: Arial; border-radius: 7px; background-color: var(--color-bg); padding:0px 4px;">{{h_weight|slice:"4:"}}</span>
+                  </div>
+                  {% else %}
+                  <div style="text-align:right; font-style: italic; font-size: 1.1rem;  color:var(--color-r1);">
+                    <span style="font-family: Arial; border-radius: 7px; background-color: var(--color-bg); padding:1px 4px;">{{h_weight|slice:"4:"}}</span>
+                  </div>
+                  {% endif %}
+                {% endif %}
+              </div>
+            </td>
+
+            {# 부담중량 #}
+            <td align="center" style="border-right: 1px solid var(--color-bg);">
+              {% if handycap >= 56 %}
+              <div style="font-size: 1.15rem; font-family: Arial; color: var(--color-r5); font-weight: 700;">{% if handycap %}{{handycap}}{% endif %}</div>
+              {% else %}
+              <div style="font-size: 1.15rem; font-family: Arial; color: var(--color-light-gray);">{% if handycap %}{{handycap}}{% endif %}</div>
+              {% endif %}
+            </td>
+
+            {# 조교사 or 기수 or 마주 #}
+            <td align="center" style="border-right: 1px solid var(--color-bg);">
+              <div style="font-size: 1.1rem; font-family: Arial;">{{jockey|slice:"0:3"}}</div>
+            </td>
+            <td align="center" style="border-right: 1px solid var(--color-bg);">
+              <div style="font-size: 1.1rem; font-family: Arial;">{{trainer|slice:"0:3"}}</div>
+            </td>
+
+            {# gate #}
             <td style="font-size: 1.0rem; border-right: 1px solid var(--color-bg);">
               <div style="text-align: center; font-family: Arial;">
                 <span style="color:var(--color-r3); border-radius: 7px; background-color: var(--color-bg); padding:2px 4px;">{% if s1f_rank %}{{s1f_rank|floatformat:0}}{% endif %}</span>
@@ -295,66 +352,8 @@
                 <span style="font-family: Arial; font-size: 1.1rem; color:var(--color-light-gray);">{{cg1f}}</span>
               </div>
             </td>
-
             
-
-            {# 마명 #}
-            <td align="left" style="font-size: 1.1rem; border-right: 1px solid var(--color-bg);">
-              <a href="{% url 'get_race_horse' rdate 'horse' horse jockey trainer host %}">
-                <div style="font-family: Arial;">
-                  {{horse|slice:"0:5"}}
-                </div>
-              </a>
-            </td>
-
-            {# 체중 #}
-            <td align="center">
-              <div style="font-family: Arial; font-size:1.15rem;">
-                {% if h_weight|slice:"0:3" <= '440' %}
-                <span style="font-family: Arial; color:var(--color-r5);">{{h_weight|slice:"0:3"}}</span>
-                {% elif h_weight|slice:"0:3" >= '500' %}
-                <span style="font-family: Arial; color:var(--color-r2);">{{h_weight|slice:"0:3"}}</span>
-                {% else %}
-                <span style="font-family: Arial; color:var(--color-gray);">{{h_weight|slice:"0:3"}}</span>
-                {% endif %}
-              </div>
-            </td>
-
-            <td style="border-right: 1px solid var(--color-bg);">
-              <div style="font-family: Arial; text-align: right;">
-                {% if h_weight|slice:"4:" %}
-                  {% if h_weight|slice:"4:5" == '+' %}
-                  <div style="text-align:right; font-style: italic; font-size: 1.1rem;  color:var(--color-r5);">
-                    <span style="font-family: Arial; border-radius: 7px; background-color: var(--color-bg); padding:0px 4px;">{{h_weight|slice:"4:"}}</span>
-                  </div>
-                  {% else %}
-                  <div style="text-align:right; font-style: italic; font-size: 1.1rem;  color:var(--color-r1);">
-                    <span style="font-family: Arial; border-radius: 7px; background-color: var(--color-bg); padding:1px 4px;">{{h_weight|slice:"4:"}}</span>
-                  </div>
-                  {% endif %}
-                {% endif %}
-              </div>
-            </td>
-
-            {# 부담중량 #}
-            <td align="center" style="border-right: 1px solid var(--color-bg);">
-              {% if handycap >= 56 %}
-              <div style="font-size: 1.15rem; font-family: Arial; color: var(--color-r5); font-weight: 700;">{% if handycap %}{{handycap}}{% endif %}</div>
-              {% else %}
-              <div style="font-size: 1.15rem; font-family: Arial; color: var(--color-light-gray);">{% if handycap %}{{handycap}}{% endif %}</div>
-              {% endif %}
-            </td>
-
-            {# 조교사 or 기수 or 마주 #}
-            <td align="center" style="border-right: 1px solid var(--color-bg);">
-              <div style="font-size: 1.1rem; font-family: Arial;">{{jockey|slice:"0:3"}}</div>
-            </td>
-            <td align="center" style="border-right: 1px solid var(--color-bg);">
-              <div style="font-size: 1.1rem; font-family: Arial;">{{trainer|slice:"0:3"}}</div>
-            </td>
-
-
-
+            
           </tr>
 
 

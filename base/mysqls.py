@@ -1124,7 +1124,7 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
             + str(i_rno)
             + """)
                 group by rider 
-            having count(*) >= 8
+            having count(*) >= 7
             ;"""
         )
         # print(strSql)
@@ -5390,7 +5390,7 @@ def get_weeks_status(rcity, rdate):
             + """'
                 and a.rdate between date_format(DATE_ADD('"""
             + rdate
-            + """', INTERVAL - 3 DAY), '%Y%m%d') 
+            + """', INTERVAL - 10 DAY), '%Y%m%d') 
                 and date_format(DATE_ADD('"""
             + rdate
             + """', INTERVAL + 3 DAY), '%Y%m%d')
