@@ -28,6 +28,7 @@ from base.mysqls import (
     get_award,
     get_award_race,
     get_axis,
+    get_axis_rank,
     get_expects,
     get_jockey_trend,
     get_judged,
@@ -676,7 +677,10 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
 
     trainer_double_check = get_trainer_double_check(rcity, rdate, rno)
 
-    axis = get_axis(rcity, rdate, rno)
+    # axis = get_axis(rcity, rdate, rno)
+    axis1 = get_axis_rank(rcity, rdate, rno, 1)
+    axis2 = get_axis_rank(rcity, rdate, rno, 2)
+    axis3 = get_axis_rank(rcity, rdate, rno, 3)
 
     name = get_client_ip(request)
 
@@ -723,7 +727,9 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         #    'swim': swim,
         # "h_audit": h_audit,
         "trainer_double_check": str(trainer_double_check),
-        "axis": axis,
+        "axis1": axis1,
+        "axis2": axis2,
+        "axis3": axis3,
         # "trend_j": trend_j.to_html(
         #     index=False,
         #     header=True,
@@ -1484,11 +1490,35 @@ def getRaceAwardee(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host)
 # 주별 입상마 경주전개 현황
 def weeksStatus(request, rcity, rdate):
     status = get_weeks_status(rcity, rdate)
+    
+    try:
+        cursor = connection.cursor()
 
+        strSql = (
+            """ 
+            select jockey, cast(load_in as decimal) 
+            from jockey_w 
+            where wdate = ( select max(wdate) from jockey_w where wdate < '"""
+            + rdate
+            + """' ) 
+                ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        loadin = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in 기승가능중량")
+        
     # print(status)
 
     context = {
         "status": status,
+        "loadin": loadin,
     }
 
     return render(request, "base/weeks_status.html", context)

@@ -73,7 +73,7 @@
           </a>
         
           <a href="{% url 'weeks_status' r_condition.rcity r_condition.rdate %}"
-            onclick="window.open(this.href, 'w_weeks_status', 'width=1100, height=1000, toolbars=no, scrollbars=yes'); return false;">
+            onclick="window.open(this.href, 'w_weeks_status', 'width=1300, height=1000, toolbars=no, scrollbars=yes'); return false;">
             <span class="tooltip" style="font-family: Arial, Helvetica, sans-serif; font-size:1.4rem; color: var(--color-main); font-weight: 500;">
               &nbsp;&nbsp;'{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}})
               <span class="tooltip-text" style="font-size:1.2rem; color: var(--color-main); font-weight: 500;">
@@ -676,7 +676,7 @@
                       </span>
                     </span>
                   </div>
-              {% endif %}
+                {% endif %}
               </td>
               
               {# 경주전개 furlong 기록 #}
@@ -824,9 +824,9 @@
                                   <div style="font-size: 1.2rem; padding-bottom: 10px;">📌&nbsp;{{exp011s.0.jockey}}</div>
                                 </a>
                     
-                                <div style="font-size: 1.1rem; font-family: Arial;">프로그램 1위 기준 Gate별 연승률</div>
-                                <div style="font-size: 1.1rem; font-family: Arial; color:var(--color-r1)">조교사 기수 복승율 ⩾ 기수 복승율</div>
-                                <div style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5)">조교사 기수 복승율 ⪪ 기수 복승율</div>
+                                <div style="font-size: 1.1rem; font-family: Arial;">thethe9 1위 기준 Gate별 연승률</div>
+                                <div style="font-size: 1.1rem; font-family: Arial; color:var(--color-r3)">단승식 배당 4.4 이하</div>
+                                <div style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5)">조교사 기수 복승율 >= 기수 복승율</div>
                               </th>
                             </tr>
                             <tr>
@@ -837,9 +837,103 @@
                             </tr>
                           </thead>
                           <tbody>
-                            {% for gate, cnt, w3rd, w3per, i_cnt, i_w3rd, i_w3per, i2_cnt, i2_w3rd, i2_w3per in axis %}
+                            {% for gate, cnt, w3rd, w3per, i_cnt, i_w3rd, i_w3per, i2_cnt, i2_w3rd, i2_w3per in axis1 %}
                             <tr style="font-weight: 300; content:none">
                               {% if gate|mul:1 == exp011s.0.gate or gate == 'TOT' %}
+                              <td style="font-family: Arial; background-color: var(--color-dark); font-size: 1.2rem; text-align: right;">{{gate}}</td>
+                              <td style="font-family: Arial; background-color: var(--color-dark); font-size: 1.2rem; text-align: right;">{{cnt}}<br>{{i_cnt}}<br>{{i2_cnt}}</td>
+                              <td style="font-family: Arial; background-color: var(--color-dark); font-size: 1.2rem; text-align: right;">{{w3rd}}<br>{{i_w3rd}}<br>{{i2_w3rd}}</td>
+                              <td style="font-family: Arial; background-color: var(--color-dark); font-size: 1.2rem; text-align: right;">{{w3per|floatformat:1}}<br>{{i_w3per|floatformat:1}}<br>{{i2_w3per|floatformat:1}}
+                              </td>
+                              {% else %}
+                              <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{gate}}</td>
+                              <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{cnt}}</td>
+                              <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{w3rd}}</td>
+                              <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{w3per|floatformat:1}}</td>
+                              {% endif %}
+                            </tr>
+                            {% endfor %}
+                    
+                          </tbody>
+                        </table>
+                      </span>
+                    </span>
+                    {% elif r.rank == 2 %}
+                    <span class="visible-big tooltip" style="text-transform:capitalize; font-style: italic; font-size:0.9rem; padding:1px 4px; border-radius: 7px;">
+                      {% if r.gap > 0 %}{{r.gap}}{% else %}◦{% endif %}
+                      <span class="tooltip-text" style="z-index:9">
+                        <table>
+                          <thead>
+                            <tr>
+                              <th colspan="4" style="text-align: left; font-size: 1.25rem;">
+                                <a href="{% url 'get_race_awardee' exp011s.0.rdate 'jockey' exp011s.0.jockey exp011s.0.jockey exp011s.0.trainer exp011s.0.host %}"
+                                  onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                                  <div style="font-size: 1.2rem; padding-bottom: 10px;">📌&nbsp;{{exp011s.1.jockey}}</div>
+                                </a>
+                    
+                                <div style="font-size: 1.1rem; font-family: Arial;">thethe9 1위 기준 Gate별 연승률</div>
+                                <div style="font-size: 1.1rem; font-family: Arial; color:var(--color-r3)">단승식 배당 4.4 이하</div>
+                                <div style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5)">조교사 기수 복승율 >= 기수 복승율</div>
+                              </th>
+                            </tr>
+                            <tr>
+                              <th style="font-family: Arial; font-size: 1.2rem;">Gate</th>
+                              <th style="font-family: Arial; font-size: 1.2rem;">cnt</th>
+                              <th style="font-family: Arial; font-size: 1.2rem;">3위권</th>
+                              <th style="font-family: Arial; font-size: 1.2rem;">3위%</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for gate, cnt, w3rd, w3per, i_cnt, i_w3rd, i_w3per, i2_cnt, i2_w3rd, i2_w3per in axis2 %}
+                            <tr style="font-weight: 300; content:none">
+                              {% if gate|mul:1 == exp011s.1.gate or gate == 'TOT' %}
+                              <td style="font-family: Arial; background-color: var(--color-dark); font-size: 1.2rem; text-align: right;">{{gate}}</td>
+                              <td style="font-family: Arial; background-color: var(--color-dark); font-size: 1.2rem; text-align: right;">{{cnt}}<br>{{i_cnt}}<br>{{i2_cnt}}</td>
+                              <td style="font-family: Arial; background-color: var(--color-dark); font-size: 1.2rem; text-align: right;">{{w3rd}}<br>{{i_w3rd}}<br>{{i2_w3rd}}</td>
+                              <td style="font-family: Arial; background-color: var(--color-dark); font-size: 1.2rem; text-align: right;">{{w3per|floatformat:1}}<br>{{i_w3per|floatformat:1}}<br>{{i2_w3per|floatformat:1}}
+                              </td>
+                              {% else %}
+                              <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{gate}}</td>
+                              <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{cnt}}</td>
+                              <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{w3rd}}</td>
+                              <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{w3per|floatformat:1}}</td>
+                              {% endif %}
+                            </tr>
+                            {% endfor %}
+                    
+                          </tbody>
+                        </table>
+                      </span>
+                    </span>
+                    {% elif r.rank == 3 %}
+                    <span class="visible-big tooltip" style="text-transform:capitalize; font-style: italic; font-size:0.9rem; padding:1px 4px; border-radius: 7px;">
+                      {% if r.gap > 0 %}{{r.gap}}{% else %}◦{% endif %}
+                      <span class="tooltip-text" style="z-index:9">
+                        <table>
+                          <thead>
+                            <tr>
+                              <th colspan="4" style="text-align: left; font-size: 1.25rem;">
+                                <a href="{% url 'get_race_awardee' exp011s.0.rdate 'jockey' exp011s.0.jockey exp011s.0.jockey exp011s.0.trainer exp011s.0.host %}"
+                                  onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
+                                  <div style="font-size: 1.2rem; padding-bottom: 10px;">📌&nbsp;{{exp011s.2.jockey}}</div>
+                                </a>
+                    
+                                <div style="font-size: 1.1rem; font-family: Arial;">thethe9 1위 기준 Gate별 연승률</div>
+                                <div style="font-size: 1.1rem; font-family: Arial; color:var(--color-r3)">단승식 배당 4.4 이하</div>
+                                <div style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5)">조교사 기수 복승율 >= 기수 복승율</div>
+                              </th>
+                            </tr>
+                            <tr>
+                              <th style="font-family: Arial; font-size: 1.2rem;">Gate</th>
+                              <th style="font-family: Arial; font-size: 1.2rem;">cnt</th>
+                              <th style="font-family: Arial; font-size: 1.2rem;">3위권</th>
+                              <th style="font-family: Arial; font-size: 1.2rem;">3위%</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for gate, cnt, w3rd, w3per, i_cnt, i_w3rd, i_w3per, i2_cnt, i2_w3rd, i2_w3per in axis3 %}
+                            <tr style="font-weight: 300; content:none">
+                              {% if gate|mul:1 == exp011s.2.gate or gate == 'TOT' %}
                               <td style="font-family: Arial; background-color: var(--color-dark); font-size: 1.2rem; text-align: right;">{{gate}}</td>
                               <td style="font-family: Arial; background-color: var(--color-dark); font-size: 1.2rem; text-align: right;">{{cnt}}<br>{{i_cnt}}<br>{{i2_cnt}}</td>
                               <td style="font-family: Arial; background-color: var(--color-dark); font-size: 1.2rem; text-align: right;">{{w3rd}}<br>{{i_w3rd}}<br>{{i2_w3rd}}</td>
@@ -3693,14 +3787,14 @@
                         </td>
                         <td align="center">
                           {% if strong > '0' %}
-                          <div style="font-size:1.1rem; color:var(--color-r1);">{{strong}}</div>
+                          <span style="font-size:1.1rem; color:var(--color-light); background-color: var(--color-r1); padding: 1px 5px; border-radius: 7px;">{{strong}}</span>
                           {% else %}
-                          <div style="font-size:0.7rem; color:var(--color-gray);">{{strong}}</div>
+                          <span style="font-size:0.7rem; color:var(--color-gray);">{{strong}}</span>
                           {% endif %}
                         </td>
                         
                         <td align="center">
-                          <div style="font-size:1.1rem;">{{laps}}</div>
+                          <div style="font-size:1.1rem; color: var(--color-r1);">{{laps}}</div>
                         </td>
                         <td align="center">
                           {% if audit == '발주' %}

@@ -3046,7 +3046,7 @@ def get_print_prediction(i_rcity, i_rdate):
             """
                 select rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex,
                     complex5, gap_back,
-                    cast(jt_per as decimal) jt_per, s1f_rank
+                    cast(jt_per as decimal) jt_per, s1f_rank, i_cycle
                   from expect a
                 where rcity = '"""
             + i_rcity
@@ -3107,7 +3107,7 @@ def get_prediction(i_rdate):
 
         strSql = (
             """
-                select rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex,
+                select rcity, rdate, rday, rno, gate, rank, r_rank, horse, i_cycle, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex,
                     --  ( select complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = 5 ) complex5, 
                     --  ( select i_complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = a.rank + 1 ) - i_complex, 
                     complex5, gap_back, 
@@ -4193,6 +4193,96 @@ def get_axis(i_rcity, i_rdate, i_rno):
             + """' and rno =  """
             + str(i_rno)
             + """ and rank = 1) 
+                ; """
+        )
+
+        # print(strSql)
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in 축마 가능성 check ")
+
+    # print(result)
+
+    return result
+
+# thethe9 rank 기준 축마 가능성 Query
+def get_axis_rank(i_rcity, i_rdate, i_rno, i_rank):
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+                    select gate, count(*), 
+					sum( if ( a.r_rank <= 3, 1, 0)), 
+                    sum( if ( a.r_rank <= 3     , 1, 0))/count(*)*100,        
+                    sum( if ( a.alloc1r <= 4.4, 1, 0)),  
+                    sum( if ( a.r_rank <= 3 and a.alloc1r <= 4.4, 1, 0)), 
+                    sum( if ( a.r_rank <= 3 and a.alloc1r <= 4.4, 1, 0)) / sum( if(a.alloc1r <= 4.4, 1, 0))*100,
+                    
+                    sum( if ( a.jt_per >= a.j_per, 1, 0)),  
+                    sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0)), 
+                    sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0)) / sum( if(a.jt_per >= a.j_per, 1, 0))*100
+                    from expect a
+                    where rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 365 DAY), '%Y%m%d') and '"""
+            + i_rdate
+            + """'
+                    and ( rcity, rdate, rno ) not in ( select rcity, rdate, rno from expect where rank = 98  group by rcity, rdate, rno having count(*) >= 2 ) 
+                    and rank <= """
+            + str(i_rank)
+            + """
+                    and jockey = ( select jockey from exp011 where rcity = '"""
+            + i_rcity
+            + """' and rdate = '"""
+            + i_rdate
+            + """' and rno =  """
+            + str(i_rno)
+            + """ and rank = """
+            + str(i_rank)
+            + """ ) 
+
+                    group by gate
+                    
+                    union all
+                    
+                    select 'TOT', count(*), 
+					sum( if ( a.r_rank <= 3, 1, 0)), 
+                    sum( if ( a.r_rank <= 3     , 1, 0))/count(*)*100,        
+                    -- sum( if(a.alloc3r <= 1.9, 1, 0)),  sum( if ( a.r_rank <= 3 and a.alloc3r <= 1.9, 1, 0)), sum( if ( a.r_rank <= 3 and a.alloc3r <= 1.9, 1, 0))/ sum( if(a.alloc3r <= 1.9, 1, 0))*100
+                    sum( if ( a.alloc1r <= 4.4, 1, 0)),  
+                    sum( if ( a.r_rank <= 3 and a.alloc1r <= 4.4, 1, 0)), 
+                    sum( if ( a.r_rank <= 3 and a.alloc1r <= 4.4, 1, 0)) / sum( if(a.alloc1r <= 4.4, 1, 0))*100,
+                    
+                    sum( if ( a.jt_per >= a.j_per, 1, 0)),  
+                    sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0)), 
+                    sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0)) / sum( if(a.jt_per >= a.j_per, 1, 0))*100
+                    from expect a
+                    where rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 365 DAY), '%Y%m%d') and '"""
+            + i_rdate
+            + """'
+                    and ( rcity, rdate, rno ) not in ( select rcity, rdate, rno from expect where rank = 98  group by rcity, rdate, rno having count(*) >= 2 ) 
+                    and rank <= """
+            + str(i_rank)
+            + """
+                    and jockey = ( select jockey from exp011 where rcity = '"""
+            + i_rcity
+            + """' and rdate = '"""
+            + i_rdate
+            + """' and rno =  """
+            + str(i_rno)
+            + """ and rank = """
+            + str(i_rank)
+            + """) 
                 ; """
         )
 
@@ -5382,7 +5472,8 @@ def get_weeks_status(rcity, rdate):
             """ select a.rcity, a.rdate, a.rno, rday, distance, grade, dividing, horse, jockey, trainer, host, h_weight, handycap,
                     a.gate, a.rank, a.r_rank, a.corners, a.r_s1f, a.r_g3f, a.r_g1f, 
                     a.s1f_rank, a.g3f_rank, a.g2f_rank, a.g1f_rank, 
-                    a.cs1f,  a.cg3f, a.cg1f, i_cycle, r_pop, alloc1r, alloc3r
+                    a.cs1f,  a.cg3f, a.cg1f, i_cycle, r_pop, alloc1r, alloc3r, complex, r_record, i_complex - ir_record, 
+                    jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd, jockey_old, reason
                 from exp011 a, exp010 b
                 where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno 
                 and a.rcity = '"""
