@@ -92,6 +92,11 @@ urlpatterns = [
         name="trend_winning_rate",
     ),
     path(
+        "cycle_winning_rate/<str:rcity>/<str:rdate>/<int:rno>/<str:awardee>/<str:i_filter>",
+        views.cycleWinningRate,
+        name="cycle_winning_rate",
+    ),
+    path(
         "weeks_status/<str:rcity>/<str:rdate>", views.weeksStatus, name="weeks_status"
     ),
     path(

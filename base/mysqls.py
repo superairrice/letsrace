@@ -2147,7 +2147,7 @@ def get_loadin(i_rcity, i_rdate, i_rno):
         )
 
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        results = cursor.fetchall()
+        loadin = cursor.fetchall()
 
         connection.commit()
         connection.close()
@@ -2156,7 +2156,31 @@ def get_loadin(i_rcity, i_rdate, i_rno):
         connection.rollback()
         print("Failed selecting in 기승가능중량")
 
-    return results
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+            select jockey, cast(load_in as decimal) 
+            from jockey_w 
+            where wdate = ( select max(wdate) from jockey_w where wdate < '"""
+            + i_rdate
+            + """' ) 
+
+            ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        results = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in 마방 출주주기에 따른 연승율")
+
+    return loadin
 
 
 def get_status_training(i_rdate):
@@ -4001,6 +4025,123 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
     return pdf1, trend_title
 
 
+# 마방별 경주마 출주주기에 따른 연승율
+def get_cycle_winning_rate(i_rcity, i_rdate, i_rno):
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+            select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, b.trainer, title, r3per, CONCAT(r1cnt, '`', r2cnt, '`', r3cnt) r3total, round( ifnull(b.i_cycle,0)/7, 0) weeks
+            from
+            (
+                SELECT trainer, 
+                case
+					when ifnull(i_cycle, 0) = 0 then '0.신마'
+					when round( i_cycle/7, 0)  >=  1 and round( i_cycle/7, 0)  <= 2 then '1.2주'
+					when round( i_cycle/7, 0)  =  3 then '2.3주'
+					when round( i_cycle/7, 0)  =  4 then '3.4주'
+					when round( i_cycle/7, 0)  =  5 then '4.5주'
+					when round( i_cycle/7, 0)  =  6 then '5.6주'
+					when round( i_cycle/7, 0)  =  7 then '6.7주'
+					when round( i_cycle/7, 0)  =  8 then '7.8주'
+					when round( i_cycle/7, 0)  =  9 then '8.9주'
+					when round( i_cycle/7, 0)  =  10 then '9.10주'
+					when round( i_cycle/7, 0)  >=  11 and round( i_cycle/7, 0)  <= 56 then 'A.1년'
+					when round( i_cycle/7, 0)  >=  57 then 'B.휴양'
+				end title,
+                count(*) cnt, sum(if( rank = 1, 1, 0 )) r1cnt, sum(if( rank = 2, 1, 0 )) r2cnt, sum(if( rank = 3, 1, 0 )) r3cnt, round( sum(if( rank <= 3, 1, 0 ))/ count(*)*100, 1) r3per
+				FROM rec011 a
+				where rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 999 DAY), '%Y%m%d') and '"""
+            + i_rdate
+            + """'
+				and judge is null
+				and p_rank is not null -- 경주 취소마 or 주행중지마 제외 
+				-- and p_rank <= 20
+				and trainer is not null
+				-- and round( i_cycle/7, 0)  = 2 
+				group by trainer,
+                case
+					when ifnull(i_cycle, 0) = 0 then '0.신마'
+					when round( i_cycle/7, 0)  >=  1 and round( i_cycle/7, 0)  <= 2 then '1.2주'
+					when round( i_cycle/7, 0)  =  3 then '2.3주'
+					when round( i_cycle/7, 0)  =  4 then '3.4주'
+					when round( i_cycle/7, 0)  =  5 then '4.5주'
+					when round( i_cycle/7, 0)  =  6 then '5.6주'
+					when round( i_cycle/7, 0)  =  7 then '6.7주'
+					when round( i_cycle/7, 0)  =  8 then '7.8주'
+					when round( i_cycle/7, 0)  =  9 then '8.9주'
+					when round( i_cycle/7, 0)  =  10 then '9.10주'
+					when round( i_cycle/7, 0)  >=  11 and round( i_cycle/7, 0)  <= 52 then 'A.1년'
+					when round( i_cycle/7, 0)  >=  53 then 'B.휴양'
+					end
+			) a right outer join  expect b  on a.trainer = b.trainer 
+            where b.rdate = '"""
+            + i_rdate
+            + """' and b.rcity = '"""
+            + i_rcity
+            + """' and b.rno = """
+            + str(i_rno)
+            + """
+            order by b.rank
+            ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in cycle winning rate")
+
+    # result = dict[result]
+
+    col = [
+        "예상",
+        "마번",
+        "실순",
+        "인기",
+        "horse",
+        "마방",
+        "title",
+        "r3per",
+        "r3total",
+        "weeks",
+    ]
+    data = list(result)
+
+    df = pd.DataFrame(data=data, columns=col)
+
+    pdf1 = pd.pivot_table(
+        df,  # 피벗할 데이터프레임
+        index=(
+            "예상",
+            "마번",
+            "실순",
+            "인기",
+            "horse",
+            "마방",
+            "weeks",
+        ),  # 행 위치에 들어갈 열
+        columns="title",  # 열 위치에 들어갈 열
+        values=("r3per", "r3total"),
+        aggfunc=("max"),
+        fill_value=0,
+    )  # 데이터로 사용할 열
+
+    # pdf1.columns = ['/'.join(col) for col in pdf1.columns]
+    pdf1.columns = ["".join(col)[7:] for col in pdf1.columns]
+
+    pdf1 = pdf1.reset_index()
+
+    return pdf1
+
+
 # 기수 or 조교사 최근 99일 경주결과
 def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee, i_filter):
     try:
@@ -4211,6 +4352,7 @@ def get_axis(i_rcity, i_rdate, i_rno):
     # print(result)
 
     return result
+
 
 # thethe9 rank 기준 축마 가능성 Query
 def get_axis_rank(i_rcity, i_rdate, i_rno, i_rank):

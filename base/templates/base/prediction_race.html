@@ -277,7 +277,12 @@
               {% if alloc.r2alloc %} {# 경주결과가 입력되었으면 #}
               <th rowspan="1"><span class="visible-big" style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">실순</span></th>
               {% endif %}
-              <th><span class="visible-big">Info.</span></th>
+              <th>
+                <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '99' %}"
+                  onclick="window.open(this.href, 'w_cycle_winning_rate', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">
+                  <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">Info.
+                    <span class="tooltip-text">출주주기별 연승률 🔑</span>
+                </a>
               <th rowspan="1"><span class="visible-big">체중</span></th>
 
               <th>
@@ -428,6 +433,7 @@
                     {% else %}
                       {% if r.i_cycle <= 16 %}
                       <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{r.i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">주</sup></span>
+                      
                       {% elif r.i_cycle >= 68 %}
                       <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r2); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{r.i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">주</sup></span>
                       {% else %}
@@ -1298,16 +1304,21 @@
                                 <span style="font-size: 1.1rem; color:var(--color-r4)">{{hr.grade|slice:"0:4"}}</span>
                                 {%else%}
 
-                                  {% if hr.grade|slice:"0:2" == r_condition.grade|slice:"0:2" %}
-                                  <span style="font-size: 1.1rem; color:tomato;">{{hr.grade|slice:"0:2"}}</span>
+                                  {% if hr.grade|slice:"1:2" == 'O' %}
+                                    <span style="font-size: 0.9rem; color:var(--color-light); background-color: var(--color-bg); border-radius: 7px; padding: 1px 3px;">{{hr.grade|slice:"0:2"}}</span>
+                                    <span style="font-size: 1.1rem;">{{hr.dividing|slice:"0:2"}}</span>
                                   {% else %}
-                                  <span style="font-size: 1.1rem;">{{hr.grade|slice:"0:2"}}</span>
-                                  {% endif %}
-                                  
-                                  {% if hr.dividing|slice:"0:2" == r_condition.dividing|slice:"0:2"%}
-                                  <span style="font-size: 1.1rem; color:tomato;">{{hr.dividing|slice:"0:2"}}</span>
-                                  {% else %}
-                                  <span style="font-size: 1.1rem;">{{hr.dividing|slice:"0:2"}}</span>
+                                    {% if hr.grade|slice:"0:2" == r_condition.grade|slice:"0:2" %}
+                                    <span style="font-size: 1.1rem; color:tomato;">{{hr.grade|slice:"0:2"}}</span>
+                                    {% else %}
+                                    <span style="font-size: 1.1rem;">{{hr.grade|slice:"0:2"}}</span>
+                                    {% endif %}
+                                    
+                                    {% if hr.dividing|slice:"0:2" == r_condition.dividing|slice:"0:2"%}
+                                    <span style="font-size: 1.1rem; color:tomato;">{{hr.dividing|slice:"0:2"}}</span>
+                                    {% else %}
+                                    <span style="font-size: 1.1rem;">{{hr.dividing|slice:"0:2"}}</span>
+                                    {% endif %}
                                   {% endif %}
 
                                 {%endif%}
@@ -1850,7 +1861,14 @@
               {% if alloc.r2alloc %} {# 경주결과가 입력되었으면 #}
               <th rowspan="1"><span class="visible-big" style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">실순</span></th>
               {% endif %}
-              <th rowspan="1"><span class="visible-big" style="font-size:1.2rem;">Info.&nbsp;&nbsp;인기도</span></th>
+              <th rowspan="1">
+                <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '99' %}"
+                  onclick="window.open(this.href, 'w_cycle_winning_rate', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">
+                  <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">Info.&nbsp;&nbsp;인기도
+                    <span class="tooltip-text">출주주기별 연승률 🔑</span>
+                </a>
+              </th>
+                
               <th>
                 <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '99' %}"
                   onclick="window.open(this.href, 'w_trend_trainer', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">
@@ -2665,7 +2683,6 @@
                             </div>
                           
                             {# 경주정보 #}
-                            {# 경주정보 #}
                             <div style="text-align: right; font-style: italic;">
 
                               {% if i_cycle <= 16 %}
@@ -2681,16 +2698,21 @@
                                 <span style="font-size: 1.1rem; color:var(--color-r4)">{{grade|slice:"0:4"}}</span>
                                 {%else%}
 
-                                  {% if grade|slice:"0:2" == r_condition.grade|slice:"0:2" %}
-                                  <span style="font-size: 1.1rem; color:tomato;">{{grade|slice:"0:2"}}</span>
+                                  {% if grade|slice:"1:2" == 'O' %}
+                                    <span style="font-size: 0.9rem; color:var(--color-light); background-color: var(--color-bg); border-radius: 7px; padding: 1px 3px;">{{grade|slice:"0:2"}}</span>
+                                    <span style="font-size: 1.1rem;">{{dividing|slice:"0:2"}}</span>
                                   {% else %}
-                                  <span style="font-size: 1.1rem;">{{grade|slice:"0:2"}}</span>
-                                  {% endif %}
-                                  
-                                  {% if dividing|slice:"0:2" == r_condition.dividing|slice:"0:2"%}
-                                  <span style="font-size: 1.1rem; color:tomato;">{{dividing|slice:"0:2"}}</span>
-                                  {% else %}
-                                  <span style="font-size: 1.1rem;">{{dividing|slice:"0:2"}}</span>
+                                    {% if grade|slice:"0:2" == r_condition.grade|slice:"0:2" %}
+                                    <span style="font-size: 1.1rem; color:tomato;">{{grade|slice:"0:2"}}</span>
+                                    {% else %}
+                                    <span style="font-size: 1.1rem;">{{grade|slice:"0:2"}}</span>
+                                    {% endif %}
+                                    
+                                    {% if dividing|slice:"0:2" == r_condition.dividing|slice:"0:2"%}
+                                    <span style="font-size: 1.1rem; color:tomato;">{{dividing|slice:"0:2"}}</span>
+                                    {% else %}
+                                    <span style="font-size: 1.1rem;">{{dividing|slice:"0:2"}}</span>
+                                    {% endif %}
                                   {% endif %}
 
                                 {%endif%}
@@ -2701,6 +2723,7 @@
                               {% else %}
                               <span style="font-size: 1.0rem; font-family: Arial; color:var(--color-r4); border-radius: 5px; background-color:var(--color-light); padding:2px 3px;">{{rcity|slice:"0:1"}}&nbsp;{{rno}}ᴿ</span>
                               {% endif %}
+
                             </div>
                           </a>
                         </td>
@@ -3352,7 +3375,13 @@
               {% if alloc.r2alloc %} {# 경주결과가 입력되었으면 #}
               <th rowspan="1"><span class="visible-big" style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">실순</span></th>
               {% endif %}
-              <th rowspan="1"><span class="visible-big" style="font-size:1.2rem;">Info.&nbsp;&nbsp;인기도</span></th>
+              <th rowspan="1">
+                <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '99' %}"
+                  onclick="window.open(this.href, 'w_cycle_winning_rate', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">
+                  <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">Info.&nbsp;&nbsp;인기도
+                    <span class="tooltip-text">출주주기별 연승률 🔑</span>
+                </a>
+              </th>
               <th>
                 <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '99' %}"
                   onclick="window.open(this.href, 'w_trend_trainer', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">
@@ -3629,26 +3658,30 @@
                 <div align="left" style="font-family: Arial; font-size:1.15rem; color:var(--color-light-gray);">
                   {% if treat1 %}
                   {% if '운동기인성' in treat1 %} 
-                  <span style="color:tomato; font-family: Arial;">{{treat1|slice:"10:26"}}</span>
+                  <span style="color:tomato; font-family: Arial;">{{treat1|slice:"10:24"}}</span>
                   {% elif '구절염' in treat1 %} 
-                  <span style="color:var(--color-r3); font-family: Arial;">{{treat1|slice:"10:26"}}</span>
+                  <span style="color:var(--color-r3); font-family: Arial;">{{treat1|slice:"10:24"}}</span>
                   {% elif '관절염' in treat1 %} 
-                  <span style="color:var(--color-r4); font-family: Arial;">{{treat1|slice:"10:26"}}</span>
+                  <span style="color:var(--color-r4); font-family: Arial;">{{treat1|slice:"10:24"}}</span>
+                  {% elif '인대' in treat1 %} 
+                  <span style="color:var(--color-r5); font-family: Arial;">{{treat1|slice:"10:24"}}</span>
                   {%else%}
-                  <span style="font-family: Arial;">{{treat1|slice:"10:26"}}</span>
+                  <span style="font-family: Arial;">{{treat1|slice:"10:24"}}</span>
                   {%endif%}
                   {%endif%}
                 </div>
                 <div align="left" style="font-family: Arial; font-size:1.15rem; color:var(--color-light-gray);">
                   {% if treat2 %}
                   {% if '운동기인성' in treat2 %}
-                  <span style="color:tomato; font-family: Arial;">{{treat2|slice:"10:26"}}</span>
+                  <span style="color:tomato; font-family: Arial;">{{treat2|slice:"10:24"}}</span>
                   {% elif '구절염' in treat2 %}
-                  <span style="color:var(--color-r3); font-family: Arial;">{{treat2|slice:"10:26"}}</span>
+                  <span style="color:var(--color-r3); font-family: Arial;">{{treat2|slice:"10:24"}}</span>
                   {% elif '관절염' in treat2 %}
-                  <span style="color:var(--color-r4); font-family: Arial;">{{treat2|slice:"10:26"}}</span>
+                  <span style="color:var(--color-r4); font-family: Arial;">{{treat2|slice:"10:24"}}</span>
+                  {% elif '인대' in treat2 %}
+                  <span style="color:var(--color-r5); font-family: Arial;">{{treat2|slice:"10:24"}}</span>
                   {%else%}
-                  <span style="font-family: Arial;">{{treat2|slice:"10:26"}}</span>
+                  <span style="font-family: Arial;">{{treat2|slice:"10:24"}}</span>
                   {%endif%}
                   {%endif%}
                 </div>

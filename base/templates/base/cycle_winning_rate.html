@@ -17,7 +17,7 @@
 
   <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
 
-  <title>{% if awardee == 'jockey' %}기수{% else %}조교사{% endif %}&nbsp; 연승율 현황 - '{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}})&nbsp;{{r_condition.rno}}R</title>
+  <title>{% if awardee == 'jockey' %}기수{% else %}마방{% endif %}&nbsp;출주주기별&nbsp;연승율 현황 - '{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}})&nbsp;{{r_condition.rno}}R</title>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-BFZZL101LZ"></script>
@@ -86,14 +86,14 @@
           </a>&nbsp;
 
           {% if awardee == 'jockey' %}
-          <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:-1 'jockey' '99' %}">
+          <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:-1 'jockey' '99' %}">
             <span class="tooltip">◀︎
               <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
                 이전 경주
               </span>
             </span>
           </a>
-          <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:1 'jockey' '99' %}">
+          <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:1 'jockey' '99' %}">
             <span class="tooltip">▶︎
               <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
                 다음 경주
@@ -101,14 +101,14 @@
             </span>
           </a>
           {% else %}
-          <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:-1 'trainer' '99' %}">
+          <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:-1 'trainer' '99' %}">
             <span class="tooltip">◀︎
               <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
                 이전 경주
               </span>
             </span>
           </a>
-          <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:1 'trainer' '99' %}">
+          <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:1 'trainer' '99' %}">
             <span class="tooltip">▶︎
               <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
                 다음 경주
@@ -251,31 +251,31 @@
               {% else %}
               <th rowspan="2" width="4%"><span class="visible-big">&nbsp;<br>마번<br>&nbsp;</span></th>
               {% endif %}
-              <th colspan="1"  width="12%">
+              <th colspan="1"  width="10%">
                 <a href="{% url 'status_stable' r_condition.rcity r_condition.rdate r_condition.rno %}"
                   onclick="window.open(this.href, 'w_status_stable', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">
                   <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">🐴&nbsp;Horse
                     <span class="tooltip-text">마방 경주마 보유현황 🔑</span>
                 </a>
               </th>
-              <th rowspan="1" width="9%"><span class="visible-big">이름(나이)</span></th>
+              <th rowspan="1" width="6%"><span class="visible-big">Name</span></th>
               <th colspan="12">
                 <span class="visible-big">
                   🏇&nbsp;&nbsp;최근 99일 경주성적 필터링: &nbsp;
                   {% if awardee == 'jockey' %}
-                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '1' %}">1위</a>&nbsp;
-                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '2' %}">2위</a>&nbsp;
-                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '3' %}">3위</a>&nbsp;
-                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '4' %}">4위</a>&nbsp;
-                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '5' %}">5위</a>&nbsp;&nbsp;&nbsp;&nbsp;
-                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '99' %}">ALL</a>
+                  <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '1' %}">1위</a>&nbsp;
+                  <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '2' %}">2위</a>&nbsp;
+                  <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '3' %}">3위</a>&nbsp;
+                  <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '4' %}">4위</a>&nbsp;
+                  <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '5' %}">5위</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                  <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '99' %}">ALL</a>
                   {% else %}
-                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '1' %}">1위</a>&nbsp;
-                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '2' %}">2위</a>&nbsp;
-                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '3' %}">3위</a>&nbsp;
-                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '4' %}">4위</a>&nbsp;
-                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '5' %}">5위</a>&nbsp;&nbsp;&nbsp;&nbsp;
-                  <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '99' %}">ALL</a>
+                  <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '1' %}">1위</a>&nbsp;
+                  <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '2' %}">2위</a>&nbsp;
+                  <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '3' %}">3위</a>&nbsp;
+                  <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '4' %}">4위</a>&nbsp;
+                  <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '5' %}">5위</a>&nbsp;&nbsp;&nbsp;&nbsp;
+                  <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '99' %}">ALL</a>
                   {% endif %}
 
                 </span>
@@ -289,27 +289,27 @@
               <th rowspan="1"><span class="visible-big" style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">실순</span></th>
               {% endif %}
               <th rowspan="1">
-                <span class="visible-big" style="font-size:1.2rem;">인기도(데뷔)</span>
+                <span class="visible-big" style="font-size:1.2rem;">인기도</span>
               </th>
-              <th rowspan="1"><span class="visible-big" style="font-size:1.2rem;">총1위_금주</span></th>
+              <th rowspan="1"><span class="visible-big" style="font-size:1.2rem;">주기</span></th>
 
-              <th rowspan="1" width="5.5%" style="border-radius: 7px; background-color: var(--color-bg); color:var(--color-main);"><span class="visible-big">{{trend_title.11.0}}</span></th>
-              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.10.0}}</span></th>
-              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.9.0}}</span></th>
-              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.8.0}}</span></th>
-              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.7.0}}</span></th>
-              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.6.0}}</span></th>
-              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.5.0}}</span></th>
-              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.4.0}}</span></th>
-              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.3.0}}</span></th>
-              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.2.0}}</span></th>
-              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.1.0}}</span></th>
-              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.0.0}}</span></th>
+              <th rowspan="1" width="6%" style="border-radius: 7px; background-color: var(--color-bg); color:var(--color-main);"><span class="visible-big">신마급</span></th>
+              <th rowspan="1" width="6%"><span class="visible-big">2주</span></th>
+              <th rowspan="1" width="6%"><span class="visible-big">3주</span></th>
+              <th rowspan="1" width="6%"><span class="visible-big">4주</span></th>
+              <th rowspan="1" width="6%"><span class="visible-big">5주</span></th>
+              <th rowspan="1" width="6%"><span class="visible-big">6주</span></th>
+              <th rowspan="1" width="6%"><span class="visible-big">7주</span></th>
+              <th rowspan="1" width="6%"><span class="visible-big">8주</span></th>
+              <th rowspan="1" width="6%"><span class="visible-big">9주</span></th>
+              <th rowspan="1" width="6%"><span class="visible-big">10주</span></th>
+              <th rowspan="1" width="6%"><span class="visible-big">~1년</span></th>
+              <th rowspan="1" width="6%"><span class="visible-big">~휴양</span></th>
             </tr>
       
           </thead>
           <tbody>
-            {% for rank, gate, r_rank, r_pop, horse, t_awardee, debut, k01, k02, k03, k04, k05, k06, k07, k08, k09, k10, k11, k12, w01, w02, w03, w04, w05, w06, w07, w08, w09, w10, w11, w12 in trend_j %}
+            {% for rank, gate, r_rank, r_pop, horse, t_awardee, weeks, k01, k02, k03, k04, k05, k06, k07, k08, k09, k10, k11, k12, w01, w02, w03, w04, w05, w06, w07, w08, w09, w10, w11, w12 in trend_j %}
       
             <tr class="view">
       
@@ -375,35 +375,33 @@
                 <div align="left" style="font-family: Arial; font-size:1.3rem;">
                   {% if rank == 1 %}
                   <span style="font-style: italic; color:var(--color-r1); font-weight: 700;">
-                    {{horse}}
+                    {{horse|slice:"0:6"}}
                   </span>
                   {% elif rank == 2 %}
                   <span style="font-style: italic; color:var(--color-r2); font-weight: 700;">
-                    {{horse}}
+                    {{horse|slice:"0:6"}}
                   </span>
                   {% elif rank == 3 %}
                   <span style="font-style: italic; color:var(--color-r3); font-weight: 700;">
-                    {{horse}}
+                    {{horse|slice:"0:6"}}
                   </span>
                   {% elif rank == 4 %}
                   <span style="font-style: italic; color:var(--color-r4); font-weight: 700;">
-                    {{horse}}
+                    {{horse|slice:"0:6"}}
                   </span>
                   {% elif rank == 5 %}
                   <span style="font-style: italic; color:var(--color-r5); font-weight: 700;">
-                    {{horse}}
+                    {{horse|slice:"0:6"}}
                   </span>
                   {% else %}
                   <span style="font-style: normal;">
-                    {{horse}}
+                    {{horse|slice:"0:6"}}
                   </span>
                   {% endif %}
                 </div>
       
                 <div style="font-family: Arial; font-size:1.1rem; color:var(--color-r5); text-align: right;">
-      
-                  <progress value={{r_pop}} max="100" style="width: 3rem"></progress>
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-light-gray);font-size: 1.05rem;">({{debut|slice:"0:4"}})</span>
+                  <progress value={{r_pop}} max="99" style="width: 3rem"></progress>
                 </div>
               </td>
       
@@ -411,259 +409,356 @@
       
                 <div style="font-size: 1.25rem; text-align: left;">
                   <span style="color:var(--color-light_gray);">{{t_awardee|slice:"0:3"}}</span>
-                  <span style="font-size: 1.0rem; color:var(--color-gray);">({{debut|slice:"11:13"}})</span>
                 </div>
                 <div style="font-size: 1.05rem; text-align: right;">
-                  {% if debut|slice:"-5:" == '0_0_0' %}
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r5);">{{debut|slice:"14:"}}</span>
+                  {% if weeks == 2 %}
+                  <span style="font-family: Arial; color:var(--color-r1);">{{weeks}}주</span>
+                  {% elif weeks >= 10 %}
+                  <span style="font-family: Arial; color:var(--color-r2);">{{weeks}}주</span>
                   {% else %}
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r2);">{{debut|slice:"14:"}}</span>
+                  <span style="font-family: Arial; color:var(--color-gray);">{{weeks}}주</span>
                   {% endif %}
                   
                 </div>
       
               </td>
-              {# w12 #}
-              <td align="right" style="border-radius: 10px; border: 0.5px solid gray;">
+
+              {# w01 #}
+              <td align="right">
                 <div style="font-size: 1.25rem; text-align: right;">
-                  {% if w11 == w12 %}
-                  <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w12|div:10}}</div>
-                  {% elif w11 > w12 %}
-                  <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w12|div:10}}</div>
+                  {% if weeks <= 1 %}
+                  <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r3); border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{k01}}</span>
                   {% else %}
-                  <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w12|div:10}}</div>
-                  {% endif %}
-              
-                  {% if k12|slice:"-5:" == '0`0`0' %}
-                  {% if k12 == '0`0`0`0' %}
-                  <div style="color:var(--color-r1); font-family: Arial; font-size: 1.0rem;">xxxx</div>
-                  {% else %}
-                  <div style="color:var(--color-r5); font-family: Arial; font-size: 1.0rem;">{{k12}}</div>
-                  {% endif %}
-                  {% else %}
-                  <div style="font-family: Arial; font-size: 1.0rem;">{{k12}}</div>
+                    {% if k01 >= 0 and k01 < 10 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r1);">{{k01}}</span>
+                    {% elif k01 >= 10 and k01 < 20 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-gray);">{{k01}}</span>
+                    {% elif k01 >= 20 and k01 < 30 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-right-gray);">{{k01}}</span>
+                    {% elif k01 >= 30 and k01 < 40 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r4);">{{k01}}</span>
+                    {% else %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r5);">{{k01}}</span>
+                    {% endif %}
                   {% endif %}
                 </div>
               
-              </td>
-              {# w11 #}
-              <td align="right">
-                {% if w10 == w11 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w11|div:10}}</div>
-                {% elif w10 > w11 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w11|div:10}}</div>
-                {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w11|div:10}}</div>
-                {% endif %}
-              
-                {% if k11|slice:"-5:" == '0`0`0' %}
-                {% if k11 == '0`0`0`0' %}
-                <div style="color:var(--color-r1); font-family: Arial; font-size: 1.0rem;">xxxx</div>
-                {% else %}
-                <div style="color:var(--color-r5); font-family: Arial; font-size: 1.0rem;">{{k11}}</div>
-                {% endif %}
-                {% else %}
-                <div style="font-family: Arial; font-size: 1.0rem;">{{k11}}</div>
-                {% endif %}
-              </td>
-              {# w10 #}
-              <td align="right">
-                {% if w09 == w10 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w10|div:10}}</div>
-                {% elif w09 > w10 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w10|div:10}}</div>
-                {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w10|div:10}}</div>
-                {% endif %}
-              
-                {% if k10|slice:"-5:" == '0`0`0' %}
-                {% if k10 == '0`0`0`0' %}
-                <div style="color:var(--color-r1); font-family: Arial; font-size: 1.0rem;">xxxx</div>
-                {% else %}
-                <div style="color:var(--color-r5); font-family: Arial; font-size: 1.0rem;">{{k10}}</div>
-                {% endif %}
-                {% else %}
-                <div style="font-family: Arial; font-size: 1.0rem;">{{k10}}</div>
-                {% endif %}
-              </td>
-              {# w09 #}
-              <td align="right">
-                {% if w08 == w09 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w09|div:10}}</div>
-                {% elif w08 > w09 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w09|div:10}}</div>
-                {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w09|div:10}}</div>
-                {% endif %}
-              
-                {% if k09|slice:"-5:" == '0`0`0' %}
-                {% if k09 == '0`0`0`0' %}
-                <div style="color:var(--color-r1); font-family: Arial; font-size: 1.0rem;">xxxx</div>
-                {% else %}
-                <div style="color:var(--color-r5); font-family: Arial; font-size: 1.0rem;">{{k09}}</div>
-                {% endif %}
-                {% else %}
-                <div style="font-family: Arial; font-size: 1.0rem;">{{k09}}</div>
-                {% endif %}
-              </td>
-              {# w08 #}
-              <td align="right">
-                {% if w07 == w08 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w08|div:10}}</div>
-                {% elif w07 > w08 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w08|div:10}}</div>
-                {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w08|div:10}}</div>
-                {% endif %}
-              
-                {% if k08|slice:"-5:" == '0`0`0' %}
-                {% if k08 == '0`0`0`0' %}
-                <div style="color:var(--color-r1); font-family: Arial; font-size: 1.0rem;">xxxx</div>
-                {% else %}
-                <div style="color:var(--color-r5); font-family: Arial; font-size: 1.0rem;">{{k08}}</div>
-                {% endif %}
-                {% else %}
-                <div style="font-family: Arial; font-size: 1.0rem;">{{k08}}</div>
-                {% endif %}
-              </td>
-              {# w07 #}
-              <td align="right">
-                {% if w06 == w07 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w07|div:10}}</div>
-                {% elif w01|add:w02|add:w03|add:w04|add:w05|add:w06|add:w07|add:w08|add:w09|add:w10|add:w11|add:w12|div:12 > w07 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w07|div:10}}</div>
-                {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w07|div:10}}</div>
-                {% endif %}
-              
-                {% if k07|slice:"-5:" == '0`0`0' %}
-                {% if k07 == '0`0`0`0' %}
-                <div style="color:var(--color-r1); font-family: Arial; font-size: 1.0rem;">xxxx</div>
-                {% else %}
-                <div style="color:var(--color-r5); font-family: Arial; font-size: 1.0rem;">{{k07}}</div>
-                {% endif %}
-                {% else %}
-                <div style="font-family: Arial; font-size: 1.0rem;">{{k07}}</div>
-                {% endif %}
-              </td>
-              {# w06 #}
-              <td align="right">
-                {% if w05 == w06 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w06|div:10}}</div>
-                {% elif w05 > w06 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w06|div:10}}</div>
-                {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w06|div:10}}</div>
-                {% endif %}
-              
-                {% if k06|slice:"-5:" == '0`0`0' %}
-                {% if k06 == '0`0`0`0' %}
-                <div style="color:var(--color-r1); font-family: Arial; font-size: 1.0rem;">xxxx</div>
-                {% else %}
-                <div style="color:var(--color-r5); font-family: Arial; font-size: 1.0rem;">{{k06}}</div>
-                {% endif %}
-                {% else %}
-                <div style="font-family: Arial; font-size: 1.0rem;">{{k06}}</div>
-                {% endif %}
-              </td>
-              {# w05 #}
-              <td align="right">
-                {% if w04 == w05 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w05|div:10}}</div>
-                {% elif w04 > w05 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w05|div:10}}</div>
-                {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w05|div:10}}</div>
-                {% endif %}
-              
-                {% if k05|slice:"-5:" == '0`0`0' %}
-                {% if k05 == '0`0`0`0' %}
-                <div style="color:var(--color-r1); font-family: Arial; font-size: 1.0rem;">xxxx</div>
-                {% else %}
-                <div style="color:var(--color-r5); font-family: Arial; font-size: 1.0rem;">{{k05}}</div>
-                {% endif %}
-                {% else %}
-                <div style="font-family: Arial; font-size: 1.0rem;">{{k05}}</div>
-                {% endif %}
-              </td>
-              {# w04 #}
-              <td align="right">
-                {% if w03 == w04 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w04|div:10}}</div>
-                {% elif w03 > w04 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w04|div:10}}</div>
-                {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w04|div:10}}</div>
-                {% endif %}
-              
-                {% if k04|slice:"-5:" == '0`0`0' %}
-                {% if k04 == '0`0`0`0' %}
-                <div style="color:var(--color-r1); font-family: Arial; font-size: 1.0rem;">xxxx</div>
-                {% else %}
-                <div style="color:var(--color-r5); font-family: Arial; font-size: 1.0rem;">{{k04}}</div>
-                {% endif %}
-                {% else %}
-                <div style="font-family: Arial; font-size: 1.0rem;">{{k04}}</div>
-                {% endif %}
-              </td>
-              {# w03 #}
-              <td align="right">
-                {% if w02 == w03 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w03|div:10}}</div>
-                {% elif w02 > w03 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w03|div:10}}</div>
-                {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w03|div:10}}</div>
-                {% endif %}
-              
-                {% if k03|slice:"-5:" == '0`0`0' %}
-                {% if k03 == '0`0`0`0' %}
-                <div style="color:var(--color-r1); font-family: Arial; font-size: 1.0rem;">xxxx</div>
-                {% else %}
-                <div style="color:var(--color-r5); font-family: Arial; font-size: 1.0rem;">{{k03}}</div>
-                {% endif %}
-                {% else %}
-                <div style="font-family: Arial; font-size: 1.0rem;">{{k03}}</div>
-                {% endif %}
+                <div style="font-size: 0.9rem; text-align: right;">
+                  {% if weeks <= 1 %}
+                  <span style="color:var(--color-r3); font-family: Arial; font-size: 0.9rem; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{w01}}</span>
+                  {% else %}
+                  <span style="color:var(--color-gray); font-family: Arial; font-size: 0.9rem;">{{w01}}</span>
+                  {% endif %}
+                </div>
               </td>
               {# w02 #}
               <td align="right">
-                {% if w01 == w02 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w02|div:10}}</div>
-                {% elif w01 > w02 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w02|div:10}}</div>
-                {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w02|div:10}}</div>
-                {% endif %}
-                {% if k02|slice:"-5:" == '0`0`0' %}
-                {% if k02 == '0`0`0`0' %}
-                  <div style="color:var(--color-r1); font-family: Arial; font-size: 1.0rem;">xxxx</div>
+                <div style="font-size: 1.25rem; text-align: right;">
+                  {% if weeks == 2 %}
+                  <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r3); border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{k02}}</span>
                   {% else %}
-                  <div style="color:var(--color-r5); font-family: Arial; font-size: 1.0rem;">{{k02}}</div>
+                    {% if k02 >= 0 and k02 < 10 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r1);">{{k02}}</span>
+                    {% elif k02 >= 10 and k02 < 20 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-gray);">{{k02}}</span>
+                    {% elif k02 >= 20 and k02 < 30 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-right-gray);">{{k02}}</span>
+                    {% elif k02 >= 30 and k02 < 40 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r4);">{{k02}}</span>
+                    {% else %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r5);">{{k02}}</span>
+                    {% endif %}
                   {% endif %}
-                {% else %}
-                <div style="font-family: Arial; font-size: 1.0rem;">{{k02}}</div>
-                {% endif %}
-              </td>
-              {# w01 #}
-              <td align="right">
-                {% if w12 == w01 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w01|div:10}}</div>
-                {% elif w12 > w01 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w01|div:10}}</div>
-                {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w01|div:10}}</div>
-                {% endif %}
+                </div>
               
-                {% if k01|slice:"-5:" == '0`0`0' %}
-                {% if k01 == '0`0`0`0' %}
-                <div style="color:var(--color-r1); font-family: Arial; font-size: 1.0rem;">xxxx</div>
-                {% else %}
-                <div style="color:var(--color-r5); font-family: Arial; font-size: 1.0rem;">{{k01}}</div>
-                {% endif %}
-                {% else %}
-                <div style="font-family: Arial; font-size: 1.0rem;">{{k01}}</div>
-                {% endif %}
+                <div style="font-size: 0.9rem; text-align: right;">
+                  {% if weeks == 2 %}
+                  <span style="color:var(--color-r3); font-family: Arial; font-size: 0.9rem; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{w02}}</span>
+                  {% else %}
+                  <span style="color:var(--color-gray); font-family: Arial; font-size: 0.9rem;">{{w02}}</span>
+                  {% endif %}
+                </div>
+                
+              </td>
+              {# w03 #}
+              <td align="right">
+                <div style="font-size: 1.25rem; text-align: right;">
+                  {% if weeks == 3 %}
+                  <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r3); border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{k03}}</span>
+                  {% else %}
+                    {% if k03 >= 0 and k03 < 10 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r1);">{{k03}}</span>
+                    {% elif k03 >= 10 and k03 < 20 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-gray);">{{k03}}</span>
+                    {% elif k03 >= 20 and k03 < 30 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-right-gray);">{{k03}}</span>
+                    {% elif k03 >= 30 and k03 < 40 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r4);">{{k03}}</span>
+                    {% else %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r5);">{{k03}}</span>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              
+                <div style="font-size: 0.9rem; text-align: right;">
+                  {% if weeks == 3 %}
+                  <span style="color:var(--color-r3); font-family: Arial; font-size: 0.9rem; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{w03}}</span>
+                  {% else %}
+                  <span style="color:var(--color-gray); font-family: Arial; font-size: 0.9rem;">{{w03}}</span>
+                  {% endif %}
+                </div>
+              </td>
+              {# w04 #}
+              <td align="right">
+                <div style="font-size: 1.25rem; text-align: right;">
+                  {% if weeks == 4 %}
+                  <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r3); border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{k04}}</span>
+                  {% else %}
+                    {% if k04 >= 0 and k04 < 10 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r1);">{{k04}}</span>
+                    {% elif k04 >= 10 and k04 < 20 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-gray);">{{k04}}</span>
+                    {% elif k04 >= 20 and k04 < 30 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-right-gray);">{{k04}}</span>
+                    {% elif k04 >= 30 and k04 < 40 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r4);">{{k04}}</span>
+                    {% else %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r5);">{{k04}}</span>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              
+                <div style="font-size: 0.9rem; text-align: right;">
+                  {% if weeks == 4 %}
+                  <span style="color:var(--color-r3); font-family: Arial; font-size: 0.9rem; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{w04}}</span>
+                  {% else %}
+                  <span style="color:var(--color-gray); font-family: Arial; font-size: 0.9rem;">{{w04}}</span>
+                  {% endif %}
+                </div>
+              </td>
+              {# w05 #}
+              <td align="right">
+                <div style="font-size: 1.25rem; text-align: right;">
+                  {% if weeks == 5 %}
+                  <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r3); border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{k05}}</span>
+                  {% else %}
+                    {% if k05 >= 0 and k05 < 10 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r1);">{{k05}}</span>
+                    {% elif k05 >= 10 and k05 < 20 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-gray);">{{k05}}</span>
+                    {% elif k05 >= 20 and k05 < 30 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-right-gray);">{{k05}}</span>
+                    {% elif k05 >= 30 and k05 < 40 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r4);">{{k05}}</span>
+                    {% else %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r5);">{{k05}}</span>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              
+                <div style="font-size: 0.9rem; text-align: right;">
+                  {% if weeks == 5 %}
+                  <span style="color:var(--color-r3); font-family: Arial; font-size: 0.9rem; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{w05}}</span>
+                  {% else %}
+                  <span style="color:var(--color-gray); font-family: Arial; font-size: 0.9rem;">{{w05}}</span>
+                  {% endif %}
+                </div>
+              </td>
+              {# w06 #}
+              <td align="right">
+                <div style="font-size: 1.25rem; text-align: right;">
+                  {% if weeks == 6 %}
+                  <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r3); border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{k06}}</span>
+                  {% else %}
+                    {% if k06 >= 0 and k06 < 10 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r1);">{{k06}}</span>
+                    {% elif k06 >= 10 and k06 < 20 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-gray);">{{k06}}</span>
+                    {% elif k06 >= 20 and k06 < 30 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-right-gray);">{{k06}}</span>
+                    {% elif k06 >= 30 and k06 < 40 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r4);">{{k06}}</span>
+                    {% else %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r5);">{{k06}}</span>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              
+                <div style="font-size: 0.9rem; text-align: right;">
+                  {% if weeks == 6 %}
+                  <span style="color:var(--color-r3); font-family: Arial; font-size: 0.9rem; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{w06}}</span>
+                  {% else %}
+                  <span style="color:var(--color-gray); font-family: Arial; font-size: 0.9rem;">{{w06}}</span>
+                  {% endif %}
+                </div>
+              </td>
+              {# w07 #}
+              <td align="right">
+                <div style="font-size: 1.25rem; text-align: right;">
+                  {% if weeks == 7 %}
+                  <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r3); border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{k07}}</span>
+                  {% else %}
+                    {% if k07 >= 0 and k07 < 10 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r1);">{{k07}}</span>
+                    {% elif k07 >= 10 and k07 < 20 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-gray);">{{k07}}</span>
+                    {% elif k07 >= 20 and k07 < 30 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-right-gray);">{{k07}}</span>
+                    {% elif k07 >= 30 and k07 < 40 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r4);">{{k07}}</span>
+                    {% else %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r5);">{{k07}}</span>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              
+                <div style="font-size: 0.9rem; text-align: right;">
+                  {% if weeks == 7 %}
+                  <span style="color:var(--color-r3); font-family: Arial; font-size: 0.9rem; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{w07}}</span>
+                  {% else %}
+                  <span style="color:var(--color-gray); font-family: Arial; font-size: 0.9rem;">{{w07}}</span>
+                  {% endif %}
+                </div>
+              </td>
+              {# w08 #}
+              <td align="right">
+                <div style="font-size: 1.25rem; text-align: right;">
+                  {% if weeks == 8 %}
+                  <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r3); border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{k08}}</span>
+                  {% else %}
+                    {% if k08 >= 0 and k08 < 10 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r1);">{{k08}}</span>
+                    {% elif k08 >= 10 and k08 < 20 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-gray);">{{k08}}</span>
+                    {% elif k08 >= 20 and k08 < 30 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-right-gray);">{{k08}}</span>
+                    {% elif k08 >= 30 and k08 < 40 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r4);">{{k08}}</span>
+                    {% else %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r5);">{{k08}}</span>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              
+                <div style="font-size: 0.9rem; text-align: right;">
+                  {% if weeks == 8 %}
+                  <span style="color:var(--color-r3); font-family: Arial; font-size: 0.9rem; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{w08}}</span>
+                  {% else %}
+                  <span style="color:var(--color-gray); font-family: Arial; font-size: 0.9rem;">{{w08}}</span>
+                  {% endif %}
+                </div>
+              </td>
+              {# w09 #}
+              <td align="right">
+                <div style="font-size: 1.25rem; text-align: right;">
+                  {% if weeks == 9 %}
+                  <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r3); border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{k09}}</span>
+                  {% else %}
+                    {% if k09 >= 0 and k09 < 10 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r1);">{{k09}}</span>
+                    {% elif k09 >= 10 and k09 < 20 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-gray);">{{k09}}</span>
+                    {% elif k09 >= 20 and k09 < 30 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-right-gray);">{{k09}}</span>
+                    {% elif k09 >= 30 and k09 < 40 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r4);">{{k09}}</span>
+                    {% else %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r5);">{{k09}}</span>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              
+                <div style="font-size: 0.9rem; text-align: right;">
+                  {% if weeks == 9 %}
+                  <span style="color:var(--color-r3); font-family: Arial; font-size: 0.9rem; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{w09}}</span>
+                  {% else %}
+                  <span style="color:var(--color-gray); font-family: Arial; font-size: 0.9rem;">{{w09}}</span>
+                  {% endif %}
+                </div>
+              </td>
+              {# w10 #}
+              <td align="right">
+                <div style="font-size: 1.25rem; text-align: right;">
+                  {% if weeks == 10 %}
+                  <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r3); border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{k10}}</span>
+                  {% else %}
+                    {% if k10 >= 0 and k10 < 10 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r1);">{{k10}}</span>
+                    {% elif k10 >= 10 and k10 < 20 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-gray);">{{k10}}</span>
+                    {% elif k10 >= 20 and k10 < 30 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-right-gray);">{{k10}}</span>
+                    {% elif k10 >= 30 and k10 < 40 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r4);">{{k10}}</span>
+                    {% else %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r5);">{{k10}}</span>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              
+                <div style="font-size: 0.9rem; text-align: right;">
+                  {% if weeks == 10 %}
+                  <span style="color:var(--color-r3); font-family: Arial; font-size: 0.9rem; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{w10}}</span>
+                  {% else %}
+                  <span style="color:var(--color-gray); font-family: Arial; font-size: 0.9rem;">{{w10}}</span>
+                  {% endif %}
+                </div>
+              </td>
+              {# w11 #}
+              <td align="right">
+                <div style="font-size: 1.25rem; text-align: right;">
+                  {% if weeks >= 11 and weeks <= 52 %}
+                  <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r3); border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{k11}}</span>
+                  {% else %}
+                    {% if k11 >= 0 and k11 < 10 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r1);">{{k11}}</span>
+                    {% elif k11 >= 10 and k11 < 20 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-gray);">{{k11}}</span>
+                    {% elif k11 >= 20 and k11 < 30 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-right-gray);">{{k11}}</span>
+                    {% elif k11 >= 30 and k11 < 40 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r4);">{{k11}}</span>
+                    {% else %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r5);">{{k11}}</span>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              
+                <div style="font-size: 0.9rem; text-align: right;">
+                  {% if weeks >= 11 and weeks <= 52 %}
+                  <span style="color:var(--color-r3); font-family: Arial; font-size: 0.9rem; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{w11}}</span>
+                  {% else %}
+                  <span style="color:var(--color-gray); font-family: Arial; font-size: 0.9rem;">{{w11}}</span>
+                  {% endif %}
+                </div>
+              </td>
+              {# w12 #}
+              <td align="right">
+                <div style="font-size: 1.25rem; text-align: right;">
+                  {% if weeks >= 53 %}
+                  <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r3); border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{k12}}</span>
+                  {% else %}
+                    {% if k12 >= 0 and k12 < 10 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r1);">{{k12}}</span>
+                    {% elif k12 >= 10 and k12 < 20 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-gray);">{{k12}}</span>
+                    {% elif k12 >= 20 and k12 < 30 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-right-gray);">{{k12}}</span>
+                    {% elif k12 >= 30 and k12 < 40 %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r4);">{{k12}}</span>
+                    {% else %}
+                    <span style="font-family: Arial; font-size: 1.25rem; color:var(--color-r5);">{{k12}}</span>
+                    {% endif %}
+                  {% endif %}
+                </div>
+              
+                <div style="font-size: 0.9rem; text-align: right;">
+                  {% if weeks >= 53 %}
+                  <span style="color:var(--color-r3); font-family: Arial; font-size: 0.9rem; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg);">{{w12}}</span>
+                  {% else %}
+                  <span style="color:var(--color-gray); font-family: Arial; font-size: 0.9rem;">{{w12}}</span>
+                  {% endif %}
+                </div>
               </td>
               
             </tr>

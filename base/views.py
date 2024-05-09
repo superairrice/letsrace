@@ -29,6 +29,7 @@ from base.mysqls import (
     get_award_race,
     get_axis,
     get_axis_rank,
+    get_cycle_winning_rate,
     get_expects,
     get_jockey_trend,
     get_judged,
@@ -1466,6 +1467,39 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
     }
 
     return render(request, "base/trend_winning_rate.html", context)
+
+# 출주주기별 마방 승률 - 최근 1년
+def cycleWinningRate(request, rcity, rdate, rno, awardee, i_filter):
+    if awardee == "jockey":
+        trend_data, trend_title = get_jockey_trend(rcity, rdate, rno)
+        solidarity = get_solidarity(
+            rcity, rdate, rno, "jockey", i_filter
+        )  # 기수, 조교사, 마주 연대현황 최근1년
+
+    else:
+        trend_data = get_cycle_winning_rate(rcity, rdate, rno)
+        solidarity = get_solidarity(
+            rcity, rdate, rno, "trainer", i_filter
+        )  # 기수, 조교사, 마주 연대현황 최근1년
+
+    # print(solidarity)
+    # print(trend_title)
+
+    trend_j = trend_data.values.tolist()
+    
+    trend_j_title = trend_data.columns.tolist()
+
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+
+    context = {
+        "trend_j": trend_j,
+        "trend_j_title": trend_j_title,
+        "r_condition": r_condition,
+        "awardee": awardee,
+        "solidarity": solidarity,
+    }
+
+    return render(request, "base/cycle_winning_rate.html", context)
 
 
 # 기수 or 조교사 or 마주 44일 경주결과
