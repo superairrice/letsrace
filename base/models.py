@@ -412,6 +412,15 @@ class RecordS(models.Model):
     alloc3r = models.DecimalField(
         max_digits=10, decimal_places=4, blank=True, null=True
     )
+    judge = models.CharField(
+        max_length=4, db_collation="euckr_korean_ci", blank=True, null=True
+    )
+    judge_reason = models.CharField(
+        max_length=30, db_collation="euckr_korean_ci", blank=True, null=True
+    )
+    audit_reason = models.CharField(
+        max_length=30, db_collation="euckr_korean_ci", blank=True, null=True
+    )
     p_rank = models.IntegerField(blank=True, null=True)
     p_record = models.CharField(
         max_length=6, db_collation="euckr_korean_ci", blank=True, null=True
