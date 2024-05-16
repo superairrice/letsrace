@@ -683,6 +683,36 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     axis2 = get_axis_rank(rcity, rdate, rno, 2)
     axis3 = get_axis_rank(rcity, rdate, rno, 3)
 
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+            select horse, r_etc, r_flag
+            from rec011 
+            where rcity =  '"""
+            + rcity
+            + """'
+            and rdate = '"""
+            + rdate
+            + """'
+            and rno =  """
+            + str(rno)
+            + """
+
+            ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        r_memo = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in 경주 메모")
+        
     name = get_client_ip(request)
 
     if name[0:6] != "15.177":
@@ -731,6 +761,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
         "axis1": axis1,
         "axis2": axis2,
         "axis3": axis3,
+        "r_memo": r_memo,
         # "trend_j": trend_j.to_html(
         #     index=False,
         #     header=True,
@@ -1415,7 +1446,6 @@ def statusStable(request, rcity, rdate, rno):
 
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
     # print(r_condition)
-    
 
     stable, stable_g, stable_h = get_status_stable(rcity, rdate, rno)
     stable_list = stable.values.tolist()
@@ -1468,6 +1498,7 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
 
     return render(request, "base/trend_winning_rate.html", context)
 
+
 # 출주주기별 마방 승률 - 최근 1년
 def cycleWinningRate(request, rcity, rdate, rno, awardee, i_filter):
     if awardee == "jockey":
@@ -1486,10 +1517,13 @@ def cycleWinningRate(request, rcity, rdate, rno, awardee, i_filter):
     # print(trend_title)
 
     trend_j = trend_data.values.tolist()
-    
+
     trend_j_title = trend_data.columns.tolist()
 
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+
+    trainer_double_check = get_trainer_double_check(rcity, rdate, rno)
+    # print(trainer_double_check)
 
     context = {
         "trend_j": trend_j,
@@ -1497,6 +1531,7 @@ def cycleWinningRate(request, rcity, rdate, rno, awardee, i_filter):
         "r_condition": r_condition,
         "awardee": awardee,
         "solidarity": solidarity,
+        "trainer_double_check": str(trainer_double_check),
     }
 
     return render(request, "base/cycle_winning_rate.html", context)
@@ -1524,7 +1559,7 @@ def getRaceAwardee(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host)
 # 주별 입상마 경주전개 현황
 def weeksStatus(request, rcity, rdate):
     status = get_weeks_status(rcity, rdate)
-    
+
     try:
         cursor = connection.cursor()
 
@@ -1547,7 +1582,7 @@ def weeksStatus(request, rcity, rdate):
     except:
         connection.rollback()
         print("Failed selecting in 기승가능중량")
-        
+
     # print(status)
 
     context = {
@@ -2179,13 +2214,12 @@ def writeSignificant(request, rdate, horse):
                     where rdate =  '"""
                 + rdate
                 + """'
-                    and horse =  '"""
+                    and horse like '%"""
                 + horse
-                + """'
+                + """%'
                     ; """
             )
 
-            # print(strSql)
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
             awards = cursor.fetchall()
 
@@ -2199,31 +2233,31 @@ def writeSignificant(request, rdate, horse):
             connection.rollback()
             print("Failed updating in rec011")
 
-    try:
-        cursor = connection.cursor()
-        strSql = (
-            """ update record_s set r_flag = '"""
-            + r_flag
-            + """'
-                    where rdate = '"""
-            + rdate
-            + """'
-                    and horse =  '"""
-            + horse
-            + """'
-                    ;"""
-        )
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        r_significant = cursor.fetchall()
+        try:
+            cursor = connection.cursor()
+            strSql = (
+                """ update record_s set r_flag = '"""
+                + r_flag
+                + """'
+                        where rdate = '"""
+                + rdate
+                + """'
+                        and horse like '%"""
+                + horse
+                + """%'
+                        ;"""
+            )
+            r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+            r_significant = cursor.fetchall()
 
-        # print(r_significant)
+            # print(r_significant)
 
-        connection.commit()
-        connection.close()
+            connection.commit()
+            connection.close()
 
-    except:
-        connection.rollback()
-        print("Failed updating r_flag")
+        except:
+            connection.rollback()
+            print("Failed updating r_flag")
 
     try:
         cursor = connection.cursor()
@@ -2233,9 +2267,9 @@ def writeSignificant(request, rdate, horse):
                     where rdate = '"""
             + rdate
             + """'
-                    and horse =  '"""
+                    and horse like '%"""
             + horse
-            + """'
+            + """%'
                     ;"""
         )
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환

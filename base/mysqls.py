@@ -1082,6 +1082,7 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
             + """) ) b 
                         where a.horse = b.horse
                         and tdate between date_format(DATE_ADD(rdate, INTERVAL - 12 DAY), '%Y%m%d') and rdate
+                        -- and 1<>1
                       ) a
                       group by rdate, gate, rank, r_rank, r_pop, horse, jockey, trainer
                       order by rdate desc, rank, gate
@@ -2155,30 +2156,6 @@ def get_loadin(i_rcity, i_rdate, i_rno):
     except:
         connection.rollback()
         print("Failed selecting in 기승가능중량")
-
-    try:
-        cursor = connection.cursor()
-
-        strSql = (
-            """ 
-            select jockey, cast(load_in as decimal) 
-            from jockey_w 
-            where wdate = ( select max(wdate) from jockey_w where wdate < '"""
-            + i_rdate
-            + """' ) 
-
-            ; """
-        )
-
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        results = cursor.fetchall()
-
-        connection.commit()
-        connection.close()
-
-    except:
-        connection.rollback()
-        print("Failed selecting in 마방 출주주기에 따른 연승율")
 
     return loadin
 
@@ -3800,8 +3777,6 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
               ; """
         )
 
-        # print(strSql)
-
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
@@ -4032,7 +4007,25 @@ def get_cycle_winning_rate(i_rcity, i_rdate, i_rno):
 
         strSql = (
             """ 
-            select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, b.trainer, title, r3per, CONCAT(r1cnt, '`', r2cnt, '`', r3cnt) r3total, round( ifnull(b.i_cycle,0)/7, 0) weeks
+            select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, b.trainer, title, r3per, CONCAT(r1cnt, '`', r2cnt, '`', r3cnt) r3total, round( ifnull(b.i_cycle,0)/7, 0) weeks,
+                (
+                    SELECT ifnull( CONCAT( b.h_age, b.h_sex, '  ', b.h_weight, space(10), convert( count(*), CHAR), ' ﹅ ', sum( if( rank = 1, 1, 0 )), '﹆', sum( if( rank = 2, 1, 0 )), '﹆', sum( if( rank = 3, 1, 0 )), space(3), round( sum( if( rank <= 3, 1, 0 ))/count(*)*100, 1)), '-')
+                    FROM record
+                    where rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 999 DAY), '%Y%m%d') and '"""
+            + i_rdate
+            + """'
+                    and judge is null
+                    and mid(w_change,1,3)*1 between if( length( mid(h_weight, 5,3)) = 0, '0', mid(h_weight, 5,3) )*1 - 2 and if( length( mid(h_weight, 5,3)) = 0, '0', mid(h_weight, 5,3) )*1 + 2   -- 체중변동 +- 2
+                    and mid(w_change,1,1) = if ( length(b.h_weight) = 3 ,'+', mid(b.h_weight, 5,1))             -- 경주취소마 처리
+                    and h_sex = b.h_sex
+                    -- and h_age = mid(b.h_age,1,1)
+                    and h_age = if( length(h_age) = 1, mid(b.h_age, 1,1), mid(b.h_age, 1,2) )
+                    -- and handycap*1 between b.handycap*1 - 1 and b.handycap*1 + 1
+                    -- and grade = b.grade
+                    and h_weight*1 between mid(b.h_weight,1,3)*1 - mid(b.h_weight, 5,3)*1 - 10 and mid(b.h_weight,1,3)*1 - mid(b.h_weight, 5,3)*1 + 10            -- 기준 직전경주 마체중 +- 10
+                )
             from
             (
                 SELECT trainer, 
@@ -4089,6 +4082,7 @@ def get_cycle_winning_rate(i_rcity, i_rdate, i_rno):
             ; """
         )
 
+        # print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
@@ -4112,8 +4106,11 @@ def get_cycle_winning_rate(i_rcity, i_rdate, i_rno):
         "r3per",
         "r3total",
         "weeks",
+        "weight_per",
     ]
     data = list(result)
+
+    # print(data)
 
     df = pd.DataFrame(data=data, columns=col)
 
@@ -4127,6 +4124,7 @@ def get_cycle_winning_rate(i_rcity, i_rdate, i_rno):
             "horse",
             "마방",
             "weeks",
+            "weight_per",
         ),  # 행 위치에 들어갈 열
         columns="title",  # 열 위치에 들어갈 열
         values=("r3per", "r3total"),
@@ -4721,43 +4719,46 @@ def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
             if horse[0:1] == "[":
                 horse = horse[3:]
 
-            if int(items[3]) > 0:
+            if int(items[3]) >= 0:
                 items[3] = "+" + items[3]
 
             weight = items[2] + " " + items[3]
 
             # print(rdate, horse, weight)
 
-            try:
-                cursor = connection.cursor()
+            if items[2]:
 
-                strSql = (
-                    """ 
-                            update exp011
-                            set h_weight = '"""
-                    + weight
-                    + """'
-                            where rdate = '"""
-                    + rdate
-                    + """' and horse = '"""
-                    + horse
-                    + """'
-                        ; """
-                )
+                try:
+                    cursor = connection.cursor()
 
-                # print(strSql)
-                r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-                awards = cursor.fetchall()
+                    strSql = (
+                        """ 
+                                update exp011
+                                set h_weight = '"""
+                        + weight
+                        + """'
+                                where rdate = '"""
+                        + rdate
+                        + """' and horse = '"""
+                        + horse
+                        + """'
+                            ; """
+                    )
 
-                connection.commit()
-                connection.close()
+                    # print(strSql)
+                    r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+                    awards = cursor.fetchall()
 
-                # return render(request, 'base/update_popularity.html', context)
-                # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+                    connection.commit()
+                    connection.close()
 
-            except:
-                connection.rollback()
-                print("Failed updating in exp011 : 경주마 체중")
+                    # return render(request, 'base/update_popularity.html', context)
+                    # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+
+                except:
+                    connection.rollback()
+                    print("Failed updating in exp011 : 경주마 체중")
+
     return len(lines)
 
 
