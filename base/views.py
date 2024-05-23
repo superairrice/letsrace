@@ -1441,6 +1441,94 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     return render(request, "base/race_result.html", context)
 
 
+def raceSimulation(request, rcity, rdate, rno, hname, awardee):
+    
+    jname1 = request.GET.get("j1") if request.GET.get("j1") != None else ""
+    jname2 = request.GET.get("j2") if request.GET.get("j2") != None else ""
+    jname3 = request.GET.get("j3") if request.GET.get("j3") != None else ""
+
+    rno = request.POST.get("rno") if request.POST.get("rno") != None else 99
+    
+    if request.user.is_authenticated == False:
+        context = {
+            "rcity": rcity,
+            "rdate": rdate,
+            "rno": rno,
+            "hname": hname,
+            "awardee": awardee,
+        }
+        return redirect("prediction_list", rcity=rcity, rdate=rdate, rno=rno)
+
+    exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
+        "rank", "gate"
+    )
+    if exp011s:
+        pass
+    else:
+        return render(request, "base/home.html")
+
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+
+    hr_records = RecordS.objects.filter(
+        # hr_records = PRecord.objects.filter(
+        # rdate__gt=rdate_1year,
+        rdate__lt=rdate,
+        horse__in=exp011s.values("horse"),
+    ).order_by("horse", "-rdate")
+
+    compare_r = exp011s.aggregate(
+        Min("i_s1f"),
+        Min("i_g1f"),
+        Min("i_g2f"),
+        Min("i_g3f"),
+        Max("handycap"),
+        Max("rating"),
+        Max("r_pop"),
+        Max("j_per"),
+        Max("t_per"),
+        Max("jt_per"),
+        Min("recent5"),
+        Min("recent3"),
+        Min("convert_r"),
+        Min("s1f_rank"),
+    )
+
+    try:
+        alloc = Rec010.objects.get(rcity=rcity, rdate=rdate, rno=rno)
+    except:
+        alloc = None
+
+    track = get_track_record(
+        rcity, rdate, rno
+    )  # 경주거리별 등급별 평균기록, 최고기록, 최저기록
+
+    loadin = get_loadin(rcity, rdate, rno)
+
+    trainer_double_check = get_trainer_double_check(rcity, rdate, rno)
+
+    # axis = get_axis(rcity, rdate, rno)
+    axis1 = get_axis_rank(rcity, rdate, rno, 1)
+    axis2 = get_axis_rank(rcity, rdate, rno, 2)
+    axis3 = get_axis_rank(rcity, rdate, rno, 3)
+
+    context = {
+        "exp011s": exp011s,
+        "r_condition": r_condition,
+        "loadin": loadin,  # 기수 기승가능 부딤중량
+        "hr_records": hr_records,
+        "compare_r": compare_r,
+        "alloc": alloc,
+        "track": track,
+        #    'swim': swim,
+        # "h_audit": h_audit,
+        "trainer_double_check": str(trainer_double_check),
+        "axis1": axis1,
+        "axis2": axis2,
+        "axis3": axis3,
+    }
+    return render(request, "base/race_simulation.html", context)
+
+
 # 마방 경주마 보유현황
 def statusStable(request, rcity, rdate, rno):
 
@@ -1525,6 +1613,11 @@ def cycleWinningRate(request, rcity, rdate, rno, awardee, i_filter):
     trainer_double_check = get_trainer_double_check(rcity, rdate, rno)
     # print(trainer_double_check)
 
+    try:
+        alloc = Rec010.objects.get(rcity=rcity, rdate=rdate, rno=rno)
+    except:
+        alloc = None
+
     context = {
         "trend_j": trend_j,
         "trend_j_title": trend_j_title,
@@ -1532,6 +1625,7 @@ def cycleWinningRate(request, rcity, rdate, rno, awardee, i_filter):
         "awardee": awardee,
         "solidarity": solidarity,
         "trainer_double_check": str(trainer_double_check),
+        "alloc": alloc,
     }
 
     return render(request, "base/cycle_winning_rate.html", context)

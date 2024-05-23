@@ -4171,7 +4171,7 @@ def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee, i_filter):
                     and rank <= """
             + i_filter
             + """
-                    -- and r1award > 0  
+                -- and r1award = 0  
                     order by rdate desc, rno desc, rcity
                 ; """
         )

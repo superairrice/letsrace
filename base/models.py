@@ -472,6 +472,17 @@ class RecordS(models.Model):
     jockey_old = models.CharField(
         max_length=10, db_collation="euckr_korean_ci", blank=True, null=True
     )
+    reason = models.CharField(
+        max_length=45, db_collation="euckr_korean_ci", blank=True, null=True
+    )
+    r_pop = models.IntegerField(blank=True, null=True)
+    
+    jt_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    jt_cnt = models.IntegerField(blank=True, null=True)
+    jt_1st = models.IntegerField(blank=True, null=True)
+    jt_2nd = models.IntegerField(blank=True, null=True)
+    jt_3rd = models.IntegerField(blank=True, null=True)
+
     # flag = models.CharField(max_length=1, blank=True, null=True)
 
     class Meta:

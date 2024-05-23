@@ -47,6 +47,11 @@ urlpatterns = [
         name="race_result",
     ),
     path(
+        "race_simulation/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",
+        views.raceSimulation,
+        name="race_simulation",
+    ),
+    path(
         "status_stable/<str:rcity>/<str:rdate>/<int:rno>",
         views.statusStable,
         name="status_stable",
