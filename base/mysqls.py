@@ -4021,6 +4021,7 @@ def get_cycle_winning_rate(i_rcity, i_rdate, i_rno):
                     and mid(w_change,1,1) = if ( length(b.h_weight) = 3 ,'+', mid(b.h_weight, 5,1))             -- 경주취소마 처리
                     and h_sex = b.h_sex
                     -- and h_age = mid(b.h_age,1,1)
+                    and distance = b.distance 
                     and h_age = if( length(h_age) = 1, mid(b.h_age, 1,1), mid(b.h_age, 1,2) )
                     -- and handycap*1 between b.handycap*1 - 1 and b.handycap*1 + 1
                     -- and grade = b.grade
@@ -5645,3 +5646,73 @@ def get_weeks_status(rcity, rdate):
         print("Failed inserting in weeksStatus")
 
     return result
+
+# 경주 시뮬레이션 가중치 get
+def get_weight(rcity, rdate, rno):
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+            select w_avg, w_fast, w_slow, w_recent3, w_recent5, w_convert, 0 w_flag
+            from weight_s1
+            where rcity =  '"""
+            + rcity
+            + """'
+            and rdate = '"""
+            + rdate
+            + """'
+            and rno =  """
+            + str(rno)
+            + """
+            and wdate = ( select max(wdate) from weight_s1 where rcity =  '"""
+                                                                + rcity
+                                                                + """'
+                                                                and rdate = '"""
+                                                                + rdate
+                                                                + """'
+                                                                and rno =  """
+                                                                + str(rno)
+                                                                + """ )
+            
+            ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        weight = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed inserting in h_weight")
+
+    if weight:
+        return weight
+    else:
+        
+        try:
+            cursor = connection.cursor()
+
+            strSql = (
+                """ 
+                select w_avg, w_fast, w_slow, w_recent3, w_recent5, w_convert, 1 w_flag
+                from weight
+                where wdate = ( select max(wdate) from weight )
+                
+                ; """
+            )
+
+            r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+            weight = cursor.fetchall()
+
+            connection.commit()
+            connection.close()
+
+        except:
+            connection.rollback()
+            print("Failed inserting in weight")
+        
+    
+    return weight

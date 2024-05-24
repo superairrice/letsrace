@@ -66,6 +66,7 @@ from base.mysqls import (
     get_weeks,
     get_last2weeks,
     get_weeks_status,
+    get_weight,
     insert_horse_disease,
     insert_race_judged,
     insert_race_simulation,
@@ -712,7 +713,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     except:
         connection.rollback()
         print("Failed selecting in 경주 메모")
-        
+
     name = get_client_ip(request)
 
     if name[0:6] != "15.177":
@@ -1442,13 +1443,30 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
 
 def raceSimulation(request, rcity, rdate, rno, hname, awardee):
-    
-    jname1 = request.GET.get("j1") if request.GET.get("j1") != None else ""
-    jname2 = request.GET.get("j2") if request.GET.get("j2") != None else ""
-    jname3 = request.GET.get("j3") if request.GET.get("j3") != None else ""
 
-    rno = request.POST.get("rno") if request.POST.get("rno") != None else 99
-    
+    w_avg = request.POST.get("w_avg") if request.POST.get("w_avg") != None else 99
+    w_fast = request.POST.get("w_fast") if request.POST.get("w_fast") != None else 99
+    w_slow = request.POST.get("w_slow") if request.POST.get("w_slow") != None else 99
+    w_recent3 = (
+        request.POST.get("w_recent3") if request.POST.get("w_recent3") != None else 99
+    )
+    w_recent5 = (
+        request.POST.get("w_recent5") if request.POST.get("w_recent5") != None else 99
+    )
+    w_convert = (
+        request.POST.get("w_convert") if request.POST.get("w_convert") != None else 99
+    )
+
+    if int(w_avg) + int(w_fast) + int(w_slow) == 100:
+        
+        if int(w_recent3) + int(w_recent5) + int(w_convert)  == 100:
+            pass 
+        else:
+            messages.warning(request, "가중치 전체의 합이 200이 아닙니다.")
+            
+    else:
+        messages.warning(request, "평균/쵝고/최저 기록의 합이 100이 아닙니다.")
+
     if request.user.is_authenticated == False:
         context = {
             "rcity": rcity,
@@ -1462,6 +1480,7 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
     exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
         "rank", "gate"
     )
+
     if exp011s:
         pass
     else:
@@ -1511,6 +1530,8 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
     axis2 = get_axis_rank(rcity, rdate, rno, 2)
     axis3 = get_axis_rank(rcity, rdate, rno, 3)
 
+    weight = get_weight(rcity, rdate, rno)
+
     context = {
         "exp011s": exp011s,
         "r_condition": r_condition,
@@ -1525,6 +1546,7 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
         "axis1": axis1,
         "axis2": axis2,
         "axis3": axis3,
+        "weight": weight,
     }
     return render(request, "base/race_simulation.html", context)
 
