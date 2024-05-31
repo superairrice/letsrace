@@ -77,6 +77,7 @@ from base.mysqls import (
     set_changed_race_rank,
     set_changed_race_weight,
 )
+from base.simulation import mock_traval
 from letsrace.settings import KRAFILE_ROOT
 
 # import base.mysqls
@@ -1444,38 +1445,151 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
 def raceSimulation(request, rcity, rdate, rno, hname, awardee):
 
-    w_avg = request.POST.get("w_avg") if request.POST.get("w_avg") != None else 99
-    w_fast = request.POST.get("w_fast") if request.POST.get("w_fast") != None else 99
-    w_slow = request.POST.get("w_slow") if request.POST.get("w_slow") != None else 99
+    weight = get_weight(rcity, rdate, rno)
+    print(weight)
+
+    w_avg = (
+        request.GET.get("w_avg") if request.GET.get("w_avg") != None else weight[0][0]
+    )
+    w_fast = (
+        request.GET.get("w_fast") if request.GET.get("w_fast") != None else weight[0][1]
+    )
+    w_slow = (
+        request.GET.get("w_slow") if request.GET.get("w_slow") != None else weight[0][2]
+    )
     w_recent3 = (
-        request.POST.get("w_recent3") if request.POST.get("w_recent3") != None else 99
+        request.GET.get("w_recent3")
+        if request.GET.get("w_recent3") != None
+        else weight[0][3]
     )
     w_recent5 = (
-        request.POST.get("w_recent5") if request.POST.get("w_recent5") != None else 99
+        request.GET.get("w_recent5")
+        if request.GET.get("w_recent5") != None
+        else weight[0][4]
     )
     w_convert = (
-        request.POST.get("w_convert") if request.POST.get("w_convert") != None else 99
+        request.GET.get("w_convert")
+        if request.GET.get("w_convert") != None
+        else weight[0][5]
+    )
+    w_flag = (
+        request.GET.get("w_flag") if request.GET.get("w_flag") != None else weight[0][6]
     )
 
-    if int(w_avg) + int(w_fast) + int(w_slow) == 100:
-        
-        if int(w_recent3) + int(w_recent5) + int(w_convert)  == 100:
-            pass 
-        else:
-            messages.warning(request, "가중치 전체의 합이 200이 아닙니다.")
-            
-    else:
-        messages.warning(request, "평균/쵝고/최저 기록의 합이 100이 아닙니다.")
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
-    if request.user.is_authenticated == False:
-        context = {
-            "rcity": rcity,
-            "rdate": rdate,
-            "rno": rno,
-            "hname": hname,
-            "awardee": awardee,
-        }
-        return redirect("prediction_list", rcity=rcity, rdate=rdate, rno=rno)
+    weight_mock = (
+        (
+            int(w_avg),
+            int(w_fast),
+            int(w_slow),
+            int(w_recent3),
+            int(w_recent5),
+            int(w_convert),
+            w_flag,
+        ),
+    )  # tuple로 정의
+
+    if weight == weight_mock:
+        print("같음")
+
+    if (
+        int(w_avg) + int(w_fast) + int(w_slow) == 100
+        and int(w_recent3) + int(w_recent5) + int(w_convert)
+        == 100  # 가중치 오류있 으면
+    ):
+
+        if weight != weight_mock:  # 가중치가 뱐경되었으면
+            try:
+                cursor = connection.cursor()
+
+                strSql = (
+                    """ 
+                    insert into weight_s1 
+                    (
+                        rcity,
+                        rdate,
+                        rno,
+                        wdate,
+                        w_avg,
+                        w_fast,
+                        w_slow,
+                        w_recent3,
+                        w_recent5,
+                        w_convert
+                    )
+                    VALUES
+                    (
+                        '"""
+                    + rcity
+                    + """',
+                        '"""
+                    + rdate
+                    + """',
+                        """
+                    + str(rno)
+                    + """,
+                        """
+                    " now() "
+                    """,
+                        """
+                    + str(w_avg)
+                    + """,
+                        """
+                    + str(w_fast)
+                    + """,
+                        """
+                    + str(w_slow)
+                    + """,
+                        """
+                    + str(w_recent3)
+                    + """,
+                        """
+                    + str(w_recent5)
+                    + """,
+                        """
+                    + str(w_convert)
+                    + """
+                    )
+                ; """
+                )
+
+                # print(strSql)
+                print(weight_mock)
+
+                r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+                weight = cursor.fetchall()
+
+                connection.commit()
+                connection.close()
+
+                # print(list(r_condition))
+
+                # print( r_condition[0][0])
+
+            except:
+                connection.rollback()
+                print("Failed inserting in weight_s1")
+                
+            aaa = mock_traval(r_condition, weight_mock)
+            
+
+        if w_flag == 0:
+            messages.warning(request, "weight_s1")
+
+        else:
+            messages.warning(request, "weight only")
+
+    else:
+        messages.warning(request, "오류")
+        # weight = get_weight(rcity, rdate, rno)
+
+    # print(
+    #     "aaaa",
+    #     int(w_avg) + int(w_fast) + int(w_slow),
+    #     int(w_recent3) + int(w_recent5) + int(w_convert),
+    # )
+    print(weight)
 
     exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
         "rank", "gate"
@@ -1486,14 +1600,12 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
     else:
         return render(request, "base/home.html")
 
-    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
-
-    hr_records = RecordS.objects.filter(
-        # hr_records = PRecord.objects.filter(
-        # rdate__gt=rdate_1year,
-        rdate__lt=rdate,
-        horse__in=exp011s.values("horse"),
-    ).order_by("horse", "-rdate")
+    # hr_records = RecordS.objects.filter(
+    #     # hr_records = PRecord.objects.filter(
+    #     # rdate__gt=rdate_1year,
+    #     rdate__lt=rdate,
+    #     horse__in=exp011s.values("horse"),
+    # ).order_by("horse", "-rdate")
 
     compare_r = exp011s.aggregate(
         Min("i_s1f"),
@@ -1530,13 +1642,11 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
     axis2 = get_axis_rank(rcity, rdate, rno, 2)
     axis3 = get_axis_rank(rcity, rdate, rno, 3)
 
-    weight = get_weight(rcity, rdate, rno)
-
     context = {
         "exp011s": exp011s,
         "r_condition": r_condition,
         "loadin": loadin,  # 기수 기승가능 부딤중량
-        "hr_records": hr_records,
+        # "hr_records": hr_records,
         "compare_r": compare_r,
         "alloc": alloc,
         "track": track,
@@ -1547,6 +1657,12 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
         "axis2": axis2,
         "axis3": axis3,
         "weight": weight,
+        "w_avg": w_avg,
+        "w_fast": w_fast,
+        "w_slow": w_slow,
+        "w_recent3": w_recent3,
+        "w_recent5": w_recent5,
+        "w_convert": w_convert,
     }
     return render(request, "base/race_simulation.html", context)
 

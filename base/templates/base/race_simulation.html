@@ -57,14 +57,14 @@
             <img src="{% static 'images/number-9.png' %}" />
           </a>&nbsp;
 
-          <a href="{% url 'prediction_race' r_condition.rcity r_condition.rdate r_condition.rno|add:-1 0 'awardee' %}">
+          <a href="{% url 'race_simulation' r_condition.rcity r_condition.rdate r_condition.rno|add:-1 0 'awardee' %}">
             <span class="tooltip">◀︎
               <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
                 이전 경주
               </span>
             </span>
           </a>
-          <a href="{% url 'prediction_race' r_condition.rcity r_condition.rdate r_condition.rno|add:1 0 'awardee' %}">
+          <a href="{% url 'race_simulation' r_condition.rcity r_condition.rdate r_condition.rno|add:1 0 'awardee' %}">
             <span class="tooltip">▶︎
               <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
                 다음 경주
@@ -213,51 +213,53 @@
       
       <div id="tab-11" class="tab-content1 current">
 
-        <form class="header__search" action="" method="POST">
+        <form class="header__search" action="" method="get">
           {% csrf_token %}
           <label>
             
-            <div style="font-size: 1.2rem;">가중치</div>
-
             <div class="room__top" style="background-color: var(--color-dark);">
               <div style="font-size: 1.2rem;">평균기록&nbsp;:&nbsp;
-                <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.2rem;" type="number" min="1" max="99" step="1" value={{weight.0.0}} name="w_avg">
+                <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.2rem;" type="number" min="1" max="99" step="1" value={{w_avg}} name="w_avg">
                 <span>&nbsp;&nbsp;</span>
               </div>
               <div style="font-size: 1.2rem;">최고기록&nbsp;:&nbsp;
-                <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.2rem;" type="number" min="1" max="99" step="1" value={{weight.0.1}} name="w_fast" >
+                <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.2rem;" type="number" min="1" max="99" step="1" value={{w_fast}} name="w_fast" >
                 <span>&nbsp;&nbsp;</span>
               </div> 
               <div style="font-size: 1.2rem;">최저기록&nbsp;:&nbsp;
-                <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.2rem;" type="number" min="1" max="99" step="1" value={{weight.0.2}} name="w_slow" >
+                <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.2rem;" type="number" min="1" max="99" step="1" value={{w_slow}} name="w_slow" >
               </div> 
             </div>
-
             <div class="room__top" style="background-color: var(--color-dark);">
               <div style="font-size: 1.2rem;">최근3R&nbsp;:&nbsp;
-                <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.2rem;" type="number" min="1" max="99" step="1" value={{weight.0.3}} name="w_recent3" >
+                <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.2rem;" type="number" min="1" max="99" step="1" value={{w_recent3}} name="w_recent3" >
                 <span>&nbsp;&nbsp;</span>
               </div> 
               <div style="font-size: 1.2rem;">최근7R&nbsp;:&nbsp;
-                <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.2rem;" type="number" min="1" max="99" step="1" value={{weight.0.4}} name="w_recent5" >
+                <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.2rem;" type="number" min="1" max="99" step="1" value={{w_recent5}} name="w_recent5" >
                 <span>&nbsp;&nbsp;</span>
               </div> 
               <div style="font-size: 1.2rem;">환산기록&nbsp;:&nbsp;
-                <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.2rem;" type="number" min="1" max="99" step="1" value={{weight.0.5}} name="w_convert" >
+                <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.2rem;" type="number" min="1" max="99" step="1" value={{w_convert}} name="w_convert" >
               </div> 
             </div>
 
-            <button class="btn btn--link" type="submit" style="font-size: 1.1rem;">💾&nbsp;Convert</button>
+            <button class="btn btn--link" type="submit" style="font-size: 1.1rem;">💾&nbsp;Simulation</button>
+            
             <span style="font-size: 1.1rem;">
-            {% for message in messages %}
-            {{ message.tag }}
-            {{ message }}
-            {% endfor %}
+            {% if messages %}
+            <div>
+              {% for message in messages %}
+              {{ message.message }}
+              {% endfor %}
+            </div>
+            {% endif %}
             </span>
 
           </label>
 
         </form>
+
 
           <hr style="border: solid 1px black;">
           <table class="fold-table">
