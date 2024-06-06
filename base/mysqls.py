@@ -1596,6 +1596,40 @@ def get_track_record(i_rcity, i_rdate, i_rno):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in 등급별 거리별 평균기록 ")
+        
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+            select f_t2s(avg(con_avg))
+            from rec010_track
+            where rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 365 DAY), '%Y%m%d') and '"""
+            + i_rdate
+            + """'
+            and ( rcity, distance, grade ) in ( select rcity, distance, grade from exp010 
+                                                    where rdate = '"""
+            + i_rdate
+            + """' and rcity = '"""
+            + i_rcity
+            + """' and rno = """
+            + str(i_rno)
+            + """ )
+            ;"""
+        )
+
+        # print(strSql)
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        result = cursor.fetchall()
+
         # print(result)
 
         connection.commit()
@@ -3439,7 +3473,7 @@ def get_trainer_double_check(i_rcity, i_rdate, i_rno):
         strSql = (
             """ 
                 select a.trainer
-                  from exp011 a
+                from exp011 a
                 where a.rcity =  '"""
             + i_rcity
             + """'

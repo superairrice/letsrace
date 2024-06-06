@@ -89,6 +89,7 @@ from .models import (
     Award,
     Exp010,
     Exp011,
+    Exp011s1,
     Exp012,
     JockeyW,
     JtRate,
@@ -1442,11 +1443,11 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
     return render(request, "base/race_result.html", context)
 
-
 def raceSimulation(request, rcity, rdate, rno, hname, awardee):
 
     weight = get_weight(rcity, rdate, rno)
-    print(weight)
+    # print(weight)
+
 
     w_avg = (
         request.GET.get("w_avg") if request.GET.get("w_avg") != None else weight[0][0]
@@ -1475,7 +1476,7 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
     w_flag = (
         request.GET.get("w_flag") if request.GET.get("w_flag") != None else weight[0][6]
     )
-
+    
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
     weight_mock = (
@@ -1490,13 +1491,14 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
         ),
     )  # tuple로 정의
 
-    if weight == weight_mock:
-        print("같음")
+    if weight == weight_mock:               # query 가중치와 입력된 가중치가 동일하면 
+        # print("같음")
+        pass
 
     if (
         int(w_avg) + int(w_fast) + int(w_slow) == 100
         and int(w_recent3) + int(w_recent5) + int(w_convert)
-        == 100  # 가중치 오류있 으면
+        == 100  # 가중치 오류 check
     ):
 
         if weight != weight_mock:  # 가중치가 뱐경되었으면
@@ -1555,7 +1557,7 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
                 )
 
                 # print(strSql)
-                print(weight_mock)
+                # print(weight_mock)
 
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 weight = cursor.fetchall()
@@ -1570,9 +1572,8 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
             except:
                 connection.rollback()
                 print("Failed inserting in weight_s1")
-                
-            aaa = mock_traval(r_condition, weight_mock)
-            
+
+            mock = mock_traval(r_condition, weight_mock)
 
         if w_flag == 0:
             messages.warning(request, "weight_s1")
@@ -1589,9 +1590,9 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
     #     int(w_avg) + int(w_fast) + int(w_slow),
     #     int(w_recent3) + int(w_recent5) + int(w_convert),
     # )
-    print(weight)
+    # print(weight)
 
-    exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
+    exp011s = Exp011s1.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
         "rank", "gate"
     )
 
@@ -1600,12 +1601,12 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
     else:
         return render(request, "base/home.html")
 
-    # hr_records = RecordS.objects.filter(
-    #     # hr_records = PRecord.objects.filter(
-    #     # rdate__gt=rdate_1year,
-    #     rdate__lt=rdate,
-    #     horse__in=exp011s.values("horse"),
-    # ).order_by("horse", "-rdate")
+    hr_records = RecordS.objects.filter(
+        # hr_records = PRecord.objects.filter(
+        # rdate__gt=rdate_1year,
+        rdate__lt=rdate,
+        horse__in=exp011s.values("horse"),
+    ).order_by("horse", "-rdate")
 
     compare_r = exp011s.aggregate(
         Min("i_s1f"),
@@ -1646,7 +1647,7 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
         "exp011s": exp011s,
         "r_condition": r_condition,
         "loadin": loadin,  # 기수 기승가능 부딤중량
-        # "hr_records": hr_records,
+        "hr_records": hr_records,
         "compare_r": compare_r,
         "alloc": alloc,
         "track": track,

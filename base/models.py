@@ -206,6 +206,116 @@ class Exp011(models.Model):
 
         return self.query.get_count(using=self.db)
 
+class Exp011s1(models.Model):
+    rcity = models.CharField(primary_key=True, max_length=4)
+    rdate = models.CharField(max_length=8)
+    rno = models.IntegerField()
+    gate = models.IntegerField()
+    horse = models.CharField(max_length=20, blank=True, null=True)
+    birthplace = models.CharField(max_length=6, blank=True, null=True)
+    h_sex = models.CharField(max_length=2, blank=True, null=True)
+    h_age = models.IntegerField(blank=True, null=True)
+    handycap = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    joc_adv = models.CharField(max_length=4, blank=True, null=True)
+    jockey = models.CharField(max_length=10, blank=True, null=True)
+    trainer = models.CharField(max_length=10, blank=True, null=True)
+    host = models.CharField(max_length=20, blank=True, null=True)
+    rating = models.IntegerField(blank=True, null=True)
+    prize_tot = models.FloatField(blank=True, null=True)
+    prize_year = models.FloatField(blank=True, null=True)
+    prize_half = models.FloatField(blank=True, null=True)
+    tot_1st = models.IntegerField(blank=True, null=True)
+    tot_2nd = models.IntegerField(blank=True, null=True)
+    tot_3rd = models.IntegerField(blank=True, null=True)
+    tot_race = models.IntegerField(blank=True, null=True)
+    year_1st = models.IntegerField(blank=True, null=True)
+    year_2nd = models.IntegerField(blank=True, null=True)
+    year_3rd = models.IntegerField(blank=True, null=True)
+    year_race = models.IntegerField(blank=True, null=True)
+    recent3 = models.CharField(max_length=6, blank=True, null=True)
+    recent5 = models.CharField(max_length=6, blank=True, null=True)
+    fast_r = models.CharField(max_length=6, blank=True, null=True)
+    slow_r = models.CharField(max_length=6, blank=True, null=True)
+    avg_r = models.CharField(max_length=6, blank=True, null=True)
+    convert_r = models.CharField(max_length=6, blank=True, null=True)
+    rs1f = models.CharField(max_length=4, blank=True, null=True)
+    r1c = models.CharField(max_length=6, blank=True, null=True)
+    r2c = models.CharField(max_length=6, blank=True, null=True)
+    r3c = models.CharField(max_length=6, blank=True, null=True)
+    r4c = models.CharField(max_length=6, blank=True, null=True)
+    rg3f = models.CharField(max_length=4, blank=True, null=True)
+    rg2f = models.CharField(max_length=4, blank=True, null=True)
+    rg1f = models.CharField(max_length=4, blank=True, null=True)
+    complex = models.CharField(max_length=6, blank=True, null=True)
+    cs1f = models.CharField(max_length=4, blank=True, null=True)
+    cg3f = models.CharField(max_length=4, blank=True, null=True)
+    cg2f = models.CharField(max_length=4, blank=True, null=True)
+    cg1f = models.CharField(max_length=4, blank=True, null=True)
+    rank = models.IntegerField(blank=True, null=True)
+    i_s1f = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
+    i_g3f = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
+    i_g2f = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
+    i_g1f = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
+    i_complex = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True
+    )
+    i_jockey = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True
+    )
+    i_cycle = models.IntegerField(blank=True, null=True)
+    i_prehandy = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    r_rank = models.IntegerField(blank=True, null=True)
+    r_record = models.CharField(max_length=10, blank=True, null=True)
+    ir_record = models.IntegerField(blank=True, null=True)
+    remark = models.CharField(max_length=1000, blank=True, null=True)
+    h_weight = models.CharField(max_length=10, blank=True, null=True)
+    j_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    t_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    jt_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    jt_cnt = models.IntegerField(blank=True, null=True)
+    jt_1st = models.IntegerField(blank=True, null=True)
+    jt_2nd = models.IntegerField(blank=True, null=True)
+    jt_3rd = models.IntegerField(blank=True, null=True)
+    r_pop = models.IntegerField(blank=True, null=True)
+    jockey_old = models.CharField(max_length=10, blank=True, null=True)
+    handycap_old = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    reason = models.CharField(max_length=45, blank=True, null=True)
+    complex5 = models.CharField(max_length=6, blank=True, null=True)
+    gap = models.IntegerField(blank=True, null=True)
+    gap_back = models.IntegerField(blank=True, null=True)
+    alloc1r = models.CharField(max_length=10, blank=True, null=True)
+    alloc3r = models.CharField(max_length=10, blank=True, null=True)
+    s1f_rank = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    g3f_rank = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    g2f_rank = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    g1f_rank = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    bet = models.CharField(max_length=1, blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = "exp011s1"
+        unique_together = (("rcity", "rdate", "rno", "gate"),)
+
+    def count(self):
+        if self._result_cache is not None:
+            return len(self._result_cache)
+
+        return self.query.get_count(using=self.db)
+
 
 class Exp012(models.Model):
     rcity = models.CharField(primary_key=True, max_length=4)
