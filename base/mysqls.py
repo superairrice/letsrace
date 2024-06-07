@@ -4054,7 +4054,6 @@ def get_cycle_winning_rate(i_rcity, i_rdate, i_rno):
                     and mid(w_change,1,3)*1 between if( length( mid(h_weight, 5,3)) = 0, '0', mid(h_weight, 5,3) )*1 - 2 and if( length( mid(h_weight, 5,3)) = 0, '0', mid(h_weight, 5,3) )*1 + 2   -- 체중변동 +- 2
                     and mid(w_change,1,1) = if ( length(b.h_weight) = 3 ,'+', mid(b.h_weight, 5,1))             -- 경주취소마 처리
                     and h_sex = b.h_sex
-                    -- and h_age = mid(b.h_age,1,1)
                     -- and distance = b.distance 
                     and h_age = if( length(h_age) = 1, mid(b.h_age, 1,1), mid(b.h_age, 1,2) )
                     -- and handycap*1 between b.handycap*1 - 1 and b.handycap*1 + 1
@@ -4073,11 +4072,10 @@ def get_cycle_winning_rate(i_rcity, i_rdate, i_rno):
                     and mid(w_change,1,3)*1 between if( length( mid(h_weight, 5,3)) = 0, '0', mid(h_weight, 5,3) )*1 - 2 and if( length( mid(h_weight, 5,3)) = 0, '0', mid(h_weight, 5,3) )*1 + 2   -- 체중변동 +- 2
                     and mid(w_change,1,1) = if ( length(b.h_weight) = 3 ,'+', mid(b.h_weight, 5,1))             -- 경주취소마 처리
                     and h_sex = b.h_sex
-                    -- and h_age = mid(b.h_age,1,1)
-                    -- and distance = b.distance 
+                    and distance = b.distance 
                     and h_age = if( length(h_age) = 1, mid(b.h_age, 1,1), mid(b.h_age, 1,2) )
                     -- and handycap*1 between b.handycap*1 - 1 and b.handycap*1 + 1
-                    and grade = b.grade
+                    -- and grade = b.grade
                     and h_weight*1 between mid(b.h_weight,1,3)*1 - mid(b.h_weight, 5,3)*1 - 10 and mid(b.h_weight,1,3)*1 - mid(b.h_weight, 5,3)*1 + 10            -- 기준 직전경주 마체중 +- 10
                 )
             from
