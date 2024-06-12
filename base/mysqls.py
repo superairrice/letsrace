@@ -1547,6 +1547,22 @@ def get_treat_horse(i_rcity, i_rdate, i_rno):
             + """', INTERVAL - 99 DAY), '%Y%m%d') and '"""
             + i_rdate
             + """'
+                        union all
+                        select horse, rdate, concat( mid(grade,1,2), ' ', 'Race: ', convert(rcount, char),'두, 인기도:', convert(r_pop, char)), '', '', '', '', '경주', jockey, 
+                                                concat( convert(r_rank, char), '  ﹆  ', convert(rank, char))
+                        from expect
+                        where horse in ( select horse from exp011 where rdate = '"""
+            + i_rdate
+            + """' and rcity = '"""
+            + i_rcity
+            + """' and rno = """
+            + str(i_rno)
+            + """ )
+                        and rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 99 DAY), '%Y%m%d') and '"""
+            + i_rdate
+            + """'
                     ) a
                     group by horse, tdate, audit
                     order by tdate desc
@@ -5697,6 +5713,43 @@ def get_weeks_status(rcity, rdate):
     except:
         connection.rollback()
         print("Failed inserting in weeksStatus")
+
+    return result
+
+# thethe9 rank 1 입상현황
+def get_thethe9_ranks(fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2):
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ select a.rcity, a.rdate, a.rno, rday, distance, grade, dividing, horse, jockey, trainer, host, h_weight, handycap, handycap - i_prehandy,
+                    a.gate, a.rank, a.r_rank, a.corners, a.r_s1f, a.r_g3f, a.r_g1f, 
+                    a.s1f_rank, a.g3f_rank, a.g2f_rank, a.g1f_rank, 
+                    a.cs1f,  a.cg3f, a.cg1f, i_cycle, r_pop, alloc1r, alloc3r, complex, r_record, i_complex - ir_record, 
+                    jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd, jockey_old, reason
+                from exp011 a, exp010 b
+                where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno 
+                and a.rdate between '""" + fdate + """' and '""" + tdate + """'
+                and a.rank between """ + str(r1) + """ and """ + str(r2) + """
+                and a.r_rank between """ + str(rr1) + """ and """ + str(rr2) + """
+                and a.jockey like '%""" + jockey + """%'
+                and a.trainer like '%""" + trainer + """%'
+                and a.host like '%""" + host + """%'
+                and a.horse like '%""" + horse + """%'
+            order by a.rdate, b.rtime, a.r_rank, a.rank
+        ; """
+        )
+
+        # print(strSql)
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed inserting in thethe9_ranks")
 
     return result
 

@@ -54,6 +54,7 @@ from base.mysqls import (
     get_status_stable,
     get_status_train,
     get_swim_horse,
+    get_thethe9_ranks,
     get_track_record,
     get_train,
     get_train_audit,
@@ -379,7 +380,7 @@ def activityPage(request):
     ).get()
     print(horse.horse)
 
-    print(datetime.today().weekday())
+    # print(datetime.today().weekday())
 
     h_records = RecordS.objects.filter(horse=horse.horse).order_by("-rdate")
 
@@ -1826,13 +1827,86 @@ def weeksStatus(request, rcity, rdate):
     return render(request, "base/weeks_status.html", context)
 
 
+# thethe9 rank1 실경주 입상현황
+def thethe9Ranks(request, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2):
+
+    fdate = request.GET.get("fdate") if request.GET.get("fdate") != None else fdate[0:4] + '-' + fdate[4:6] + '-' + fdate[6:8]
+    tdate = request.GET.get("tdate") if request.GET.get("tdate") != None else tdate[0:4] + '-' + tdate[4:6] + '-' + tdate[6:8]
+    jockey = request.GET.get("jockey") if request.GET.get("jockey") != None else jockey
+    trainer = request.GET.get("trainer") if request.GET.get("trainer") != None else trainer
+    host = request.GET.get("host") if request.GET.get("host") != None else host
+    horse = request.GET.get("horse") if request.GET.get("horse") != None else horse
+    r1 = request.GET.get("r1") if request.GET.get("r1") != None else r1
+    r2 = request.GET.get("r2") if request.GET.get("r2") != None else r2
+    rr1 = request.GET.get("rr1") if request.GET.get("rr1") != None else rr1
+    rr2 = request.GET.get("rr2") if request.GET.get("rr2") != None else rr2
+
+    # print('2', fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2)
+
+    # if fdate == "":
+    #     # fdate =
+    #     pass
+    # else:
+    #     fdate = fdate[0:4] + fdate[5:7] + fdate[8:10]
+    #     tdate = tdate[0:4] + tdate[5:7] + tdate[8:10]
+
+    status = get_thethe9_ranks(
+        fdate[0:4] + fdate[5:7] + fdate[8:10], 
+        tdate[0:4] + tdate[5:7] + tdate[8:10], jockey, trainer, host, horse, r1, r2, rr1, rr2
+    )
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+            select jockey, cast(load_in as decimal) 
+            from jockey_w 
+            where wdate = ( select max(wdate) from jockey_w where wdate < '"""
+            + tdate[0:4]
+            + tdate[5:7]
+            + tdate[8:10]
+            + """' ) 
+                ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        loadin = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in 기승가능중량")
+
+    # print(status)
+
+    context = {
+        "status": status,
+        "loadin": loadin,
+        "fdate": fdate,
+        "tdate": tdate,
+        "jockey": jockey,
+        "trainer": trainer,
+        "host": host,
+        "horse": horse,
+        "r1": r1,
+        "r2": r2,
+        "rr1": rr1,
+        "rr2": rr2,
+    }
+
+    return render(request, "base/thethe9_ranks.html", context)
+
+
 # 기수 or 조교사 or 마주 44일 경주결과
 def getRaceHorse(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host):
     if i_host == "":
         i_host = " "
-
+    
     solidarity = get_recent_horse(
-        rdate, awardee, i_name
+        '99991231', awardee, i_name
     )  # 기수, 조교사, 마주 연대현황 최근1년
     # print(solidarity)
 
