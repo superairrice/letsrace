@@ -67,7 +67,6 @@ from base.mysqls import (
     get_weeks,
     get_last2weeks,
     get_weeks_status,
-    get_weight,
     insert_horse_disease,
     insert_race_judged,
     insert_race_simulation,
@@ -78,7 +77,7 @@ from base.mysqls import (
     set_changed_race_rank,
     set_changed_race_weight,
 )
-from base.simulation import mock_traval
+from base.simulation import mock_insert, mock_traval, get_weight
 from letsrace.settings import KRAFILE_ROOT
 
 # import base.mysqls
@@ -1447,8 +1446,8 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 def raceSimulation(request, rcity, rdate, rno, hname, awardee):
 
     weight = get_weight(rcity, rdate, rno)
-    # print(weight)
-
+    print(weight)
+    mock_insert(rcity, rdate, rno)
 
     w_avg = (
         request.GET.get("w_avg") if request.GET.get("w_avg") != None else weight[0][0]
@@ -1477,7 +1476,7 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
     w_flag = (
         request.GET.get("w_flag") if request.GET.get("w_flag") != None else weight[0][6]
     )
-    
+
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
     weight_mock = (
@@ -1828,8 +1827,9 @@ def weeksStatus(request, rcity, rdate):
 
 
 # thethe9 rank1 실경주 입상현황
-def thethe9Ranks(request, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2):
+def thethe9Ranks(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2):
 
+    rcity = request.GET.get("rcity") if request.GET.get("rcity") != None else rcity
     fdate = request.GET.get("fdate") if request.GET.get("fdate") != None else fdate[0:4] + '-' + fdate[4:6] + '-' + fdate[6:8]
     tdate = request.GET.get("tdate") if request.GET.get("tdate") != None else tdate[0:4] + '-' + tdate[4:6] + '-' + tdate[6:8]
     jockey = request.GET.get("jockey") if request.GET.get("jockey") != None else jockey
@@ -1851,6 +1851,7 @@ def thethe9Ranks(request, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr
     #     tdate = tdate[0:4] + tdate[5:7] + tdate[8:10]
 
     status = get_thethe9_ranks(
+        rcity,
         fdate[0:4] + fdate[5:7] + fdate[8:10], 
         tdate[0:4] + tdate[5:7] + tdate[8:10], jockey, trainer, host, horse, r1, r2, rr1, rr2
     )
@@ -1885,6 +1886,7 @@ def thethe9Ranks(request, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr
     context = {
         "status": status,
         "loadin": loadin,
+        "rcity": rcity,
         "fdate": fdate,
         "tdate": tdate,
         "jockey": jockey,

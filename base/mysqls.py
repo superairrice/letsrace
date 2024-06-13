@@ -5717,7 +5717,7 @@ def get_weeks_status(rcity, rdate):
     return result
 
 # thethe9 rank 1 입상현황
-def get_thethe9_ranks(fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2):
+def get_thethe9_ranks(rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2):
     try:
         cursor = connection.cursor()
 
@@ -5729,6 +5729,7 @@ def get_thethe9_ranks(fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, r
                     jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd, jockey_old, reason
                 from exp011 a, exp010 b
                 where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno 
+                and a.rcity like '%""" + rcity + """%'
                 and a.rdate between '""" + fdate + """' and '""" + tdate + """'
                 and a.rank between """ + str(r1) + """ and """ + str(r2) + """
                 and a.r_rank between """ + str(rr1) + """ and """ + str(rr2) + """
@@ -5753,72 +5754,3 @@ def get_thethe9_ranks(fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, r
 
     return result
 
-# 경주 시뮬레이션 가중치 get
-def get_weight(rcity, rdate, rno):
-    try:
-        cursor = connection.cursor()
-
-        strSql = (
-            """ 
-            select w_avg, w_fast, w_slow, w_recent3, w_recent5, w_convert, 0 w_flag
-            from weight_s1
-            where rcity =  '"""
-            + rcity
-            + """'
-            and rdate = '"""
-            + rdate
-            + """'
-            and rno =  """
-            + str(rno)
-            + """
-            and wdate = ( select max(wdate) from weight_s1 where rcity =  '"""
-                                                                + rcity
-                                                                + """'
-                                                                and rdate = '"""
-                                                                + rdate
-                                                                + """'
-                                                                and rno =  """
-                                                                + str(rno)
-                                                                + """ )
-            
-            ; """
-        )
-
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        weight = cursor.fetchall()
-
-        connection.commit()
-        connection.close()
-
-    except:
-        connection.rollback()
-        print("Failed inserting in h_weight")
-
-    if weight:
-        return weight
-    else:
-        
-        try:
-            cursor = connection.cursor()
-
-            strSql = (
-                """ 
-                select w_avg, w_fast, w_slow, w_recent3, w_recent5, w_convert, 1 w_flag
-                from weight
-                where wdate = ( select max(wdate) from weight )
-                
-                ; """
-            )
-
-            r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-            weight = cursor.fetchall()
-
-            connection.commit()
-            connection.close()
-
-        except:
-            connection.rollback()
-            print("Failed inserting in weight")
-        
-    
-    return weight

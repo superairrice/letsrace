@@ -9,6 +9,171 @@ from django.db.models import Count, Max, Min, Q
 from base.models import Exp011
 
 
+# 경주 시뮬레이션 가중치 get
+def get_weight(rcity, rdate, rno):
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+            select w_avg, w_fast, w_slow, w_recent3, w_recent5, w_convert, 0 w_flag
+            from weight_s1
+            where rcity =  '"""
+            + rcity
+            + """'
+            and rdate = '"""
+            + rdate
+            + """'
+            and rno =  """
+            + str(rno)
+            + """
+            and wdate = ( select max(wdate) from weight_s1 where rcity =  '"""
+            + rcity
+            + """'
+                                                                and rdate = '"""
+            + rdate
+            + """'
+                                                                and rno =  """
+            + str(rno)
+            + """ )
+            
+            ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        weight = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed inserting in h_weight")
+
+    if weight:
+        return weight
+    else:
+
+        try:
+            cursor = connection.cursor()
+
+            strSql = """ 
+                select w_avg, w_fast, w_slow, w_recent3, w_recent5, w_convert, 1 w_flag
+                from weight
+                where wdate = ( select max(wdate) from weight )
+                
+                ; """
+
+            r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+            weight = cursor.fetchall()
+
+            connection.commit()
+            connection.close()
+
+        except:
+            connection.rollback()
+            print("Failed inserting in weight")
+
+    return weight
+
+# 경주 시뮬레이션 Data 입력
+def mock_insert(rcity, rdate, rno):
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+            SELECT count(*) FROM exp011s1
+            where rcity =  '"""
+            + rcity
+            + """'
+            and rdate = '"""
+            + rdate
+            + """'
+            and rno =  """
+            + str(rno)
+            + """
+            ; """
+        )
+
+        # print(strSql)
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in exp011s1")
+
+    # print(result)
+
+    if result[0][0] == 0:
+        try:
+            cursor = connection.cursor()
+
+            strSql = (
+                """ 
+                insert into exp011s1
+                SELECT * FROM exp011
+                where rcity =  '"""
+                + rcity
+                + """'
+                and rdate = '"""
+                + rdate
+                + """'
+                and rno =  """
+                + str(rno)
+                + """
+                ; """
+            )
+
+            r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+            result = cursor.fetchall()
+
+            connection.commit()
+            connection.close()
+
+        except:
+            connection.rollback()
+            print("Failed inserting in exp011s1")
+    else:
+        try:
+            cursor = connection.cursor()
+
+            strSql = (
+                """ 
+                UPDATE exp011s1 a set r_pop = ( SELECT r_pop FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
+                r_record = ( SELECT r_record FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
+                h_weight = ( SELECT h_weight FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
+                r_rank = ( SELECT r_rank FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate )
+                WHERE rcity =  '"""
+                + rcity
+                + """'
+                and rdate = '"""
+                + rdate
+                + """'
+                and rno =  """
+                + str(rno)
+                + """
+                ; """
+            )
+
+            r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+            result = cursor.fetchall()
+
+            connection.commit()
+            connection.close()
+
+        except:
+            connection.rollback()
+            print("Failed inserting in exp011s1")
+
+    return result
+
+
 def mock_traval(r_condition, weight):
 
     for i in range(1, int(r_condition.rcount) + 1):
@@ -40,7 +205,7 @@ def mock_traval(r_condition, weight):
                 AND a.gate = """
                 + str(i)
                 + """
-              ; """
+            ; """
             )
 
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
