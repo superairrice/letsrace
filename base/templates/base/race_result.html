@@ -81,41 +81,61 @@
       <div class="room__top" style="z-index:1">
         
         <div class="room__topLeft">
-          <a class="header__logo" style="height:2.0rem; width: 2.2rem; cursor: pointer;" onclick="window.close()">
-          <!-- <a href="{% url 'home' %}" class="header__logo" style="height:2.0rem; width: 2.2rem;"> -->
-            <img src="{% static 'images/number-9.png' %}" />
+          <a href="{% url 'home' %}" class="header__logo" style="height:2.0rem; width: 2.2em;">
+            <span>
+              <img src="{% static 'images/number-9.png' %}" />
+            </span>
           </a>&nbsp;
 
-          <a href="{% url 'race_result' r_condition.rcity r_condition.rdate r_condition.rno|add:-1 0 0 0 0 %}">
-            <span class="tooltip">◀︎
-              <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
-                이전 경주
+          <a href="{% url 'prediction_race' r_condition.rcity r_condition.rdate r_condition.rno|add:-1 0 'awardee' %}">
+            <span class="tooltip" style="font-family: Arial; font-size:1.4rem; color: var(--color-main); font-weight: 500; border-radius: 7px; padding: 4px 4px; background-color: var(--color-dark);">◀︎
+              <span class="tooltip-text" style="font-size:1.2rem; text-align: right;">
+                ◀︎&nbsp;이전 경주
               </span>
             </span>
           </a>
-          <a href="{% url 'race_result' r_condition.rcity r_condition.rdate r_condition.rno|add:1 0 0 0 0 %}">
-            <span class="tooltip">▶︎
-              <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
-                다음 경주
+          <a href="{% url 'prediction_race' r_condition.rcity r_condition.rdate r_condition.rno|add:1 0 'awardee' %}">
+            <span class="tooltip" style="font-family: Arial; font-size:1.4rem; color: var(--color-main); font-weight: 500; border-radius: 7px; padding: 4px 4px; background-color: var(--color-dark);">▶︎
+              <span class="tooltip-text" style="font-size:1.2rem; text-align: right;">
+                ▶︎&nbsp;다음 경주
               </span>
             </span>
           </a>
+        
           
-          <span style="font-family: Arial, Helvetica, sans-serif; font-size:1.4rem; color: var(--color-main-light); font-weight: 500;">
-            '{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}})
-          </span>
-          
-          <span style="font-size:1.4rem; color: var(--color-main-light); font-weight: 500;">{{r_condition.rcity}}&nbsp;&nbsp;{{r_condition.rno}}®</span>
-          
-          <span class="tooltip" style="font-size:1.4rem; color: var(--color-main); font-weight: 500;">&nbsp;&nbsp;{{r_condition.grade|slice:"0:2"}}&nbsp;&nbsp;{{r_condition.rcon1}}&nbsp;&nbsp;
-            <span class="tooltip-text" style="font-size:1.3rem; color: var(--color-main); font-weight: 500;">
+          <a href="{% url 'thethe9_ranks' r_condition.rcity r_condition.rdate r_condition.rdate '%' '%' '%' '%' 1 1 1 99 %}"
+            onclick="window.open(this.href, 'thethe9_ranks', 'width=1300, height=1000, toolbars=no, scrollbars=yes'); return false;">
+            <span class="tooltip" style="font-family: Arial; font-size:1.4rem; color: var(--color-main); font-weight: 500; border-radius: 7px; padding: 4px 4px; background-color: var(--color-dark);">
+              &nbsp;'{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}})&nbsp;
+              <span class="tooltip-text" style="font-size:1.2rem; color: var(--color-main); font-weight: 500;">
+                🚦&nbsp;thethe9 Rank1 Analyze
+              </span>
+            </span>
+          </a>
+          <a href="{% url 'weeks_status' r_condition.rcity r_condition.rdate %}"
+            onclick="window.open(this.href, 'weeks_status', 'width=1300, height=1000, toolbars=no, scrollbars=yes'); return false;">
+            <span class="tooltip" style="font-family: Arial; font-size:1.4rem; color: var(--color-main); font-weight: 500; border-radius: 7px; padding: 4px 4px; background-color: var(--color-dark);">
+              &nbsp;{{r_condition.rcity}}&nbsp;&nbsp;{{r_condition.rno}}<sup style="font-size:0.9rem; font-style: italic;">R</sup>&nbsp;
+              <span class="tooltip-text" style="font-size:1.2rem; color: var(--color-main); font-weight: 500;">
+                🚦&nbsp;금주 입상마 경주전개 현황
+              </span>
+            </span>
+          </a>
+
+          <!-- <span style="font-size:1.4rem; color: var(--color-main-light); font-weight: 500;">
+            {{r_condition.rcity}}&nbsp;&nbsp;{{r_condition.rno}}<sup style="font-size:0.9rem; font-style: italic;">R</sup>
+          </span> -->
+
+          <span class="tooltip"
+            style="font-size:1.4rem; color: var(--color-main); font-weight: 500; padding: 4px 4px;">&nbsp;&nbsp;{{r_condition.grade|slice:"0:2"}}&nbsp;&nbsp;{{r_condition.rcon1}}&nbsp;&nbsp;
+            <span class="tooltip-text" style="font-size:1.2rem; color: var(--color-main); font-weight: 500;">
               {{r_condition.rname}} <br>
-              {{r_condition.rcon2}}
+              {{r_condition.rcon2}} 
             </span>
           </span>
-          
-          <span style="font-size:1.4rem; color: var(--color-main-light); font-weight: 500;">{{r_condition.dividing}}</span>
-          <span class="tooltip" style="color:var(--color-light); font-size: 1.4rem; font-family: Arial, Helvetica, sans-serif;">&nbsp;&nbsp;💵 {{r_condition.r1award|intcomma}}
+
+          <span style="font-size:1.4rem; color: var(--color-main-light); font-weight: 500; padding: 4px 4px;">{{r_condition.dividing}}</span>
+          <span class="tooltip" style="color:var(--color-light); font-size: 1.4rem; font-family: Arial; padding: 4px 4px;">&nbsp;&nbsp;💵 {{r_condition.r1award|intcomma}}
             <span class="tooltip-text" style="text-align: right; font-family: Arial;">
               <table>
                 <thead>
@@ -149,42 +169,17 @@
           
             </span>
           </span>
-          &nbsp;
-          <!-- <a href="http://kra.fiveplayer.co.kr/player.php?f={{r_condition.rdate}}/{% if r_condition.rcity == '서울' %}s{%else%}b{%endif%}{{r_condition.rno}}r"
-            onclick="window.open(this.href, '_blank', 'width=1024, height=1000, toolbars=no, scrollbars=yes'); return false;"> -->
+
+          <!-- <a href="http://kra.fiveplayer.co.kr/player.php?f={{r_condition.rdate}}/{% if r_condition.rcity == '서울' %}s{%else%}b{%endif%}{{r_condition.rno}}r" -->
           <a href="https://kraplayer.starplayer.net/kra/vod/starplayer.php?meet={% if r_condition.rcity == '서울' %}1{%else%}3{%endif%}&rcdate={{r_condition.rdate}}&rcno={{r_condition.rno}}&vod_type=r"
-            onclick="window.open(this.href, 'w_broadcast', 'width=1400, height=700, toolbars=no, scrollbars=yes'); return false;">
-            <span class="tooltip">🖥️&nbsp;&nbsp;
-              <span class="tooltip-text" style="font-size:1.4rem; color: var(--color-main); font-weight: 600;">경주결과
-                영상</span></span>
+            onclick="window.open(this.href, '_blank', 'width=1400, height=700, toolbars=no, scrollbars=yes'); return false;">
+            <span class="tooltip" style="padding: 4px 4px;">&nbsp;&nbsp;🖥️&nbsp;&nbsp;
+              <span class="tooltip-text" style="font-size:1.2rem;">🖥️&nbsp;&nbsp;경주결과 영상</span></span>
           </a>
-          
+    
         </div>
 
-        <div style="text-align:left; font-family: Arial;">
-          <span>
-          {% if r_condition.weather|slice:"0:1" == '맑' %}☀️
-          {% elif r_condition.weather|slice:"0:1" == '흐' %}☁️
-          {% elif r_condition.weather|slice:"0:1" == '비' %}☔️
-          {% elif r_condition.weather|slice:"0:1" == '눈' %}☃️
-          {% else %}-
-          {% endif %}
-          </span>
-          <span style="text-align:left; font-family: Arial; font-size: 1.4rem;">{{r_condition.rstate}}&nbsp;{{r_condition.rmoisture}}</span>
-          {% if r_condition.race_speed %}
-          <span style="text-align:left; font-family: Arial; font-size: 1.3rem;">&nbsp;주로:</span>
-          
-          <span style="text-align:left; font-family: Arial; font-size: 1.5rem; color:var(--color-light)">
-            {{r_condition.race_speed}}
-          </span>
-          
-          {% endif %}
-
-          <span style="text-align:left; font-family: Arial; font-size: 1.2rem; color:var(--color-main)">
-            &nbsp;>>&nbsp;{{records.0.adv_track|floatformat:1}}
-          </span>
-
-        </div>
+        
         
         <div class="room__topRight">
 
@@ -223,6 +218,31 @@
           <span style="font-size:1.4rem; color: var(--color-main-light); font-family: Arial; padding:0.4rem; ">{{r_condition.distance}}𝓂</span>
         </div>
 
+        <div style="text-align:left; font-family: Arial;">
+          <span class="tooltip">
+            {% if r_condition.weather|slice:"0:1" == '맑' %}☀️
+            {% elif r_condition.weather|slice:"0:1" == '흐' %}☁️
+            {% elif r_condition.weather|slice:"0:1" == '비' %}☔️
+            {% elif r_condition.weather|slice:"0:1" == '눈' %}☃️
+            {% else %}-
+            {% endif %}
+          
+            <span class="tooltip-text" style="text-align:left; font-family: Arial; font-size: 1.2rem;">{{r_condition.rstate}}&nbsp;{{r_condition.rmoisture}}</span>
+          </span>
+          {% if r_condition.race_speed %}
+          <span style="text-align:left; font-family: Arial; font-size: 1.3rem;">&nbsp;주로:</span>
+        
+          <span style="text-align:left; font-family: Arial; font-size: 1.5rem; color:var(--color-light)">
+            {{r_condition.race_speed}}
+          </span>
+        
+          {% endif %}
+        
+          <span style="text-align:left; font-family: Arial; font-size: 1.2rem; color:var(--color-main)">
+            &nbsp;>>&nbsp;{{records.0.adv_track|floatformat:1}}
+          </span>
+        
+        </div>
         
 
       </div>

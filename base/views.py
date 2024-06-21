@@ -732,6 +732,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
 
         # insert the new_visitor object into the database
         new_visitor.save()
+        
 
     context = {
         "exp011s": exp011s,

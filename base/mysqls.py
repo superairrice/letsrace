@@ -83,7 +83,7 @@ def get_paternal(rcity, rdate, rno, distance):
                     ( select horse, paternal, price, tot_prize 
                         from horse_w where wdate = ( select max(wdate) from horse_w where wdate <= '"""
             + rdate
-            + """' )) b right outer join paternal c on b.paternal = c.paternal 
+            + """' )) b left outer join paternal c on b.paternal = c.paternal 
                 where  a.horse = b.horse
                 AND a.rcity = '"""
             + rcity

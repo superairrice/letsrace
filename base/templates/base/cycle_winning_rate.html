@@ -77,199 +77,8 @@
 
     <div class="container" >
 
-      <div class="room__top" style="z-index:1">
-      
-        <div class="room__topLeft">
-          <a class="header__logo" style="height:2.0rem; width: 2.2rem; cursor: pointer;" onclick="window.close()">
-            <!-- <a href="{% url 'home' %}" class="header__logo" style="height:2.0rem; width: 2.2rem;"> -->
-            <img src="{% static 'images/number-9.png' %}" />
-          </a>&nbsp;
-
-          {% if awardee == 'jockey' %}
-          <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:-1 'jockey' '99' %}">
-            <span class="tooltip">◀︎
-              <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
-                이전 경주
-              </span>
-            </span>
-          </a>
-          <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:1 'jockey' '99' %}">
-            <span class="tooltip">▶︎
-              <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
-                다음 경주
-              </span>
-            </span>
-          </a>
-          {% else %}
-          <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:-1 'trainer' '99' %}">
-            <span class="tooltip">◀︎
-              <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
-                이전 경주
-              </span>
-            </span>
-          </a>
-          <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno|add:1 'trainer' '99' %}">
-            <span class="tooltip">▶︎
-              <span class="tooltip-text" style="font-size:1.4rem; text-align: right;">
-                다음 경주
-              </span>
-            </span>
-          </a>
-          {% endif %}
-
-          <a href="{% url 'weeks_status' r_condition.rcity r_condition.rdate %}" onclick="window.open(this.href, 'w_weeks_status', 'width=1400, height=1000, toolbars=no, scrollbars=yes'); return false;">
-            <span class="tooltip" style="font-family: Arial, Helvetica, sans-serif; font-size:1.4rem; color: var(--color-main); font-weight: 500;">
-              &nbsp;&nbsp;'{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}})
-              <span class="tooltip-text" style="font-size:1.2rem; color: var(--color-main); font-weight: 500;">
-                🚦&nbsp;금주 입상마 경주전개 현황
-              </span>
-            </span>
-          </a>
-      
-          <span style="font-size:1.4rem; color: var(--color-main-light); font-weight: 500;">{{r_condition.rcity}}&nbsp;&nbsp;{{r_condition.rno}}®</span>
-      
-          <span class="tooltip" style="font-size:1.4rem; color: var(--color-main); font-weight: 500;">&nbsp;&nbsp;{{r_condition.grade|slice:"0:2"}}&nbsp;&nbsp;{{r_condition.rcon1}}&nbsp;&nbsp;
-            <span class="tooltip-text" style="font-size:1.3rem; color: var(--color-main); font-weight: 500;">
-              {{r_condition.rname}} <br>
-              {{r_condition.rcon2}}
-            </span>
-          </span>
-      
-          <span style="font-size:1.4rem; color: var(--color-main-light); font-weight: 500;">{{r_condition.dividing}}</span>
-          <span class="tooltip" style="color:var(--color-light); font-size: 1.4rem; font-family: Arial, Helvetica, sans-serif;">&nbsp;&nbsp;💵 {{r_condition.r1award|div:1000|intcomma}}
-            <span class="tooltip-text" style="text-align: right; font-family: Arial;">
-              <table>
-                <thead>
-                  <th style="font-family: Arial; font-size: 1.2rem;">순위</th>
-                  <th style="font-family: Arial; font-size: 1.2rem;">상금</th>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">1</td>
-                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r1award|div:1000|intcomma}}</td>
-                  </tr>
-                  <tr>
-                    <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">2</td>
-                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r2award|div:1000|intcomma}}</td>
-                  </tr>
-                  <tr>
-                    <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">3</td>
-                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r3award|div:1000|intcomma}}</td>
-                  </tr>
-                  <tr>
-                    <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">4</td>
-                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r4award|div:1000|intcomma}}</td>
-                  </tr>
-                  <tr>
-                    <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">5</td>
-                    <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r5award|div:1000|intcomma}}</td>
-                  </tr>
-                </tbody>
-          
-              </table>
-          
-            </span>
-          </span>
-          &nbsp;
-          <!-- <a href="http://kra.fiveplayer.co.kr/player.php?f={{r_condition.rdate}}/{% if r_condition.rcity == '서울' %}s{%else%}b{%endif%}{{r_condition.rno}}r"
-            onclick="window.open(this.href, '_blank', 'width=1024, height=1000, toolbars=no, scrollbars=yes'); return false;"> -->
-          <a href="https://kraplayer.starplayer.net/kra/vod/starplayer.php?meet={% if r_condition.rcity == '서울' %}1{%else%}3{%endif%}&rcdate={{r_condition.rdate}}&rcno={{r_condition.rno}}&vod_type=r"
-            onclick="window.open(this.href, '_blank', 'width=1400, height=700, toolbars=no, scrollbars=yes'); return false;">
-            <span class="tooltip">🖥️&nbsp;&nbsp;
-              <span class="tooltip-text" style="font-size:1.4rem; color: var(--color-main); font-weight: 600;">경주결과
-                영상</span></span>
-          </a>
-      
-        </div>
-      
-      
-      
-        <div class="room__topRight">
-      
-          {%if r_condition.r2alloc %}
-          <span class="tooltip" style="color:var(--color-r2); font-size: 1.4rem;">복승: {{r_condition.r2alloc|slice:"2:10"|rjust:10}}
-            <span class="tooltip-text" style="text-align: left; font-family: Arial;">
-              <table>
-                <thead>
-                  <tr>
-                    <th style="font-family: Arial,; font-size: 1.2rem;">승식</th>
-                    <th style="font-family: Arial,; font-size: 1.2rem;">배당율</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style="font-family: Arial,; font-size: 1.2rem;">복승</td>
-                    <td style="font-family: Arial,; font-size: 1.2rem; text-align: right;">{{r_condition.r2alloc|slice:"2:"}}</td>
-                  </tr>
-                  <tr>
-                    <td style="font-family: Arial,; font-size: 1.2rem;">삼복승</td>
-                    <td style="font-family: Arial,; font-size: 1.2rem; text-align: right;">{{r_condition.r333alloc|slice:"3:"}}</td>
-                  </tr>
-                  <tr>
-                    <td style="font-family: Arial,; font-size: 1.2rem;">삼쌍승</td>
-                    <td style="font-family: Arial,; font-size: 1.2rem; text-align: right;">{{r_condition.r123alloc|slice:"3:"}}</td>
-                  </tr>
-      
-                </tbody>
-              </table>
-            </span>
-          </span>
-          {%endif%}
-        </div>
-
-        <div class="room__topRight">
-          {%if alloc.r2alloc %}
-          <span class="tooltip" style="color:var(--color-r2); font-size: 1.4rem;">복승식: {{alloc.r2alloc|slice:"2:10"|rjust:10}}
-            <span class="tooltip-text" style="text-align: left; font-family: Arial;">
-              <table>
-                <thead>
-                  <tr>
-                    <th style="font-family: Arial,; font-size: 1.2rem;">승식</th>
-                    <th style="font-family: Arial,; font-size: 1.2rem;">배당율</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style="font-family: Arial,; font-size: 1.2rem;">복승</td>
-                    <td style="font-family: Arial,; font-size: 1.2rem; text-align: right;">{{alloc.r2alloc|slice:"2:"}}</td>
-                  </tr>
-                  <tr>
-                    <td style="font-family: Arial,; font-size: 1.2rem;">삼복승</td>
-                    <td style="font-family: Arial,; font-size: 1.2rem; text-align: right;">{{alloc.r333alloc|slice:"3:"}}</td>
-                  </tr>
-                  <tr>
-                    <td style="font-family: Arial,; font-size: 1.2rem;">삼쌍승</td>
-                    <td style="font-family: Arial,; font-size: 1.2rem; text-align: right;">{{alloc.r123alloc|slice:"3:"}}</td>
-                  </tr>
-        
-                </tbody>
-              </table>
-            </span>
-          </span>
-          {%endif%}
-        </div>
-      
-        <div class="room__topRight">
-          <span style="font-size:1.4rem; color: var(--color-main-light); font-family: Arial; padding:0.4rem; ">{{r_condition.distance}}𝓂</span>
-
-          <span style="color: var(--color-main); padding:0.4rem;">
-            {% if request.user.username == 'admin' %}
-            <a href="{% url 'race_report' r_condition.rcity r_condition.rdate r_condition.rno %}"
-              onclick="window.open(this.href, '_blank', 'width=900, height=800, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
-              <span class="tooltip" style="font-size: 1.35rem; font-weight: 400;">⏰&nbsp;&nbsp;{{r_condition.rtime}}
-                <span class="tooltip-text">경주복기</span>
-              </span>
-            </a>
-          
-            {% else %}
-            ⏰&nbsp;&nbsp;{{r_condition.rtime}}
-            {% endif %}
-          </span>
-        </div>
-      
-      
-      
-      </div>
+      {# Header #}
+      {% include 'base/m_header_of_prediction.html' %}
 
       <hr style="border: solid 1px black;">
       
@@ -472,129 +281,88 @@
                     
                   {% endif %}
 
-                  <span style="font-size: 1.15rem;  text-align: right;">
-                    {% if weight_per|slice:"6:9" <= '440' %} 
-                    <span style="padding:2px 2px; font-family: Arial; color:var(--color-r5);">{{weight_per|slice:"6:9"}}㎏</span>
-                    {% elif weight_per|slice:"6:9" >= '500' %}
-                    <span style="padding:2px 2px; font-family: Arial; color:var(--color-r2);">{{weight_per|slice:"6:9"}}㎏</span>
-                    {% else %}
-                    <span style="padding:2px 2px; font-family: Arial; color:var(--color-gray);">{{weight_per|slice:"6:9"}}㎏</span>
-                    {% endif %}
-                  </span>
+                  {% if t_awardee in trainer_double_check %}
+                  <span style="color:var(--color-r3); font-style: italic;">&nbsp;{{t_awardee}}</span>
+                  {% else %}
+                  <span style="color:var(--color-gray);">&nbsp;{{t_awardee}}</span>
+                  {% endif %}
+                  
                   
                 </div>
               </td>
       
               <td align="left">
 
-                {% if t_awardee in trainer_double_check %}
-                <div style="font-size: 1.2rem; text-align: left; color:var(--color-light);"> 
-                  <span class="tooltip" style="color:var(--color-r3); font-style: italic;">
-                    {{t_awardee}}
+                <div class="tooltip" style="font-size: 1.2rem; text-align: left; color: var(--color-light-gray);">
+                  <div>
+                  {% if weight_per|slice:"6:9"|mul:1 >= 500 %} 
+                  <span style="font-family: Arial; color:var(--color-r5);">{{weight_per|slice:"6:9"}}<sup style="font-size: 0.9rem; font-style: italic;">㎏</sup></span>
+                  {% elif weight_per|slice:"6:9"|mul:1 >= 440 and weight_per|slice:"6:9"|mul:1 < 500 %}
+                  <span style="font-family: Arial; color:var(--color-gray);">{{weight_per|slice:"6:9"}}<sup style="font-size: 0.9rem; font-style: italic;">㎏</sup></span>
+                  {% else %}
+                  <span style="font-family: Arial; color:var(--color-r2);">{{weight_per|slice:"6:9"}}<sup style="font-size: 0.9rem; font-style: italic;">㎏</sup></span>
+                  {% endif %}
+                  </div>
 
-                    <span class="tooltip-text" style="z-index: 9; color: var(--color-light-gray);">
-                      
-                      <div style="text-align: left;">체중 :&nbsp;&nbsp;
-                        <span style="color:var(--color-r3); font-style: italic;">{{weight_per|slice:"5:9"}}<sup style="font-size: 0.9rem; font-style: italic;">㎏</sup></span>
-                        <span>{{weight_per|slice:"9:14"}}</span>
-                      </div>
-                      <div style="text-align: left;">출주주기 :&nbsp;&nbsp;
-                        <span style="color:var(--color-r3)">{{weeks}}주</span>
-                      </div>
-                      <div style="text-align: left;">나이 :&nbsp;&nbsp;
-                        <span style="color:var(--color-r3)">{{weight_per|slice:"0:1"}}세</span>
-                      </div>
-                      <div style="text-align: left;">성별 :&nbsp;&nbsp;
-                        <span style="color:var(--color-r3)">{{weight_per|slice:"3:4"}}</span>
-                      </div>
-                      <hr>
-                      <div style="text-align: left; padding-top: 10px;">전적 :&nbsp;&nbsp;
-                        <span style="color:var(--color-r5)">{{weight_per|slice:"14:-5"}}</span>
-                      </div>
-                      <div style="text-align:right; font-style: italic; font-size: 1.1rem; ">
-                        {% if weight_per|slice:"-4:-3" == ' ' %}
-                        <span class="tooltip" style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r1);">&nbsp;{{weight_per|slice:"-3:"}}</span>
-                        {% else %}
-                        {% if weight_per|slice:"-5:"|mul:1 >= 30 %}
-                        <span style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r3);">{{weight_per|slice:"-4:"}}</span>
-                        {% elif weight_per|slice:"-5:"|mul:1 >= 20 and weight_per|slice:"-5:"|mul:1 > 30 %}
-                        <span style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-light-gray);">{{weight_per|slice:"-4:"}}</span>
-                        {% else %}
-                        <span style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-gray);">{{weight_per|slice:"-4:"}}</span>
-                        {% endif %}
-                        {% endif %}
-                      </div>
-                    </span>
+                  <span class="tooltip-text" style="z-index: 9; color: var(--color-gray);">
+                    <div style="text-align: left;">체중 :&nbsp;&nbsp;
+                      <span style="color:var(--color-r3); font-style: italic;">{{weight_per|slice:"5:9"}}<sup style="font-size: 0.9rem; font-style: italic;">㎏</sup></span>
+                      <span style="color:var(--color-r5); font-style: italic;">{{weight_per|slice:"9:14"}}</span>
+                    </div>
+                    <div style="text-align: left;">출주주기 :&nbsp;&nbsp;
+                      <span style="color:var(--color-r3)">{{weeks}}주</span>
+                    </div>
+                    <div style="text-align: left;">나이 :&nbsp;&nbsp;
+                      <span style="color:var(--color-r3)">{{weight_per|slice:"0:1"}}세</span>
+                    </div>
+                    <div style="text-align: left;">성별 :&nbsp;&nbsp;
+                      <span style="color:var(--color-r3)">{{weight_per|slice:"3:4"}}</span>
+                    </div>
+                    <hr>
+                    <div style="text-align: left; padding-top: 10px;">총 전적 :&nbsp;&nbsp;
+                      <span style="color:var(--color-r5)">{{weight_per|slice:"14:-5"}}</span>
+                    </div>
+                    <div style="text-align:right; font-style: italic; font-size: 1.1rem; ">
+                      {% if weight_per|slice:"-4:-3" == ' ' %}
+                      <span class="tooltip" style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r1);">&nbsp;{{weight_per|slice:"-3:"}}</span>
+                      {% else %}
+                      {% if weight_per|slice:"-5:"|mul:1 >= 30 %}
+                      <span style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r3);">{{weight_per|slice:"-4:"}}</span>
+                      {% elif weight_per|slice:"-5:"|mul:1 >= 20 and weight_per|slice:"-5:"|mul:1 > 30 %}
+                      <span style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-light-gray);">{{weight_per|slice:"-4:"}}</span>
+                      {% else %}
+                      <span style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-gray);">{{weight_per|slice:"-4:"}}</span>
+                      {% endif %}
+                      {% endif %}
+                    </div>
+                    <div style="text-align: left; padding-top: 10px;">거리 전적 :&nbsp;&nbsp;
+                      <span style="color:var(--color-r5)">{{dist_per|slice:"14:-5"}}</span>
+                    </div>
+                    <div style="text-align:right; font-style: italic; font-size: 1.1rem; ">
+                      {% if dist_per|slice:"-4:-3" == ' ' %}
+                      <span class="tooltip" style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r1);">&nbsp;{{dist_per|slice:"-3:"}}</span>
+                      {% else %}
+                      {% if dist_per|slice:"-5:"|mul:1 >= 30 %}
+                      <span style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r3);">{{dist_per|slice:"-4:"}}</span>
+                      {% elif dist_per|slice:"-5:"|mul:1 >= 20 and dist_per|slice:"-5:"|mul:1 > 30 %}
+                      <span style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-light-gray);">{{dist_per|slice:"-4:"}}</span>
+                      {% else %}
+                      <span style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-gray);">{{dist_per|slice:"-4:"}}</span>
+                      {% endif %}
+                      {% endif %}
+                    </div>
                   </span>
                 </div>
-                {% else %}
-                <div style="font-size: 1.2rem; text-align: left; color: var(--color-light-gray);">
-                  <span class="tooltip" style="color:var(--color-gray);">
-                    {{t_awardee}}
 
-                    <span class="tooltip-text" style="z-index: 9; color: var(--color-gray);">
-                      <div style="text-align: left;">체중 :&nbsp;&nbsp;
-                        <span style="color:var(--color-r3); font-style: italic;">{{weight_per|slice:"5:9"}}<sup style="font-size: 0.9rem; font-style: italic;">㎏</sup></span>
-                        <span>{{weight_per|slice:"9:14"}}</span>
-                      </div>
-                      <div style="text-align: left;">출주주기 :&nbsp;&nbsp;
-                        <span style="color:var(--color-r3)">{{weeks}}주</span>
-                      </div>
-                      <div style="text-align: left;">나이 :&nbsp;&nbsp;
-                        <span style="color:var(--color-r3)">{{weight_per|slice:"0:1"}}세</span>
-                      </div>
-                      <div style="text-align: left;">성별 :&nbsp;&nbsp;
-                        <span style="color:var(--color-r3)">{{weight_per|slice:"3:4"}}</span>
-                      </div>
-                      <hr>
-                      <div style="text-align: left; padding-top: 10px;">총 전적 :&nbsp;&nbsp;
-                        <span style="color:var(--color-r5)">{{weight_per|slice:"14:-5"}}</span>
-                      </div>
-                      <div style="text-align:right; font-style: italic; font-size: 1.1rem; ">
-                        {% if weight_per|slice:"-4:-3" == ' ' %}
-                        <span class="tooltip" style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r1);">&nbsp;{{weight_per|slice:"-3:"}}</span>
-                        {% else %}
-                        {% if weight_per|slice:"-5:"|mul:1 >= 30 %}
-                        <span style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r3);">{{weight_per|slice:"-4:"}}</span>
-                        {% elif weight_per|slice:"-5:"|mul:1 >= 20 and weight_per|slice:"-5:"|mul:1 > 30 %}
-                        <span style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-light-gray);">{{weight_per|slice:"-4:"}}</span>
-                        {% else %}
-                        <span style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-gray);">{{weight_per|slice:"-4:"}}</span>
-                        {% endif %}
-                        {% endif %}
-                      </div>
-                      <div style="text-align: left; padding-top: 10px;">거리 전적 :&nbsp;&nbsp;
-                        <span style="color:var(--color-r5)">{{dist_per|slice:"14:-5"}}</span>
-                      </div>
-                      <div style="text-align:right; font-style: italic; font-size: 1.1rem; ">
-                        {% if dist_per|slice:"-4:-3" == ' ' %}
-                        <span class="tooltip" style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r1);">&nbsp;{{dist_per|slice:"-3:"}}</span>
-                        {% else %}
-                        {% if dist_per|slice:"-5:"|mul:1 >= 30 %}
-                        <span style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r3);">{{dist_per|slice:"-4:"}}</span>
-                        {% elif dist_per|slice:"-5:"|mul:1 >= 20 and dist_per|slice:"-5:"|mul:1 > 30 %}
-                        <span style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-light-gray);">{{dist_per|slice:"-4:"}}</span>
-                        {% else %}
-                        <span style="font-family: Arial; background-color:var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-gray);">{{dist_per|slice:"-4:"}}</span>
-                        {% endif %}
-                        {% endif %}
-                      </div>
-                    </span>
-                  </span>
-                </div>
-                {% endif %}
-                
+                <div style="text-align:right; font-style: italic; font-size: 1.1rem; ">
                 {% if weight_per|slice:"10:11" %}
                   {% if weight_per|slice:"10:11" == '+' %}
-                  <div style="text-align:right; font-style: italic; font-size: 1.1rem;  color:var(--color-r1);">
-                    <span style="font-family: Arial; border-radius: 7px; background-color: var(--color-bg); padding:0px 4px;">{{weight_per|slice:"10:14"}}</span>
-                  </div>
+                    <span style="font-family: Arial; color:var(--color-r5); border-radius: 7px; background-color: var(--color-bg); padding:2px 4px;">{{weight_per|slice:"10:14"}}</span>
                   {% else %}
-                  <div style="text-align:right; font-style: italic; font-size: 1.1rem;  color:var(--color-r5);">
-                    <span style="font-family: Arial; border-radius: 7px; background-color: var(--color-bg); padding:1px 4px;">{{weight_per|slice:"10:14"}}</span>
-                  </div>
+                    <span style="font-family: Arial; color:var(--color-r1); border-radius: 7px; background-color: var(--color-bg); padding:2px 4px;">{{weight_per|slice:"10:14"}}</span>
                   {% endif %}
                 {% endif %}
+                </div>
                 
               </td>
               
