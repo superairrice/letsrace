@@ -3131,9 +3131,9 @@ def get_prediction(i_rdate):
 
         strSql = (
             """ 
-                select a.rcity, a.rdate, a.rday, a.rno, a.rtime, a.distance, b.r2alloc, b.r333alloc, b.r123alloc
-                  from exp010 a left outer join 
-                        rec010 b on a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
+                select a.rcity, a.rdate, a.rday, a.rno, a.rtime, a.distance, b.r2alloc, b.r333alloc, b.r123alloc, a.grade, a.dividing
+                from exp010 a left outer join 
+                    rec010 b on a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
                 where a.rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""

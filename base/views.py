@@ -472,6 +472,8 @@ def home(request):
 
     race, expects, award_j, rdays, judged_jockey = get_prediction(i_rdate)
 
+    loadin = get_last2weeks_loadin(i_rdate)
+
     # print(judged_jockey)
 
     rflag = False  # 경마일, 비경마일 구분
@@ -506,6 +508,7 @@ def home(request):
         "racings": racings,
         "expects": expects,
         "fdate": fdate,
+        "loadin": loadin,
         "race_detail": race_detail,
         "race_board": race_board,
         "jname1": jname1,

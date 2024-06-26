@@ -3,38 +3,109 @@
 
   <div class="container" >
 
-    <a href="{% url 'home' %}" class="header__logo">
-      <img src="{% static 'images/number-9.png' %}" />
-      <h1 style="font-style: italic;">thethe9.com</h1>
-    </a>
+    <div class="room__top" style="background-color: var(--color-dark);">
 
-    {% if request.user.is_authenticated %}
-    <form class="header__search" method="GET" action="{% url 'home' %}" style="padding-top: 0.3rem;">
+      <a href="{% url 'home' %}" class="header__logo" style="height:2.0rem; width: 2.2em;">
+        <span class="tooltip">
+          <img src="{% static 'images/number-9.png' %}" />
+          <span class="tooltip-text" style="z-index: 9; font-style: normal; font-size: 1.3rem;">🔄&nbsp;&nbsp;Home 새로고침</span>
+        </span>
+      </a>
 
-      &nbsp;&nbsp;&nbsp;&nbsp;
-      <input style="width: 12rem;" type="date" value={{fdate}} name="q">&nbsp;&nbsp;&nbsp;&nbsp;
-      관심기수 :&nbsp;&nbsp;&nbsp;
-      <input style="width: 15rem; color:var(--color-r1)" type="text" value='{{jname1}}' placeholder="세영" name="j1">
-      &nbsp;&nbsp;&nbsp;
-      <button class="btn btn--main">Search</button>
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;</span>
+
+      <span class="tooltip" style="font-style: italic; font-size: 1.9rem;">thethe9.com
+        <span class="tooltip-text" style="z-index: 9; font-style: normal; font-size: 1.3rem;">
+          <table>
+            <thead>
+              <th style="font-family: Arial; font-size: 1.2rem; padding-bottom: 1.3rem;">⚓️</th>
+            </thead>
+            <tbody>
+              <tr align="left">
+                <td style="font-family: Arial; font-size: 1.2rem;">
+                  <a class="btn btn--link" href="{% url 'award_status_jockey' %}" onclick="window.open(this.href, '_blank', 'width=1030, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                    ﹅&nbsp;&nbsp;기수 출주현황
+                  </a>
+                </td>
+              </tr>
+              <tr align="left">
+                <td style="font-family: Arial; font-size: 1.2rem;">
+                  <a class="btn btn--link" href="{% url 'award_status_trainer' %}" onclick="window.open(this.href, '_blank', 'width=1030, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                    ﹅&nbsp;&nbsp;마방 출주현황
+                  </a>
+                </td>
+              </tr>
+              <tr align="left">
+                <td style="font-family: Arial; font-size: 1.2rem;">
+                  <a class="btn btn--link" href="https://race.kra.co.kr/thisweekrace/ThisWeekChulmapyoChange.do"
+                    onclick="window.open(this.href, 'w_kra', 'width=1400, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                    <span style="font-size:1.2rem; padding: 4px 4px; border-bottom: 7px;">🛫&nbsp;&nbsp;KRA 출전표 변경</span>
+                  </a>
+                </td>
+              </tr>
+              <tr align="left">
+                <td style="font-family: Arial; font-size: 1.2rem;">
+                  <a class="btn btn--link" href="https://race.kra.co.kr/thisweekrace/ThisWeekWeight.do" onclick="window.open(this.href, 'w_kra', 'width=1400, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                    <span style="font-size:1.2rem; padding: 4px 4px; border-bottom: 7px;">🛫&nbsp;&nbsp;KRA 출주마 체중</span>
+                  </a>
+                </td>
+              </tr>
+              <tr align="left">
+                <td style="font-family: Arial; font-size: 1.2rem;">
+                  <a class="btn btn--link" href="https://race.kra.co.kr/thisweekrace/ThisWeekScoretableDailyScoretable.do"
+                    onclick="window.open(this.href, 'w_kra', 'width=1400, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                    <span style="font-size:1.2rem; padding: 4px 4px; border-bottom: 7px;">🛫&nbsp;&nbsp;KRA 요약성적표</span>
+                  </a>
+                </td>
+              </tr>
+
+
+              {% if request.user.username == 'admin' %}
+              <tr align="left">
+                <td style="font-family: Arial; font-size: 1.2rem;">
+                <a class="btn btn--link" href="{% url 'data_management' %}" onclick="window.open(this.href, 'w_input', 'width=1300, height=800, toolbars=no, scrollbars=yes'); return false;">
+                  ﹅&nbsp;&nbsp;KRA 자료실 데이터 입력
+                </a>
+                </td>
+              </tr>
+              <tr align="left">
+                <td style="font-family: Arial; font-size: 1.2rem;">
+                <a class="btn btn--link" href="{% url 'race_breakingnews' %}" onclick="window.open(this.href, 'w_news', 'width=1000, height=800, toolbars=no, scrollbars=yes'); return false;">
+                  ﹅&nbsp;&nbsp;경주속보 입력
+                </a>
+                </td>
+              </tr>
+              
+              {%endif%}
+              
+            </tbody>
+          
+          </table>
+
+        </span>
+      </span>
+
+      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
       
-    </form>
-    {% else %}
+      <a href="{% url 'print_prediction' %}" onclick="window.open(this.href, '_blank', 'width=1000, height=1200, toolbars=no, scrollbars=yes'); return false;">
+        <span class="tooltip">🖨️
+          <span class="tooltip-text" style="z-index: 9; width: 16.0rem; font-size: 1.3rem;">
+            🖨️&nbsp;&nbsp;프로그램 예상순위 출력
+          </span>
+        </span>
+      </a>
+
+    </div>
+
     <form class="header__search" method="GET" action="{% url 'home' %}" style="padding-top: 0.3rem;">
     
-      &nbsp;&nbsp;&nbsp;&nbsp;
       <input style="width: 12rem;" type="date" value={{fdate}} name="q">&nbsp;&nbsp;&nbsp;&nbsp;
       관심기수 :&nbsp;&nbsp;&nbsp;
       <input style="width: 15rem; color:var(--color-r1)" type="text" value='{{jname1}}' placeholder="세영" name="j1">
       &nbsp;&nbsp;&nbsp;
-      <button class="btn btn--main">Search</button>
+      <button class="btn btn--main">Reload</button>
     
     </form>
-    {%endif%}
-
-    <!-- <button class="btn btn--main" onClick="identifyBrowser()">Search</button> -->
-    
-    <!-- <button class="btn" style="background: var(--color-main);" onclick="identifyBrowser()">Confirm</button> -->
 
     <nav class="header__menu">
 

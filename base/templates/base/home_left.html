@@ -1,0 +1,164 @@
+{% load humanize %}
+{% load mathfilters %}
+
+<div clss="roomListRoom">
+
+  {% if rflag == False %}
+  <ul class="tabs">
+    <li class="tab-link current" data-tab="tab-2" style="padding: 6px 25px;">금(부산)</li>
+    <li class="tab-link" data-tab="tab-3" style="padding: 6px 25px;">토(서울)</li>
+    <li class="tab-link" data-tab="tab-4" style="padding: 6px 25px;">일(서울)</li>
+    <li class="tab-link" data-tab="tab-5" style="padding: 6px 25px;">일(부산)</li>
+    {% if rdays.4.0 %}<li class="tab-link" data-tab="tab-6" style="padding: 6px 25px;">월</li>{% endif %} {# 월요일 경마 에외처리 20231009 only #}
+  </ul>
+
+  {% else %}
+
+  <ul class="tabs">
+    {% for rdate, rday, today, rcity in rdays %}
+    <li class="tab-link {% if rdate == today %}current{% endif %}" data-tab="tab-{{forloop.counter}}" style="padding: 6px 25px;">{{rday}}({{rcity}})</li>
+    {% endfor %}
+
+  </ul>
+  {% endif %}
+
+  <div id="tab-2" class="tab-content {% if rdays.0.0  == rdays.0.2 or rflag == False %}current{% endif %} "> {# 경마일 당일 이거나 비경마일이면 current tab #}
+
+    <table class="rwd-table" style="background-color: var(--color-dark); z-index: 0;">
+
+        {% include 'base/home_left_sub1.html' %}
+        
+        {% for r_rcity, r_rdate, r_rday, r_rno, rtime, distance, r2alloc, r333alloc, r123alloc, grade, dividing in race %}
+        {% if r_rday == '금' %}
+
+          {% include 'base/home_left_sub2.html' %}
+
+        {% endif %}
+        {% endfor %}
+    
+        <!-- <tr>
+          <td colspan="26" align="center" style="font-size:6.6rem; text-transform:capitalize; border-top: 1px solid gray; background-color: var(--color-bg);">&nbsp;</td>
+        </tr> -->
+
+    </table>
+
+  </div>
+
+  <div id="tab-3" class="tab-content {% if rdays.1.0  == rdays.0.2 %}current{% endif %}">
+
+    <table class="rwd-table" style="background-color: var(--color-dark);">
+    
+      {% include 'base/home_left_sub1.html' %}
+
+      {% for r_rcity, r_rdate, r_rday, r_rno, rtime, distance, r2alloc, r333alloc, r123alloc, grade, dividing in race %}
+      {% if r_rday == '토' %}
+
+        {% include 'base/home_left_sub2.html' %}
+    
+      {% endif %}
+      {% endfor %}
+    
+      <!-- <tr>
+        <td colspan="26" align="center" style="font-size:6.6rem; text-transform:capitalize; border-top: 1px solid gray; background-color: var(--color-bg);">&nbsp;</td>
+      </tr> -->
+    
+    </table>
+    
+        
+  </div>
+
+  <div id="tab-4" class="tab-content {% if rdays.2.0  == rdays.0.2 and rdays.2.3 == '서울' %}current{% endif %}" >
+
+    <table class="rwd-table" style="background-color: var(--color-dark);">
+    
+      {% include 'base/home_left_sub1.html' %}
+
+      {% for r_rcity, r_rdate, r_rday, r_rno, rtime, distance, r2alloc, r333alloc, r123alloc, grade, dividing in race %}
+      {% if r_rday == '일' and r_rcity == '서울' %}
+      
+        {% include 'base/home_left_sub2.html' %}
+
+      {% endif %}
+      {% endfor %}
+    
+      <!-- <tr>
+        <td colspan="26" align="center" style="font-size:6.6rem; text-transform:capitalize; border-top: 1px solid gray; background-color: var(--color-bg);">&nbsp;</td>
+      </tr> -->
+    
+    </table>
+
+    
+  </div>
+
+  <div id="tab-5" class="tab-content {% if rdays.2.0  == rdays.0.2 and rdays.2.3 == '서울' %}current{% endif %}">
+
+    <table class="rwd-table" style="background-color: var(--color-dark);">
+    
+      {% include 'base/home_left_sub1.html' %}
+
+      {% for r_rcity, r_rdate, r_rday, r_rno, rtime, distance, r2alloc, r333alloc, r123alloc, grade, dividing in race %}
+      {% if r_rday == '일' and r_rcity == '부산' %}
+        {% include 'base/home_left_sub2.html' %}
+    
+      {% endif %}
+      {% endfor %}
+    
+      <!-- <tr>
+        <td colspan="26" align="center" style="font-size:6.6rem; text-transform:capitalize; border-top: 1px solid gray; background-color: var(--color-bg);">&nbsp;</td>
+      </tr> -->
+    
+    </table>
+    
+  </div>
+
+  <div id="tab-6" class="tab-content {% if rdays.4.0  == rdays.0.2 %}current{% endif %}">
+
+    <table class="rwd-table" style="background-color: var(--color-dark);">
+    
+      {% include 'base/home_left_sub1.html' %}
+
+      {% for r_rcity, r_rdate, r_rday, r_rno, rtime, distance, r2alloc, r333alloc, r123alloc, grade, dividing in race %}
+      {% if r_rday == '월' %}
+        {% include 'base/home_left_sub2.html' %}
+      {% endif %}
+      {% endfor %}
+    
+      <!-- <tr>
+        <td colspan="26" align="center" style="font-size:6.6rem; text-transform:capitalize; border-top: 1px solid gray; background-color: var(--color-bg);">&nbsp;</td>
+      </tr> -->
+    
+    </table>
+    
+  </div>
+
+</div>
+
+<script>
+  $(function () {
+    $(".fold-table tr.view").on("click", function () {
+      if ($(this).hasClass("open")) {
+        $(this).removeClass("open").next(".fold").removeClass("open");
+      } else {
+        $(".fold-table tr.view").removeClass("open").next(".fold").removeClass("open");
+        $(this).addClass("open").next(".fold").addClass("open");
+      }
+    });
+  });
+
+</script>
+
+<script>
+  $(document).ready(function () {
+
+    $('ul.tabs li').click(function () {
+      var tab_id = $(this).attr('data-tab');
+
+      $('ul.tabs li').removeClass('current');
+      $('.tab-content').removeClass('current');
+
+      $(this).addClass('current');
+      $("#" + tab_id).addClass('current');
+    })
+
+  })
+</script>
