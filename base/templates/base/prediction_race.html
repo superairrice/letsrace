@@ -506,16 +506,51 @@
                   
                   {# 기수 조교사 연대 출주 복승 회수 #}
                   <div style="font-size: 1.0rem; color:gray; text-align: right;">
-                    <span class="tooltip" style="font-family: Arial; color:var(--color-light-gray);">
-                      <span style="font-family: Arial; color:var(--color-r1);">{{r.jt_1st}}</span>
-                      <span style="font-family: Arial; color:var(--color-r2);">{{r.jt_2nd|sub:r.jt_1st}}</span>
-                      <span style="font-family: Arial; color:var(--color-r3);">{{r.jt_3rd|sub:r.jt_2nd}}</span>
-                      <span class="tooltip-text" style="font-family: Arial; font-size: 1.1rem; z-index: 9;">
-                        <div style="font-family: Arial; color:var(--color-light); text-align:center;">👥&nbsp;&nbsp;{{r.jockey_old}}﹆{{r.trainer}}</div>
-                        <div style="font-family: Arial; color:var(--color-main); text-align: left;">최근 1년 출주 횟수 : {{r.jt_cnt}}</div>
-                        <div style="font-family: Arial; color:var(--color-main); text-align: left;">복승률 : {{r.jt_per}}</div>
-                      </span>
+                    <a href="{% url 'jt_analysis' '%' r_condition.rdate|mul:1|sub:10000 r_condition.rdate r.jockey r.trainer '%' '%' '1' '99' '1' '99' %}"
+                      onclick="window.open(this.href, 'jt_analysis', 'width=1300, height=1000, toolbars=no, scrollbars=yes'); return false;">
+
+                      <span class="tooltip" style="font-family: Arial; color:var(--color-light-gray);">
+                        <span style="font-family: Arial; color:var(--color-r1);">{{r.jt_1st}}</span>
+                        <span style="font-family: Arial; color:var(--color-r2);">{{r.jt_2nd|sub:r.jt_1st}}</span>
+                        <span style="font-family: Arial; color:var(--color-r3);">{{r.jt_3rd|sub:r.jt_2nd}}</span>
+                        <span class="tooltip-text" style="font-family: Arial; font-size: 1.15rem; z-index:9;">
+                      <div style="font-family: Arial; color:var(--color-light); text-align:center;">👥&nbsp; {{r.jockey}}&nbsp;﹆&nbsp;{{r.trainer}}</div>
+                      <hr>
+                      <div style="font-family: Arial; color:var(--color-main); text-align: left; padding-top: 6px;">1️⃣&nbsp;경주일 기준 1년간 출주 횟수 : 
+
+                        {% if r.jt_cnt %}
+                        <span style="font-family: Arial; color:var(--color-r2); background-color: var(--color-bg); border-radius: 7px; padding: 2px 4px;">{{r.jt_cnt}}</span>
+                        <span style="font-family: Arial; color:var(--color-r3)">{{r.jt_1st}}</span>
+                        <span style="font-family: Arial; color:var(--color-r4)">{{r.jt_2nd|sub:r.jt_1st}}</span>
+                        <span style="font-family: Arial; color:var(--color-r5)">{{r.jt_3rd|sub:r.jt_2nd}}</span>
+                        {% else %}
+                        <span style="font-family: Arial; color:var(--color-r2); background-color: var(--color-bg); border-radius: 7px; padding: 2px 4px;">0</span>
+                        <span style="font-family: Arial; color:var(--color-r3)">0</span>
+                        <span style="font-family: Arial; color:var(--color-r4)">0</span>
+                        <span style="font-family: Arial; color:var(--color-r5)">0</span>
+                        {% endif %}
+                      </div>
+                      <div style="font-family: Arial; color:var(--color-light-gray); text-align: left;">
+                        2️⃣&nbsp;복승률 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        {% if r.jt_cnt > 0 %}
+                        <span style="font-family: Arial; color: var(--color-r2);">{{r.jt_2nd|mul:100|div:r.jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                        {% else %}
+                        <span style="font-family: Arial; color: var(--color-light-gray);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                        {% endif %}
+                      </div>
+                      <div style="font-family: Arial; color:var(--color-light-gray); text-align: left;">
+                        3️⃣&nbsp;연승률 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        {% if r.jt_cnt > 0 %}
+                        <span style="font-family: Arial; color: var(--color-r1);">{{r.jt_3rd|mul:100|div:r.jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                        {% else %}
+                        <span style="font-family: Arial; color: var(--color-light-gray);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                        {% endif %}
+                      </div>
+                
                     </span>
+                      </span>
+
+                    </a>
                   </div>
                 {% else %}
                   {% if r.jt_cnt %}
@@ -533,17 +568,51 @@
                 
                   {# 기수 조교사 연대 출주 복승 회수 #}
                   <div style="font-size: 1.05rem; color:gray; text-align: right;">
-                    <span class="tooltip" style="font-family: Arial; color:var(--color-light-gray);">
-                      <span style="font-family: Arial; color:var(--color-r1)">{{r.jt_1st}}</span>
-                      <span style="font-family: Arial; color:var(--color-r2)">{{r.jt_2nd|sub:r.jt_1st}}</span>
-                      <span style="font-family: Arial; color:var(--color-r3)">{{r.jt_3rd|sub:r.jt_2nd}}</span>
-                      <span class="tooltip-text" style="font-family: Arial; font-size: 1.15rem; z-index:9;">
-                        <div style="font-family: Arial; color:var(--color-light); text-align:center;">👥&nbsp;&nbsp;{{r.jockey}}﹆{{r.trainer}}</div>
-                        <div style="font-family: Arial; color:var(--color-main); text-align: left;">최근 1년 출주 횟수 : {{r.jt_cnt}}</div>
-                        <div style="font-family: Arial; color:var(--color-main); text-align: left;">복승률 : {{r.jt_per}}</div>
+                    <a href="{% url 'jt_analysis' '%' r_condition.rdate|mul:1|sub:10000 r_condition.rdate r.jockey r.trainer '%' '%' '1' '99' '1' '99' %}"
+                      onclick="window.open(this.href, 'jt_analysis', 'width=1300, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                      
+                      <span class="tooltip" style="font-family: Arial; color:var(--color-light-gray);">
+                        <span style="font-family: Arial; color:var(--color-r1);">{{r.jt_1st}}</span>
+                        <span style="font-family: Arial; color:var(--color-r2);">{{r.jt_2nd|sub:r.jt_1st}}</span>
+                        <span style="font-family: Arial; color:var(--color-r3);">{{r.jt_3rd|sub:r.jt_2nd}}</span>
+                        <span class="tooltip-text" style="font-family: Arial; font-size: 1.15rem; z-index:9;">
+                      <div style="font-family: Arial; color:var(--color-light); text-align:center;">👥&nbsp; {{r.jockey}}&nbsp;﹆&nbsp;{{r.trainer}}</div>
+                      <hr>
+                      <div style="font-family: Arial; color:var(--color-main); text-align: left; padding-top: 6px;">1️⃣&nbsp;경주일 기준 1년간 출주 횟수 : 
 
-                      </span>
+                        {% if r.jt_cnt %}
+                        <span style="font-family: Arial; color:var(--color-r2); background-color: var(--color-bg); border-radius: 7px; padding: 2px 4px;">{{r.jt_cnt}}</span>
+                        <span style="font-family: Arial; color:var(--color-r3)">{{r.jt_1st}}</span>
+                        <span style="font-family: Arial; color:var(--color-r4)">{{r.jt_2nd|sub:r.jt_1st}}</span>
+                        <span style="font-family: Arial; color:var(--color-r5)">{{r.jt_3rd|sub:r.jt_2nd}}</span>
+                        {% else %}
+                        <span style="font-family: Arial; color:var(--color-r2); background-color: var(--color-bg); border-radius: 7px; padding: 2px 4px;">0</span>
+                        <span style="font-family: Arial; color:var(--color-r3)">0</span>
+                        <span style="font-family: Arial; color:var(--color-r4)">0</span>
+                        <span style="font-family: Arial; color:var(--color-r5)">0</span>
+                        {% endif %}
+                      </div>
+                      <div style="font-family: Arial; color:var(--color-light-gray); text-align: left;">
+                        2️⃣&nbsp;복승률 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        {% if r.jt_cnt > 0 %}
+                        <span style="font-family: Arial; color: var(--color-r2);">{{r.jt_2nd|mul:100|div:r.jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                        {% else %}
+                        <span style="font-family: Arial; color: var(--color-light-gray);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                        {% endif %}
+                      </div>
+                      <div style="font-family: Arial; color:var(--color-light-gray); text-align: left;">
+                        3️⃣&nbsp;연승률 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        {% if r.jt_cnt > 0 %}
+                        <span style="font-family: Arial; color: var(--color-r1);">{{r.jt_3rd|mul:100|div:r.jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                        {% else %}
+                        <span style="font-family: Arial; color: var(--color-light-gray);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                        {% endif %}
+                      </div>
+                
                     </span>
+                      </span>
+
+                    </a>
                   </div>
                 {% endif %}
               </td>

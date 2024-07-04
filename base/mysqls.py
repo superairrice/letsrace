@@ -5721,27 +5721,75 @@ def get_thethe9_ranks(rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2,
     try:
         cursor = connection.cursor()
 
+        if r2 == 99 or r2 == '99':
+            and_rank = ''
+        else:
+            and_rank = " and a.rank between " + str(r1) + " and " + str(r2)
+
+        if rr2 == 99 or r2 == '99':
+            and_r_rank = ''
+        else:
+            and_r_rank = " and a.r_rank between " + str(rr1) + " and " + str(rr2)
+
         strSql = (
-            """ select a.rcity, a.rdate, a.rno, rday, distance, grade, dividing, horse, jockey, trainer, host, h_weight, handycap, handycap - i_prehandy,
+            """ SELECT 
+                    a.rcity, a.rdate, a.rno, b.rday, b.distance, b.grade, 
+                    concat(b.dividing, ' ', b.rname, ' ', b.rcon1, ' ', b.rcon2), 
+                    a.horse, a.jockey, a.trainer, a.host, a.h_weight, a.handycap, a.handycap - a.i_prehandy,
                     a.gate, a.rank, a.r_rank, a.corners, a.r_s1f, a.r_g3f, a.r_g1f, 
                     a.s1f_rank, a.g3f_rank, a.g2f_rank, a.g1f_rank, 
-                    a.cs1f,  a.cg3f, a.cg1f, i_cycle, r_pop, alloc1r, alloc3r, complex, r_record, i_complex - ir_record, 
-                    jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd, jockey_old, reason
-                from exp011 a, exp010 b
-                where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno 
-                and a.rcity like '%""" + rcity + """%'
-                and a.rdate between '""" + fdate + """' and '""" + tdate + """'
-                and a.rank between """ + str(r1) + """ and """ + str(r2) + """
-                and a.r_rank between """ + str(rr1) + """ and """ + str(rr2) + """
-                and a.jockey like '%""" + jockey + """%'
-                and a.trainer like '%""" + trainer + """%'
-                and a.host like '%""" + host + """%'
-                and a.horse like '%""" + horse + """%'
-            order by a.rdate, b.rtime, a.r_rank, a.rank
+                    a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
+                    a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
+                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc
+                FROM 
+                    The1.exp011 a
+                LEFT JOIN 
+                    The1.exp010 b ON a.rcity = b.rcity AND a.rdate = b.rdate AND a.rno = b.rno
+                LEFT OUTER JOIN 
+                    The1.rec010 c ON a.rcity = c.rcity AND a.rdate = c.rdate AND a.rno = c.rno 
+                LEFT OUTER JOIN 
+                    The1.rec011 d ON a.rcity = d.rcity AND a.rdate = d.rdate AND a.rno = d.rno and a.gate = d.gate
+                WHERE a.rcity like '%"""
+            + rcity
+            + """%'
+                and a.rdate between '"""
+            + fdate
+            + """' and '"""
+            + tdate
+            + """'
+                """
+            + and_rank
+            + """
+                """
+            + and_r_rank
+            + """
+                -- and a.rank between """
+            + str(r1)
+            + """ and """
+            + str(r2)
+            + """
+                -- and a.r_rank between """
+            + str(rr1)
+            + """ and """
+            + str(rr2)
+            + """
+                and a.jockey like '%"""
+            + jockey
+            + """%'
+                and a.trainer like '%"""
+            + trainer
+            + """%'
+                and a.host like '%"""
+            + host
+            + """%'
+                and a.horse like '%"""
+            + horse
+            + """%'
+            order by a.rdate desc, b.rtime desc, a.r_rank, a.rank
         ; """
         )
 
-        # print(strSql)
+        print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
@@ -5752,5 +5800,60 @@ def get_thethe9_ranks(rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2,
         connection.rollback()
         print("Failed inserting in thethe9_ranks")
 
-    return result
+    try:
+        cursor = connection.cursor()
 
+        strSql = (
+            """ select a.rcity, a.rdate, a.rno, rday, distance, grade, dividing, horse, jockey, trainer, host, h_weight, handycap, handycap - i_prehandy,
+                    a.gate, a.rank, a.r_rank, a.corners, a.r_s1f, a.r_g3f, a.r_g1f, 
+                    a.s1f_rank, a.g3f_rank, a.g2f_rank, a.g1f_rank, 
+                    a.cs1f,  a.cg3f, a.cg1f, i_cycle, r_pop, alloc1r, alloc3r, complex, r_record, i_complex - ir_record, 
+                    jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd, jockey_old, reason
+                from exp011 a, exp010 b 
+                where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno 
+                and a.rcity like '%"""
+            + rcity
+            + """%'
+                and a.rdate between '"""
+            + fdate
+            + """' and '"""
+            + tdate
+            + """'
+                and a.rank between """
+            + str(r1)
+            + """ and """
+            + str(r2)
+            + """
+                and a.r_rank between """
+            + str(rr1)
+            + """ and """
+            + str(rr2)
+            + """
+                and a.jockey like '%"""
+            + jockey
+            + """%'
+                and a.trainer like '%"""
+            + trainer
+            + """%'
+                and a.host like '%"""
+            + host
+            + """%'
+                and a.horse like '%"""
+            + horse
+            + """%'
+            order by a.rdate desc, b.rtime desc, a.r_rank, a.rank
+        ; """
+        )
+
+        # print(strSql)
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        summary = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed inserting in thethe9_ranks")
+
+    return result

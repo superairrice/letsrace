@@ -110,6 +110,11 @@ urlpatterns = [
         name="thethe9_ranks",
     ),
     path(
+        "jt_analysis/<str:rcity>/<str:fdate>/<str:tdate>/<str:jockey>/<str:trainer>/<str:host>/<str:horse>/<int:r1>/<int:r2>/<int:rr1>/<int:rr2>",
+        views.jtAnalysis,
+        name="jt_analysis",
+    ),
+    path(
         "get_race_awardee/<str:rdate>/<str:awardee>/<str:i_name>/<str:i_jockey>/<str:i_trainer>/<str:i_host>",
         views.getRaceAwardee,
         name="get_race_awardee",
