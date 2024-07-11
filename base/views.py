@@ -1717,6 +1717,31 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
     trend_j_title = trend_data.columns.tolist()
 
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+    
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+            select jockey, cast(load_in as decimal) 
+            from jockey_w 
+            where wdate = ( select max(wdate) from jockey_w where wdate < '"""
+            + rdate
+            + """' ) 
+                ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        loadin = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in 기승가능중량")
+        
+    # print(loadin) 
 
     context = {
         "trend_j": trend_j,
@@ -1725,6 +1750,7 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
         "r_condition": r_condition,
         "awardee": awardee,
         "solidarity": solidarity,
+        "loadin": loadin,
     }
 
     return render(request, "base/trend_winning_rate.html", context)
@@ -1797,6 +1823,13 @@ def getRaceAwardee(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host)
 def weeksStatus(request, rcity, rdate):
     status = get_weeks_status(rcity, rdate)
 
+    rank1 = [item for item in status if item[15] == 1]  # item[15] : 예상착순(rank)
+    rank2 = [item for item in status if item[15] == 2]  # item[15] : 예상착순(rank)
+    rank3 = [item for item in status if item[15] == 3]  # item[15] : 예상착순(rank)
+    r_rank1 = [item for item in status if item[16] == 1]  # item[16] : 실제착순(r_rank)
+    r_rank2 = [item for item in status if item[16] == 2]  # item[16] : 실제착순(r_rank)
+    r_rank3 = [item for item in status if item[16] == 3]  # item[16] : 실제착순(r_rank)
+
     try:
         cursor = connection.cursor()
 
@@ -1825,13 +1858,19 @@ def weeksStatus(request, rcity, rdate):
     context = {
         "status": status,
         "loadin": loadin,
+        "rank1": len(rank1),
+        "rank2": len(rank2),
+        "rank3": len(rank3),
+        "r_rank1": len(r_rank1),
+        "r_rank2": len(r_rank2),
+        "r_rank3": len(r_rank3),
+        "rcount": len(status),
     }
 
     return render(request, "base/weeks_status.html", context)
 
-
 # thethe9 rank1 실경주 입상현황
-def thethe9Ranks(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2):
+def jtAnalysis(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2, gate, distance):
 
     rcity = request.GET.get("rcity") if request.GET.get("rcity") != None else rcity
     fdate = request.GET.get("fdate") if request.GET.get("fdate") != None else fdate[0:4] + '-' + fdate[4:6] + '-' + fdate[6:8]
@@ -1844,6 +1883,8 @@ def thethe9Ranks(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1,
     r2 = request.GET.get("r2") if request.GET.get("r2") != None else r2
     rr1 = request.GET.get("rr1") if request.GET.get("rr1") != None else rr1
     rr2 = request.GET.get("rr2") if request.GET.get("rr2") != None else rr2
+    gate = request.GET.get("gate") if request.GET.get("gate") != None else gate
+    distance = request.GET.get("distance") if request.GET.get("distance") != None else distance
 
     # print('2', fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2)
 
@@ -1857,8 +1898,15 @@ def thethe9Ranks(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1,
     status = get_thethe9_ranks(
         rcity,
         fdate[0:4] + fdate[5:7] + fdate[8:10], 
-        tdate[0:4] + tdate[5:7] + tdate[8:10], jockey, trainer, host, horse, r1, r2, rr1, rr2
+        tdate[0:4] + tdate[5:7] + tdate[8:10], jockey, trainer, host, horse, r1, r2, rr1, rr2, gate, distance
     )
+
+    rank1 = [item for item in status if item[15] == 1]      # item[15] : 예상착순(rank)
+    rank2 = [item for item in status if item[15] == 2]      # item[15] : 예상착순(rank)
+    rank3 = [item for item in status if item[15] == 3]      # item[15] : 예상착순(rank)
+    r_rank1 = [item for item in status if item[16] == 1]      # item[16] : 실제착순(r_rank)
+    r_rank2 = [item for item in status if item[16] == 2]      # item[16] : 실제착순(r_rank)
+    r_rank3 = [item for item in status if item[16] == 3]      # item[16] : 실제착순(r_rank)
 
     try:
         cursor = connection.cursor()
@@ -1901,81 +1949,15 @@ def thethe9Ranks(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1,
         "r2": r2,
         "rr1": rr1,
         "rr2": rr2,
-    }
-
-    return render(request, "base/thethe9_ranks.html", context)
-
-# thethe9 rank1 실경주 입상현황
-def jtAnalysis(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2):
-
-    rcity = request.GET.get("rcity") if request.GET.get("rcity") != None else rcity
-    fdate = request.GET.get("fdate") if request.GET.get("fdate") != None else fdate[0:4] + '-' + fdate[4:6] + '-' + fdate[6:8]
-    tdate = request.GET.get("tdate") if request.GET.get("tdate") != None else tdate[0:4] + '-' + tdate[4:6] + '-' + tdate[6:8]
-    jockey = request.GET.get("jockey") if request.GET.get("jockey") != None else jockey
-    trainer = request.GET.get("trainer") if request.GET.get("trainer") != None else trainer
-    host = request.GET.get("host") if request.GET.get("host") != None else host
-    horse = request.GET.get("horse") if request.GET.get("horse") != None else horse
-    r1 = request.GET.get("r1") if request.GET.get("r1") != None else r1
-    r2 = request.GET.get("r2") if request.GET.get("r2") != None else r2
-    rr1 = request.GET.get("rr1") if request.GET.get("rr1") != None else rr1
-    rr2 = request.GET.get("rr2") if request.GET.get("rr2") != None else rr2
-
-    # print('2', fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2)
-
-    # if fdate == "":
-    #     # fdate =
-    #     pass
-    # else:
-    #     fdate = fdate[0:4] + fdate[5:7] + fdate[8:10]
-    #     tdate = tdate[0:4] + tdate[5:7] + tdate[8:10]
-
-    status = get_thethe9_ranks(
-        rcity,
-        fdate[0:4] + fdate[5:7] + fdate[8:10], 
-        tdate[0:4] + tdate[5:7] + tdate[8:10], jockey, trainer, host, horse, r1, r2, rr1, rr2
-    )
-
-    try:
-        cursor = connection.cursor()
-
-        strSql = (
-            """ 
-            select jockey, cast(load_in as decimal) 
-            from jockey_w 
-            where wdate = ( select max(wdate) from jockey_w where wdate < '"""
-            + tdate[0:4]
-            + tdate[5:7]
-            + tdate[8:10]
-            + """' ) 
-                ; """
-        )
-
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        loadin = cursor.fetchall()
-
-        connection.commit()
-        connection.close()
-
-    except:
-        connection.rollback()
-        print("Failed selecting in 기승가능중량")
-
-    # print(status)
-
-    context = {
-        "status": status,
-        "loadin": loadin,
-        "rcity": rcity,
-        "fdate": fdate,
-        "tdate": tdate,
-        "jockey": jockey,
-        "trainer": trainer,
-        "host": host,
-        "horse": horse,
-        "r1": r1,
-        "r2": r2,
-        "rr1": rr1,
-        "rr2": rr2,
+        "gate": gate,
+        "distance": distance,
+        "rank1": len(rank1),
+        "rank2": len(rank2),
+        "rank3": len(rank3),
+        "r_rank1": len(r_rank1),
+        "r_rank2": len(r_rank2),
+        "r_rank3": len(r_rank3),
+        "rcount": len(status),
     }
 
     return render(request, "base/jt_analysis.html", context)

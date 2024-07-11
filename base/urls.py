@@ -104,13 +104,13 @@ urlpatterns = [
     path(
         "weeks_status/<str:rcity>/<str:rdate>", views.weeksStatus, name="weeks_status"
     ),
+    # path(
+    #     "thethe9_ranks/<str:rcity>/<str:fdate>/<str:tdate>/<str:jockey>/<str:trainer>/<str:host>/<str:horse>/<int:r1>/<int:r2>/<int:rr1>/<int:rr2>/<int:gate>",
+    #     views.thethe9Ranks,
+    #     name="thethe9_ranks",
+    # ),
     path(
-        "thethe9_ranks/<str:rcity>/<str:fdate>/<str:tdate>/<str:jockey>/<str:trainer>/<str:host>/<str:horse>/<int:r1>/<int:r2>/<int:rr1>/<int:rr2>",
-        views.thethe9Ranks,
-        name="thethe9_ranks",
-    ),
-    path(
-        "jt_analysis/<str:rcity>/<str:fdate>/<str:tdate>/<str:jockey>/<str:trainer>/<str:host>/<str:horse>/<int:r1>/<int:r2>/<int:rr1>/<int:rr2>",
+        "jt_analysis/<str:rcity>/<str:fdate>/<str:tdate>/<str:jockey>/<str:trainer>/<str:host>/<str:horse>/<int:r1>/<int:r2>/<int:rr1>/<int:rr2>/<int:gate>/<int:distance>",
         views.jtAnalysis,
         name="jt_analysis",
     ),

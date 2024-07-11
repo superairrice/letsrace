@@ -506,8 +506,8 @@
                   
                   {# 기수 조교사 연대 출주 복승 회수 #}
                   <div style="font-size: 1.0rem; color:gray; text-align: right;">
-                    <a href="{% url 'jt_analysis' '%' r_condition.rdate|mul:1|sub:10000 r_condition.rdate r.jockey r.trainer '%' '%' '1' '99' '1' '99' %}"
-                      onclick="window.open(this.href, 'jt_analysis', 'width=1300, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                    <a href="{% url 'jt_analysis' '%' r_condition.rdate|mul:1|sub:10000 r_condition.rdate r.jockey r.trainer '%' '%' '1' '99' '1' '99' '0' '0' %}"
+                      onclick="window.open(this.href, 'jt_analysis', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
 
                       <span class="tooltip" style="font-family: Arial; color:var(--color-light-gray);">
                         <span style="font-family: Arial; color:var(--color-r1);">{{r.jt_1st}}</span>
@@ -568,8 +568,8 @@
                 
                   {# 기수 조교사 연대 출주 복승 회수 #}
                   <div style="font-size: 1.05rem; color:gray; text-align: right;">
-                    <a href="{% url 'jt_analysis' '%' r_condition.rdate|mul:1|sub:10000 r_condition.rdate r.jockey r.trainer '%' '%' '1' '99' '1' '99' %}"
-                      onclick="window.open(this.href, 'jt_analysis', 'width=1300, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                    <a href="{% url 'jt_analysis' '%' r_condition.rdate|mul:1|sub:10000 r_condition.rdate r.jockey r.trainer '%' '%' '1' '99' '1' '99' '0' '0' %}"
+                      onclick="window.open(this.href, 'jt_analysis', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
                       
                       <span class="tooltip" style="font-family: Arial; color:var(--color-light-gray);">
                         <span style="font-family: Arial; color:var(--color-r1);">{{r.jt_1st}}</span>
@@ -1956,7 +1956,7 @@
       
           </thead>
           <tbody>
-            {% for gate, rank, r_rank, r_pop, horse, jockey, trainer, host, tot_race, tot_1st, tot_2nd, tot_3rd, year_race, year_1st, year_2nd, year_3rd, gear1, gear2, blood1, blood2, treat1, treat2, tot_prize, year_prize, rating, i_cycle, reason, jockey_old, birthplace, h_sex, h_age, complex, complex5 in pedigree %}
+            {% for gate, rank, r_rank, r_pop, horse, jockey, trainer, host, tot_race, tot_1st, tot_2nd, tot_3rd, year_race, year_1st, year_2nd, year_3rd, gear1, gear2, blood1, blood2, treat1, treat2, tot_prize, year_prize, rating, i_cycle, reason, jockey_old, birthplace, h_sex, h_age, complex, complex5, gears in pedigree %}
             <tr class="view">
       
               <td align="center">
@@ -2165,13 +2165,22 @@
               {# 보조장구 #}
               <td>
                 {% if gear1 %}
-                <div align="left" style="font-family: Arial; font-size:1.15rem; color:var(--color-light-gray);">
+                <div align="left" style="font-family: Arial; font-size:1.1rem; color:var(--color-light-gray);">
+                  {% if gear1 in gears %}
                   <span>{{gear1|slice:"0:7"}}</span>
+                  {% else %}
+                  <span style="color: var(--color-r3)">{{gear1|slice:"0:7"}}+</span>
+                  {% endif %}
                 </div>
                 {%endif%}
+
                 {% if gear2 %}
-                <div align="left" style="font-family: Arial; font-size:1.15rem; color:var(--color-light-gray);">
+                <div align="left" style="font-family: Arial; font-size:1.1rem; color:var(--color-light-gray);">
+                  {% if gear2 in gears %}
                   <span>{{gear2|slice:"0:7"}}</span>
+                  {% else %}
+                  <span style="color: var(--color-r3)">{{gear2|slice:"0:7"}}+</span>
+                  {% endif %}
                 </div>
                 {%endif%}
               </td>

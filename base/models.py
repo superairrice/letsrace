@@ -592,6 +592,8 @@ class RecordS(models.Model):
     jt_1st = models.IntegerField(blank=True, null=True)
     jt_2nd = models.IntegerField(blank=True, null=True)
     jt_3rd = models.IntegerField(blank=True, null=True)
+    h_cnt = models.IntegerField(blank=True, null=True)
+    h_mare = models.IntegerField(blank=True, null=True)
 
     # flag = models.CharField(max_length=1, blank=True, null=True)
 

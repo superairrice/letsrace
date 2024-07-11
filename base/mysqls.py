@@ -314,7 +314,9 @@ def get_pedigree(rcity, rdate, rno):
                     blood2, 
                     treat1, 
                     treat2, 
-                    a.prize_tot/1000, a.prize_year/1000, a.rating, a.i_cycle, reason, jockey_old, birthplace, h_sex, h_age, complex, complex5
+                    a.prize_tot/1000, a.prize_year/1000, a.rating, a.i_cycle, reason, jockey_old, birthplace, h_sex, h_age, complex, complex5,
+                    ( select concat( gear1, gear2) from The1.exp012 
+		                where horse = a.horse and rdate = ( select max(rdate) from The1.exp012 where rdate < a.rdate and horse = a.horse) )
                 FROM exp011	a,
                     exp012 c
                 WHERE a.rcity = c.rcity
@@ -4217,32 +4219,35 @@ def get_solidarity(i_rcity, i_rdate, i_rno, i_awardee, i_filter):
 
         strSql = (
             """ 
-                    select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
-                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( grade = '주행검사', ' ', host), rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
-                        rs1f, rg3f, rg2f, rg1f, i_cycle,
-                        (select jt_per from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) jt_per, adv_track
+                    select a.rcity, a.rdate, a.rno, a.distance, a.grade, a.dividing, a.weather, a.rstate, a.rmoisture, a.r1award, a.r2alloc, a.race_speed,
+                        a.gate, a.rank, a.horse, a.h_weight, a.w_change, a.jockey, a.trainer, if( a.grade = '주행검사', ' ', a.host), a.rating, a.handycap, a.handycap - b.i_prehandy, a.record, 
+                        replace( a.corners, ' ', '') corners, 
+                        a.gap, a.gap_b, a.p_record, a.p_rank, a.pop_rank, a.alloc1r, a.alloc3r,
+                        a.rs1f, a.rg3f, a.rg2f, a.rg1f, a.i_cycle,
+                        a.jt_per, a.adv_track
                     from record a
-                    where ( '"""
+                        LEFT JOIN exp011 b ON a.rcity = b.rcity AND a.rdate = b.rdate AND a.rno = b.rno  AND a.gate = b.gate
+                    where ( a."""
             + i_awardee
-            + """' ) in ( select '"""
+            + """ ) in ( select """
             + i_awardee
-            + """' from exp011 where rcity = '"""
+            + """ from exp011 where rcity = '"""
             + i_rcity
             + """' and rdate = '"""
             + i_rdate
             + """' and rno =  """
             + str(i_rno)
             + """ ) 
-                    and rdate between date_format(DATE_ADD('"""
+                    and a.rdate between date_format(DATE_ADD('"""
             + i_rdate
-            + """', INTERVAL - 99 DAY), '%Y%m%d') and '"""
+            + """', INTERVAL - 30 DAY), '%Y%m%d') and '"""
             + i_rdate
             + """'
-                    and rank <= """
+                    and a.rank <= """
             + i_filter
             + """
-                -- and r1award = 0  
-                    order by rdate desc, rno desc, rcity
+                and a.r1award > 0  
+                    order by a.rdate desc, a.rno desc, a.rcity
                 ; """
         )
 
@@ -4269,9 +4274,11 @@ def get_recent_awardee(i_rdate, i_awardee, i_name):
         strSql = (
             """ 
                     select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
-                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( grade = '주행검사', '주행', host) host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
+                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( grade = '주행검사', '주행', host) host, rating, handycap, record, 
+                        replace( corners,' ', '' ) corners,
+                        gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
                         rs1f, rg3f, rg2f, rg1f, i_cycle,
-                        (select jt_per from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) jt_per
+                        jt_per
                     from record a
                     where """
             + i_awardee
@@ -4310,9 +4317,11 @@ def get_recent_horse(i_rdate, i_awardee, i_name):
         strSql = (
             """ 
                     select rcity, rdate, rno, distance, grade, dividing, weather, rstate, rmoisture, r1award, r2alloc, race_speed,
-                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( grade = '주행검사', ' ', host) host, rating, handycap, record, corners, gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
+                        gate, rank, horse, h_weight, w_change, jockey, trainer, if( grade = '주행검사', ' ', host) host, rating, handycap, record, 
+                        replace( corners,' ', '' ) corners,
+                        gap, gap_b, p_record, p_rank, pop_rank, alloc1r, alloc3r,
                         rs1f, rg3f, rg2f, rg1f, i_cycle,
-                        (select jt_per from exp011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ) jt_per
+                        jt_per
                     from record a
                     where """
             + i_awardee
@@ -5682,14 +5691,25 @@ def get_weeks_status(rcity, rdate):
         cursor = connection.cursor()
 
         strSql = (
-            """ select a.rcity, a.rdate, a.rno, rday, distance, grade, dividing, horse, jockey, trainer, host, h_weight, handycap,
-                    a.gate, a.rank, a.r_rank, a.corners, a.r_s1f, a.r_g3f, a.r_g1f, 
+            """ select a.rcity, a.rdate, a.rno, b.rday, b.distance, b.grade, 
+                    concat(b.dividing, ' ', b.rname, ' ', b.rcon1, ' ', b.rcon2), 
+                    a.horse, a.jockey, a.trainer, a.host, a.h_weight, a.handycap, a.handycap - a.i_prehandy,
+                    a.gate, a.rank, a.r_rank, 
+                    replace( a.corners, ' ', '') corners,
+                    a.r_s1f, a.r_g3f, a.r_g1f, 
                     a.s1f_rank, a.g3f_rank, a.g2f_rank, a.g1f_rank, 
-                    a.cs1f,  a.cg3f, a.cg1f, i_cycle, r_pop, alloc1r, alloc3r, complex, r_record, i_complex - ir_record, 
-                    jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd, jockey_old, reason
-                from exp011 a, exp010 b
-                where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno 
-                and a.rcity = '"""
+                    a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
+                    a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
+                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc
+                FROM 
+                    The1.exp011 a
+                LEFT JOIN 
+                    The1.exp010 b ON a.rcity = b.rcity AND a.rdate = b.rdate AND a.rno = b.rno
+                LEFT OUTER JOIN 
+                    The1.rec010 c ON a.rcity = c.rcity AND a.rdate = c.rdate AND a.rno = c.rno 
+                LEFT OUTER JOIN 
+                    The1.rec011 d ON a.rcity = d.rcity AND a.rdate = d.rdate AND a.rno = d.rno and a.gate = d.gate
+                where a.rcity = '"""
             + rcity
             + """'
                 and a.rdate between date_format(DATE_ADD('"""
@@ -5717,7 +5737,7 @@ def get_weeks_status(rcity, rdate):
     return result
 
 # thethe9 rank 1 입상현황
-def get_thethe9_ranks(rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2):
+def get_thethe9_ranks(rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2, gate, distance):
     try:
         cursor = connection.cursor()
 
@@ -5731,12 +5751,24 @@ def get_thethe9_ranks(rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2,
         else:
             and_r_rank = " and a.r_rank between " + str(rr1) + " and " + str(rr2)
 
+        if gate == 0 or gate == '0':
+            and_gate = ''
+        else:
+            and_gate = " and a.gate = " + str(gate)
+            
+        if distance == 0 or distance == '0':
+            and_distance = ''
+        else:
+            and_distance = " and b.distance = " + str(distance)
+
         strSql = (
             """ SELECT 
                     a.rcity, a.rdate, a.rno, b.rday, b.distance, b.grade, 
                     concat(b.dividing, ' ', b.rname, ' ', b.rcon1, ' ', b.rcon2), 
                     a.horse, a.jockey, a.trainer, a.host, a.h_weight, a.handycap, a.handycap - a.i_prehandy,
-                    a.gate, a.rank, a.r_rank, a.corners, a.r_s1f, a.r_g3f, a.r_g1f, 
+                    a.gate, a.rank, a.r_rank, 
+                    replace( a.corners, ' ', '') corners,
+                    a.r_s1f, a.r_g3f, a.r_g1f, 
                     a.s1f_rank, a.g3f_rank, a.g2f_rank, a.g1f_rank, 
                     a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
                     a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
@@ -5762,6 +5794,12 @@ def get_thethe9_ranks(rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2,
             + """
                 """
             + and_r_rank
+            + """
+                """
+            + and_gate
+            + """
+                """
+            + and_distance
             + """
                 -- and a.rank between """
             + str(r1)
@@ -5789,7 +5827,7 @@ def get_thethe9_ranks(rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2,
         ; """
         )
 
-        print(strSql)
+        # print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
