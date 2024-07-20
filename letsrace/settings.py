@@ -158,6 +158,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # 우리가 만든 BlockIPMiddleware 추가
+    # "project.middleware.BlockIPMiddleware",
 ]
 
 INTERNAL_IPS = [
