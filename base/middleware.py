@@ -6,7 +6,13 @@ from django.http import HttpResponseForbidden
 class BlockIPMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
-        self.blocked_ip_pattern = re.compile(r"^192\.168\.1\.\d{1,3}$")
+        self.blocked_ip_patterns = [
+            re.compile(r"^34\.64\.\d{1,3}\.\d{1,3}$"),  # 예: 추가 IP 대역 차단
+            re.compile(r"^52\.70\.\d{1,3}\.\d{1,3}$"),  # 예: 추가 IP 대역 차단
+            re.compile(r"^3\.224\.\d{1,3}\.\d{1,3}$"),  # 예: 추가 IP 대역 차단
+            re.compile(r"^23\.22\.\d{1,3}\.\d{1,3}$"),  # 예: 추가 IP 대역 차단
+            # re.compile(r"^127\.0\.\d{1,3}\.\d{1,3}$"),  # 예: 추가 IP 대역 차단
+        ]
 
     def __call__(self, request):
         ip = self.get_client_ip(request)
@@ -25,4 +31,4 @@ class BlockIPMiddleware:
         return ip
 
     def is_blocked_ip(self, ip):
-        return self.blocked_ip_pattern.match(ip) is not None
+        return any(pattern.match(ip) for pattern in self.blocked_ip_patterns)
