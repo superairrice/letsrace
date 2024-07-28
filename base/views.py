@@ -2067,7 +2067,7 @@ def awardStatusTrainer(request):
         else:
             rdate = Racing.objects.values("rdate").distinct()[2]["rdate"]
 
-        friday = Racing.objects.values("rdate").distinct()[2]["rdate"]  # weeks 기준일
+        friday = Racing.objects.values("rdate").distinct()[0]["rdate"]  # weeks 기준일
         fdate = friday[0:4] + "-" + friday[4:6] + "-" + friday[6:8]
 
     else:
@@ -2143,7 +2143,7 @@ def awardStatusJockey(request):
         else:
             rdate = Racing.objects.values("rdate").distinct()[2]["rdate"]
 
-        friday = Racing.objects.values("rdate").distinct()[2]["rdate"]  # weeks 기준일
+        friday = Racing.objects.values("rdate").distinct()[0]["rdate"]  # weeks 기준일
         fdate = friday[0:4] + "-" + friday[4:6] + "-" + friday[6:8]
 
     else:

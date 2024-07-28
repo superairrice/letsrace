@@ -3244,6 +3244,7 @@ def get_prediction(i_rdate):
                 ; """
         )
 
+        # print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         rdays = cursor.fetchall()
 
