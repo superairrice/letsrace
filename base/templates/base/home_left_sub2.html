@@ -44,7 +44,14 @@
   <td>
     <div style="font-size: 1.7rem; padding-bottom: 0.7rem;">
       <a href="{% url 'prediction_race' r_rcity r_rdate r_rno 0 'awardee' %}">
-        <span class="tooltip" style="text-align: right; font-weight: 350;"><sup style="font-size: 0.9rem;">{{r_rcity|slice:"0:1"}}</sup>{% if r_rno|mul:1 >= 10 %}{{r_rno}}<sup style="font-size: 1.2rem;">R</sup>{% else %}&nbsp;&nbsp;{{r_rno}}<sup style="font-size: 1.2rem;">R</sup>{% endif %}
+        {% if r_rcity == '서울' %}
+        <div style="font-size: 0.9rem; ">{{r_rcity}}</div>
+        {% else %}
+        <div style="font-size: 0.9rem; color:var(--color-r3); ">{{r_rcity}}</div>
+        {% endif %}
+        <span class="tooltip" style="text-align: right; font-weight: 350; font-size: 1.5rem; padding: 0px 0px;">
+
+          {% if r_rno|mul:1 >= 10 %}{{r_rno}}<sup style="font-size: 1.0rem;">R</sup>{% else %}&nbsp;{{r_rno}}<sup style="font-size: 1.0rem;">R</sup>{% endif %}
           
           <span class="tooltip-text" style="font-size: 1.2rem;">🏇&nbsp;Race Analysis</span>
         </span>
@@ -52,12 +59,6 @@
     </div>
 
     <div style="font-size:x-small; text-align:center;">
-      <!-- <a href="http://kra.fiveplayer.co.kr/player.php?f={{r_rdate}}/{% if r_rcity == '서울' %}s{%else%}b{%endif%}{{r_rno}}r"
-                onclick="window.open(this.href, '_blank', 'width=1024, height=1000, toolbars=no, scrollbars=yes'); return false;">
-                <span class="tooltip">🖥️
-                  <span class="tooltip-text" style="font-size: 1.0rem; font-weight: 400;">경주중계</span>
-                </span>
-              </a> -->
 
       <a href="https://kraplayer.starplayer.net/kra/vod/starplayer.php?meet={% if r_rcity == '서울' %}1{%else%}3{%endif%}&rcdate={{r_rdate}}&rcno={{r_rno}}&vod_type=r"
         onclick="window.open(this.href, 'w_broadcast', 'width=1400, height=700, toolbars=no, scrollbars=yes'); return false;">
@@ -73,36 +74,43 @@
       <span>
         <div style="font-size:x-small; text-align:right; color:var(--color-gray); font-family: Arial;">{{rtime}}</div>
         <div style="font-family: Arial; font-size: x-small; text-align: right; color: var(--color-main-light);">{{distance}}</div>
-        <div style="font-family: Arial; font-size: x-small; text-align: right; color: var(--color-main);">{{grade|slice:"0:2"}}&nbsp;{{dividing|slice:"0:1"}}</div>
+        <div style="font-family: Arial; font-size: x-small; text-align: right; color: var(--color-main);">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}</div>
       </span>
     </a>
 
     {% if r2alloc %}
-    <div align="right" style=" z-index: 9;">
-      <span class="tooltip" style="font-size: x-small; font-family: Arial; color:dodgerblue;  z-index: 9;">{{r2alloc|slice:"2:7"}}
-        <span class="tooltip-text" style="font-family: Arial; font-size: 1.0rem; text-align: left; width: 130px; z-index: 9;">
-          <table style="z-index: 9;">
-            <tr>
-              <th style="font-size: 1.0rem;">승식</th>
-              <th style="font-size: 1.0rem;">배당율</th>
-            </tr>
-            <tr>
-              <td style="text-align: center; font-size: 1.0rem;">복승</td>
-              <td style="font-family: Arial; font-size: 1.0rem; text-align: right;">{{r2alloc|slice:"2:7"}}</td>
-            </tr>
-            <tr>
-              <td style="font-size: 1.0rem;">삼복승</td>
-              <td style="font-family: Arial; font-size: 1.0rem; text-align: right;">{{r333alloc|slice:"3:"}}</td>
-            </tr>
-            <tr>
-              <td style="font-size: 1.0rem;">삼쌍승</td>
-              <td style="font-family: Arial; font-size: 1.0rem; text-align: right;">{{r123alloc|slice:"3:"}}</td>
-            </tr>
     
-          </table>
+    <div align="right" style=" z-index: 9;">
+      <a style="text-decoration:underline" href="{% url 'race_result' r_rcity r_rdate r_rno 0 0 0 0 %}"
+        onclick="window.open(this.href, 'w_result', 'width=1000, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
+        <span class="tooltip" style="font-size: x-small; font-family: Arial; color:dodgerblue;  z-index: 9;">{{r2alloc|slice:"2:8"}}
+          
+          <span class="tooltip-text" style="font-family: Arial; font-size: 1.0rem; text-align: left; width: 130px; z-index: 9;">
+            <table style="z-index: 9;">
+              <tr>
+                <th style="font-size: 1.0rem;">승식</th>
+                <th style="font-size: 1.0rem;">배당율</th>
+              </tr>
+              <tr>
+                <td style="text-align: center; font-size: 1.0rem;">복승</td>
+                <td style="font-family: Arial; font-size: 1.0rem; text-align: right;">{{r2alloc|slice:"2:"}}</td>
+              </tr>
+              <tr>
+                <td style="font-size: 1.0rem;">삼복승</td>
+                <td style="font-family: Arial; font-size: 1.0rem; text-align: right;">{{r333alloc|slice:"3:"}}</td>
+              </tr>
+              <tr>
+                <td style="font-size: 1.0rem;">삼쌍승</td>
+                <td style="font-family: Arial; font-size: 1.0rem; text-align: right;">{{r123alloc|slice:"3:"}}</td>
+              </tr>
+      
+            </table>
+          </span>
+          
         </span>
-      </span>
+      </a>
     </div>
+    
     {%else%}
     
 
@@ -305,6 +313,7 @@
 
   {% endif %}
   {% endfor %}
+
 
 
 </tr>

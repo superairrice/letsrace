@@ -475,7 +475,6 @@ def home(request):
 
     loadin = get_last2weeks_loadin(i_rdate)
 
-    # print(judged_jockey)
 
     rflag = False  # 경마일, 비경마일 구분
     for r in rdays:

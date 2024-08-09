@@ -3141,7 +3141,7 @@ def get_prediction(i_rdate):
             + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL + 4 DAY), '%Y%m%d')
-                order by a.rdate, a.rcity desc, a.rno
+                order by a.rdate, a.rtime
                 ; """
         )
 
@@ -3167,7 +3167,7 @@ def get_prediction(i_rdate):
                     -- cast(jt_per as decimal) jt_per,
                     if( isnull(s1f_rank), 0, s1f_rank) jt_per,
                     rcount
-                  from expect a
+                from expect a
                 where rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
@@ -3232,15 +3232,15 @@ def get_prediction(i_rdate):
 
         strSql = (
             """ 
-                select a.rdate, a.rday, date_format( curdate(), '%Y%m%d' ), rcity
+                select a.rdate, a.rday, date_format( curdate(), '%Y%m%d' ) -- , rcity
                 from exp010 a
                 where a.rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL + 4 DAY), '%Y%m%d')
-                group by a.rdate, a.rday, a.rcity
-                order by a.rdate, a.rday, a.rcity desc 
+                group by a.rdate, a.rday
+                order by a.rdate, a.rday 
                 ; """
         )
 
@@ -4153,7 +4153,7 @@ def get_cycle_winning_rate(i_rcity, i_rdate, i_rno):
             ; """
         )
 
-        # print(strSql)
+        print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
@@ -5692,7 +5692,8 @@ def get_weeks_status(rcity, rdate):
         cursor = connection.cursor()
 
         strSql = (
-            """ select a.rcity, a.rdate, a.rno, b.rday, b.distance, b.grade, 
+            """ select 
+                    a.rcity, a.rdate, a.rno, b.rday, b.distance, b.grade, 
                     concat(b.dividing, ' ', b.rname, ' ', b.rcon1, ' ', b.rcon2), 
                     a.horse, a.jockey, a.trainer, a.host, a.h_weight, a.handycap, a.handycap - a.i_prehandy,
                     a.gate, a.rank, a.r_rank, 
@@ -5701,7 +5702,7 @@ def get_weeks_status(rcity, rdate):
                     a.s1f_rank, a.g3f_rank, a.g2f_rank, a.g1f_rank, 
                     a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
                     a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
-                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc
+                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, d.adv_track, c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag
                 FROM 
                     The1.exp011 a
                 LEFT JOIN 
@@ -5773,7 +5774,7 @@ def get_thethe9_ranks(rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2,
                     a.s1f_rank, a.g3f_rank, a.g2f_rank, a.g1f_rank, 
                     a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
                     a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
-                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc
+                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, d.adv_track, c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag
                 FROM 
                     The1.exp011 a
                 LEFT JOIN 
