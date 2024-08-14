@@ -48,6 +48,7 @@ from base.mysqls import (
     get_print_prediction,
     get_race,
     get_race_center_detail_view,
+    get_race_related,
     get_recent_awardee,
     get_recent_horse,
     get_report_code,
@@ -559,6 +560,237 @@ def activityComponentPage_a(request, hname):
 
 
 # @login_required(login_url="home")
+def racePrediction(request, rcity, rdate, rno, hname, awardee):
+
+    if request.user.is_authenticated == False:
+        context = {
+            "rcity": rcity,
+            "rdate": rdate,
+            "rno": rno,
+            "hname": hname,
+            "awardee": awardee,
+        }
+        return redirect("prediction_list", rcity=rcity, rdate=rdate, rno=rno)
+
+    exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
+        "rank", "gate"
+    )
+    if exp011s:
+        pass
+    else:
+        return render(request, "base/home.html")
+
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+
+    # rdate_1year = str(int(rdate[0:4]) - 1) + rdate[4:8]  # 최근 1년 경주성적 조회조건 추가
+    hr_records = RecordS.objects.filter(
+        # hr_records = PRecord.objects.filter(
+        # rdate__gt=rdate_1year,
+        rdate__lt=rdate,
+        horse__in=exp011s.values("horse"),
+    ).order_by("horse", "-rdate")
+
+    compare_r = exp011s.aggregate(
+        Min("i_s1f"),
+        Min("i_g1f"),
+        Min("i_g2f"),
+        Min("i_g3f"),
+        Max("handycap"),
+        Max("rating"),
+        Max("r_pop"),
+        Max("j_per"),
+        Max("t_per"),
+        Max("jt_per"),
+        Min("recent5"),
+        Min("recent3"),
+        Min("convert_r"),
+        Min("s1f_rank"),
+    )
+
+    try:
+        alloc = Rec010.objects.get(rcity=rcity, rdate=rdate, rno=rno)
+    except:
+        alloc = None
+
+    paternal = get_paternal(rcity, rdate, rno, r_condition.distance)  # 부마 3착 성적
+    paternal_dist = get_paternal_dist(rcity, rdate, rno)  # 부마 거리별 3착 성적
+
+    loadin = get_loadin(rcity, rdate, rno)
+
+    trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
+
+    # axis = get_axis(rcity, rdate, rno)
+    axis1 = get_axis_rank(rcity, rdate, rno, 1)
+    axis2 = get_axis_rank(rcity, rdate, rno, 2)
+    axis3 = get_axis_rank(rcity, rdate, rno, 3)
+
+    track = get_track_record(
+        rcity, rdate, rno
+    )  # 경주거리별 등급별 평균기록, 최고기록, 최저기록
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+            select horse, r_etc, r_flag
+            from rec011 
+            where rcity =  '"""
+            + rcity
+            + """'
+            and rdate = '"""
+            + rdate
+            + """'
+            and rno =  """
+            + str(rno)
+            + """
+            ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        r_memo = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in 경주 메모")
+        
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+                select rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime
+                from exp010 a 
+                where rdate = '""" + rdate + """'
+                order by rdate, rtime
+                ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        weeksrace = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in exp010 : 주별 경주현황")    
+        
+    
+
+    name = get_client_ip(request)
+
+    if name[0:6] != "15.177":
+        update_visitor_count(name)
+
+        # create a new Visitor instance
+        new_visitor = Visitor(
+            ip_address=name,
+            user_agent=request.META.get("HTTP_USER_AGENT"),
+            # referrer=request.META.get('HTTP_REFERER'),
+            referer=rcity + " " + rdate + " " + str(rno) + " " + "predictionRace",
+            # timestamp=timezone.now()
+        )
+
+        # insert the new_visitor object into the database
+        new_visitor.save()
+
+    context = {
+        "exp011s": exp011s,
+        "r_condition": r_condition,
+        "loadin": loadin,  # 기수 기승가능 부딤중량
+        "hr_records": hr_records,
+        "compare_r": compare_r,
+        "alloc": alloc,
+
+        "paternal": paternal,
+        "paternal_dist": paternal_dist,
+
+        "trainer_double_check": str(trainer_double_check),
+        "training_cnt": training_cnt,
+        "axis1": axis1,
+        "axis2": axis2,
+        "axis3": axis3,
+        "r_memo": r_memo,
+        "track": track,
+        "weeksrace": weeksrace,
+    }
+
+    return render(request, "base/race_prediction.html", context)
+
+def raceTraining(request, rcity, rdate, rno):
+
+    train = get_train_horse(rcity, rdate, rno)
+    
+    trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
+
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+
+    context = {
+        "train": train,
+        "trainer_double_check": str(trainer_double_check),
+        "training_cnt": training_cnt,
+        "r_condition": r_condition,
+    }
+
+    return render(request, "base/race_training.html", context)
+
+def raceJudged(request, rcity, rdate, rno):
+
+    pedigree = get_pedigree(rcity, rdate, rno)  # 병력
+    treat = get_treat_horse(rcity, rdate, rno)
+    judged_horse = get_judged_horse(rcity, rdate, rno)
+    judged_jockey = get_judged_jockey(rcity, rdate, rno)
+
+    trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
+
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+
+    context = {
+        "pedigree": pedigree,
+        "treat": treat,
+        "judged_horse": judged_horse,
+        "judged_jockey": judged_jockey,
+        "trainer_double_check": str(trainer_double_check),
+        "training_cnt": training_cnt,
+        "r_condition": r_condition,
+    }
+
+    return render(request, "base/race_judged.html", context)
+
+
+def raceRelated(request, rcity, rdate, rno):
+
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+
+    award_j, award_t, award_h, race_detail = get_race_related(rcity, rdate, rno)
+    
+    loadin = get_loadin(rcity, rdate, rno)
+
+    judged_jockey = get_judged_jockey(rcity, rdate, rno)
+
+
+    trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
+
+    context = {
+        "r_condition": r_condition,  # 기수 기승가능 부딤중량
+        "loadin": loadin,  # 기수 기승가능 부딤중량
+        "judged_jockey": judged_jockey,
+        "race_detail": race_detail,
+
+        "award_j": award_j,
+        "award_t": award_t,
+        "award_h": award_h,
+        "training_cnt": training_cnt,
+        "trainer_double_check": str(trainer_double_check),
+    }
+
+    return render(request, "base/race_related.html", context)
+
+
 def predictionRace(request, rcity, rdate, rno, hname, awardee):
 
     if request.user.is_authenticated == False:
@@ -639,7 +871,8 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     pedigree = get_pedigree(rcity, rdate, rno)  # 병력
     # training = get_training(rcity, rdate, rno)
     # train = get_train(rcity, rdate, rno)
-    train, training_cnt = get_train_horse(rcity, rdate, rno)
+    train = get_train_horse(rcity, rdate, rno)
+
     treat = get_treat_horse(rcity, rdate, rno)
     track = get_track_record(
         rcity, rdate, rno
@@ -682,7 +915,7 @@ def predictionRace(request, rcity, rdate, rno, hname, awardee):
     # print(trend_j_title)
     # print(trend_j)
 
-    trainer_double_check = get_trainer_double_check(rcity, rdate, rno)
+    trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
 
     # axis = get_axis(rcity, rdate, rno)
     axis1 = get_axis_rank(rcity, rdate, rno, 1)
@@ -1395,56 +1628,110 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
         Max("rating"),
     )
 
-    judged_horse = get_judged_horse(rcity, rdate, rno)
-    judged_jockey = get_judged_jockey(rcity, rdate, rno)
-
-    pedigree = get_pedigree(rcity, rdate, rno)
-    # training = get_training(rcity, rdate, rno)
-    train, training_cnt = get_train_horse(rcity, rdate, rno)
-    train = sorted(train, key=lambda x: x[5] or 99)
-
-    treat = get_treat_horse(rcity, rdate, rno)
-    track = get_track_record(rcity, rdate, rno)  # 경주거리별 등급별 평균기록,
-
-    # h_audit = get_train_audit(rcity, rdate, rno)
-
-    pedigree = sorted(pedigree, key=lambda x: x[2] or 99)
-
     judged_list, judged = get_judged(rcity, rdate, rno)
 
     # print(len(judged))
     if len(judged) > 0:
         judged = judged[0][0]
 
-    # lst = judged).split('●')
-
-    # for i in range(1,len(lst)):             # 첫번째 라인 스킵
-    #     str1 = lst[i].replace(' ', '')
-    #     print(str1)
-
     horses = Exp011.objects.values("horse").filter(rcity=rcity1, rdate=rdate1, rno=rno1)
 
     context = {
         "records": records,
         "r_condition": r_condition,
-        #    'training': training,
-        "train": train,
-        "training_cnt": training_cnt,
-        "treat": treat,
-        "track": track,
         "hr_records": hr_records,
         "compare_r": compare_r,
         "hname": hname,
-        "pedigree": pedigree,
-        # "h_audit": h_audit,
-        "judged_horse": judged_horse,
-        "judged_jockey": judged_jockey,
         "judged_list": judged_list,
         "judged": judged,
         "horses": horses,
     }
 
     return render(request, "base/race_result.html", context)
+
+# def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
+#     records = RecordS.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
+#         "rank", "gate"
+#     )
+#     if records:
+#         pass
+#     else:
+#         return render(request, "base/home.html")
+
+#     r_condition = Rec010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+
+#     rdate_1year = (
+#         str(int(rdate[0:4]) - 1) + rdate[4:8]
+#     )  # 최근 1년 경주성적 조회조건 추가
+
+#     hr_records = RecordS.objects.filter(
+#         rdate__lt=rdate, rdate__gt=rdate_1year, horse__in=records.values("horse")
+#     ).order_by("horse", "-rdate")
+
+#     compare_r = records.aggregate(
+#         Min("i_s1f"),
+#         Min("i_g1f"),
+#         Min("i_g2f"),
+#         Min("i_g3f"),
+#         Min("s1f_rank"),
+#         Min("recent3"),
+#         Min("recent5"),
+#         Min("convert_r"),
+#         Min("p_record"),
+#         Max("handycap"),
+#         Max("rating"),
+#     )
+
+#     judged_horse = get_judged_horse(rcity, rdate, rno)
+#     judged_jockey = get_judged_jockey(rcity, rdate, rno)
+
+#     pedigree = get_pedigree(rcity, rdate, rno)
+#     # training = get_training(rcity, rdate, rno)
+#     train = get_train_horse(rcity, rdate, rno)
+#     train = sorted(train, key=lambda x: x[5] or 99)
+
+#     treat = get_treat_horse(rcity, rdate, rno)
+#     track = get_track_record(rcity, rdate, rno)  # 경주거리별 등급별 평균기록,
+
+#     # h_audit = get_train_audit(rcity, rdate, rno)
+
+#     pedigree = sorted(pedigree, key=lambda x: x[2] or 99)
+
+#     judged_list, judged = get_judged(rcity, rdate, rno)
+
+#     # print(len(judged))
+#     if len(judged) > 0:
+#         judged = judged[0][0]
+
+#     # lst = judged).split('●')
+
+#     # for i in range(1,len(lst)):             # 첫번째 라인 스킵
+#     #     str1 = lst[i].replace(' ', '')
+#     #     print(str1)
+
+#     horses = Exp011.objects.values("horse").filter(rcity=rcity1, rdate=rdate1, rno=rno1)
+
+#     context = {
+#         "records": records,
+#         "r_condition": r_condition,
+#         #    'training': training,
+#         "train": train,
+#         # "training_cnt": training_cnt,
+#         "treat": treat,
+#         "track": track,
+#         "hr_records": hr_records,
+#         "compare_r": compare_r,
+#         "hname": hname,
+#         "pedigree": pedigree,
+#         # "h_audit": h_audit,
+#         "judged_horse": judged_horse,
+#         "judged_jockey": judged_jockey,
+#         "judged_list": judged_list,
+#         "judged": judged,
+#         "horses": horses,
+#     }
+
+#     return render(request, "base/race_result.html", context)
 
 def raceSimulation(request, rcity, rdate, rno, hname, awardee):
 

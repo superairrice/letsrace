@@ -541,7 +541,7 @@ def get_race(i_rdate, i_awardee):
         strSql = (
             """ 
                 select rcity, rdate, rno, username, memo, board, rcnt, scnt, updated, created
-                  from rboard
+                from rboard
                 where rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
@@ -1102,48 +1102,7 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
         connection.rollback()
         print("Failed selecting in Train Horse")
 
-    try:
-        cursor = connection.cursor()
-
-        strSql = (
-            """ select rider, lpad( cast( count(*) as char), 2, ' ') from train 
-                where tdate between date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 21 DAY), '%Y%m%d') and '"""
-            + i_rdate
-            + """'
-                and horse in ( select horse from exp011 where rdate = '"""
-            + i_rdate
-            + """' and rcity = '"""
-            + i_rcity
-            + """' and rno = """
-            + str(i_rno)
-            + """)
-                and rider in ( select jockey from exp011 where rdate = '"""
-            + i_rdate
-            + """' and rcity = '"""
-            + i_rcity
-            + """' and rno = """
-            + str(i_rno)
-            + """)
-                group by rider 
-            having count(*) >= 7
-            ;"""
-        )
-        # print(strSql)
-
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        training_cnt = cursor.fetchall()
-
-        connection.commit()
-        connection.close()
-
-        # print(training_cnt)
-    except:
-        connection.rollback()
-        print("Failed selecting in BookListView")
-
-    return result, training_cnt
+    return result
 
 
 def get_train_horse_care(
@@ -2585,9 +2544,240 @@ def get_status_train(i_rdate):
     return training
 
 
+# race related Query
+def get_race_related(i_rcity, i_rdate, i_rno):
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """
+            select b.rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
+            from
+            (
+                select jockey, count(*) rcnt, 
+                        sum(if(rank = 1, 1, 0)) r1, 
+                        sum(if(rank = 2, 1, 0)) r2, 
+                        sum(if(rank = 3, 1, 0)) r3,
+                        sum(if(rank = 4, 1, 0)) r4,
+                        sum(if(rank = 5, 1, 0)) r5,
+                        sum(if(rank = 6, 1, 0)) r6,
+                        sum(if(rank = 7, 1, 0)) r7,
+                        sum(if(rank = 8, 1, 0)) r8,
+                        sum(if(rank = 9, 1, 0)) r9,
+                        sum(if(rank = 10, 1, 0)) r10,
+                        sum(if(rank = 11, 1, 0)) r11,
+                        sum(if(rank >= 12, 1, 0)) r12,
+                        
+                        sum(if(r_rank > 0, 1, 0 )) rrcnt,
+                        sum(if(r_rank = 1, 1, 0)) rr1, 
+                        sum(if(r_rank = 2, 1, 0)) rr2, 
+                        sum(if(r_rank = 3, 1, 0)) rr3,
+                        sum(if(r_rank = 4, 1, 0)) rr4,
+                        sum(if(r_rank = 5, 1, 0)) rr5,
+                        sum(if(r_rank = 6, 1, 0)) rr6,
+                        sum(if(r_rank = 7, 1, 0)) rr7,
+                        sum(if(r_rank = 8, 1, 0)) rr8,
+                        sum(if(r_rank = 9, 1, 0)) rr9,
+                        sum(if(r_rank = 10, 1, 0)) rr10,
+                        sum(if(r_rank = 11, 1, 0)) rr11,
+                        sum(if(r_rank >= 12, 1, 0)) rr12
+                from expect a
+                where rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL + 3 DAY), '%Y%m%d')
+                and rno < 80
+                group by jockey
+                
+            ) a right outer join  exp011 b  on a.jockey = b.jockey
+            where b.rcity =  '"""
+            + i_rcity
+            + """'
+                    and b.rdate = '"""
+            + i_rdate
+            + """'
+                    and b.rno =  """
+            + str(i_rno)
+            + """
+                    order by b.rank, b.gate
+                ; """
+        )
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        award_j = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in Award_j")
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """
+            select b.rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
+            from
+            (
+                select trainer, count(*) rcnt, 
+                        sum(if(rank = 1, 1, 0)) r1, 
+                        sum(if(rank = 2, 1, 0)) r2, 
+                        sum(if(rank = 3, 1, 0)) r3,
+                        sum(if(rank = 4, 1, 0)) r4,
+                        sum(if(rank = 5, 1, 0)) r5,
+                        sum(if(rank = 6, 1, 0)) r6,
+                        sum(if(rank = 7, 1, 0)) r7,
+                        sum(if(rank = 8, 1, 0)) r8,
+                        sum(if(rank = 9, 1, 0)) r9,
+                        sum(if(rank = 10, 1, 0)) r10,
+                        sum(if(rank = 11, 1, 0)) r11,
+                        sum(if(rank >= 12, 1, 0)) r12,
+                        
+                        sum(if(r_rank > 0, 1, 0 )) rrcnt,
+                        sum(if(r_rank = 1, 1, 0)) rr1, 
+                        sum(if(r_rank = 2, 1, 0)) rr2, 
+                        sum(if(r_rank = 3, 1, 0)) rr3,
+                        sum(if(r_rank = 4, 1, 0)) rr4,
+                        sum(if(r_rank = 5, 1, 0)) rr5,
+                        sum(if(r_rank = 6, 1, 0)) rr6,
+                        sum(if(r_rank = 7, 1, 0)) rr7,
+                        sum(if(r_rank = 8, 1, 0)) rr8,
+                        sum(if(r_rank = 9, 1, 0)) rr9,
+                        sum(if(r_rank = 10, 1, 0)) rr10,
+                        sum(if(r_rank = 11, 1, 0)) rr11,
+                        sum(if(r_rank >= 12, 1, 0)) rr12
+                from expect a
+                where rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL + 3 DAY), '%Y%m%d')
+                and rno < 80
+                group by trainer
+                
+            ) a right outer join  exp011 b  on a.trainer = b.trainer
+            where b.rcity =  '"""
+            + i_rcity
+            + """'
+                    and b.rdate = '"""
+            + i_rdate
+            + """'
+                    and b.rno =  """
+            + str(i_rno)
+            + """
+                    order by b.rank, b.gate
+                ; """
+        )
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        award_t = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in Award_t")
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """
+            select b.rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
+            from
+            (
+                select host, count(*) rcnt, 
+                        sum(if(rank = 1, 1, 0)) r1, 
+                        sum(if(rank = 2, 1, 0)) r2, 
+                        sum(if(rank = 3, 1, 0)) r3,
+                        sum(if(rank = 4, 1, 0)) r4,
+                        sum(if(rank = 5, 1, 0)) r5,
+                        sum(if(rank = 6, 1, 0)) r6,
+                        sum(if(rank = 7, 1, 0)) r7,
+                        sum(if(rank = 8, 1, 0)) r8,
+                        sum(if(rank = 9, 1, 0)) r9,
+                        sum(if(rank = 10, 1, 0)) r10,
+                        sum(if(rank = 11, 1, 0)) r11,
+                        sum(if(rank >= 12, 1, 0)) r12,
+                        
+                        sum(if(r_rank > 0, 1, 0 )) rrcnt,
+                        sum(if(r_rank = 1, 1, 0)) rr1, 
+                        sum(if(r_rank = 2, 1, 0)) rr2, 
+                        sum(if(r_rank = 3, 1, 0)) rr3,
+                        sum(if(r_rank = 4, 1, 0)) rr4,
+                        sum(if(r_rank = 5, 1, 0)) rr5,
+                        sum(if(r_rank = 6, 1, 0)) rr6,
+                        sum(if(r_rank = 7, 1, 0)) rr7,
+                        sum(if(r_rank = 8, 1, 0)) rr8,
+                        sum(if(r_rank = 9, 1, 0)) rr9,
+                        sum(if(r_rank = 10, 1, 0)) rr10,
+                        sum(if(r_rank = 11, 1, 0)) rr11,
+                        sum(if(r_rank >= 12, 1, 0)) rr12
+                from expect a
+                where rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL + 3 DAY), '%Y%m%d')
+                and rno < 80
+                group by host
+                
+            ) a right outer join  exp011 b  on a.host = b.host
+            where b.rcity =  '"""
+            + i_rcity
+            + """'
+                    and b.rdate = '"""
+            + i_rdate
+            + """'
+                    and b.rno =  """
+            + str(i_rno)
+            + """
+                    order by b.rank, b.gate
+                ; """
+        )
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        award_h = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in Award_h")
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+                select rcity, jockey awardee, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey j_name, trainer t_name, host h_name, r_pop, distance, handycap, jt_per, s1f_rank, corners, g3f_rank, g1f_rank, alloc3r, jockey_old, reason
+                from expect
+                where rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL + 3 DAY), '%Y%m%d')
+                and rno < 80
+                order by rdate, rtime, gate
+                ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        race_detail = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in expect : 경주별 Detail(약식)) ")
+
+    return award_j, award_t, award_h, race_detail
+
 # 기수 인기도 및 게이트 연대율
-
-
 def get_popularity_rate_j(i_rcity, i_rdate, i_rno):
     try:
         cursor = connection.cursor()
@@ -3518,7 +3708,48 @@ def get_trainer_double_check(i_rcity, i_rdate, i_rno):
         connection.rollback()
         print("Failed selecting in exp010 outer join rec010")
 
-    return trainer_double_check
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ select rider, lpad( cast( count(*) as char), 2, ' ') from train 
+                where tdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 21 DAY), '%Y%m%d') and '"""
+            + i_rdate
+            + """'
+                and horse in ( select horse from exp011 where rdate = '"""
+            + i_rdate
+            + """' and rcity = '"""
+            + i_rcity
+            + """' and rno = """
+            + str(i_rno)
+            + """)
+                and rider in ( select jockey from exp011 where rdate = '"""
+            + i_rdate
+            + """' and rcity = '"""
+            + i_rcity
+            + """' and rno = """
+            + str(i_rno)
+            + """)
+                group by rider 
+            having count(*) >= 7
+            ;"""
+        )
+        # print(strSql)
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        training_cnt = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+        # print(training_cnt)
+    except:
+        connection.rollback()
+        print("Failed selecting in training_cnt")
+
+    return trainer_double_check, training_cnt
 
 
 # 마방 등급별 경주마 보유현황

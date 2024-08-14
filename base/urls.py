@@ -31,6 +31,17 @@ urlpatterns = [
         name="activityComponent_a",
     ),
     path("home_a/<str:rcity>/<str:rdate>", views.homePage_a, name="home_a"),
+    
+    path(
+        "race_prediction/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",
+        views.racePrediction,
+        name="race_prediction",
+    ),  # 로그인 후
+    
+    path("race_training/<str:rcity>/<str:rdate>/<int:rno>", views.raceTraining, name="race_training",), 
+    path("race_judged/<str:rcity>/<str:rdate>/<int:rno>", views.raceJudged, name="race_judged",), 
+    path("race_related/<str:rcity>/<str:rdate>/<int:rno>", views.raceRelated, name="race_related",), 
+    
     path(
         "prediction_race/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",
         views.predictionRace,
