@@ -2552,7 +2552,7 @@ def get_race_related(i_rcity, i_rdate, i_rno):
 
         strSql = (
             """
-            select b.rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
+            select b.rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
             from
             (
                 select jockey, count(*) rcnt, 
@@ -2619,7 +2619,7 @@ def get_race_related(i_rcity, i_rdate, i_rno):
 
         strSql = (
             """
-            select b.rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
+            select b.rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
             from
             (
                 select trainer, count(*) rcnt, 
@@ -2686,7 +2686,7 @@ def get_race_related(i_rcity, i_rdate, i_rno):
 
         strSql = (
             """
-            select b.rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
+            select b.rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
             from
             (
                 select host, count(*) rcnt, 

@@ -34,7 +34,7 @@
           <tbody>
             {% for rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime in weeksrace %}
 
-            {% url "race_prediction" rcity rdate rno 0 0 as url_path %}
+            {% url "race_result" rcity rdate rno 0 0 0 0 as url_path %}
             <tr class="view" onclick="window.location.href='{{ url_path }}';" style="cursor:pointer;">
               <td>
                 <span style="font-family: Arial; text-align: right; font-size: 1.2rem;">{{rtime}}</span>
@@ -99,7 +99,7 @@
     </span>
 
     <span style="font-size:1.4rem; color: var(--color-main-light); font-weight: 500; padding: 4px 4px;">{{r_condition.dividing}}</span>
-    <span class="tooltip" style="color:var(--color-light); font-size: 1.4rem; font-family: Arial; padding: 4px 4px;">&nbsp;&nbsp;💵 {{r_condition.r1award|div:1000|intcomma}}
+    <span class="tooltip" style="color:var(--color-light); font-size: 1.4rem; font-family: Arial; padding: 4px 4px;">&nbsp;&nbsp;💵 {{r_condition.r1award|intcomma}}
       <span class="tooltip-text" style="text-align: right; font-family: Arial;">
         <table>
           <thead>
@@ -109,23 +109,23 @@
           <tbody>
             <tr>
               <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">1</td>
-              <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r1award|div:1000|intcomma}}</td>
+              <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r1award|intcomma}}</td>
             </tr>
             <tr>
               <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">2</td>
-              <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r2award|div:1000|intcomma}}</td>
+              <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r2award|intcomma}}</td>
             </tr>
             <tr>
               <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">3</td>
-              <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r3award|div:1000|intcomma}}</td>
+              <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r3award|intcomma}}</td>
             </tr>
             <tr>
               <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">4</td>
-              <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r4award|div:1000|intcomma}}</td>
+              <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r4award|intcomma}}</td>
             </tr>
             <tr>
               <td style="font-family: Arial; font-size: 1.2rem; text-align: center;">5</td>
-              <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r5award|div:1000|intcomma}}</td>
+              <td style="font-family: Arial; font-size: 1.2rem;">{{r_condition.r5award|intcomma}}</td>
             </tr>
           </tbody>
     
@@ -179,29 +179,13 @@
     <span style="font-size:1.4rem; color: var(--color-main-light); font-family: Arial; padding:0.4rem; ">{{r_condition.distance}}𝓂</span>
 
     <span style="color: var(--color-main); padding:0.4rem;">
-      {% if request.user.username == 'admin' %}
-      <a href="{% url 'race_report' r_condition.rcity r_condition.rdate r_condition.rno %}"
-        onclick="window.open(this.href, '_blank', 'width=900, height=800, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
-        <span class="tooltip" style="font-size: 1.35rem; font-weight: 400;">⏰&nbsp;&nbsp;{{r_condition.rtime}}
-          <span class="tooltip-text">경주복기</span>
-        </span>
-      </a>
-      
-      {% else %}
-      ⏰&nbsp;&nbsp;{{r_condition.rtime}}
-      {% endif %}
-    </span>
-
-    {% if alloc.r2alloc %} {# 경주결과가 입력되었으면 #}
-    <span style="color: var(--color-main); padding:0.4rem;">
-      <a href="{% url 'race_result' r_condition.rcity r_condition.rdate r_condition.rno 0 0 0 0 %}"
-        onclick="window.open(this.href, 'w_result', 'width=1000, height=1000, toolbars=no, scrollbars=yes'); return false;">
+      <a href="{% url 'race_prediction' r_condition.rcity r_condition.rdate r_condition.rno 0 0 %}"
+        onclick="window.open(this.href, 'w_prediction', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
         <span class="tooltip" style="font-size: 1.35rem; font-weight: 400;">📃
-          <span class="tooltip-text">Race Result</span>
+          <span class="tooltip-text">Race Prediction</span>
         </span>
       </a>
     </span>
-    {% endif %}
   </div>
 
 </div>

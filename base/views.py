@@ -1612,6 +1612,35 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
     horses = Exp011.objects.values("horse").filter(rcity=rcity1, rdate=rdate1, rno=rno1)
 
+    try:
+        alloc = Rec010.objects.get(rcity=rcity, rdate=rdate, rno=rno)
+    except:
+        alloc = None
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+                select rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime
+                from exp010 a 
+                where rdate = '"""
+            + rdate
+            + """'
+                order by rdate, rtime
+                ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        weeksrace = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in exp010 : 주별 경주현황")
+
     context = {
         "records": records,
         "r_condition": r_condition,
@@ -1621,6 +1650,8 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
         "judged_list": judged_list,
         "judged": judged,
         "horses": horses,
+        "alloc": alloc,
+        "weeksrace": weeksrace,
     }
 
     return render(request, "base/race_result.html", context)
