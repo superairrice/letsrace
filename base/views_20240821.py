@@ -65,7 +65,6 @@ from base.mysqls import (
     get_trainer_trend,
     get_training,
     get_status_training,
-    get_training_awardee,
     get_treat_horse,
     get_weeks,
     get_last2weeks,
@@ -477,7 +476,6 @@ def home(request):
 
     loadin = get_last2weeks_loadin(i_rdate)
 
-
     rflag = False  # 경마일, 비경마일 구분
     for r in rdays:
         # print(r[0], r[2])
@@ -657,7 +655,7 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
     except:
         connection.rollback()
         print("Failed selecting in 경주 메모")
-        
+
     try:
         cursor = connection.cursor()
 
@@ -665,7 +663,9 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
             """ 
                 select rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime
                 from exp010 a 
-                where rdate = '""" + rdate + """'
+                where rdate = '"""
+            + rdate
+            + """'
                 order by rdate, rtime
                 ; """
         )
@@ -678,9 +678,7 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
 
     except:
         connection.rollback()
-        print("Failed selecting in exp010 : 주별 경주현황")    
-        
-    
+        print("Failed selecting in exp010 : 주별 경주현황")
 
     name = get_client_ip(request)
 
@@ -706,10 +704,8 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         "hr_records": hr_records,
         "compare_r": compare_r,
         "alloc": alloc,
-
         "paternal": paternal,
         "paternal_dist": paternal_dist,
-
         "trainer_double_check": str(trainer_double_check),
         "training_cnt": training_cnt,
         "axis1": axis1,
@@ -722,10 +718,11 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
 
     return render(request, "base/race_prediction.html", context)
 
+
 def raceTraining(request, rcity, rdate, rno):
 
     train = get_train_horse(rcity, rdate, rno)
-    
+
     trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
 
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
@@ -738,6 +735,7 @@ def raceTraining(request, rcity, rdate, rno):
     }
 
     return render(request, "base/race_training.html", context)
+
 
 def raceJudged(request, rcity, rdate, rno):
 
@@ -768,11 +766,10 @@ def raceRelated(request, rcity, rdate, rno):
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
     award_j, award_t, award_h, race_detail = get_race_related(rcity, rdate, rno)
-    
+
     loadin = get_loadin(rcity, rdate, rno)
 
     judged_jockey = get_judged_jockey(rcity, rdate, rno)
-
 
     trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
 
@@ -781,7 +778,6 @@ def raceRelated(request, rcity, rdate, rno):
         "loadin": loadin,  # 기수 기승가능 부딤중량
         "judged_jockey": judged_jockey,
         "race_detail": race_detail,
-
         "award_j": award_j,
         "award_t": award_t,
         "award_h": award_h,
@@ -790,6 +786,7 @@ def raceRelated(request, rcity, rdate, rno):
     }
 
     return render(request, "base/race_related.html", context)
+
 
 def raceRelatedInfo(request, rcity, rdate, rno):
 
@@ -1142,7 +1139,6 @@ def predictionList(request, rcity, rdate, rno):
         "trainer_double_check": str(trainer_double_check),
         "paternal": paternal,
         "weeksrace": weeksrace,
-
     }
 
     return render(request, "base/prediction_list.html", context)
@@ -1697,6 +1693,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
     return render(request, "base/race_result.html", context)
 
+
 # def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 #     records = RecordS.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
 #         "rank", "gate"
@@ -1781,6 +1778,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
 #     return render(request, "base/race_result.html", context)
 
+
 def raceSimulation(request, rcity, rdate, rno, hname, awardee):
 
     weight = get_weight(rcity, rdate, rno)
@@ -1829,14 +1827,13 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
         ),
     )  # tuple로 정의
 
-    if weight == weight_mock:               # query 가중치와 입력된 가중치가 동일하면 
+    if weight == weight_mock:  # query 가중치와 입력된 가중치가 동일하면
         # print("같음")
         pass
 
     if (
         int(w_avg) + int(w_fast) + int(w_slow) == 100
-        and int(w_recent3) + int(w_recent5) + int(w_convert)
-        == 100  # 가중치 오류 check
+        and int(w_recent3) + int(w_recent5) + int(w_convert) == 100  # 가중치 오류 check
     ):
 
         if weight != weight_mock:  # 가중치가 뱐경되었으면
@@ -2051,7 +2048,7 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
     trend_j_title = trend_data.columns.tolist()
 
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
-    
+
     try:
         cursor = connection.cursor()
 
@@ -2074,8 +2071,8 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
     except:
         connection.rollback()
         print("Failed selecting in 기승가능중량")
-        
-    # print(loadin) 
+
+    # print(loadin)
 
     context = {
         "trend_j": trend_j,
@@ -2203,14 +2200,40 @@ def weeksStatus(request, rcity, rdate):
 
     return render(request, "base/weeks_status.html", context)
 
+
 # thethe9 rank1 실경주 입상현황
-def jtAnalysis(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2, gate, distance):
+def jtAnalysis(
+    request,
+    rcity,
+    fdate,
+    tdate,
+    jockey,
+    trainer,
+    host,
+    horse,
+    r1,
+    r2,
+    rr1,
+    rr2,
+    gate,
+    distance,
+):
 
     rcity = request.GET.get("rcity") if request.GET.get("rcity") != None else rcity
-    fdate = request.GET.get("fdate") if request.GET.get("fdate") != None else fdate[0:4] + '-' + fdate[4:6] + '-' + fdate[6:8]
-    tdate = request.GET.get("tdate") if request.GET.get("tdate") != None else tdate[0:4] + '-' + tdate[4:6] + '-' + tdate[6:8]
+    fdate = (
+        request.GET.get("fdate")
+        if request.GET.get("fdate") != None
+        else fdate[0:4] + "-" + fdate[4:6] + "-" + fdate[6:8]
+    )
+    tdate = (
+        request.GET.get("tdate")
+        if request.GET.get("tdate") != None
+        else tdate[0:4] + "-" + tdate[4:6] + "-" + tdate[6:8]
+    )
     jockey = request.GET.get("jockey") if request.GET.get("jockey") != None else jockey
-    trainer = request.GET.get("trainer") if request.GET.get("trainer") != None else trainer
+    trainer = (
+        request.GET.get("trainer") if request.GET.get("trainer") != None else trainer
+    )
     host = request.GET.get("host") if request.GET.get("host") != None else host
     horse = request.GET.get("horse") if request.GET.get("horse") != None else horse
     r1 = request.GET.get("r1") if request.GET.get("r1") != None else r1
@@ -2218,7 +2241,9 @@ def jtAnalysis(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1, r
     rr1 = request.GET.get("rr1") if request.GET.get("rr1") != None else rr1
     rr2 = request.GET.get("rr2") if request.GET.get("rr2") != None else rr2
     gate = request.GET.get("gate") if request.GET.get("gate") != None else gate
-    distance = request.GET.get("distance") if request.GET.get("distance") != None else distance
+    distance = (
+        request.GET.get("distance") if request.GET.get("distance") != None else distance
+    )
 
     # print('2', fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2)
 
@@ -2231,16 +2256,26 @@ def jtAnalysis(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1, r
 
     status = get_thethe9_ranks(
         rcity,
-        fdate[0:4] + fdate[5:7] + fdate[8:10], 
-        tdate[0:4] + tdate[5:7] + tdate[8:10], jockey, trainer, host, horse, r1, r2, rr1, rr2, gate, distance
+        fdate[0:4] + fdate[5:7] + fdate[8:10],
+        tdate[0:4] + tdate[5:7] + tdate[8:10],
+        jockey,
+        trainer,
+        host,
+        horse,
+        r1,
+        r2,
+        rr1,
+        rr2,
+        gate,
+        distance,
     )
 
-    rank1 = [item for item in status if item[15] == 1]      # item[15] : 예상착순(rank)
-    rank2 = [item for item in status if item[15] == 2]      # item[15] : 예상착순(rank)
-    rank3 = [item for item in status if item[15] == 3]      # item[15] : 예상착순(rank)
-    r_rank1 = [item for item in status if item[16] == 1]      # item[16] : 실제착순(r_rank)
-    r_rank2 = [item for item in status if item[16] == 2]      # item[16] : 실제착순(r_rank)
-    r_rank3 = [item for item in status if item[16] == 3]      # item[16] : 실제착순(r_rank)
+    rank1 = [item for item in status if item[15] == 1]  # item[15] : 예상착순(rank)
+    rank2 = [item for item in status if item[15] == 2]  # item[15] : 예상착순(rank)
+    rank3 = [item for item in status if item[15] == 3]  # item[15] : 예상착순(rank)
+    r_rank1 = [item for item in status if item[16] == 1]  # item[16] : 실제착순(r_rank)
+    r_rank2 = [item for item in status if item[16] == 2]  # item[16] : 실제착순(r_rank)
+    r_rank3 = [item for item in status if item[16] == 3]  # item[16] : 실제착순(r_rank)
 
     try:
         cursor = connection.cursor()
@@ -2301,9 +2336,9 @@ def jtAnalysis(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1, r
 def getRaceHorse(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host):
     if i_host == "":
         i_host = " "
-    
+
     solidarity = get_recent_horse(
-        '99991231', awardee, i_name
+        "99991231", awardee, i_name
     )  # 기수, 조교사, 마주 연대현황 최근1년
     # print(solidarity)
 
@@ -2385,21 +2420,6 @@ def printPrediction(request):
 
     return render(request, "base/print_prediction.html", context)
 
-# 기수/조교사 주별 출주마 조교현황
-def trainingAwardee(request, rdate, awardee, name):
-
-    status = get_training_awardee(rdate, awardee, name)
-
-    # print(status)
-
-    context = {
-        "status": status,
-        "awardee": awardee,
-        "name": name,
-    }
-
-    return render(request, "base/training_awardee.html", context)
-
 
 def awardStatusTrainer(request):
     q = request.GET.get("q") if request.GET.get("q") != None else ""
@@ -2442,6 +2462,10 @@ def awardStatusTrainer(request):
         i_friday=Racing.objects.values("rdate").distinct()[0]["rdate"],
     )
     loadin = get_last2weeks_loadin(friday)
+    # status = get_status_training(rdate)
+    status = get_status_train(rdate)
+    j_rdate = status[len(status) - 1][1]
+    # print(len(status))
 
     name = get_client_ip(request)
     if name[0:6] != "15.177":
@@ -2462,8 +2486,9 @@ def awardStatusTrainer(request):
     context = {
         "weeks": weeks,
         "loadin": loadin,
+        "status": status,
         "fdate": fdate,
-        "rdate": rdate,
+        "j_rdate": j_rdate,
         "jname1": jname1,
         "jname2": jname2,
         "jname3": jname3,
@@ -2515,6 +2540,10 @@ def awardStatusJockey(request):
     )
 
     loadin = get_last2weeks_loadin(friday)
+    # status = get_status_training(rdate)
+    status = get_status_train(rdate)
+
+    j_rdate = status[len(status) - 1][1]
 
     name = get_client_ip(request)
     if name[0:6] != "15.177":
@@ -2535,8 +2564,9 @@ def awardStatusJockey(request):
     context = {
         "weeks": weeks,
         "loadin": loadin,
+        "status": status,
         "fdate": fdate,
-        "rdate": rdate,
+        "j_rdate": j_rdate,
         "jname1": jname1,
         "jname2": jname2,
         "jname3": jname3,

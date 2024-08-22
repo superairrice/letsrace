@@ -41,6 +41,9 @@ urlpatterns = [
     path("race_training/<str:rcity>/<str:rdate>/<int:rno>", views.raceTraining, name="race_training",), 
     path("race_judged/<str:rcity>/<str:rdate>/<int:rno>", views.raceJudged, name="race_judged",), 
     path("race_related/<str:rcity>/<str:rdate>/<int:rno>", views.raceRelated, name="race_related",), 
+    path("race_related_info/<str:rcity>/<str:rdate>/<int:rno>", views.raceRelatedInfo, name="race_related_info",), 
+    
+    path("training_awardee/<str:rdate>/<str:awardee>/<str:name>", views.trainingAwardee, name="training_awardee",), 
     
     path(
         "prediction_race/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",

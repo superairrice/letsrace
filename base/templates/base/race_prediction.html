@@ -48,8 +48,11 @@
       {% include 'base/m_header_of_prediction.html' %}
 
       <hr style="border: solid 1px black;">
-      <a class="btn btn--main btn--pill" style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-dark);" href="{% url 'race_training' r_condition.rcity r_condition.rdate r_condition.rno %}" onclick="window.open(this.href, 'w_training', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">조교현황</a>
-      <a class="btn btn--main btn--pill" style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-dark);" href="{% url 'race_judged' r_condition.rcity r_condition.rdate r_condition.rno %}" onclick="window.open(this.href, 'w_judged', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">마필병력 & 재결</a>
+      <a class="btn btn--main btn--pill" style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-bg); border-color: var(--color-dark-medium);" href="{% url 'race_training' r_condition.rcity r_condition.rdate r_condition.rno %}" onclick="window.open(this.href, 'w_training', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">조교현황</a>
+      <a class="btn btn--main btn--pill" style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-bg); border-color: var(--color-dark-medium);" href="{% url 'race_judged' r_condition.rcity r_condition.rdate r_condition.rno %}" onclick="window.open(this.href, 'w_judged', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">마필병력 & 재결</a>
+      {% if request.user.username == 'admin' %}
+      <a class="btn btn--main btn--pill" style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-bg); border-color: var(--color-dark-medium);" href="{% url 'race_related_info' r_condition.rcity r_condition.rdate r_condition.rno %}" onclick="window.open(this.href, 'w_related_info', 'width=1000, height=1400, toolbars=no, scrollbars=yes'); return false;">Related Info.</a>
+      {% endif %}
       <hr style="border: solid 1px black;">
 
       <table class="fold-table" style="border-radius: 7px;">
@@ -181,7 +184,7 @@
               </div>
             </td>
 
-            {# gate(마번) 착순 #}
+            {# gate(마번) 순위 #}
             <td align="center" style="font-size: 1.4rem ">
               {% if r.r_rank == 99 %}
               <span style="font-style: italic; text-decoration:line-through; color:gray;">{{r.gate}}</span>
@@ -215,25 +218,26 @@
                 {% endif %}
               {% endif %}
 
-
+              <div style="font-family: Arial; font-size:1.1rem; font-style: italic; color:var(--color-r1); text-align: right;">
               {% if r.r_rank %}
                 
                 {% if r.r_rank == 1 %}
-                <div style="font-family: Arial; font-size:1.1rem; font-weight: 700; font-style: italic; color:var(--color-r1); text-align: right;">{{r.r_rank}}</div>
+                <span style="font-family: Arial; font-size:1.1rem; color:var(--color-main-light); text-align: right; padding:2px 4px; border-radius: 7px; background-color: var(--color-r1);">{{r.r_rank}}</span>
                 {% elif r.r_rank == 2 %}
-                <div style="font-family: Arial; font-size:1.1rem; font-weight: 700; font-style: italic; color:var(--color-r2); text-align: right;">{{r.r_rank}}</div>
+                <span style="font-family: Arial; font-size:1.1rem; color:var(--color-light); text-align: right; padding:2px 4px; border-radius: 7px; background-color: var(--color-r2);">{{r.r_rank}}</span>
                 {% elif r.r_rank == 3 %}
-                <div style="font-family: Arial; font-size:1.1rem; font-weight: 700; font-style: italic; color:var(--color-r3); text-align: right;">{{r.r_rank}}</div>
+                <span style="font-family: Arial; font-size:1.1rem; color:var(--color-bg); text-align: right; padding:2px 4px; border-radius: 7px; background-color: var(--color-r3);">{{r.r_rank}}</span>
                 {% elif r.r_rank == 4 %}
-                <div style="font-family: Arial; font-size:1.1rem; font-weight: 700; font-style: italic; color:var(--color-r4); text-align: right;">{{r.r_rank}}</div>
+                <span style="font-family: Arial; font-size:1.1rem; color:var(--color-r4); text-align: right; padding:2px 4px; border-radius: 7px;">{{r.r_rank}}</span>
                 {% elif r.r_rank == 5 %}
-                <div style="font-family: Arial; font-size:1.1rem; font-weight: 700; font-style: italic; color:var(--color-r5); text-align: right;">{{r.r_rank}}</div>
+                <span style="font-family: Arial; font-size:1.1rem; color:var(--color-r5); text-align: right; padding:2px 4px; border-radius: 7px;">{{r.r_rank}}</span>
                 {% elif r.r_rank == 99 %}
-                <div style="font-family: Arial; font-size:.9rem; font-weight: 700; color:var(--color-gray); text-align: right;">🚫</div>
+                <span style="font-family: Arial; font-size:.9rem; color:var(--color-gray); text-align: right; padding:2px 4px; border-radius: 7px;">🚫</span>
                 {% else %}
-                <div style="font-family: Arial; font-size:1.1rem; font-style: italic; color:var(--color-gray); text-align: right;">{{r.r_rank}}</div>
+                <span style="font-family: Arial; font-size:1.1rem; color:var(--color-gray); text-align: right; padding:2px 4px; border-radius: 7px;">{{r.r_rank}}</span>
                 {% endif %}
               {% endif %}
+              </div>
             </td>
 
             {# 경주마 이름 출주주기, 산지 성별 나이 #}
@@ -480,6 +484,7 @@
             </td>
 
             {# 기수 조교사 연대율 #}
+            {% url "jt_analysis" '%' r_condition.rdate|mul:1|sub:10000 r_condition.rdate r.jockey r.trainer '%' '%' '1' '99' '1' '99' '0' '0' as url_path %}
             <td align="right">
 
               {% if r.jockey_old %}
@@ -499,7 +504,7 @@
                 
                 {# 기수 조교사 연대 출주 복승 회수 #}
                 <div style="font-size: 1.0rem; color:gray; text-align: right;">
-                  <a href="{% url 'jt_analysis' '%' r_condition.rdate|mul:1|sub:10000 r_condition.rdate r.jockey r.trainer '%' '%' '1' '99' '1' '99' '0' '0' %}"
+                  <a href={{url_path}}
                     onclick="window.open(this.href, 'jt_analysis', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
 
                     <span class="tooltip" style="font-family: Arial; color:var(--color-light-gray);">
@@ -561,7 +566,7 @@
               
                 {# 기수 조교사 연대 출주 복승 회수 #}
                 <div style="font-size: 1.05rem; color:gray; text-align: right;">
-                  <a href="{% url 'jt_analysis' '%' r_condition.rdate|mul:1|sub:10000 r_condition.rdate r.jockey r.trainer '%' '%' '1' '99' '1' '99' '0' '0' %}"
+                  <a href={{url_path}}
                     onclick="window.open(this.href, 'jt_analysis', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
                     
                     <span class="tooltip" style="font-family: Arial; color:var(--color-light-gray);">
@@ -974,7 +979,7 @@
               {% if r.r_record %}
                 <div style=" font-size: 1.1rem; text-align: right; padding-top:0.2rem;">
                 {% if r.r_rank == 1 %}
-                <span class="blink" style="color:var(--color-r1); font-style: italic; font-family: Arial; padding:2px 4px; border-radius: 7px; background-color: var(--color-bg);">{{r.r_record|slice:"0:1"}}&nbsp;{{r.r_record|slice:"1:6"}}</span>
+                <span style="color:var(--color-r1); font-style: italic; font-family: Arial; padding:2px 4px; border-radius: 7px; background-color: var(--color-bg);">{{r.r_record|slice:"0:1"}}&nbsp;{{r.r_record|slice:"1:6"}}</span>
                 {% elif r.r_rank == 2 %}
                 <span style="color:var(--color-r2); font-style: italic; font-family: Arial; padding:2px 4px; border-radius: 7px; background-color: var(--color-bg);">{{r.r_record|slice:"0:1"}}&nbsp;{{r.r_record|slice:"1:6"}}</span>
                 {% elif r.r_rank == 3 %}
@@ -1146,7 +1151,7 @@
 
       <hr style="border: solid 1px black;"> 
 
-      <a class="btn btn--main btn--pill" style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-dark);" href="{% url 'race_related' r_condition.rcity r_condition.rdate r_condition.rno %}" onclick="window.open(this.href, 'w_related', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">기수 & 마방 & 마주</a>
+      <a class="btn btn--main btn--pill" style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-bg); border-color: var(--color-dark-medium);" href="{% url 'race_related' r_condition.rcity r_condition.rdate r_condition.rno %}" onclick="window.open(this.href, 'w_related', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">기수 & 마방 & 마주</a>
       <hr style="border: solid 1px black;">
 
       <table class="fold-table"  style="border-radius: 7px; table-layout: fixed">
