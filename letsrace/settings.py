@@ -73,7 +73,6 @@ CSRF_TRUSTED_ORIGINS = ["http://thethe9.com", "https://thethe9.com"]
 
 ALLOWED_HOSTS = [
     ".compute.amazonaws.com",
-    "10.0.5.128",
     "127.0.0.1",
     "thethe9.com",
     "3.37.228.51",
@@ -218,7 +217,7 @@ DATABASES = {
         "USER": "letslove",  # [3]
         "PASSWORD": "Ruddksp!23",  # [4]
         # "HOST": "super007.synology.me",  # [5]
-        'HOST': '192.168.45.111',         # [5]
+        "HOST": "192.168.45.111",  # [5]
         # 'HOST': '123.111.131.8',         # [5]
         "PORT": "3307",  # [6]
     }
