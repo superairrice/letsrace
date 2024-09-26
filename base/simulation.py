@@ -45,7 +45,7 @@ def get_weight(rcity, rdate, rno):
 
         connection.commit()
         connection.close()
-
+ㅎ
     except:
         connection.rollback()
         print("Failed inserting in h_weight")

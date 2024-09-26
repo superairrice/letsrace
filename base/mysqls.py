@@ -5614,7 +5614,9 @@ def insert_race_simulation(rcity, rcount, r_content):
                     print("Failed deleting in exp012")
 
             else:
-                if index > 5 and int(items[0]) >= 1:
+                # print( items[0], (items[0]))
+                if index > 5 and items[0] >= '1' and items[0] <= '99' :
+                    print(items)
                     gate = items[0]
                     horse = items[1]
                     if horse[0:1] == "[":
