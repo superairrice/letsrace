@@ -74,6 +74,7 @@ CSRF_TRUSTED_ORIGINS = ["http://thethe9.com", "https://thethe9.com"]
 ALLOWED_HOSTS = [
     ".compute.amazonaws.com",
     "10.0.5.128",
+    "api.virtualcorp.kr",
     "127.0.0.1",
     "thethe9.com",
     "3.37.228.51",
