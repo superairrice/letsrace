@@ -26,23 +26,23 @@
     gtag('config', 'G-BFZZL101LZ');
   </script>
 
-  <form class="header__search" method="GET" action="{% url 'jt_analysis' rcity fdate tdate jockey trainer host horse r1 r2 rr1 rr2 gate distance %}"> 
+  <form class="header__search" method="GET" action="{% url 'jt_analysis' rcity fdate tdate jockey trainer host horse r1 r2 rr1 rr2 gate distance handycap %}"> 
     {% csrf_token %}
 
-    <label style="font-size: 1.25rem;">
+    <label style="font-size: 1.2rem;">
       <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
         <title>search</title>
         <path
           d="M32 30.586l-10.845-10.845c1.771-2.092 2.845-4.791 2.845-7.741 0-6.617-5.383-12-12-12s-12 5.383-12 12c0 6.617 5.383 12 12 12 2.949 0 5.649-1.074 7.741-2.845l10.845 10.845 1.414-1.414zM12 22c-5.514 0-10-4.486-10-10s4.486-10 10-10c5.514 0 10 4.486 10 10s-4.486 10-10 10z">
         </path>
       </svg>
-      <select name="rcity" style="font-size:1.2rem; padding: 0.2rem;">
+      <select name="rcity" style="font-size:1.2rem; padding: 0.2rem; border-radius: 7px;">
         <option value="%" {% if rcity == '%' %} selected {% endif %}>ALL</option>
         <option value="서울" {% if rcity == '서울' %} selected {% endif %}>서울</option>
         <option value="부산" {% if rcity == '부산' %} selected {% endif %}>부산</option>
       </select>
-      <input style="font-size: 1.25rem; width: 10.5rem;" type="date" value={{fdate}} name="fdate">
-      <input style="font-size: 1.25rem; width: 10.5rem;" type="date" value={{tdate}} name="tdate">
+      <input style="font-size: 1.2rem; width: 8.rem;" type="date" value={{fdate}} name="fdate">
+      <input style="font-size: 1.2rem; width: 8.rem;" type="date" value={{tdate}} name="tdate">
   
       <span class="tooltip">🏇<span class="tooltip-text">🏇&nbsp;기수</span></span>
       <input style="font-size: 1.2rem; width: 3.5rem; color:var(--color-main);" type="text" value='{{jockey}}' placeholder="세영" name="jockey">
@@ -53,7 +53,7 @@
       <span class="tooltip">🐴<span class="tooltip-text">🐴&nbsp;경주마</span></span>
       <input style="font-size: 1.2rem; width: 5.5rem; color:var(--color-main);" type="text" value='{{horse}}' placeholder="위너스맨" name="horse">
 
-      <select name="gate" style="font-size:1.2rem; padding: 0.2rem; text-align: right;">
+      <select name="gate" style="font-size:1.2rem; padding: 0.2rem; text-align: right; border-radius: 7px;">
         <option value="0" {% if gate == '0' %} selected {% endif %}>Gate</option>
         <option value="1" {% if gate == '1' %} selected {% endif %}>1</option>
         <option value="2" {% if gate == '2' %} selected {% endif %}>2</option>
@@ -73,7 +73,7 @@
         <option value="16" {% if gate == '16' %} selected {% endif %}>16</option>
       </select>
 
-      <select name="distance" style="font-size:1.2rem; padding: 0.2rem; text-align: right;">
+      <select name="distance" style="font-size:1.2rem; padding: 0.2rem; text-align: right; border-radius: 7px;">
         <option value="0" {% if distance == '0' %} selected {% endif %}>경주거리</option>
         <option value="1000" {% if distance == '1000' %} selected {% endif %}>1000</option>
         <option value="1200" {% if distance == '1200' %} selected {% endif %}>1200</option>
@@ -86,18 +86,35 @@
         <option value="2000" {% if distance == '2000' %} selected {% endif %}>2000</option>
         <option value="2300" {% if distance == '2300' %} selected {% endif %}>2300</option>
       </select>
+
+      <select name="handycap" style="font-size:1.2rem; padding: 0.2rem; text-align: right; border-radius: 7px;">
+        <option value="0" {% if handycap == '0' %} selected {% endif %}>부담중량</option>
+        <option value="48" {% if handycap == '48' %} selected {% endif %}>48 ~ .5</option>
+        <option value="49" {% if handycap == '49' %} selected {% endif %}>49 ~ .5</option>
+        <option value="50" {% if handycap == '50' %} selected {% endif %}>50 ~ .5</option>
+        <option value="51" {% if handycap == '51' %} selected {% endif %}>51 ~ .5</option>
+        <option value="52" {% if handycap == '52' %} selected {% endif %}>52 ~ .5</option>
+        <option value="53" {% if handycap == '53' %} selected {% endif %}>53 ~ .5</option>
+        <option value="54" {% if handycap == '54' %} selected {% endif %}>54 ~ .5</option>
+        <option value="55" {% if handycap == '55' %} selected {% endif %}>55 ~ .5</option>
+        <option value="56" {% if handycap == '56' %} selected {% endif %}>56 ~ .5</option>
+        <option value="57" {% if handycap == '57' %} selected {% endif %}>57 ~ .5</option>
+        <option value="58" {% if handycap == '58' %} selected {% endif %}>58 ~ .5</option>
+        <option value="59" {% if handycap == '59' %} selected {% endif %}>59 ~ .5</option>
+        <option value="60" {% if handycap == '60' %} selected {% endif %}>60 ~ .5</option>
+      </select>
       
       &nbsp;&nbsp;P.R
       <!-- <input style="font-size: 1.3rem; width: 5rem; color:var(--color-main-light);" type="text" value='{{jname3}}' placeholder="이혁" name="j3"> -->
-      <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.05rem;" type="number" min="1" max="99" step="1" value={{r1}} name="r1">:
-      <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.05rem;" type="number" min="1" max="99" step="1" value={{r2}} name="r2">
+      <input style="text-align: center; width: 4.0rem; font-size: 1.05rem; background-color: var(--color-dark);" type="number" min="1" max="99" step="1" value={{r1}} name="r1">
+      <input style="text-align: center; width: 4.0rem; font-size: 1.05rem; background-color: var(--color-dark);" type="number" min="1" max="99" step="1" value={{r2}} name="r2">
 
       &nbsp;&nbsp;R
       <!-- <input style="font-size: 1.3rem; width: 5rem; color:var(--color-main-light);" type="text" value='{{jname3}}' placeholder="이혁" name="j3"> -->
-      <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.05rem;" type="number" min="1" max="99" step="1" value={{rr1}} name="rr1">:
-      <input style="text-align: center; width: 4.0rem; border-style: outset; font-size: 1.05rem;" type="number" min="1" max="99" step="1" value={{rr2}} name="rr2">
+      <input style="text-align: center; width: 4.0rem; font-size: 1.05rem; background-color: var(--color-dark);" type="number" min="1" max="99" step="1" value={{rr1}} name="rr1">
+      <input style="text-align: center; width: 4.0rem; font-size: 1.05rem; background-color: var(--color-dark);" type="number" min="1" max="99" step="1" value={{rr2}} name="rr2">
       &nbsp;&nbsp;&nbsp;&nbsp;
-      <button class="btn" style="background: var(--color-main);">Submit</button>
+      <button class="btn" style="background: var(--color-main);">Go</button>
   
       {% for message in messages %}
       {{ message.tag }}
@@ -114,9 +131,9 @@
 {% block content %}
 
 <!-- <main class="create-room layout"> -->
-<main class="create-room layout">
-  <div class="container">
-    <div class="container">
+<main class="create-room layout" style="margin-top: 0px; border-radius: 7px;">
+  <div class="container" style="border-radius: 7px;">
+    <div class="container" style="border-radius: 7px;">
 
       <hr style="border: solid 1px black;">
 
@@ -124,6 +141,7 @@
 
 
     </div>
+  </div>
 </main>
 {% endblock %}
 

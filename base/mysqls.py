@@ -5301,7 +5301,7 @@ def insert_train_swim(r_content):
                       ; """
                 )
 
-                print(strSql)
+                # print(strSql)
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 awards = cursor.fetchall()
 
@@ -5959,7 +5959,7 @@ def get_weeks_status(rcity, rdate):
     return result
 
 # thethe9 rank 1 입상현황
-def get_thethe9_ranks(rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2, gate, distance):
+def get_thethe9_ranks(rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2, gate, distance, handycap):
     try:
         cursor = connection.cursor()
 
@@ -5982,6 +5982,11 @@ def get_thethe9_ranks(rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2,
             and_distance = ''
         else:
             and_distance = " and b.distance = " + str(distance)
+            
+        if handycap == 0 or handycap == '0':
+            and_handycap = '' 
+        else:
+            and_handycap = " and a.handycap between " + handycap[0:2] + ".0" + " and " + handycap[0:2] + ".5"
 
         strSql = (
             """ SELECT 
@@ -6023,6 +6028,9 @@ def get_thethe9_ranks(rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2,
                 """
             + and_distance
             + """
+                """
+            + and_handycap
+            + """
                 -- and a.rank between """
             + str(r1)
             + """ and """
@@ -6049,7 +6057,7 @@ def get_thethe9_ranks(rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2,
         ; """
         )
 
-        # print(strSql)
+        # print(strSql) 
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 

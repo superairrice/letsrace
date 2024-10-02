@@ -2204,7 +2204,7 @@ def weeksStatus(request, rcity, rdate):
     return render(request, "base/weeks_status.html", context)
 
 # thethe9 rank1 실경주 입상현황
-def jtAnalysis(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2, gate, distance):
+def jtAnalysis(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2, gate, distance, handycap):
 
     rcity = request.GET.get("rcity") if request.GET.get("rcity") != None else rcity
     fdate = request.GET.get("fdate") if request.GET.get("fdate") != None else fdate[0:4] + '-' + fdate[4:6] + '-' + fdate[6:8]
@@ -2219,6 +2219,7 @@ def jtAnalysis(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1, r
     rr2 = request.GET.get("rr2") if request.GET.get("rr2") != None else rr2
     gate = request.GET.get("gate") if request.GET.get("gate") != None else gate
     distance = request.GET.get("distance") if request.GET.get("distance") != None else distance
+    handycap = request.GET.get("handycap") if request.GET.get("handycap") != None else handycap
 
     # print('2', fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2)
 
@@ -2232,7 +2233,7 @@ def jtAnalysis(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1, r
     status = get_thethe9_ranks(
         rcity,
         fdate[0:4] + fdate[5:7] + fdate[8:10], 
-        tdate[0:4] + tdate[5:7] + tdate[8:10], jockey, trainer, host, horse, r1, r2, rr1, rr2, gate, distance
+        tdate[0:4] + tdate[5:7] + tdate[8:10], jockey, trainer, host, horse, r1, r2, rr1, rr2, gate, distance, handycap
     )
 
     rank1 = [item for item in status if item[15] == 1]      # item[15] : 예상착순(rank)
@@ -2285,6 +2286,7 @@ def jtAnalysis(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1, r
         "rr2": rr2,
         "gate": gate,
         "distance": distance,
+        "handycap": handycap[0:2],
         "rank1": len(rank1),
         "rank2": len(rank2),
         "rank3": len(rank3),

@@ -31,20 +31,36 @@ urlpatterns = [
         name="activityComponent_a",
     ),
     path("home_a/<str:rcity>/<str:rdate>", views.homePage_a, name="home_a"),
-    
     path(
         "race_prediction/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",
         views.racePrediction,
         name="race_prediction",
     ),  # 로그인 후
-    
-    path("race_training/<str:rcity>/<str:rdate>/<int:rno>", views.raceTraining, name="race_training",), 
-    path("race_judged/<str:rcity>/<str:rdate>/<int:rno>", views.raceJudged, name="race_judged",), 
-    path("race_related/<str:rcity>/<str:rdate>/<int:rno>", views.raceRelated, name="race_related",), 
-    path("race_related_info/<str:rcity>/<str:rdate>/<int:rno>", views.raceRelatedInfo, name="race_related_info",), 
-    
-    path("training_awardee/<str:rdate>/<str:awardee>/<str:name>", views.trainingAwardee, name="training_awardee",), 
-    
+    path(
+        "race_training/<str:rcity>/<str:rdate>/<int:rno>",
+        views.raceTraining,
+        name="race_training",
+    ),
+    path(
+        "race_judged/<str:rcity>/<str:rdate>/<int:rno>",
+        views.raceJudged,
+        name="race_judged",
+    ),
+    path(
+        "race_related/<str:rcity>/<str:rdate>/<int:rno>",
+        views.raceRelated,
+        name="race_related",
+    ),
+    path(
+        "race_related_info/<str:rcity>/<str:rdate>/<int:rno>",
+        views.raceRelatedInfo,
+        name="race_related_info",
+    ),
+    path(
+        "training_awardee/<str:rdate>/<str:awardee>/<str:name>",
+        views.trainingAwardee,
+        name="training_awardee",
+    ),
     path(
         "prediction_race/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",
         views.predictionRace,
@@ -124,7 +140,7 @@ urlpatterns = [
     #     name="thethe9_ranks",
     # ),
     path(
-        "jt_analysis/<str:rcity>/<str:fdate>/<str:tdate>/<str:jockey>/<str:trainer>/<str:host>/<str:horse>/<int:r1>/<int:r2>/<int:rr1>/<int:rr2>/<int:gate>/<int:distance>",
+        "jt_analysis/<str:rcity>/<str:fdate>/<str:tdate>/<str:jockey>/<str:trainer>/<str:host>/<str:horse>/<int:r1>/<int:r2>/<int:rr1>/<int:rr2>/<int:gate>/<int:distance>/<str:handycap>",
         views.jtAnalysis,
         name="jt_analysis",
     ),

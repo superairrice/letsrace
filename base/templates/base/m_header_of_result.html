@@ -176,8 +176,11 @@
   </div>
 
   <div class="room__topRight">
+    
     <span style="font-size:1.4rem; color: var(--color-main-light); font-family: Arial; padding:0.4rem; ">{{r_condition.distance}}𝓂</span>
 
+    <span style="font-size:1.4rem; color: var(--color-main-light); font-family: Arial; padding:0.4rem; ">{{r_condition.race_speed}}</span>
+    
     <span style="color: var(--color-main); padding:0.4rem;">
       <a href="{% url 'race_prediction' r_condition.rcity r_condition.rdate r_condition.rno 0 0 %}"
         onclick="window.open(this.href, 'w_prediction', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
@@ -186,6 +189,17 @@
         </span>
       </a>
     </span>
+
+    {% if r_condition.r_judge %}
+      {% if r_condition.r_judge|mul:"1" >= 5  %} 
+      <span style="font-size: 1.1rem; font-family: Arial; color:var(--color-r1); background-color: var(--color-bg); border-radius: 7px; padding-top: 0.8rem;">상🚦{{r_condition.r_judge}}</span>
+      {% elif r_condition.r_judge|mul:"1" >= -5 and r_condition.r_judge|mul:"1" <= 5 %} 
+      <span style="font-size: 1.1rem; font-family: Arial; color:var(--color-r3); background-color: var(--color-bg); border-radius: 7px; padding-top: 0.8rem;">중🚦{{r_condition.r_judge}}</span>
+      {% else %} 
+      <span style="font-size: 1.1rem; font-family: Arial; color:var(--color-gray); background-color: var(--color-bg); border-radius: 7px; padding-top: 0.8rem;">하🚦{{r_condition.r_judge}}</span>
+      {% endif %}
+    {% endif %}
+    
   </div>
 
 </div>
