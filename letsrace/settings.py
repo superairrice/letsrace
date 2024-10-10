@@ -238,7 +238,7 @@ DATABASES = {
         "PORT": "3306",  # [6]
         "OPTIONS": {"init_command": "SET sql_mode='STRICT_TRANS_TABLES'"},
     }
-}
+} 
 
 # SECRET_KEY = get_secret("SECRET_KEY")
 

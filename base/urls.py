@@ -145,6 +145,11 @@ urlpatterns = [
         name="jt_analysis",
     ),
     path(
+        "jt_analysis_jockey/<str:rcity>/<str:fdate>/<str:tdate>/<str:jockey>/<str:trainer>/<str:host>/<str:jockey_b>/<int:r1>/<int:r2>/<int:rr1>/<int:rr2>/<int:gate>/<int:distance>/<str:handycap>",
+        views.jtAnalysisJockey,
+        name="jt_analysis_jockey",
+    ),
+    path(
         "get_race_awardee/<str:rdate>/<str:awardee>/<str:i_name>/<str:i_jockey>/<str:i_trainer>/<str:i_host>",
         views.getRaceAwardee,
         name="get_race_awardee",

@@ -14,7 +14,7 @@
 
   <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
 
-  <title>🐴&nbsp;{% if awardee == 'jockey' %}기수{% else %}마방{% endif %}&nbsp;{{name}} 출주현황</title>
+  <title>🐴&nbsp;{{name}} 금주 출주현황</title>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-BFZZL101LZ"></script>
@@ -45,7 +45,7 @@
         <thead>
       
           <tr>
-            <th rowspan="1"><span style="border-radius: 7px; background-color: var(--color-bg); padding: 4px 14px;">{% if awardee == 'jockey' %}기🏇수{% else %}마🛖방{% endif %}</span></th>
+            <th rowspan="1"><span style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-bg); color:var(--color-r3); padding: 4px 6px;">🏇&nbsp;{{name}}</span></th>
             <th rowspan="1"><span class="visible-big">예상</span></th>
             <th rowspan="1"><span class="visible-big">마번</span></th>
             <th colspan="1">
@@ -57,28 +57,28 @@
                 <span class="tooltip" style="font-size: 1.2rem; font-weight: 550;">기🏇수</span>
             </th>
             <th rowspan="1"><span class="visible-big">Tot</span></th>
-            <th rowspan="1"><span class="visible-big">D-1</span></th>
-            <th rowspan="1"><span class="visible-big">D-2</span></th>
-            <th rowspan="1"><span class="visible-big">D-3</span></th>
-            <th rowspan="1"><span class="visible-big">D-4</span></th>
-            <th rowspan="1"><span class="visible-big">D-5</span></th>
-            <th rowspan="1"><span class="visible-big">D-6</span></th>
-            <th rowspan="1"><span class="visible-big">D-7</span></th>
-            <th rowspan="1"><span class="visible-big">D-8</span></th>
-            <th rowspan="1"><span class="visible-big">D-9</span></th>
-            <th rowspan="1"><span class="visible-big">D-10</span></th>
-            <th rowspan="1"><span class="visible-big">D-11</span></th>
-            <th rowspan="1"><span class="visible-big">D-12</span></th>
+            <th rowspan="1"><span class="visible-big" style="font-size: 1.12rem; color:var(--color-r5);">{{train_title.0.0}}</span></th>
+            <th rowspan="1"><span class="visible-big" style="font-size: 1.12rem; color:var(--color-r5);">{{train_title.0.1}}</span></th>
+            <th rowspan="1"><span class="visible-big" style="font-size: 1.12rem; color:var(--color-r5);">{{train_title.0.2}}</span></th>
+            <th rowspan="1"><span class="visible-big" style="font-size: 1.12rem; color:var(--color-r5);">{{train_title.0.3}}</span></th>
+            <th rowspan="1"><span class="visible-big" style="font-size: 1.12rem; color:var(--color-r5);">{{train_title.0.4}}</span></th>
+            <th rowspan="1"><span class="visible-big" style="font-size: 1.12rem; color:var(--color-r5);">{{train_title.0.5}}</span></th>
+            <th rowspan="1"><span class="visible-big" style="font-size: 1.12rem; color:var(--color-r5);">{{train_title.0.6}}</span></th>
+            <th rowspan="1"><span class="visible-big" style="font-size: 1.12rem; color:var(--color-r5);">{{train_title.0.7}}</span></th>
+            <th rowspan="1"><span class="visible-big" style="font-size: 1.12rem; color:var(--color-r5);">{{train_title.0.8}}</span></th>
+            <th rowspan="1"><span class="visible-big" style="font-size: 1.12rem; color:var(--color-r5);">{{train_title.0.9}}</span></th>
+            <th rowspan="1"><span class="visible-big" style="font-size: 1.12rem; color:var(--color-r5);">{{train_title.0.10}}</span></th>
+            <th rowspan="1"><span class="visible-big" style="font-size: 1.12rem; color:var(--color-r5);">{{train_title.0.11}}</span></th>
 
           </tr>
           <tr>
-            <th rowspan="1"><span style="vertical-align: middle;">Race Info.</span></th>
+            <th rowspan="1"><span style="vertical-align: middle; text-transform: capitalize;">Race Info.</span></th>
             <th rowspan="1"><span style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">레이팅</span></th>
             
             <th rowspan="1"><span style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">실순</span></th>
             <th rowspan="1">
               
-                <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">Info.&nbsp;&nbsp;인기도</span>
+                <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">Info.</span>
               </a>
             </th>
               
@@ -109,26 +109,27 @@
           <tr class="view">
 
             {# 경주번호 / 경주정보 #}
-            <td align="center">
+            <td align="right" >
               <a href="{% url 'race_result' rcity rdate rno horse 0 0 0 %}"
                 onclick="window.open(this.href, 'w_result', 'width=1000, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
-              
-                <div style="text-align: left; font-style: italic;">
-                  
-                  <span style="font-size: 1.25rem; font-family: Arial;">'{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
-                  <span style="font-size: 1.25rem; font-family: Arial;">{{distance}}<sup style="font-size: 0.8rem;">m</sup></span>
-                </div>
                               
                 {# 경주정보 #}
-                <div style="text-align: right;">
+                <!-- <div style="text-align: right;"> -->
+                <div align="right" style="font-size: 1.2rem; color:var(--color-light-gray);">
 
-                  <span style="font-size: 1.25rem; color: var(--color-main-light); font-style: italic;">{{rno}}<sup style="font-size: 0.8rem; color:var(--color-gray);">&nbsp;R</sup></span>
+                  <span style="font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif; color: var(--color-main);">{{rno}}<sup style="font-size: 0.8rem; color:var(--color-gray);">&nbsp;R</sup></span>
                   {% if rday == '일' %}
-                  <span style="font-size: 1.05rem; border-radius:7px; padding: 2px 2px; background-color: var(--color-bg); color: var(--color-r3);">{{rday}}</span>
+                  <span style="font-size: 1.05rem; border-radius:7px; background-color: var(--color-bg); color: var(--color-r3);">({{rday}})</span>
                   {% else %}
-                  <span style="font-size: 1.05rem; border-radius:7px; padding: 2px 2px; background-color: var(--color-bg); color: var(--color-r4);">{{rday}}</span>
+                  <span style="font-size: 1.05rem; border-radius:7px; background-color: var(--color-bg); color: var(--color-r4);">({{rday}})</span>
                   {% endif %}
 
+                  <span style="font-size: 1.2rem; font-family: Arial;">{{distance}}<sup style="font-size: 0.8rem;">m</sup></span>
+
+                </div>
+                              
+                <div align="right" style="font-size: 1.15rem; color:var(--color-gray);">
+                  <!-- <span style="font-size: 1.0rem; color:var(--color-main); border-radius:7px; background-color: var(--color-bg);">'{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}&nbsp;</span> -->
                   {% if grade|slice:"1:2" == 'O' %}
                     <span style="font-size: 0.9rem; color:var(--color-light); background-color: var(--color-bg); border-radius: 7px; padding: 1px 3px;">{{grade|slice:"0:2"}}</span>
                     <span style="font-size: 1.1rem;">{{dividing|slice:"0:1"}}</span>
@@ -145,7 +146,7 @@
                     <span style="font-size: 1.1rem; color: var(--color-gray);">{{dividing|slice:"0:1"}}</span>
                     {% endif %}
                   {% endif %}
-
+                  &nbsp;
                 </div>
               </a>
 
@@ -162,7 +163,7 @@
                 {% endif %}
               </div>
 
-              <div style="font-family: Arial; font-size: 1.1rem; text-align: right; ">
+              <div style="font-family: Arial; font-size: 1.1rem; text-align: center; ">
                 <span style="font-family: Arial; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">{{rating}}</span>
               </div>
 
@@ -222,7 +223,7 @@
 
             {# 경주마 이름 출주주기, 산지 성별 나이 #}
             <td style="border-right: 0.2px solid var(--color-dark);">
-              <div style="font-size: 1.25rem;">
+              <div style="font-size: 1.2rem;">
 
                 <span class="tooltip">
                   <progress value={{r_pop}} max="99" style="width: 2.5rem"></progress>
@@ -386,7 +387,7 @@
             <td align="left">
               <div style="font-size: 1.2rem; text-align: left;">
                 <a href="{% url 'training_awardee' rdate 'jockey' jockey %}" onclick="window.open(this.href, 'w_training_awardee', 'width=1100, height=800, toolbars=no, scrollbars=yes'); return false;">
-
+                  {% if awardee == 'trainer' %}
                   {% if jockey_old %}   {# 기수변경 #}
                     <span class="tooltip" style="font-style: italic; color:var(--color-r2);">{{jockey}}
                       <span class="tooltip-text">
@@ -395,21 +396,24 @@
                     </span>
                     
                   {% else %}
-                    <span class="tooltip" style="color:var(--color-light-gray);">{{jockey}}</span>
+                    <span class="tooltip" style="color:var(--color-gray);">{{jockey}}</span>
+                  {%endif %}
                   {%endif %}
                 </a>
                   
               </div>
               
-              <div style="font-size: 1.2rem; text-align: right; color:var(--color-r3)"> 
+              <div style="font-size: 1.2rem; text-align: right; color:var(--color-gray)"> 
                 <a href="{% url 'training_awardee' rdate 'trainer' trainer %}" onclick="window.open(this.href, 'w_training_awardee', 'width=1100, height=800, toolbars=no, scrollbars=yes'); return false;">
-                {{trainer}}
+                  {% if awardee == 'jockey' %}
+                  <span style="font-size: 1.2rem; text-align: right; color:var(--color-gray)">{{trainer}}</span>
+                  {% endif %}
                 </a>
               </div>
             
             </td>
 
-            <td align="center">
+            <td align="center" style="border-radius: 10px; border: 0.5px solid gray;">
               <div style="font-family: Arial; font-size:1.15rem; font-style: italic;">
                 
                 <span style="font-size: 1.15rem;">{{d1|add:d2|add:d3|add:d4|add:d5|add:d6|add:d7|add:d8|add:d9|add:d10|add:d11|add:d12|add:d13|add:d14}}</span>

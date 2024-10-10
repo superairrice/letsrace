@@ -18,11 +18,17 @@
             <span class="visible-big" style="color:var(--color-r5); font-size:1.2rem;">🐴&nbsp;&nbsp;{{horse|slice:"0;6"}}</span>
           </a>
         </th>
-        <th rowspan="2" style="vertical-align: middle;"><span class="visible-big" style="font-size:1.2rem;">&nbsp;<br>마체중<br>&nbsp;</span></th>
+        <th rowspan="2" style="vertical-align: middle;">
+          <span class="tooltip" style="font-size:1.0rem; color:var(--color-r5);">⚖️
+            <span class="tooltip-text" style="font-size:1.1rem;">🐴 마체중 증감</span>
+          </span>
+        </th>
     
         <th>
-          <a href="{% url 'training_awardee' rdate 'jockey' jockey %}" onclick="window.open(this.href, 'w_training_awardee', 'width=1100, height=800, toolbars=no, scrollbars=yes'); return false;">
-            <span style="font-size:1.2rem; color:var(--color-r5);">기🏇수</span>
+          <a href="{% url 'training_awardee' rdate 'jockey' jockey %}" onclick="window.open(this.href, 'w_training_awardee', 'width=1120, height=800, toolbars=no, scrollbars=yes'); return false;">
+            <span class="tooltip" style="font-size:1.2rem; color:var(--color-r5);">
+              🏇<span class="tooltip-text" style="font-size:1.1rem;">🏇&nbsp;[<span style="color:var(--color-r3);"><span style="color:var(--color-r3);">{{jockey}}</span></span>]&nbsp;기수 금주 출주마 조교현황</span>
+            </span>
           </a>
         </th>
         <th rowspan="1"><span class="visible-big" style="font-size:1.2rem;">Tot</span></th>
@@ -41,11 +47,13 @@
       </tr>
       <tr>
         <th><span style="font-size:1.2rem;">예상</span></th>
-        <th colspan="1" rowspan="1"><span class="visible-big" style="font-size:1.2rem;">경주정보</span></th>
+      <th colspan="1" rowspan="1"><span style="font-size:1.2rem; text-transform: capitalize;">Race Info.</span></th>
 
         <th>
-          <a href="{% url 'training_awardee' rdate 'trainer' trainer %}" onclick="window.open(this.href, 'w_training_awardee', 'width=1100, height=800, toolbars=no, scrollbars=yes'); return false;">
-            <span style="font-size:1.2rem; color:var(--color-r5);">조교사</span>
+          <a href="{% url 'training_awardee' rdate 'trainer' trainer %}" onclick="window.open(this.href, 'w_training_awardee', 'width=1120, height=800, toolbars=no, scrollbars=yes'); return false;">
+            <span class="tooltip" style="font-size:1.0rem; color:var(--color-r5);">
+              🛖<span class="tooltip-text" style="font-size:1.1rem;">🛖&nbsp;[<span style="color:var(--color-r3);">{{trainer}}</span>]&nbsp;마방 금주 출주마 조교현황</span>
+            </span>
           </a>
         </th>
         <th rowspan="1"><span class="visible-big">C/S</span></th>
@@ -89,24 +97,34 @@
         </td>
 
         {# 인기순위 / 프로그램 예상순위 #}
-        <td style="text-align: center;">
+        <td align="center">
+
           {% if r_rank %}
           {% if judge == NONE %}
             {% if r_rank == 1 %}
-            <sup style="color:var(--color-r1); font-size: 1.1rem;">
-              {% if r_rank > 20 %}﹆{% else %} {{r_rank}} {% endif %}
+            <sup style="font-size: 1.0rem; text-align: center; font-family: Arial; border-radius: 10px; background-color:var(--color-r1); color:var(--color-light); padding: 2px 2px;">
+              {% if r_rank > 20 %}﹆{% else %}{{r_rank}}{% endif %}
             </sup>
             {% elif r_rank == 2 %}
-            <sup style="color:var(--color-r2); font-size: 1.1rem;">
-              {% if r_rank > 20 %}﹆{% else %} {{r_rank}} {% endif %}
+            <sup style="font-size: 1.0rem; text-align: center; font-family: Arial; border-radius: 10px; background-color:var(--color-r2); color:var(--color-light); padding: 2px 2px;">
+              {% if r_rank > 20 %}﹆{% else %}{{r_rank}}{% endif %}
             </sup>
             {% elif r_rank == 3 %}
-            <sup style="color:var(--color-r3); font-size: 1.1rem;">
-              {% if r_rank > 20 %}﹆{% else %} {{r_rank}} {% endif %}
+            <sup style="font-size: 1.0rem; text-align: center; font-family: Arial; border-radius: 10px; background-color:var(--color-r3); color:var(--color-bg); padding: 2px 2px;">
+              {% if r_rank > 20 %}﹆{% else %}{{r_rank}}{% endif %}
             </sup>
+            {% elif r_rank == 4 %}
+            <sup style="font-size: 1.0rem; text-align: center; font-family: Arial; border-radius: 10px; background-color:var(--color-r4); color:var(--color-bg); padding: 2px 2px;">
+              {% if r_rank > 20 %}﹆{% else %}{{r_rank}}{% endif %}
+            </sup>
+            {% elif r_rank == 5 %}
+            <sup style="font-size: 1.0rem; text-align: center; font-family: Arial; border-radius: 10px; background-color:var(--color-r5); color:var(--color-light); padding: 2px 2px;">
+              {% if r_rank > 20 %}﹆{% else %}{{r_rank}}{% endif %}
+            </sup>
+            
             {% else %}
-            <sup style="font-size: 1.1rem;">
-              {% if r_rank > 20 %}﹆{% else %} {{r_rank}} {% endif %}
+            <sup style="font-size: 1.0rem; text-align: center; font-family: Arial; border-radius: 10px; background-color:bisque; padding: 2px 2px;">
+              {% if r_rank > 20 %}﹆{% else %}{{r_rank}}{% endif %}
             </sup>
             {% endif %}
             
@@ -246,9 +264,9 @@
 
             {% if jockey_a %}
               {% if jockey == jockey_a %}
-              <div style="text-align: left; color:var(--color-r1);">{{jockey_a}}</div>
+              <div style="text-align: left; color:var(--color-light-gray);">{{jockey_a}}</div>
               {%else%}
-              <div style="text-align: left;">{{jockey_a}}</div>
+              <div style="text-align: left;  color:var(--color-r5);">{{jockey_a}}</div>
               {%endif%}
               {% if jockey_a %}
               <div style="font-size: 1.1rem; color:var(--color-gray); font-family: Arial; text-align: right;">{{jockey_a_w|floatformat:1}}</div>
@@ -258,16 +276,16 @@
           </a>
           {% if trainer_a %}
           
-            {% if r.trainer == trainer_a %}
-            <div style="text-align: right; color:var(--color-gray);">
+            {% if trainer == trainer_a %}
+            <div style="text-align: left;">
               <a href="{% url 'get_race_awardee' rdate 'trainer' trainer_a jockey trainer_a ' ' %}" onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
-              {{trainer_a}}
+              <span style="color:var(--color-light-gray); font-size: 1.15rem;">{{trainer_a}}</span>
               </a>
             </div>
             {%else%}
-            <div style="color:var(--color-r1);  text-align: right;">
+            <div style="text-align: right;">
               <a href="{% url 'get_race_awardee' rdate 'trainer' trainer_a jockey trainer_a ' ' %}" onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;">
-                {{trainer_a}}
+                <span style="color:var(--color-r1); font-size: 1.15rem;">{{trainer_a}}</span>
               </a>
             </div>
             {%endif%}

@@ -93,15 +93,33 @@
           <tr>
             <th rowspan="1" valign="center"><span class="visible-big">순위</span></th>
             <th rowspan="1"><span class="visible-big">마번</span></th>
-            <th colspan="1"><span class="visible-big">Horse</span></th>
-            <th rowspan="2"><span class="visible-big" style="padding: 0.95rem;">체중<br>증감</span></th>
-            <th rowspan="1"><span class="visible-big">부중</span></th>
+            <th colspan="1">
+              <a href="{% url 'status_stable' r_condition.rcity r_condition.rdate r_condition.rno %}"
+                onclick="window.open(this.href, 'w_status_stable', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">
+                <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">🐴&nbsp;Horse
+                  <span class="tooltip-text">🔑&nbsp;마방 경주마 보유현황 </span>
+              </a>
+            </th>
+            <th rowspan="2" style="vertical-align:middle">
+              <span class="tooltip" style="font-size:1.2rem; color:var(--color-r5);">⚖️
+                <span class="tooltip-text" style="font-size:1.1rem; text-align: left;">
+                  ⚖️&nbsp;마체중 증감
+                </span>
+              </span>
+            </th>
+            <th rowspan="1" style="vertical-align:middle">
+              <span class="tooltip" style="font-size:1.0rem; color:var(--color-r5);">🚛
+                <span class="tooltip-text" style="font-size:1.1rem; text-align: left;">
+                  🚛&nbsp;기수 부담중량
+                </span>
+              </span>
+            </th>
 
             <th>
               <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'jockey' '99' %}"
-                onclick="window.open(this.href, '_blank', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">
-                <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">기🏇수
-                  <span class="tooltip-text">기수 연승율 현황 🔑</span>
+                onclick="window.open(this.href, 'w_trend_jockey', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">
+                <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">🏇
+                  <span class="tooltip-text">🔑&nbsp;기수 연승율 추이</span>
               </a>
             </th>
             <th rowspan="2"><span class="visible-big" style="font-size: 1.25rem;">조교사<br>&기수<br>연승율</span></th>
@@ -146,15 +164,20 @@
           <tr>
             <th rowspan="1"><span style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">레이팅</span></th>
             <th rowspan="1"><span style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">예상</span></th>
-            <th><span class="visible-big">Info.</span></th>
+            <th>
+              <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '99' %}"
+                onclick="window.open(this.href, 'w_cycle_winning_rate', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">
+                <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">Info.
+                  <span class="tooltip-text">🔑&nbsp;마방 출주주기별 연승률</span>
+              </a>
+            </th>
             
             <th><span class="visible-big">adv</span></th>
             <th>
               <a href="{% url 'trend_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '99' %}"
-                onclick="window.open(this.href, '_blank', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">
-                <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">조교사
-                  <span class="tooltip-text">조교사 연승율 현황 🔑</span>
-                </span>
+                onclick="window.open(this.href, 'w_trend_trainer', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">
+                <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">🛖
+                  <span class="tooltip-text">🔑&nbsp;마방 연승율 추이</span>
               </a>
             </th>
             <th rowspan="1"><span style="font-size: 1.0rem; color:var(--color-r5); ">rank</span></th>
@@ -477,7 +500,7 @@
                       <span class="tooltip-text" style="font-family: Arial; font-size: 1.15rem; z-index:9;">
                         <div style="font-family: Arial; color:var(--color-light); text-align:center;">👥&nbsp; {{r.jockey}}&nbsp;﹆&nbsp;{{r.trainer}}</div>
                         <hr>
-                        <div style="font-family: Arial; color:var(--color-main); text-align: left; padding-top: 6px;">1️⃣&nbsp;경주일 기준 1년간 출주 횟수 : 
+                        <div style="font-family: Arial; color:var(--color-main); text-align: left; padding-top: 6px;">1️⃣&nbsp;경주일 기준 최근 1년간 경주성적 : 
 
                           {% if r.jt_cnt %}
                           <span style="font-family: Arial; color:var(--color-r2); background-color: var(--color-bg); border-radius: 7px; padding: 2px 4px;">{{r.jt_cnt}}</span>
@@ -740,7 +763,7 @@
             </td>
 
             {# 경주기록 / 도착차이 #}
-            <td align="center" style="border-radius: 7px; border-left: 1px solid var(--color-dark); border-right: 1px solid var(--color-dark);">
+            <td align="center" style="border-radius: 10px; border: 0.5px solid gray;">
 
               {% if r.gap %}
                 <div  style="font-size: 1.0rem; text-align: right;">

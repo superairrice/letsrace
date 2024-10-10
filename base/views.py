@@ -57,6 +57,7 @@ from base.mysqls import (
     get_status_train,
     get_swim_horse,
     get_thethe9_ranks,
+    get_thethe9_ranks_jockey,
     get_track_record,
     get_train,
     get_train_audit,
@@ -79,6 +80,7 @@ from base.mysqls import (
     set_changed_race_jockey,
     set_changed_race_rank,
     set_changed_race_weight,
+    trend_title,
 )
 from base.simulation import mock_insert, mock_traval, get_weight
 from letsrace.settings import KRAFILE_ROOT
@@ -725,13 +727,15 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
 def raceTraining(request, rcity, rdate, rno):
 
     train = get_train_horse(rcity, rdate, rno)
-    
+    train_title = trend_title(rdate)
+
     trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
 
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
     context = {
         "train": train,
+        "train_title": train_title,
         "trainer_double_check": str(trainer_double_check),
         "training_cnt": training_cnt,
         "r_condition": r_condition,
@@ -796,6 +800,9 @@ def raceRelatedInfo(request, rcity, rdate, rno):
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
     train = get_train_horse(rcity, rdate, rno)
+    
+    train_title = trend_title(rdate)
+    
     trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
 
     pedigree = get_pedigree(rcity, rdate, rno)  # 병력
@@ -810,6 +817,7 @@ def raceRelatedInfo(request, rcity, rdate, rno):
     context = {
         "r_condition": r_condition,  # 기수 기승가능 부딤중량
         "train": train,  # 기수 기승가능 부딤중량
+        "train_title": train_title,  # 기수 기승가능 부딤중량
         "trainer_double_check": str(trainer_double_check),
         "training_cnt": training_cnt,
         "pedigree": pedigree,  # 기수 기승가능 부딤중량
@@ -2298,6 +2306,101 @@ def jtAnalysis(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1, r
 
     return render(request, "base/jt_analysis.html", context)
 
+# thethe9 rank1 실경주 입상현황
+def jtAnalysisJockey(request, rcity, fdate, tdate, jockey, trainer, host, jockey_b, r1, r2, rr1, rr2, gate, distance, handycap):
+
+    rcity = request.GET.get("rcity") if request.GET.get("rcity") != None else rcity
+    fdate = request.GET.get("fdate") if request.GET.get("fdate") != None else fdate[0:4] + '-' + fdate[4:6] + '-' + fdate[6:8]
+    tdate = request.GET.get("tdate") if request.GET.get("tdate") != None else tdate[0:4] + '-' + tdate[4:6] + '-' + tdate[6:8]
+    jockey = request.GET.get("jockey") if request.GET.get("jockey") != None else jockey
+    trainer = request.GET.get("trainer") if request.GET.get("trainer") != None else trainer
+    host = request.GET.get("host") if request.GET.get("host") != None else host
+    jockey_b = request.GET.get("jockey_b") if request.GET.get("jockey_b") != None else jockey_b
+    r1 = request.GET.get("r1") if request.GET.get("r1") != None else r1
+    r2 = request.GET.get("r2") if request.GET.get("r2") != None else r2
+    rr1 = request.GET.get("rr1") if request.GET.get("rr1") != None else rr1
+    rr2 = request.GET.get("rr2") if request.GET.get("rr2") != None else rr2
+    gate = request.GET.get("gate") if request.GET.get("gate") != None else gate
+    distance = request.GET.get("distance") if request.GET.get("distance") != None else distance
+    handycap = request.GET.get("handycap") if request.GET.get("handycap") != None else handycap
+
+    # print('2', fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2)
+
+    # if fdate == "":
+    #     # fdate =
+    #     pass
+    # else:
+    #     fdate = fdate[0:4] + fdate[5:7] + fdate[8:10]
+    #     tdate = tdate[0:4] + tdate[5:7] + tdate[8:10]
+
+    status = get_thethe9_ranks_jockey(
+        rcity,
+        fdate[0:4] + fdate[5:7] + fdate[8:10], 
+        tdate[0:4] + tdate[5:7] + tdate[8:10], jockey, trainer, host, jockey_b, r1, r2, rr1, rr2, gate, distance, handycap
+    )
+
+    rank1 = [item for item in status if item[15] == 1]      # item[15] : 예상착순(rank)
+    rank2 = [item for item in status if item[15] == 2]      # item[15] : 예상착순(rank)
+    rank3 = [item for item in status if item[15] == 3]      # item[15] : 예상착순(rank)
+    r_rank1 = [item for item in status if item[16] == 1]      # item[16] : 실제착순(r_rank)
+    r_rank2 = [item for item in status if item[16] == 2]      # item[16] : 실제착순(r_rank)
+    r_rank3 = [item for item in status if item[16] == 3]      # item[16] : 실제착순(r_rank)
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+            select jockey, cast(load_in as decimal) 
+            from jockey_w 
+            where wdate = ( select max(wdate) from jockey_w where wdate < '"""
+            + tdate[0:4]
+            + tdate[5:7]
+            + tdate[8:10]
+            + """' ) 
+                ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        loadin = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in 기승가능중량")
+
+    # print(status)
+
+    context = {
+        "status": status,
+        "loadin": loadin,
+        "rcity": rcity,
+        "fdate": fdate,
+        "tdate": tdate,
+        "jockey": jockey,
+        "trainer": trainer,
+        "host": host,
+        "jockey_b": jockey_b,
+        "r1": r1,
+        "r2": r2,
+        "rr1": rr1,
+        "rr2": rr2,
+        "gate": gate,
+        "distance": distance,
+        "handycap": handycap[0:2],
+        "rank1": len(rank1),
+        "rank2": len(rank2),
+        "rank3": len(rank3),
+        "r_rank1": len(r_rank1),
+        "r_rank2": len(r_rank2),
+        "r_rank3": len(r_rank3),
+        "rcount": len(status),
+    }
+
+    return render(request, "base/jt_analysis_jockey.html", context)
+
 
 # 기수 or 조교사 or 마주 44일 경주결과
 def getRaceHorse(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host):
@@ -2391,11 +2494,13 @@ def printPrediction(request):
 def trainingAwardee(request, rdate, awardee, name):
 
     status = get_training_awardee(rdate, awardee, name)
+    train_title = trend_title(rdate)
 
     # print(status)
 
     context = {
         "status": status,
+        "train_title": train_title,
         "awardee": awardee,
         "name": name,
     }
