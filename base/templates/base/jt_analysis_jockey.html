@@ -26,7 +26,7 @@
     gtag('config', 'G-BFZZL101LZ');
   </script>
 
-  <form class="header__search" method="GET" action="{% url 'jt_analysis_jockey' rcity fdate tdate jockey trainer host jockey_b r1 r2 rr1 rr2 gate distance handycap %}"> 
+  <form class="header__search" method="GET" action="{% url 'jt_analysis_jockey' rcity fdate tdate jockey trainer host jockey_b r1 r2 rr1 rr2 gate distance handycap rno %}"> 
     {% csrf_token %}
 
     <label style="font-size: 1.2rem;">
@@ -36,13 +36,13 @@
           d="M32 30.586l-10.845-10.845c1.771-2.092 2.845-4.791 2.845-7.741 0-6.617-5.383-12-12-12s-12 5.383-12 12c0 6.617 5.383 12 12 12 2.949 0 5.649-1.074 7.741-2.845l10.845 10.845 1.414-1.414zM12 22c-5.514 0-10-4.486-10-10s4.486-10 10-10c5.514 0 10 4.486 10 10s-4.486 10-10 10z">
         </path>
       </svg>
-      <select name="rcity" style="font-size:1.2rem; padding: 0.2rem; border-radius: 7px;">
+      <!-- <select name="rcity" style="font-size:1.2rem; padding: 0.2rem; border-radius: 7px;">
         <option value="%" {% if rcity == '%' %} selected {% endif %}>ALL</option>
         <option value="서울" {% if rcity == '서울' %} selected {% endif %}>서울</option>
         <option value="부산" {% if rcity == '부산' %} selected {% endif %}>부산</option>
-      </select>
-      <input style="font-size: 1.2rem; width: 8.rem;" type="date" value={{fdate}} name="fdate">
-      <input style="font-size: 1.2rem; width: 8.rem;" type="date" value={{tdate}} name="tdate">
+      </select> -->
+      <input style="font-size: 1.2rem; width: 9.5rem;" type="date" value={{fdate}} name="fdate">
+      <input style="font-size: 1.2rem; width: 9.5rem;" type="date" value={{tdate}} name="tdate">
   
       <span class="tooltip">🏇<span class="tooltip-text">🏇&nbsp;기수</span></span>
       <input style="font-size: 1.2rem; width: 3.5rem; color:var(--color-main);" type="text" value='{{jockey}}' placeholder="세영" name="jockey">
@@ -51,7 +51,16 @@
       <span class="tooltip">🤠<span class="tooltip-text">🤠&nbsp;마주</span></span>
       <input style="font-size: 1.2rem; width: 3.5rem; color:var(--color-main);" type="text" value='{{host}}' placeholder="라온" name="host">
       <span class="tooltip">🐎<span class="tooltip-text">🐎&nbsp;상대기수</span></span>
-      <input style="font-size: 1.2rem; width: 5.5rem; color:var(--color-main);" type="text" value='{{jockey_b}}' placeholder="문세영" name="jockey_b">
+      <!-- <input style="font-size: 1.2rem; width: 5.5rem; color:var(--color-main);" type="text" value='{{jockey_b}}' placeholder="문세영" name="jockey_b"> -->
+
+      <select name="jockey_b" style="font-size:1.2rem; padding: 0.2rem; text-align: right; border-radius: 7px;">
+        <option value="%" {% if jockey_b == '%' %} selected {% endif %}>상대기수</option>
+        {% for gate, jockey in jockeys %}
+        <option value={{jockey}} {% if jockey_b == jockey %} selected {% endif %}>{{gate}}&nbsp;&nbsp;{{jockey}}</option>
+        {% endfor%}
+
+
+      </select>
 
       <select name="gate" style="font-size:1.2rem; padding: 0.2rem; text-align: right; border-radius: 7px;">
         <option value="0" {% if gate == '0' %} selected {% endif %}>Gate</option>

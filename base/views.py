@@ -2307,7 +2307,7 @@ def jtAnalysis(request, rcity, fdate, tdate, jockey, trainer, host, horse, r1, r
     return render(request, "base/jt_analysis.html", context)
 
 # thethe9 rank1 실경주 입상현황
-def jtAnalysisJockey(request, rcity, fdate, tdate, jockey, trainer, host, jockey_b, r1, r2, rr1, rr2, gate, distance, handycap):
+def jtAnalysisJockey(request, rcity, fdate, tdate, jockey, trainer, host, jockey_b, r1, r2, rr1, rr2, gate, distance, handycap, rno):
 
     rcity = request.GET.get("rcity") if request.GET.get("rcity") != None else rcity
     fdate = request.GET.get("fdate") if request.GET.get("fdate") != None else fdate[0:4] + '-' + fdate[4:6] + '-' + fdate[6:8]
@@ -2323,6 +2323,7 @@ def jtAnalysisJockey(request, rcity, fdate, tdate, jockey, trainer, host, jockey
     gate = request.GET.get("gate") if request.GET.get("gate") != None else gate
     distance = request.GET.get("distance") if request.GET.get("distance") != None else distance
     handycap = request.GET.get("handycap") if request.GET.get("handycap") != None else handycap
+    rno = request.GET.get("rno") if request.GET.get("rno") != None else rno
 
     # print('2', fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2)
 
@@ -2370,8 +2371,36 @@ def jtAnalysisJockey(request, rcity, fdate, tdate, jockey, trainer, host, jockey
     except:
         connection.rollback()
         print("Failed selecting in 기승가능중량")
+        
+    try:
+        cursor = connection.cursor()
 
-    # print(status)
+        strSql = (
+            """ 
+            select gate, jockey
+            from exp011 
+            where rcity = '""" + rcity + """'
+            and rdate = '""" 
+            + tdate[0:4]
+            + tdate[5:7]
+            + tdate[8:10]
+            + """' 
+            and rno = """ + str(rno) + """
+            order by gate, jockey
+                ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        jockeys = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in 기승가능중량")
+
+    # print(jockeys)
 
     context = {
         "status": status,
@@ -2397,6 +2426,8 @@ def jtAnalysisJockey(request, rcity, fdate, tdate, jockey, trainer, host, jockey
         "r_rank2": len(r_rank2),
         "r_rank3": len(r_rank3),
         "rcount": len(status),
+        "rno": rno,
+        "jockeys": jockeys
     }
 
     return render(request, "base/jt_analysis_jockey.html", context)

@@ -145,7 +145,7 @@ urlpatterns = [
         name="jt_analysis",
     ),
     path(
-        "jt_analysis_jockey/<str:rcity>/<str:fdate>/<str:tdate>/<str:jockey>/<str:trainer>/<str:host>/<str:jockey_b>/<int:r1>/<int:r2>/<int:rr1>/<int:rr2>/<int:gate>/<int:distance>/<str:handycap>",
+        "jt_analysis_jockey/<str:rcity>/<str:fdate>/<str:tdate>/<str:jockey>/<str:trainer>/<str:host>/<str:jockey_b>/<int:r1>/<int:r2>/<int:rr1>/<int:rr2>/<int:gate>/<int:distance>/<str:handycap>/<int:rno>",
         views.jtAnalysisJockey,
         name="jt_analysis_jockey",
     ),
