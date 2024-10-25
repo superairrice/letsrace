@@ -4309,7 +4309,7 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
                         ( select concat( max(age) , ' ', max(tot_1st) ) from jockey_w c where c.jockey = d.jockey and c.wdate < '"""
             + i_rdate
             + """' ) age,
-                        ( select concat( sum(if( r_rank = 1, 1, 0)),'_', sum(if( r_rank = 2, 1, 0)), '_', sum(if( r_rank = 3, 1, 0))) from exp011 
+                        ( select concat( sum(if( r_rank = 1, 1, 0)),'`', sum(if( r_rank = 2, 1, 0)), '`', sum(if( r_rank = 3, 1, 0))) from exp011 
                             where jockey = d.jockey -- and r_rank <= 3 
                             and rdate between date_format(DATE_ADD('"""
             + i_rdate
@@ -4439,7 +4439,7 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
                         ( select concat( max(age) , ' ', max(tot_1st) ) from trainer_w c where c.trainer = d.trainer and c.wdate < '"""
             + i_rdate
             + """' ) age,
-                        ( select concat( sum(if( r_rank = 1, 1, 0)),'_', sum(if( r_rank = 2, 1, 0)), '_', sum(if( r_rank = 3, 1, 0))) from exp011 
+                        ( select concat( sum(if( r_rank = 1, 1, 0)),'`', sum(if( r_rank = 2, 1, 0)), '`', sum(if( r_rank = 3, 1, 0))) from exp011 
                             where trainer = d.trainer -- and r_rank <= 3 
                             and rdate between date_format(DATE_ADD('"""
             + i_rdate
@@ -6229,7 +6229,8 @@ def get_weeks_status(rcity, rdate):
                 and date_format(DATE_ADD('"""
             + rdate
             + """', INTERVAL + 3 DAY), '%Y%m%d')
-            and ( a.r_rank between 1 and 3 or ( a.r_rank = 0 and a.rank <= 3 ) )
+            and ( a.r_rank between 1 and 1 )
+            -- and ( a.r_rank between 1 and 3 or ( a.r_rank = 0 and a.rank <= 3 ) )
             order by a.rcity, a.rdate, a.rno, a.r_rank, a.rank
         ; """
         )
@@ -6408,11 +6409,13 @@ def get_thethe9_ranks_jockey(
         else:
             and_rank = " and a.rank between " + str(r1) + " and " + str(r2)
 
-        if rr2 == 99 or r2 == "99":
+        if rr2 == 99 or rr2 == "99":
             and_r_rank = ""
         else:
             and_r_rank = " and a.r_rank between " + str(rr1) + " and " + str(rr2)
 
+        # print(rr1, rr2, and_r_rank)
+        
         if gate == 0 or gate == "0":
             and_gate = ""
         else:
@@ -6434,23 +6437,8 @@ def get_thethe9_ranks_jockey(
                 + handycap[0:2]
                 + ".5"
             )
-
-        if jockey == 0 or jockey == "0":
-            and_jockey_a = ""
-        else:
-            and_jockey_a = (
-                " and ( a.rcity, a.rdate, a.rno ) in ( select rcity, rdate, rno from rec010 where rcity like '%"
-                + rcity
-                + "%' and rdate between '"
-                + fdate
-                + "' and '"
-                + tdate
-                + "' and jockeys like '%"
-                + jockey
-                + "%')"
-            )
             
-        if jockey_b == 0 or jockey_b == "0":
+        if jockey_b == 0 or jockey_b == "" or jockey_b == "%":
             and_jockey_b = ""
         else:
             and_jockey_b = (
@@ -6461,6 +6449,7 @@ def get_thethe9_ranks_jockey(
                 + "%')"
             )
 
+        # print(jockey_b)
         # print(and_jockey_b)
         strSql = (
             """ SELECT 
@@ -6473,7 +6462,8 @@ def get_thethe9_ranks_jockey(
                     a.s1f_rank, a.g3f_rank, a.g2f_rank, a.g1f_rank, 
                     a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
                     a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
-                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, d.adv_track, c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag
+                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, d.adv_track, 
+                    c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag
                 FROM 
                     The1.exp011 a
                 LEFT JOIN 
@@ -6485,9 +6475,9 @@ def get_thethe9_ranks_jockey(
                 WHERE a.rcity like '%'
                 and a.rdate between '"""
             + fdate
-            + """' and '"""
+            + """' and date_format(DATE_ADD('"""
             + tdate
-            + """'
+            + """', INTERVAL + 3 DAY), '%Y%m%d')
                 """
             + and_rank
             + """
@@ -6505,16 +6495,6 @@ def get_thethe9_ranks_jockey(
             + """
                 """
             + and_jockey_b
-            + """
-                -- and a.rank between """
-            + str(r1)
-            + """ and """
-            + str(r2)
-            + """
-                -- and a.r_rank between """
-            + str(rr1)
-            + """ and """
-            + str(rr2)
             + """
                 and a.jockey like '%"""
             + jockey
