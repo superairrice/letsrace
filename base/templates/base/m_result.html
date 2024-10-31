@@ -1,6 +1,9 @@
 {% load humanize %}
 {% load mathfilters %}
 
+{% load custom_filters %}
+
+
 <div class="fold-content">
   <table class="small-friendly">
     <thead style="font-size:1.2rem;">
@@ -23,7 +26,7 @@
         </th>
         
         <th rowspan="2" style="vertical-align:middle">
-          <a href="{% url 'jt_analysis_jockey' r.rcity r.rdate|mul:1|sub:10000 r.rdate r.jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno %}" onclick="window.open(this.href, 'jt_analysis', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          <a href="{% url 'jt_analysis_multi' r.rcity r.rdate|mul:1|sub:10000 r.rdate r.jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'jt_analysis_multi', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
             <span class="tooltip" style="font-size:1.2rem; color:var(--color-r5);">⚖️
               <span class="tooltip-text" style="font-size:1.1rem; text-align: left;">
                 ⚖️&nbsp;마체중 증감<br>🏇[
@@ -36,7 +39,7 @@
           </a>
         </th>
         <th rowspan="2" style="vertical-align:middle">
-          <a href="{% url 'jt_analysis' '%' r.rdate|mul:1|sub:10000 r.rdate r.jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' r.handycap %}" onclick="window.open(this.href, 'jt_analysis', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          <a href="{% url 'jt_analysis_multi' r.rcity r.rdate|mul:1|sub:10000 r.rdate r.jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' r.handycap  r.rno '%' %}" onclick="window.open(this.href, 'jt_analysis_multi', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
             <span class="tooltip" style="font-size:1.2rem; color:var(--color-r5);">🚛
               <span class="tooltip-text" style="font-size:1.1rem; text-align: left;">
                 🚛&nbsp;기수 부담중량<br>🏇[
@@ -52,7 +55,7 @@
         <th width="5.5%">
           <!-- <a href="{% url 'get_race_awardee' r.rdate 'jockey' r.jockey r.jockey r.trainer r.host %}"
             onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;"> -->
-            <a href="{% url 'jt_analysis' '%' r.rdate|mul:1|sub:10000 r.rdate r.jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
+            <a href="{% url 'jt_analysis_multi' r.rcity r.rdate|mul:1|sub:10000 r.rdate r.jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'jt_analysis_multi', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
             <span class="tooltip" style="font-size:1.2rem; color:var(--color-r5);">
               🏇<span class="tooltip-text" style="font-size:1.1rem;">🏇&nbsp;[<span style="color:var(--color-r3);"><span style="color:var(--color-r3);">{{r.jockey}}</span></span>]&nbsp;기수 최근 1년 경주성적</span>
             </span>
@@ -60,7 +63,7 @@
         </th>
 
         <th width="5.9%">
-          <a href="{% url 'jt_analysis' '%' r.rdate|mul:1|sub:10000 r.rdate r.jockey r.trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          <a href="{% url 'jt_analysis_multi' r.rcity r.rdate|mul:1|sub:10000 r.rdate r.jockey r.trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'jt_analysis_multi', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
             <span class="tooltip" style="font-size:1.2rem; color:var(--color-r5);">J&T<sup style="font-size: 0.7rem;">%</sup>
               <span class="tooltip-text" style="font-size:1.1rem;">🏇🛖&nbsp;[<span style="color:var(--color-r3);">{{r.jockey}}</span>]&nbsp;&&nbsp;[<span style="color:var(--color-r3);">{{r.trainer}}</span>] 최근 1년 경주성적</span>
             </span>
@@ -77,7 +80,7 @@
         <th><span style="font-size:1.2rem;">G3F</span></th>
         <th><span style="font-size:1.2rem;">G2F</span></th>
         <th><span style="font-size:1.2rem;">G1F</span></th>
-        <th><span style="font-size:1.2rem;">경주기록</span></th>
+        <th style="vertical-align: middle; font-size:1.1rem; border:1px solid orange; border-radius: 10px; "><span style="font-size:1.1rem;">Record</span></th>
         <th rowspan="2" style="vertical-align:middle"><span class="visible-big" style="font-size:1.2rem;">마<br>번</span></th>
         <th rowspan="2" style="vertical-align:middle"><span class="visible-big" style="font-size:1.2rem;">코너 전개</span></th>
         <th rowspan="2" style="vertical-align:middle"><span class="visible-big" style="font-size:1.2rem;">순<br>위</span></th>
@@ -118,7 +121,7 @@
         <th>
           <!-- <a href="{% url 'get_race_awardee' r.rdate 'trainer' r.trainer r.jockey r.trainer r.host %}"
             onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;"> -->
-          <a href="{% url 'jt_analysis' '%' r.rdate|mul:1|sub:10000 r.rdate '%' r.trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          <a href="{% url 'jt_analysis_multi' r.rno r.rdate|mul:1|sub:10000 r.rdate '%' r.trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'jt_analysis_multi', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
             <span class="tooltip" style="font-size:1.0rem; color:var(--color-r5);">
               🛖<span class="tooltip-text" style="font-size:1.1rem;">🛖&nbsp;[<span style="color:var(--color-r3);">{{r.trainer}}</span>]&nbsp;마방 최근 1년 경주성적</span>
             </span>
@@ -128,7 +131,7 @@
         <th>
           <!-- <a href="{% url 'get_race_awardee' r.rdate 'host' r.host r.jockey r.trainer r.host %}"
             onclick="window.open(this.href, '_blank', 'width=1000, height=700, toolbars=no, scrollbars=yes'); return false;"> -->
-          <a href="{% url 'jt_analysis' '%' r.rdate|mul:1|sub:10000 r.rdate '%' '%' r.host '%' '1' '99' '1' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          <a href="{% url 'jt_analysis_multi' r.rno r.rdate|mul:1|sub:10000 r.rdate '%' '%' r.host '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'jt_analysis_multi', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
             <span class="tooltip" style="font-size:1.0rem; color:var(--color-r5);">
               🤠<span class="tooltip-text" style="font-size:1.1rem;">🤠&nbsp;[<span style="color:var(--color-r3);">{{r.host}}</span>]&nbsp;마주 최근 1년 경주성적</span>
             </span>
@@ -691,31 +694,34 @@
         </td>
 
         {# 경주기록/예상기록 #}
-        <td>
+        <td align="right">
           {% if hr.record %}
           {% if hr.rank == 1 %}
-          <div style="font-style: italic; color:var(--color-r1); font-weight: 500; font-size: 1.25rem; font-family: Arial;">
+          <div style="border:1px solid orange; border-radius: 10px; text-align: center; font-style: italic; color:var(--color-r1); font-weight: 500; font-size: 1.15rem; font-family: Arial;">
             {% if hr.rank > 20 %}﹆{% else %} {{hr.record|slice:"0:1"}}&nbsp;{{hr.record|slice:"1:6"}} {% endif %}
           </div>
           {% elif hr.rank == 2 %}
-          <div style="font-style: italic; color:var(--color-r2); font-weight: 500; font-size: 1.2rem; font-family: Arial;">
+          <div style="border:1px solid orange; border-radius: 10px; text-align: center; font-style: italic; color:var(--color-r2); font-weight: 500; font-size: 1.15rem; font-family: Arial;">
             {% if hr.rank > 20 %}﹆{% else %} {{hr.record|slice:"0:1"}}&nbsp;{{hr.record|slice:"1:6"}} {% endif %}
           </div>
           {% elif hr.rank == 3 %}
-          <div style="font-style: italic; color:var(--color-r3); font-weight: 500; font-size: 1.2rem; font-family: Arial;">
+          <div style="border:1px solid orange; border-radius: 10px; text-align: center; font-style: italic; color:var(--color-r3); font-weight: 500; font-size: 1.15rem; font-family: Arial;">
             {% if hr.rank > 20 %}﹆{% else %} {{hr.record|slice:"0:1"}}&nbsp;{{hr.record|slice:"1:6"}} {% endif %}
           </div>
           
           {% else %}
-          <div style="font-style: italic; font-size: 1.2rem; font-family: Arial;">
+          <div style="border:1px solid orange; border-radius: 10px; text-align: center; font-style: italic; font-size: 1.15rem; font-family: Arial;">
             {% if hr.rank > 20 %}﹆{% else %} {{hr.record|slice:"0:1"}}&nbsp;{{hr.record|slice:"1:6"}} {% endif %}
           </div>
           {% endif %}
 
-          <div style="text-align: right; color:var(--color-light-gray); font-weight: 500; font-size: 1.1rem; font-family: Arial; font-style: italic;">
-            {% if hr.p_record %}
-            {% if hr.rank > 20 or hr.grade|slice:"0:2" == '주행' %}{% else %} {{hr.p_record|slice:"0:1"}}&nbsp;{{hr.p_record|slice:"1:6"}} {% endif %}
+          <div class="tooltip" style="text-align: right; color:var(--color-gray); font-weight: 500; font-size: 1.1rem; font-family: Arial; font-style: italic;">
+            {% if hr.i_convert %}
+            {% if hr.rank > 20 or hr.grade|slice:"0:2" == '주행' %}{% else %}{{hr.i_convert|t2s}}{% endif %}
+            
+            <span class="tooltip-text" style="text-align: center; font-size: 1.1rem; border:1px solid orange; border-radius: 10px; padding: 4px 20px; ">🦿thethe9 예상<br>&nbsp;{{hr.p_record|slice:"0:1"}}&nbsp;{{hr.p_record|slice:"1:6"}}</span>
             {% endif %}
+
           </div>
           {%endif%}
 

@@ -1,5 +1,5 @@
 from collections import Counter
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict
 from datetime import date, datetime
 from email.message import EmailMessage
@@ -58,6 +58,7 @@ from base.mysqls import (
     get_swim_horse,
     get_thethe9_ranks,
     get_thethe9_ranks_jockey,
+    get_thethe9_ranks_multi,
     get_track_record,
     get_train,
     get_train_audit,
@@ -581,7 +582,7 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         pass
     else:
         return render(request, "base/home.html")
-
+      
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
     # rdate_1year = str(int(rdate[0:4]) - 1) + rdate[4:8]  # 최근 1년 경주성적 조회조건 추가
@@ -621,10 +622,10 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
 
     trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
 
-    # axis = get_axis(rcity, rdate, rno)
-    axis1 = get_axis_rank(rcity, rdate, rno, 1)
-    axis2 = get_axis_rank(rcity, rdate, rno, 2)
-    axis3 = get_axis_rank(rcity, rdate, rno, 3)
+    # # # axis = get_axis(rcity, rdate, rno)
+    # axis1 = get_axis_rank(rcity, rdate, rno, 1)
+    # axis2 = get_axis_rank(rcity, rdate, rno, 2)
+    # axis3 = get_axis_rank(rcity, rdate, rno, 3)
 
     track = get_track_record(
         rcity, rdate, rno
@@ -711,9 +712,9 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         "paternal_dist": paternal_dist,
         "trainer_double_check": str(trainer_double_check),
         "training_cnt": training_cnt,
-        "axis1": axis1,
-        "axis2": axis2,
-        "axis3": axis3,
+        # "axis1": axis1,
+        # "axis2": axis2,
+        # "axis3": axis3,
         "r_memo": r_memo,
         "track": track,
         "weeksrace": weeksrace,
@@ -2023,7 +2024,37 @@ def statusStable(request, rcity, rdate, rno):
     stable_list_g = stable_g.values.tolist()
     stable_title = stable.columns.tolist()
 
-    # print(stable_title)
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+                select a.trainer
+                from exp011 a
+                where a.rcity =  '"""
+            + rcity
+            + """'
+                and a.rdate = '"""
+            + rdate
+            + """'
+                and a.rno =  """
+            + str(rno)
+            + """
+                group by a.rcity, a.rdate, a.rno, a.trainer
+                having count(*) >= 2
+
+                ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        trainer_double_check = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in trainer double cheeck")
 
     context = {
         "r_condition": r_condition,
@@ -2031,6 +2062,7 @@ def statusStable(request, rcity, rdate, rno):
         "stable_list_g": stable_list_g,
         "stable_title": stable_title,
         "stable_h": stable_h,
+        "trainer_double_check": str(trainer_double_check),
     }
 
     return render(request, "base/status_stable.html", context)
@@ -2512,6 +2544,7 @@ def jtAnalysisMulti(
     distance,
     handycap,
     rno,
+    start,
 ):
 
     rcity = request.GET.get("rcity") if request.GET.get("rcity") != None else rcity
@@ -2547,6 +2580,7 @@ def jtAnalysisMulti(
         request.GET.get("handycap") if request.GET.get("handycap") != None else handycap
     )
     rno = request.GET.get("rno") if request.GET.get("rno") != None else rno
+    start = request.GET.get("start") if request.GET.get("start") != None else start
 
     # print('2', fdate, tdate, jockey, trainer, host, jockey_b, r1, r2, rr1, rr2)
     # print(tdate)
@@ -2558,7 +2592,7 @@ def jtAnalysisMulti(
     #     fdate = fdate[0:4] + fdate[5:7] + fdate[8:10]
     #     tdate = tdate[0:4] + tdate[5:7] + tdate[8:10]
 
-    status = get_thethe9_ranks_jockey(
+    status = get_thethe9_ranks_multi(
         rcity,
         fdate[0:4] + fdate[5:7] + fdate[8:10],
         tdate[0:4] + tdate[5:7] + tdate[8:10],
@@ -2573,6 +2607,7 @@ def jtAnalysisMulti(
         gate,
         distance,
         handycap,
+        start,
     )
 
     rank1 = [item for item in status if item[15] == 1]  # item[15] : 예상착순(rank)
@@ -2680,6 +2715,7 @@ def jtAnalysisMulti(
         "r_rank3": len(r_rank3),
         "rcount": len(status),
         "rno": rno,
+        "start": start,
         "jockeys": jockeys,
         "j_string": j_string,
         "t_string": t_string,

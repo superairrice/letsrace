@@ -194,6 +194,10 @@ class Exp011(models.Model):
         max_digits=4, decimal_places=1, blank=True, null=True
     )
     bet = models.CharField(max_length=1, blank=True, null=True)
+    corners = models.CharField(max_length=30, blank=True, null=True)
+    r_s1f = models.CharField(max_length=4, blank=True, null=True)
+    r_g3f = models.CharField(max_length=4, blank=True, null=True)
+    r_g1f = models.CharField(max_length=4, blank=True, null=True)
 
     class Meta:
         managed = True

@@ -284,3 +284,5 @@ def get_train_horse(i_rdate, i_horse):
     # print(training)
 
     return training
+
+

@@ -3,7 +3,7 @@
 {% load mathfilters %}
 {% load humanize %}
 
-{% load my_custom_tags %}
+{# load my_custom_tags #}
 
 <html lang="en">
 
@@ -983,7 +983,7 @@
                   {% endif %}
                 {% endif %}
               </div>
-        
+
               {% if r.r_record %}
                 <div style=" font-size: 1.1rem; text-align: right; padding-top:0.2rem;">
                 {% if r.r_rank == 1 %}
@@ -1178,7 +1178,7 @@
         
         </thead>
         <tbody>
-          {% for gate, rank, horse, paternal, rd1, rd2, rd3, rdtot, r1, r2, r3, rtot, price, tot_prize in paternal %}
+          {% for gate, rank, horse, paternal, rd1, rd2, rd3, rdtot, r1, r2, r3, rtot, price_old, price in paternal %}
           <tr class="view">
 
             <td>
@@ -1221,15 +1221,27 @@
               {%endif%}
               </div>
 
-              <div style="font-family: Arial; font-size:1.25rem;">
+              <div style="font-family: Arial; font-size:1.214rem; text-align: right;">
+                {% if price != price_old %}
                 {% if price >= 50000 %}
-                <p style="text-align: right; font-family: Arial; font-size:1.214rem; color:var(--color-r1)">{{price|floatformat:0|intcomma}}&nbsp;</p>
+                <span style="text-align: right; font-family: Arial; font-size:1.1rem; color:var(--color-r1)">{{price|floatformat:0|intcomma}}&nbsp;</span>
                 {% elif price >= 20000 and price < 50000 %}
-                <p style="text-align: right; font-family: Arial; font-size:1.214rem; color:var(--color-r3)">{{price|floatformat:0|intcomma}}&nbsp;</p>
+                <span style="text-align: right; font-family: Arial; font-size:1.1rem; color:var(--color-r3)">{{price|floatformat:0|intcomma}}&nbsp;</span>
                 {% elif price > 0 and price < 20000 %}
-                <p style="text-align: right; font-family: Arial; font-size:1.214rem; color:var(--color-gray)">{{price|floatformat:0|intcomma}}&nbsp;</p>
+                <span style="text-align: right; font-family: Arial; font-size:1.1rem; color:var(--color-gray)">{{price|floatformat:0|intcomma}}&nbsp;</span>
                 {% else %}
-                <p style="text-align: right; font-family: Arial; font-size:1.214rem;">-&nbsp;</p>
+                <span style="text-align: right; font-family: Arial; font-size:1.1rem;">&nbsp;</span>
+                {% endif %}
+                <span style="font-size: 0.8rem;">💸&nbsp;</span>
+                {% endif %}
+                {% if price_old >= 50000 %}
+                <span style="text-align: right; font-family: Arial; font-size:1.1rem; color:var(--color-r1)">{{price_old|floatformat:0|intcomma}}&nbsp;</span>
+                {% elif price_old >= 20000 and price_old < 50000 %}
+                <span style="text-align: right; font-family: Arial; font-size:1.1rem; color:var(--color-r3)">{{price_old|floatformat:0|intcomma}}&nbsp;</span>
+                {% elif price_old > 0 and price_old < 20000 %}
+                <span style="text-align: right; font-family: Arial; font-size:1.1rem; color:var(--color-gray)">{{price_old|floatformat:0|intcomma}}&nbsp;</span>
+                {% else %}
+                <span style="text-align: right; font-family: Arial; font-size:1.1rem;">&nbsp;</span>
                 {% endif %}
               </div>
 

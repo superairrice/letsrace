@@ -23,7 +23,7 @@
               <span style="font-family: Arial; color: var(--color-r3);">{{r_rank3}}</span>
               <span style="color: var(--color-gray);">﹆</span>
               {% if rcount > 0 %}
-              <span class="blink" style="font-family: Arial; color: var(--color-bg); background-color: var(--color-r4); padding: 2px 4px; border-radius: 7px;">{{r_rank1|add:r_rank2|add:r_rank3|mul:100|div:rcount|floatformat:1}}<sup style="font-size: 0.9rem;">%</sup></span>
+              <span style="font-family: Arial; color: var(--color-bg); background-color: var(--color-r4); padding: 2px 4px; border-radius: 7px;">{{r_rank1|add:r_rank2|add:r_rank3|mul:100|div:rcount|floatformat:1}}<sup style="font-size: 0.9rem;">%</sup></span>
               {% endif %}
               <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
 
@@ -38,7 +38,7 @@
               <span style="font-family: Arial; color: var(--color-r3);">{{rank3}}</span>
               <span style="color: var(--color-gray);">﹆</span>
               {% if rcount > 0 %}
-              <span class="blink" style="font-family: Arial; color: var(--color-bg); background-color: var(--color-r4); padding: 2px 4px; border-radius: 7px;">{{rank1|add:rank2|add:rank3|mul:100|div:rcount|floatformat:1}}<sup style="font-size: 0.9rem;">%</sup></span>
+              <span style="font-family: Arial; color: var(--color-bg); background-color: var(--color-r4); padding: 2px 4px; border-radius: 7px;">{{rank1|add:rank2|add:rank3|mul:100|div:rcount|floatformat:1}}<sup style="font-size: 0.9rem;">%</sup></span>
               {% endif %}
             </th>
           </tr>
@@ -88,7 +88,7 @@
         </thead>
         <tbody>
 
-          {% for rcity, rdate, r_rno, rday, distance, grade, dividing, horse, jname, tname, hname, h_weight, handycap, i_prehandy, gate, rank, r_rank, corners, r_s1f, r_g3f, r_g1f, s1f_rank, g3f_rank, g2f_rank, g1f_rank, cs1f, cg3f, cg1f,i_cycle, r_pop, alloc1r, alloc3r, complex, r_record, track, jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd, jockey_old, reason, h_sex, h_age, birthplace, j_per, t_per, rating, r2alloc, r3alloc, r_etc, gap, gap_b, weather, rstate, rmoisture, adv_track, r_judge, rating, h_cnt, h_mare, pop_rank, r_flag in status %}
+          {% for rcity, rdate, r_rno, rday, distance, grade, dividing, horse, jname, tname, hname, h_weight, handycap, i_prehandy, gate, rank, r_rank, corners, r_s1f, r_g3f, r_g1f, s1f_rank, g3f_rank, g2f_rank, g1f_rank, cs1f, cg3f, cg1f,i_cycle, r_pop, alloc1r, alloc3r, complex, r_record, track, jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd, jockey_old, reason, h_sex, h_age, birthplace, j_per, t_per, rating, r2alloc, r3alloc, r_etc, gap, gap_b, weather, rstate, rmoisture, adv_track, r_judge, rating, h_cnt, h_mare, pop_rank, r_flag, passage_s1f in status %}
           
           <tr class="view">
             
@@ -98,12 +98,11 @@
                 <a href="{% url 'race_result' rcity rdate r_rno horse 0 0 0 %}" onclick="window.open(this.href, 'w_result', 'width=1000, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
                   
                   <span class="tooltip">
-                    {% if today == rdate %}
-                    <span style="font-size: 1.1rem; font-family: Arial; font-weight: 300; color: var(--color-light); border-radius: 7px; background-color: var(--color-bg); padding: 2px 4px;">'{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
+                    {% if today <= rdate %}
+                    <span style="font-size: 1.1rem; font-family: Arial; font-weight: 300; color: var(--color-r4); border-radius: 7px; background-color: var(--color-bg); padding: 2px 4px;">'{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
                     {% else %}
                     <span style="font-size: 1.1rem; font-family: Arial; font-weight: 300;">'{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
                     {% endif %}
-
 
                     <span style="font-size: 1.1rem; font-family: Arial; font-weight: 300; color:var(--color-light);">{{distance}}</span>
 
@@ -490,7 +489,7 @@
             <td>
               <div style="text-align: center; font-family: Arial;">
             
-                <span style="font-family: Arial, Helvetica, sans-serif;">
+                <span class="tooltip" style="font-family: Arial, Helvetica, sans-serif;">
                   {% if corners %}
                     {% if corners|slice:"0:1" == '1' and corners|slice:"1:2" == '-' %}
                     <span style="font-size: 1.0rem; color:var(--color-r1);">{{corners}}</span>
@@ -502,6 +501,7 @@
                     <span style="font-size: 1.0rem; color:var(--color-gray);">{{corners}}</span>
                     {% endif %}
                   {% endif %}
+                  <span class="tooltip-text" style="font-family: Arial, Helvetica, sans-serif; font-size: 1.2rem;">s1f 전개도<br>{{passage_s1f}}</span>
                 </span>
             
               </div>
@@ -594,7 +594,7 @@
               <span style="font-size: 1.7rem;">{{track}}</span>
               {% endif %} -->
               {% if track == '②' %}
-              <span style="background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; font-weight: 300; font-size: 1.0rem; color:var(--color-r1);">2</span>
+              <span style="background-color: var(--color-light); padding: 2px 4px; border-radius: 7px; font-weight: 300; font-size: 1.0rem; color:var(--color-r1);">2</span>
               {% elif track == '③' %}
               <span style="background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; font-weight: 300; font-size: 1.0rem; color:var(--color-r1);">3</span>
               {% elif track == '④' %}

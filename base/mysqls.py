@@ -78,7 +78,9 @@ def get_paternal(rcity, rdate, rno, distance):
                     sum(r2) r2,
                     sum(r3) r3,
                     sum(rtot) rtot,
-                    b.price/1000, b.tot_prize/1000000
+                    b.price/1000,
+                    -- b.tot_prize/1000000
+                    ( select price/1000 from horse_w where horse = a.horse and wdate = ( select min(wdate) from horse_w where horse = a.horse and price > 0)  )
                 FROM exp011	a,
                     ( select horse, paternal, price, tot_prize 
                         from horse_w where wdate = ( select max(wdate) from horse_w where wdate <= '"""
@@ -4091,90 +4093,206 @@ def get_status_stable(i_rcity, i_rdate, i_rno):
 
         strSql = (
             """ 
-                SELECT b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, b.host, b.horse, b.rating, a.trainer, a.grade, a.wdate, count(*) cnt, sum(a.year_1st) r1cnt
-                FROM horse_w a,
-                    expect b
-                where a.trainer = b.trainer 
-                -- and a.host = b.host
-                and a.wdate in (
-                    SELECT max(wdate) FROM trainer_w where wdate like '"""
+            SELECT max(wdate) FROM trainer_w where wdate like '"""
             + i_rdate[0:6]
             + """%' and wdate <= '"""
             + i_rdate
             + """' 
-                    union all
-                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 1 MONTH), '%Y%m%')
-                    union all
-                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 2 MONTH), '%Y%m%')
-                    union all
-                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 3 MONTH), '%Y%m%')
-                    union all
-                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 4 MONTH), '%Y%m%')
-                    union all
-                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 5 MONTH), '%Y%m%')
-                    union all
-                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 6 MONTH), '%Y%m%')
-                    union all
-                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 7 MONTH), '%Y%m%')
-                    union all
-                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 8 MONTH), '%Y%m%')
-                    union all
-                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 9 MONTH), '%Y%m%')
-                    union all
-                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 10 MONTH), '%Y%m%')
-                    union all
-                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 11 MONTH), '%Y%m%')
-                    union all
-                    SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 12 MONTH), '%Y%m%')
-                )
-                and b.rcity = '"""
-            + i_rcity
-            + """' and b.rdate = '"""
-            + i_rdate
-            + """' and b.rno = """
-            + str(i_rno)
-            + """
-                group by b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, b.host, b.horse, b.rating, a.trainer, a.grade, a.wdate
-            ; """
+        ; """
         )
 
         # print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
-        # print(result)
-        # print(r_cnt)
-
         connection.commit()
         connection.close()
+        
+        print(r_cnt, result[0][0])
 
     except:
         connection.rollback()
-        print("Failed selecting in status_stable")
+        print("Failed selecting wdate ")
+        
+    if result[0][0] != None:
+        
+        try:
+            cursor = connection.cursor()
+
+            strSql = (
+                """ 
+                    SELECT b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, b.host, b.horse, b.rating, a.trainer, a.grade, a.wdate, count(*) cnt, sum(a.year_1st) r1cnt
+                    FROM horse_w a,
+                        expect b
+                    where a.trainer = b.trainer 
+                    -- and a.host = b.host
+                    and a.wdate in (
+                        SELECT max(wdate) FROM trainer_w where wdate like '"""
+                + i_rdate[0:6]
+                + """%' and wdate <= '"""
+                + i_rdate
+                + """' 
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 1 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 2 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 3 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 4 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 5 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 6 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 7 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 8 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 9 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 10 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 11 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 12 MONTH), '%Y%m%')
+                    )
+                    and b.rcity = '"""
+                + i_rcity
+                + """' and b.rdate = '"""
+                + i_rdate
+                + """' and b.rno = """
+                + str(i_rno)
+                + """
+                    group by b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, b.host, b.horse, b.rating, a.trainer, a.grade, a.wdate
+                ; """
+            )
+
+            # print(strSql)
+            r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+            result = cursor.fetchall()
+
+            # print(result)
+            # print(r_cnt)
+
+            connection.commit()
+            connection.close()
+
+        except:
+            connection.rollback()
+            print("Failed selecting in status_stable")
+    else:
+        try:
+            cursor = connection.cursor()
+
+            strSql = (
+                """ 
+                    SELECT b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, b.host, b.horse, b.rating, a.trainer, a.grade, a.wdate, count(*) cnt, sum(a.year_1st) r1cnt
+                    FROM horse_w a,
+                        expect b
+                    where a.trainer = b.trainer 
+                    -- and a.host = b.host
+                    and a.wdate in (
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 1 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 2 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 3 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 4 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 5 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 6 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 7 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 8 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 9 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 10 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 11 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 12 MONTH), '%Y%m%')
+                        union all
+                        SELECT max(wdate) FROM trainer_w where wdate like date_format(DATE_ADD('"""
+                + i_rdate
+                + """', INTERVAL - 13 MONTH), '%Y%m%')
+                    )
+                    and b.rcity = '"""
+                + i_rcity
+                + """' and b.rdate = '"""
+                + i_rdate
+                + """' and b.rno = """
+                + str(i_rno)
+                + """
+                    group by b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, b.host, b.horse, b.rating, a.trainer, a.grade, a.wdate
+                ; """
+            )
+
+            # print(strSql)
+            r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+            result = cursor.fetchall()
+
+            # print(result)
+            # print(r_cnt)
+
+            connection.commit()
+            connection.close()
+
+        except:
+            connection.rollback()
+            print("Failed selecting in status_stable")
 
     col = [
         "예상",
@@ -4259,13 +4377,13 @@ def get_status_stable(i_rcity, i_rdate, i_rno):
 
         strSql = (
             """ 
-                SELECT a.trainer, a.host, a.grade, if(a.horse = b.horse, 0, 1), count(*) cnt, sum(a.year_1st) year_1st, sum(a.year_2nd) year_2nd, sum(a.year_3rd) year_3rd, sum(a.year_race) year_cnt
-                FROM horse_w a,
-                expect b 
-                where a.trainer = b.trainer
-                and a.host = b.host
-                and a.wdate in (
-                    SELECT max(wdate) FROM trainer_w where wdate like '"""
+            SELECT a.trainer, a.host, a.grade, if(a.horse = b.horse, 0, 1), count(*) cnt, sum(a.year_1st) year_1st, sum(a.year_2nd) year_2nd, sum(a.year_3rd) year_3rd, sum(a.year_race) year_cnt
+            FROM horse_w a,
+            expect b 
+            where a.trainer = b.trainer
+            and a.host = b.host
+            and a.wdate in (
+                SELECT max(wdate) FROM trainer_w where wdate like '"""
             + i_rdate[0:6]
             + """%' and wdate <= '"""
             + i_rdate
@@ -6312,7 +6430,8 @@ def get_thethe9_ranks(
                     a.s1f_rank, a.g3f_rank, a.g2f_rank, a.g1f_rank, 
                     a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
                     a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
-                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, d.adv_track, c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag
+                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, 
+                    d.adv_track, c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f
                 FROM 
                     The1.exp011 a
                 LEFT JOIN 
@@ -6414,7 +6533,7 @@ def get_thethe9_ranks_jockey(
         else:
             and_r_rank = " and a.r_rank between " + str(rr1) + " and " + str(rr2)
 
-        # print(rr1, rr2, and_r_rank)
+        # print(rr1, rr2, and_r_rank) 
         
         if gate == 0 or gate == "0":
             and_gate = ""
@@ -6463,7 +6582,7 @@ def get_thethe9_ranks_jockey(
                     a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
                     a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
                     a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, d.adv_track, 
-                    c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag
+                    c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f
                 FROM 
                     The1.exp011 a
                 LEFT JOIN 
@@ -6506,11 +6625,154 @@ def get_thethe9_ranks_jockey(
             + host
             + """%'
                 
-            order by a.rdate desc, b.rtime desc, a.r_rank, a.rank
+            order by a.rdate desc, b.rtime, a.r_rank, a.rank
         ; """
         )
 
-        # print(strSql)
+        print(strSql) 
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in thethe9_ranks_jockey")
+
+    return result
+
+# thethe9 rank 1 입상현황
+def get_thethe9_ranks_multi(
+    rcity,
+    fdate,
+    tdate,
+    jockey,
+    trainer,
+    host,
+    jockey_b,
+    r1,
+    r2,
+    rr1,
+    rr2,
+    gate,
+    distance,
+    handycap,
+    start
+):
+    try:
+        cursor = connection.cursor()
+
+        if r2 == 99 or r2 == "99":
+            and_rank = ""
+        else:
+            and_rank = " and a.rank between " + str(r1) + " and " + str(r2)
+
+        if rr2 == 99 or rr2 == "99":
+            and_r_rank = ""
+        else:
+            and_r_rank = " and a.r_rank between " + str(rr1) + " and " + str(rr2)
+
+        # print(rr1, rr2, and_r_rank) 
+        
+        if gate == 0 or gate == "0":
+            and_gate = ""
+        else:
+            and_gate = " and a.gate = " + str(gate)
+
+        if distance == 0 or distance == "0":
+            and_distance = ""
+        else:
+            and_distance = " and b.distance = " + str(distance)
+
+        if handycap == 0 or handycap == "0":
+            and_handycap = ""
+        else:
+            and_handycap = (
+                " and a.handycap between "
+                + handycap[0:2]
+                + ".0"
+                + " and "
+                + handycap[0:2]
+                + ".5"
+            )
+            
+        if jockey_b == 0 or jockey_b == "" or jockey_b == "%":
+            and_jockey_b = ""
+        else:
+            and_jockey_b = (
+                " and ( a.rcity, a.rdate, a.rno ) in ( select rcity, rdate, rno from rec010 where rcity like '%' and rdate between '" + fdate + "' and '"
+                + tdate
+                + "' and jockeys like '%"
+                + jockey_b
+                + "%')"
+            )
+
+        # print(jockey_b)
+        # print(and_jockey_b)
+        strSql = (
+            """ SELECT 
+                    a.rcity, a.rdate, a.rno, b.rday, b.distance, b.grade, 
+                    concat(b.dividing, ' ', b.rname, ' ', b.rcon1, ' ', b.rcon2), 
+                    a.horse, a.jockey, a.trainer, a.host, a.h_weight, a.handycap, a.handycap - a.i_prehandy,
+                    a.gate, a.rank, a.r_rank, 
+                    replace( a.corners, ' ', '') corners,
+                    a.r_s1f, a.r_g3f, a.r_g1f, 
+                    a.s1f_rank, a.g3f_rank, a.g2f_rank, a.g1f_rank, 
+                    a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
+                    a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
+                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, d.adv_track, 
+                    c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f
+                FROM 
+                    The1.exp011 a
+                LEFT JOIN 
+                    The1.exp010 b ON a.rcity = b.rcity AND a.rdate = b.rdate AND a.rno = b.rno
+                LEFT OUTER JOIN 
+                    The1.rec010 c ON a.rcity = c.rcity AND a.rdate = c.rdate AND a.rno = c.rno 
+                LEFT OUTER JOIN 
+                    The1.rec011 d ON a.rcity = d.rcity AND a.rdate = d.rdate AND a.rno = d.rno and a.gate = d.gate
+                WHERE a.rcity like '%'
+                and a.rdate between '"""
+            + fdate
+            + """' and date_format(DATE_ADD('"""
+            + tdate
+            + """', INTERVAL + 3 DAY), '%Y%m%d')
+                """
+            + and_rank
+            + """
+                """
+            + and_r_rank
+            + """
+                """
+            + and_gate
+            + """
+                """
+            + and_distance
+            + """
+                """
+            + and_handycap
+            + """
+                """
+            + and_jockey_b
+            + """
+                and a.jockey like '%"""
+            + jockey
+            + """%'
+                and a.trainer like '%"""
+            + trainer
+            + """%'
+                and a.host like '%"""
+            + host
+            + """%'
+                and a.corners like '"""
+            + start 
+            + """-%'
+                
+            order by a.rdate desc, b.rtime, a.r_rank, a.rank
+        ; """
+        )
+
+        print(strSql) 
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
