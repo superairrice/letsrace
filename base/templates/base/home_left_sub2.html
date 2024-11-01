@@ -277,23 +277,33 @@
         {% if rank > 90 %}
         <span style="font-size: 0.7rem;">🐣</span>
         {% else %}
-        {% if i_complex %}
-
-        {% if rank == 12 %} {# 만약 12두 이상의 경주마가 출주했으면 줄임말 표시 #}
-        <span class="blink tooltip" style="font-size: 0.9rem;; animation: blink-effect 1.0s step-end infinite;">m..
-          <span class="tooltip-text">출주마가 더 있습니다.</span></span>
-        {% else %}
-        {% if i_complex < 10 %} <span style="font-size: 0.9rem;; color:var(--color-r1);">{{i_complex|floatformat:0}}</span>
-          {% else %}
-          <span style="font-size: 0.9rem;; color: gray;">{{i_complex|floatformat:0}}</span>
-          {% endif %}
-          {% endif %}
-
+          {% if jt_per %}
+            {% if rcount|mul:1 > 12 and rank == 12 %}   {# 만약 12두 이상의 경주마가 출주했으면 줄임말 표시 #}
+              <span class="blink tooltip" style=" font-size: 0.8rem; animation: blink-effect 1.0s step-end infinite;">m..
+                <span class="tooltip-text">출주마가 더 있습니다.</span>
+              </span>
+            {% else %}
+              {% if jt_per == 100.0 %} 
+              <span style="font-size: 0.85rem; color:var(--color-r1);">{{jt_per|floatformat:0}}</span> 
+              {% elif jt_per >= 50 %} 
+              <span style="font-size: 0.85rem; color:var(--color-r1);">{{jt_per|floatformat:1}}</span>
+              {% elif jt_per >= 40 and jt_per < 50 %} 
+              <span style="font-size: 0.85rem; color:var(--color-r2);">{{jt_per|floatformat:1}}</span>
+              {% elif jt_per >= 30 and jt_per < 40 %} 
+              <span style="font-size: 0.85rem; color:var(--color-r3);">{{jt_per|floatformat:1}}</span>
+              {% elif jt_per >= 20 and jt_per < 30 %} 
+              <span style="font-size: 0.85rem; color:var(--color-r4);">{{jt_per|floatformat:1}}</span>
+              {% elif jt_per >= 10 and jt_per < 20 %} 
+              <span style="font-size: 0.85rem; color:var(--color-r5);">{{jt_per|floatformat:1}}</span>
+              {% else %}
+              <span style="font-size: 0.85rem; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
+              {% endif %}
+            {% endif %}
+            
           {%else%}
-          <span style="font-size: 0.9rem;">&nbsp;</span>
-
+            <span style="font-size: 0.85rem; color:var(--color-r1);">⁄</span>
           {% endif %}
-          {% endif %}
+        {% endif %}
       </div>
 
       {# 부담중량 즘감 #}

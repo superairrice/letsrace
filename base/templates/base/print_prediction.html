@@ -219,7 +219,7 @@
             </td>
 
 
-            {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex, jt_per, s1f_rank, i_cycle in expects %}  
+            {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex, jt_per, s1f_rank, i_cycle, rcount in expects %}  
             {% if r_rcity == rcity and r_rdate == rdate and r_rno == rno %}
             
             <td align="center" style="font-family: Arial; color: var(--color-main);">
@@ -304,20 +304,30 @@
                 {% if rank > 90 %}
                 <span style="font-size: 0.7rem;">🐣</span>
                 {% else %}
-                  {% if i_complex %}
-                    {% if rank == 12 %}   {# 만약 12두 이상의 경주마가 출주했으면 줄임말 표시 #}
+                  {% if jt_per %}
+                    {% if rcount|mul:1 > 12 and rank == 12 %}   {# 만약 12두 이상의 경주마가 출주했으면 줄임말 표시 #}
                       <span class="blink tooltip" style=" font-size: 0.8rem; animation: blink-effect 1.0s step-end infinite;">m..
                         <span class="tooltip-text">출주마가 더 있습니다.</span></span>
                     {% else %}
-                      {% if i_complex < 10 %} 
-                      <span style="font-size: 0.85rem; color:var(--color-gray);">{{i_complex|floatformat:0}}</span>
+                      {% if jt_per == 100.0 %} 
+                      <span style="font-size: 0.85rem; color:var(--color-r1);">{{jt_per|floatformat:0}}</span> 
+                      {% elif jt_per >= 50 %} 
+                      <span style="font-size: 0.85rem; color:var(--color-r1);">{{jt_per|floatformat:1}}</span>
+                      {% elif jt_per >= 40 and jt_per < 50 %} 
+                      <span style="font-size: 0.85rem; color:var(--color-r2);">{{jt_per|floatformat:1}}</span>
+                      {% elif jt_per >= 30 and jt_per < 40 %} 
+                      <span style="font-size: 0.85rem; color:var(--color-r3);">{{jt_per|floatformat:1}}</span>
+                      {% elif jt_per >= 20 and jt_per < 30 %} 
+                      <span style="font-size: 0.85rem; color:var(--color-r4);">{{jt_per|floatformat:1}}</span>
+                      {% elif jt_per >= 10 and jt_per < 20 %} 
+                      <span style="font-size: 0.85rem; color:var(--color-r5);">{{jt_per|floatformat:1}}</span>
                       {% else %}
-                      <span style="font-size: 0.85rem; color: red;">{{i_complex|floatformat:0}}</span>
+                      <span style="font-size: 0.85rem; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
                       {% endif %}
                     {% endif %}
                     
                   {%else%}
-                    <span style="font-size: 0.85rem">-</span>
+                    <span style="font-size: 0.85rem; color:var(--color-r1);">⁄</span>
                   {% endif %}
                 {% endif %}
               </div>

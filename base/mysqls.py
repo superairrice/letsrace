@@ -3538,12 +3538,12 @@ def get_print_prediction(i_rcity, i_rdate):
 
         strSql = (
             """ 
-                select rcity, rdate, rday, rno, rtime, distance,  substr(grade,1,2) grade, substr(dividing,1,1) dividing
-                  from exp010
+                select rcity, rdate, rday, rno, rtime, distance,  substr(grade,1,2) grade, substr(dividing,1,2) dividing
+                from exp010
                 where rcity = '"""
             + i_rcity
             + """'
-                  and rdate = '"""
+                and rdate = '"""
             + i_rdate
             + """' 
                 order by rdate, rcity desc, rno
@@ -3567,8 +3567,9 @@ def get_print_prediction(i_rcity, i_rdate):
             """
                 select rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex,
                     complex5, gap_back,
-                    cast(jt_per as decimal) jt_per, s1f_rank, i_cycle
-                  from expect a
+                    jt_per, 
+                    s1f_rank, i_cycle, rcount
+                from expect a
                 where rcity = '"""
             + i_rcity
             + """'
@@ -3632,8 +3633,8 @@ def get_prediction(i_rdate):
                     --  ( select complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = 5 ) complex5, 
                     --  ( select i_complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = a.rank + 1 ) - i_complex, 
                     complex5, gap_back, 
-                    -- cast(jt_per as decimal) jt_per,
-                    if( isnull(s1f_rank), 0, s1f_rank) jt_per,
+                    jt_per,
+                    -- if( isnull(s1f_rank), 0, s1f_rank) jt_per,
                     rcount
                 from expect a
                 where rdate between date_format(DATE_ADD('"""
@@ -6329,7 +6330,8 @@ def get_weeks_status(rcity, rdate):
                     a.s1f_rank, a.g3f_rank, a.g2f_rank, a.g1f_rank, 
                     a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
                     a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
-                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, d.adv_track, c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag
+                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, 
+                    d.adv_track, c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f
                 FROM 
                     The1.exp011 a
                 LEFT JOIN 
