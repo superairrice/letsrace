@@ -6675,8 +6675,8 @@ def get_thethe9_ranks_multi(
         else:
             and_r_rank = " and a.r_rank between " + str(rr1) + " and " + str(rr2)
 
-        # print(rr1, rr2, and_r_rank) 
-        
+        # print(rr1, rr2, and_r_rank)
+
         if gate == 0 or gate == "0":
             and_gate = ""
         else:
@@ -6686,6 +6686,11 @@ def get_thethe9_ranks_multi(
             and_distance = ""
         else:
             and_distance = " and b.distance = " + str(distance)
+
+        if start == 0 or start == "" or start == "%":
+            and_corners = ""
+        else:
+            and_corners = " and a.corners like '" + start + "-%'"
 
         if handycap == 0 or handycap == "0":
             and_handycap = ""
@@ -6698,7 +6703,7 @@ def get_thethe9_ranks_multi(
                 + handycap[0:2]
                 + ".5"
             )
-            
+
         if jockey_b == 0 or jockey_b == "" or jockey_b == "%":
             and_jockey_b = ""
         else:
@@ -6757,6 +6762,9 @@ def get_thethe9_ranks_multi(
                 """
             + and_jockey_b
             + """
+                """
+            + and_corners
+            + """
                 and a.jockey like '%"""
             + jockey
             + """%'
@@ -6766,15 +6774,12 @@ def get_thethe9_ranks_multi(
                 and a.host like '%"""
             + host
             + """%'
-                and a.corners like '"""
-            + start 
-            + """-%'
-                
-            order by a.rdate desc, b.rtime, a.r_rank, a.rank
+
+            order by a.rdate desc, b.rtime desc, a.r_rank, a.rank
         ; """
         )
 
-        print(strSql) 
+        # print(strSql) 
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
