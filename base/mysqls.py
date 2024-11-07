@@ -523,6 +523,7 @@ def get_race(i_rdate, i_awardee):
             + i_rdate
             + """', INTERVAL + 3 DAY), '%Y%m%d')
                 and rno < 80
+                and 1 <> 1
                 order by rdate, rtime, gate
                 ; """
         )
@@ -3597,12 +3598,15 @@ def get_print_prediction(i_rcity, i_rdate):
 
 
 def get_prediction(i_rdate):
+
+    # race Query
     try:
         cursor = connection.cursor()
 
         strSql = (
             """ 
-                select a.rcity, a.rdate, a.rday, a.rno, a.rtime, a.distance, b.r2alloc, b.r333alloc, b.r123alloc, a.grade, a.dividing
+                select a.rcity, a.rdate, a.rday, a.rno, a.rtime, a.distance, b.r2alloc, b.r333alloc, b.r123alloc, a.grade, a.dividing,
+                ( select judged from rec013 where a.rcity = rcity and a.rdate = rdate and a.rno = rno ) judged
                 from exp010 a left outer join 
                     rec010 b on a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
                 where a.rdate between date_format(DATE_ADD('"""
@@ -3624,6 +3628,7 @@ def get_prediction(i_rdate):
         connection.rollback()
         print("Failed selecting in exp010 outer join rec010")
 
+    # expects Query
     try:
         cursor = connection.cursor()
 
@@ -3657,6 +3662,7 @@ def get_prediction(i_rdate):
         connection.rollback()
         print("Failed selecting in expect ")
 
+    # awqard_j Query
     try:
         cursor = connection.cursor()
 
@@ -3674,6 +3680,7 @@ def get_prediction(i_rdate):
             + i_rdate
             + """', INTERVAL + 3 DAY), '%Y%m%d')
                 and rno < 80
+                and 1 <> 1
                 group by rcity, jockey
                 order by rcity, sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) + sum(if(r_rank = 3, 1, 0)) desc,
                                 sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) desc,
@@ -3732,7 +3739,7 @@ def get_prediction(i_rdate):
             SELECT distinct b.rcity, b.rdate, b.rno, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
                 FROM exp011     a,
                     rec015     b
-                where a.jockey = b.jockey 
+                where a.jockey = b.jockey and 1 <> 1
                 AND b.t_sort = '기수'
                 AND b.rdate between date_format(DATE_ADD('"""
             + i_rdate
@@ -6668,7 +6675,7 @@ def get_thethe9_ranks_multi(
         if r2 == 99 or r2 == "99":
             and_rank = ""
         else:
-            and_rank = " and a.rank between " + str(r1) + " and " + str(r2)
+            and_rank = " and d.pop_rank between " + str(r1) + " and " + str(r2)
 
         if rr2 == 99 or rr2 == "99":
             and_r_rank = ""

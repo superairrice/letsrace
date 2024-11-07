@@ -460,9 +460,11 @@ def home(request):
 
         i_rdate = rdate
 
-    jname1 = request.GET.get("j1") if request.GET.get("j1") != None else ""
-    jname2 = request.GET.get("j2") if request.GET.get("j2") != None else ""
-    jname3 = request.GET.get("j3") if request.GET.get("j3") != None else ""
+    topics = Topic.objects.filter(name__icontains=q)
+
+    # jname1 = request.GET.get("j1") if request.GET.get("j1") != None else ""
+    # jname2 = request.GET.get("j2") if request.GET.get("j2") != None else ""
+    # jname3 = request.GET.get("j3") if request.GET.get("j3") != None else ""
 
     racings, race_detail, race_board = get_race(i_rdate, i_awardee="jockey")
 
@@ -478,7 +480,7 @@ def home(request):
 
     race, expects, award_j, rdays, judged_jockey = get_prediction(i_rdate)
 
-    loadin = get_last2weeks_loadin(i_rdate)
+    # loadin = get_last2weeks_loadin(i_rdate)
 
     rflag = False  # 경마일, 비경마일 구분
     for r in rdays:
@@ -489,42 +491,44 @@ def home(request):
 
     # print(rflag)
 
-    name = get_client_ip(request)
+    # name = get_client_ip(request)
 
-    if name[0:6] != "15.177":
-        update_visitor_count(name)
+    # if name[0:6] != "15.177":
+    #     update_visitor_count(name)
 
-        # create a new Visitor instance
-        new_visitor = Visitor(
-            ip_address=name,
-            user_agent=request.META.get("HTTP_USER_AGENT"),
-            # referrer=request.META.get('HTTP_REFERER'),
-            referer="home",
-            # timestamp=timezone.now()
-        )
+    #     # create a new Visitor instance
+    #     new_visitor = Visitor(
+    #         ip_address=name,
+    #         user_agent=request.META.get("HTTP_USER_AGENT"),
+    #         # referrer=request.META.get('HTTP_REFERER'),
+    #         referer="home",
+    #         # timestamp=timezone.now()
+    #     )
 
-        # insert the new_visitor object into the database
-        new_visitor.save()
+    #     # insert the new_visitor object into the database
+    #     new_visitor.save()
 
-    t_count = visitor_count()
+    # t_count = visitor_count()
 
     context = {
         "racings": racings,
         "expects": expects,
         "fdate": fdate,
-        "loadin": loadin,
+        # "loadin": loadin,
         "race_detail": race_detail,
         "race_board": race_board,
-        "jname1": jname1,
-        "jname2": jname2,
-        "jname3": jname3,
+        # "jname1": jname1,
+        # "jname2": jname2,
+        # "jname3": jname3,
         "award_j": award_j,
         "race": race,
         "q": q,
-        "t_count": t_count,
+        # "t_count": t_count,
         "rdays": rdays,
         "judged_jockey": judged_jockey,
         "rflag": rflag,  # 경마일, 비경마일 구분
+        "topics": topics,  
+        
     }
 
     return render(request, "base/home.html", context)
@@ -565,15 +569,15 @@ def activityComponentPage_a(request, hname):
 # @login_required(login_url="home")
 def racePrediction(request, rcity, rdate, rno, hname, awardee):
 
-    if request.user.is_authenticated == False:
-        context = {
-            "rcity": rcity,
-            "rdate": rdate,
-            "rno": rno,
-            "hname": hname,
-            "awardee": awardee,
-        }
-        return redirect("prediction_list", rcity=rcity, rdate=rdate, rno=rno)
+    # if request.user.is_authenticated == False:
+    #     context = {
+    #         "rcity": rcity,
+    #         "rdate": rdate,
+    #         "rno": rno,
+    #         "hname": hname,
+    #         "awardee": awardee,
+    #     }
+    #     return redirect("prediction_list", rcity=rcity, rdate=rdate, rno=rno)
 
     exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
         "rank", "gate"
