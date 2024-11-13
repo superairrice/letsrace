@@ -30,6 +30,7 @@ from base.mysqls import (
     get_award_race,
     get_axis,
     get_axis_rank,
+    get_board_list,
     get_cycle_winning_rate,
     get_expects,
     get_jockey_trend,
@@ -445,28 +446,32 @@ def exp011(request, pk):
 
 
 def home(request):
+
     q = request.GET.get("q") if request.GET.get("q") != None else ""  # 경마일
 
     if q == "":
-        rdate = Racing.objects.values("rdate").distinct()[0]["rdate"]  # 초기값은 금요일
-        fdate = rdate[0:4] + "-" + rdate[4:6] + "-" + rdate[6:8]
+        # rdate = Racing.objects.values("rdate").distinct()[0]["rdate"]  # 초기값은 금요일
 
         rdate = Racing.objects.values("rdate").distinct()
         i_rdate = rdate[0]["rdate"]
 
+        fdate = i_rdate[0:4] + "-" + i_rdate[4:6] + "-" + i_rdate[6:8]
+
     else:
         rdate = q[0:4] + q[5:7] + q[8:10]
-        fdate = q
 
         i_rdate = rdate
+        fdate = q
 
-    topics = Topic.objects.filter(name__icontains=q)
+    # topics = Topic.objects.exclude(name__icontains=q)
 
+    # print(topics)
     # jname1 = request.GET.get("j1") if request.GET.get("j1") != None else ""
     # jname2 = request.GET.get("j2") if request.GET.get("j2") != None else ""
     # jname3 = request.GET.get("j3") if request.GET.get("j3") != None else ""
 
-    racings, race_detail, race_board = get_race(i_rdate, i_awardee="jockey")
+    racings = get_race(i_rdate, i_awardee="jockey")
+    race_board = get_board_list(i_rdate, i_awardee="jockey")
 
     # r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
     # r_results = RaceResult.objects.filter(
@@ -478,7 +483,7 @@ def home(request):
     #     Q(jockey6__icontains=q) |
     #     Q(jockey7__icontains=q)).order_by('rdate', 'rcity', 'rno')
 
-    race, expects, award_j, rdays, judged_jockey = get_prediction(i_rdate)
+    race, expects, rdays = get_prediction(i_rdate)
 
     # loadin = get_last2weeks_loadin(i_rdate)
 
@@ -500,9 +505,10 @@ def home(request):
     #     new_visitor = Visitor(
     #         ip_address=name,
     #         user_agent=request.META.get("HTTP_USER_AGENT"),
-    #         # referrer=request.META.get('HTTP_REFERER'),
-    #         referer="home",
-    #         # timestamp=timezone.now()
+    #         referer=request.META.get(
+    #             "HTTP_REFERER", "home"
+    #         ),  # referer 값이 없으면 기본값으로 "home" 설정
+    #         timestamp=timezone.now(),  # 현재 시간으로 설정
     #     )
 
     #     # insert the new_visitor object into the database
@@ -515,19 +521,19 @@ def home(request):
         "expects": expects,
         "fdate": fdate,
         # "loadin": loadin,
-        "race_detail": race_detail,
+        # "race_detail": race_detail,
         "race_board": race_board,
         # "jname1": jname1,
         # "jname2": jname2,
         # "jname3": jname3,
-        "award_j": award_j,
+        # "award_j": award_j,
         "race": race,
         "q": q,
         # "t_count": t_count,
         "rdays": rdays,
-        "judged_jockey": judged_jockey,
+        # "judged_jockey": judged_jockey,
         "rflag": rflag,  # 경마일, 비경마일 구분
-        "topics": topics,  
+        # "topics": topics,  
         
     }
 
@@ -586,7 +592,7 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         pass
     else:
         return render(request, "base/home.html")
-      
+
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
     # rdate_1year = str(int(rdate[0:4]) - 1) + rdate[4:8]  # 최근 1년 경주성적 조회조건 추가
@@ -657,11 +663,11 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         r_memo = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting in 경주 메모")
 
     try:
@@ -681,29 +687,32 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         weeksrace = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting in exp010 : 주별 경주현황")
 
-    name = get_client_ip(request)
+    # name = get_client_ip(request)
 
-    if name[0:6] != "15.177":
-        update_visitor_count(name)
+    # if name[0:6] != "15.177":
+    #     update_visitor_count(name)
 
-        # create a new Visitor instance
-        new_visitor = Visitor(
-            ip_address=name,
-            user_agent=request.META.get("HTTP_USER_AGENT"),
-            # referrer=request.META.get('HTTP_REFERER'),
-            referer=rcity + " " + rdate + " " + str(rno) + " " + "predictionRace",
-            # timestamp=timezone.now()
-        )
+    #     # create a new Visitor instance
+    #     new_visitor = Visitor(
+    #         ip_address=name,
+    #         user_agent=request.META.get("HTTP_USER_AGENT"),
+    #         # referrer=request.META.get('HTTP_REFERER'),
+    #         # referer=rcity + " " + rdate + " " + str(rno) + " " + "racePrediction",
+    #         referer=request.META.get(
+    #             "HTTP_REFERER", rcity + " " + rdate + " " + str(rno) + " " + "racePrediction"
+    #         ),  # referer 값이 없으면 기본값으로 "home" 설정
+    #         # timestamp=timezone.now()
+    #     )
 
-        # insert the new_visitor object into the database
-        new_visitor.save()
+    #     # insert the new_visitor object into the database
+    #     new_visitor.save()
 
     context = {
         "exp011s": exp011s,
@@ -1600,14 +1609,14 @@ def updateChangedRace(request, rcity, rdate, rno):
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 awards = cursor.fetchall()
 
-                connection.commit()
-                connection.close()
+                # connection.commit()
+                # connection.close()
 
                 # return render(request, 'base/update_popularity.html', context)
                 # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
 
             except:
-                connection.rollback()
+                # connection.rollback()
                 print("Failed updating in exp011")
 
             exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno)
@@ -1682,11 +1691,11 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         weeksrace = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting in exp010 : 주별 경주현황")
 
     context = {
@@ -2053,11 +2062,11 @@ def statusStable(request, rcity, rdate, rno):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         trainer_double_check = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting in trainer double cheeck")
 
     context = {
@@ -2639,11 +2648,11 @@ def jtAnalysisMulti(
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         loadin = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting in 기승가능중량")
 
     try:
@@ -2671,11 +2680,11 @@ def jtAnalysisMulti(
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         jockeys = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting in 기승가능중량")
 
     # print(jockeys)
@@ -2799,21 +2808,21 @@ def printPrediction(request):
             "jname3": jname3,
         }
 
-    name = get_client_ip(request)
-    if name[0:6] != "15.177":
-        update_visitor_count(name)
+    # name = get_client_ip(request)
+    # if name[0:6] != "15.177":
+    #     update_visitor_count(name)
 
-        # create a new Visitor instance
-        new_visitor = Visitor(
-            ip_address=name,
-            user_agent=request.META.get("HTTP_USER_AGENT"),
-            # referrer=request.META.get('HTTP_REFERER'),
-            referer=rcity + " " + rdate + " " + "Print Prediction",
-            # timestamp=timezone.now()
-        )
+    #     # create a new Visitor instance
+    #     new_visitor = Visitor(
+    #         ip_address=name,
+    #         user_agent=request.META.get("HTTP_USER_AGENT"),
+    #         # referrer=request.META.get('HTTP_REFERER'),
+    #         referer=rcity + " " + rdate + " " + "Print Prediction",
+    #         # timestamp=timezone.now()
+    #     )
 
-        # insert the new_visitor object into the database
-        new_visitor.save()
+    #     # insert the new_visitor object into the database
+    #     new_visitor.save()
 
     return render(request, "base/print_prediction.html", context)
 
@@ -2878,21 +2887,21 @@ def awardStatusTrainer(request):
     )
     loadin = get_last2weeks_loadin(friday)
 
-    name = get_client_ip(request)
-    if name[0:6] != "15.177":
-        update_visitor_count(name)
+    # name = get_client_ip(request)
+    # if name[0:6] != "15.177":
+    #     update_visitor_count(name)
 
-        # create a new Visitor instance
-        new_visitor = Visitor(
-            ip_address=name,
-            user_agent=request.META.get("HTTP_USER_AGENT"),
-            # referrer=request.META.get('HTTP_REFERER'),
-            referer=fdate + " " + "마방 상금수득 현황",
-            # timestamp=timezone.now()
-        )
+    #     # create a new Visitor instance
+    #     new_visitor = Visitor(
+    #         ip_address=name,
+    #         user_agent=request.META.get("HTTP_USER_AGENT"),
+    #         # referrer=request.META.get('HTTP_REFERER'),
+    #         referer=fdate + " " + "마방 상금수득 현황",
+    #         # timestamp=timezone.now()
+    #     )
 
-        # insert the new_visitor object into the database
-        new_visitor.save()
+    #     # insert the new_visitor object into the database
+    #     new_visitor.save()
 
     context = {
         "weeks": weeks,
@@ -3367,14 +3376,14 @@ def writeSignificant(request, rdate, horse):
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
             awards = cursor.fetchall()
 
-            connection.commit()
-            connection.close()
+            # connection.commit()
+            # connection.close()
 
             # return render(request, 'base/update_popularity.html', context)
             # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
 
         except:
-            connection.rollback()
+            # connection.rollback()
             print("Failed updating in rec011")
 
         try:
@@ -3421,11 +3430,11 @@ def writeSignificant(request, rdate, horse):
 
         # print(r_significant)
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting start")
 
     try:
@@ -3434,11 +3443,11 @@ def writeSignificant(request, rdate, horse):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         r_start = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting r_start")
 
     try:
@@ -3447,11 +3456,11 @@ def writeSignificant(request, rdate, horse):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         r_corners = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting r_corners")
 
     try:
@@ -3460,11 +3469,11 @@ def writeSignificant(request, rdate, horse):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         r_finish = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting r_finish")
 
     try:
@@ -3473,11 +3482,11 @@ def writeSignificant(request, rdate, horse):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         r_wrapup = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting r_wrapup")
 
     try:
@@ -3486,11 +3495,11 @@ def writeSignificant(request, rdate, horse):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         r_flag = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting r_flag ; 집계 제외 사유")
 
     context = {
@@ -3560,34 +3569,79 @@ def visitor_count():
     return user.count()
 
 
+# def update_visitor_count(name):
+#     today = date.today()
+#     now = datetime.now()
+#     timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+
+#     # Connect to the MySQL database
+
+#     cursor = connection.cursor()
+
+#     # Check if a record already exists for today
+#     cursor.execute("SELECT COUNT(*) FROM base_visitorcount WHERE date = %s", (today,))
+#     result = cursor.fetchone()
+#     if result[0] > 0:
+#         # If a record exists, update the count
+#         cursor.execute(
+#             "UPDATE base_visitorcount SET count = count + 1 WHERE date = %s", (today,)
+#         )
+#     else:
+#         # If a record doesn't exist, create a new record
+#         cursor.execute(
+#             "INSERT INTO base_visitorcount (date, count) VALUES (%s, %s)", (today, 1)
+#         )
+
+#     # Add a new visitor to the visitors_log table
+#     sql = "INSERT INTO base_visitorlog (name, date, timestamp) VALUES (%s, %s, %s)"
+#     val = (name, today, timestamp)
+#     cursor.execute(sql, val)
+
+#     # Commit the changes and close the connection
+#     connection.commit()
+#     connection.close()
+
 def update_visitor_count(name):
     today = date.today()
     now = datetime.now()
     timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
 
-    # Connect to the MySQL database
+    try:
+      
+        # Connect to the MySQL database
+        cursor = connection.cursor()
 
-    cursor = connection.cursor()
-
-    # Check if a record already exists for today
-    cursor.execute("SELECT COUNT(*) FROM base_visitorcount WHERE date = %s", (today,))
-    result = cursor.fetchone()
-    if result[0] > 0:
-        # If a record exists, update the count
+        # 오늘 날짜로 기록이 이미 있는지 확인
         cursor.execute(
-            "UPDATE base_visitorcount SET count = count + 1 WHERE date = %s", (today,)
+            "SELECT COUNT(*) FROM base_visitorcount WHERE date = %s", (today,)
         )
-    else:
-        # If a record doesn't exist, create a new record
-        cursor.execute(
-            "INSERT INTO base_visitorcount (date, count) VALUES (%s, %s)", (today, 1)
-        )
+        result = cursor.fetchone()
 
-    # Add a new visitor to the visitors_log table
-    sql = "INSERT INTO base_visitorlog (name, date, timestamp) VALUES (%s, %s, %s)"
-    val = (name, today, timestamp)
-    cursor.execute(sql, val)
+        if result[0] > 0:
+            # 기록이 있으면 count 증가
+            cursor.execute(
+                "UPDATE base_visitorcount SET count = count + 1 WHERE date = %s",
+                (today,),
+            )
+        else:
+            # 기록이 없으면 새로운 기록 생성
+            cursor.execute(
+                "INSERT INTO base_visitorcount (date, count) VALUES (%s, %s)",
+                (today, 1),
+            )
 
-    # Commit the changes and close the connection
-    connection.commit()
-    connection.close()
+        # 방문자 기록 추가
+        sql = "INSERT INTO base_visitorlog (name, date, timestamp) VALUES (%s, %s, %s)"
+        val = (name, today, timestamp)
+        cursor.execute(sql, val)
+
+        # 변경 사항 커밋
+        connection.commit()
+
+    except:
+        print("데이터베이스 오류가 발생했습니다:")
+
+    finally:
+        # 연결 종료
+        cursor.close()
+        connection.close()

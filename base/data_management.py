@@ -26,14 +26,14 @@ def get_krafile(rcity, rdate1, rdate2, fcode, fstatus):
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
         # print(strSql)
         # print(result[0:5])
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting in krafile")
 
     return result
@@ -62,14 +62,14 @@ def get_kradata(rcity, rdate1, rdate2, fcode, fstatus):
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
         # print(strSql)
         # print(result[0:5])
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting in krafile")
 
     return result
@@ -173,7 +173,7 @@ def convert_c1(fname):
 
     tdate = fname[-19:-11]
 
-    print(tdate)
+    # print(tdate)
 
     try:
         cursor = connection.cursor()
@@ -188,13 +188,13 @@ def convert_c1(fname):
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchone()
         # result = cursor.fetchall()
-        print(r_cnt)
+        # print(r_cnt)
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed Deleting in train Table")
 
     cnt = 0
@@ -242,13 +242,13 @@ def convert_c1(fname):
             result = cursor.fetchone()
             # result = cursor.fetchall()
 
-            connection.commit()
-            connection.close()
+            # connection.commit()
+            # connection.close()
 
             cnt += 1
 
         except:
-            connection.rollback()
+            # connection.rollback()
             print("Failed inserting in train Table")
 
     #     for cell in row_rng:  # 각 행에 대한 1차원 배열 for문

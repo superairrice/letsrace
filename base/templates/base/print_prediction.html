@@ -212,6 +212,8 @@
               <div style="font-family: Arial; text-align:center; font-size: 1.0rem; color: var(--color-r2);">{{distance}}</div>
               <div style="font-family: Arial; text-align:center; font-size: 1.0rem; color: var(--color-r5);">
                 <span>{{grade}}</span>
+              </div>
+              <div style="font-family: Arial; text-align:center; font-size: 1.0rem; color: var(--color-r5);">
                 <span>{{dividing}}</span>
               </div>
 
@@ -224,37 +226,53 @@
             
             <td align="center" style="font-family: Arial; color: var(--color-main);">
               
-              <div align="center" style="font-size: 1.7rem; padding:0rem; ">
+              <div align="center" style="font-size: 1.6rem; padding: 0rem 0rem; ">
                 {% if rank == 1 %}
                 <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550; padding: 0 0px;">
-                  {{gate}}<sub style="font-size: 0.7rem;">{{i_cycle|div:7|floatformat:0}}</sub>
+                  {{gate}}
                 </span>
                 {% elif rank == 2 %}
                 <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550; padding: 0 0px;">
-                  {{gate}}<sub style="font-size: 0.7rem;">{{i_cycle|div:7|floatformat:0}}</sub>
+                  {{gate}}
                 </span>
                 {% elif rank == 3 %}
                 <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550; padding: 0 0px;">
-                  {{gate}}<sub style="font-size: 0.7rem;">{{i_cycle|div:7|floatformat:0}}</sub>
+                  {{gate}}
                 </span>
                 {% elif rank == 4 %}
                 <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550; padding: 0 0px;">
-                  {{gate}}<sub style="font-size: 0.7rem;">{{i_cycle|div:7|floatformat:0}}</sub>
+                  {{gate}}
                 </span>
                 {% elif rank == 5 %}
                 <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550; padding: 0 0px;">
-                  {{gate}}<sub style="font-size: 0.7rem;">{{i_cycle|div:7|floatformat:0}}</sub>
+                  {{gate}}
                 </span>
                 {% else %}
                   {% if complex == complex5 %}
-                  <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550; padding: 0 0px;">{{gate}}<sub style="font-size: 0.7rem;">{{i_cycle|div:7|floatformat:0}}</sub></span>
+                  <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550; padding: 0 0px;">{{gate}}</span>
                   {% else %}
-                  <span style="font-family: Arial; font-style: normal; color:var(--color-main);">{{gate}}<sub style="font-size: 0.7rem;">{{i_cycle|div:7|floatformat:0}}</sub></span>
+                  <span style="font-family: Arial; font-style: normal; color:var(--color-main);">{{gate}}</span>
                   {% endif %}
                 {% endif %}
               </div>
 
-              
+              <div style="padding: 0px 0px; font-size: 0.85rem;">
+                {% if i_cycle %}
+                  {% if i_cycle <= 16 %} 
+                    <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r2);">
+                      {{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.7rem;">w</sup>
+                    </span>
+                  {% elif i_cycle >= 68 %}
+                    <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r1);">{{i_cycle|div:7|floatformat:0}}<sup
+                        style="font-size: 0.7rem;">w</sup></span>
+                  {% else %}
+                    <span style="font-family: Arial; font-size:1.0rem; color:var(--color-gray);">{{i_cycle|div:7|floatformat:0}}<sup
+                        style="font-size: 0.7rem;">w</sup></span>
+                  {% endif %}
+                {% else %}
+                  <span style="font-family: Arial; font-size:0.7rem; color:var(--color-gray);">🐥</span>
+                {% endif %}
+              </div>
 
               <div style="font-size: 0.85rem; color: var(--color-r1); font-weight: 550; font-style: normal;">
                 {% if jockey|slice:"-2:" == jname1|slice:"-2:" %}
@@ -301,9 +319,7 @@
               {% endif %}
 
               <div style="padding-top:0.1rem; padding-bottom: 0.1rem;">
-                {% if rank > 90 %}
-                <span style="font-size: 0.7rem;">🐣</span>
-                {% else %}
+
                   {% if jt_per %}
                     {% if rcount|mul:1 > 12 and rank == 12 %}   {# 만약 12두 이상의 경주마가 출주했으면 줄임말 표시 #}
                       <span class="blink tooltip" style=" font-size: 0.8rem; animation: blink-effect 1.0s step-end infinite;">m..
@@ -321,15 +337,16 @@
                       <span style="font-size: 0.85rem; color:var(--color-r4);">{{jt_per|floatformat:1}}</span>
                       {% elif jt_per >= 10 and jt_per < 20 %} 
                       <span style="font-size: 0.85rem; color:var(--color-r5);">{{jt_per|floatformat:1}}</span>
-                      {% else %}
+                      {% elif jt_per >= 0 and jt_per < 10 %} 
                       <span style="font-size: 0.85rem; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
+                      {% else %}
+                      <span style="font-size: 0.85rem; background-color:var(--color-r1);">{{jt_per|floatformat:1}}</span>
                       {% endif %}
                     {% endif %}
                     
                   {%else%}
-                    <span style="font-size: 0.85rem; color:var(--color-r1);">⁄</span>
+                    <span style="font-size: 0.85rem; color:var(--color-r1);">&nbsp;</span>
                   {% endif %}
-                {% endif %}
               </div>
 
               {# 부담중량 즘감 #}
