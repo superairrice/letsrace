@@ -5212,14 +5212,14 @@ def set_changed_race(i_rcity, i_rdate, i_rno, r_content):
                     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                     awards = cursor.fetchall()
 
-                    connection.commit()
-                    connection.close()
+                    # connection.commit()
+                    # connection.close()
 
                     # return render(request, 'base/update_popularity.html', context)
                     # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
 
                 except:
-                    connection.rollback()
+                    # connection.rollback()
                     print("Failed updating in exp011 : 경주마 취소")
 
         elif len(items) == 9:  # 기수변경 아이템수 == 9
@@ -5276,14 +5276,14 @@ def set_changed_race(i_rcity, i_rdate, i_rno, r_content):
                     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                     awards = cursor.fetchall()
 
-                    connection.commit()
-                    connection.close()
+                    # connection.commit()
+                    # connection.close()
 
                     # return render(request, 'base/update_popularity.html', context)
                     # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
 
                 except:
-                    connection.rollback()
+                    # connection.rollback()
                     print("Failed updating in exp011 : 기수변경")
 
     return len(lines)
@@ -5350,14 +5350,14 @@ def set_changed_race_jockey(i_rcity, i_rdate, i_rno, r_content):
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 awards = cursor.fetchall()
 
-                connection.commit()
-                connection.close()
+                # connection.commit()
+                # connection.close()
 
                 # return render(request, 'base/update_popularity.html', context)
                 # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
 
             except:
-                connection.rollback()
+                # connection.rollback()
                 print("Failed updating in exp011 : 기수변경")
 
     return len(lines)
@@ -5409,8 +5409,8 @@ def set_changed_race_horse(i_rcity, i_rdate, i_rno, r_content):
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 awards = cursor.fetchall()
 
-                connection.commit()
-                connection.close()
+                # connection.commit()
+                # connection.close()
 
                 # return render(request, 'base/update_popularity.html', context)
                 # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
@@ -5472,14 +5472,14 @@ def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
                     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                     awards = cursor.fetchall()
 
-                    connection.commit()
-                    connection.close()
+                    # connection.commit()
+                    # connection.close()
 
                     # return render(request, 'base/update_popularity.html', context)
                     # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
 
                 except:
-                    connection.rollback()
+                    # connection.rollback()
                     print("Failed updating in exp011 : 경주마 체중")
 
     return len(lines)
@@ -5544,14 +5544,14 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 awards = cursor.fetchall()
 
-                connection.commit()
-                connection.close()
+                # connection.commit()
+                # connection.close()
 
                 # return render(request, 'base/update_popularity.html', context)
                 # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
 
             except:
-                connection.rollback()
+                # connection.rollback()
                 print("Failed updating in exp011 : 경주마 순위")
 
         elif len(items) == 13:  # 서울 경주기록
@@ -5603,14 +5603,14 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 awards = cursor.fetchall()
 
-                connection.commit()
-                connection.close()
+                # connection.commit()
+                # connection.close()
 
                 # return render(request, 'base/update_popularity.html', context)
                 # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
 
             except:
-                connection.rollback()
+                # connection.rollback()
                 print("Failed updating in exp011 : 경주마 순위")
 
         elif len(items) == 12:  # 부산 경주기록
@@ -5662,14 +5662,14 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 awards = cursor.fetchall()
 
-                connection.commit()
-                connection.close()
+                # connection.commit()
+                # connection.close()
 
                 # return render(request, 'base/update_popularity.html', context)
                 # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
 
             except:
-                connection.rollback()
+                # connection.rollback()
                 print("Failed updating in exp011 : 경주마 순위")
 
     return len(lines)
@@ -5730,14 +5730,14 @@ def insert_train_swim(r_content):
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 awards = cursor.fetchall()
 
-                connection.commit()
-                connection.close()
+                # connection.commit()
+                # connection.close()
 
                 # return render(request, 'base/update_popularity.html', context)
                 # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
 
             except:
-                connection.rollback()
+                # connection.rollback()
                 print("Failed inserting in swim : 수영조교")
 
     return len(lines)
@@ -5787,11 +5787,11 @@ def insert_horse_disease(r_content):
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 awards = cursor.fetchall()
 
-                connection.commit()
-                connection.close()
+                # connection.commit()
+                # connection.close()
 
             except:
-                connection.rollback()
+                # connection.rollback()
                 print("Failed deleting in swim : 말 진료현황")
 
             try:
@@ -5940,11 +5940,11 @@ def insert_race_simulation(rcity, rcount, r_content):
                     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                     awards = cursor.fetchall()
 
-                    connection.commit()
-                    connection.close()
+                    # connection.commit()
+                    # connection.close()
 
                 except:
-                    connection.rollback()
+                    # connection.rollback()
                     print("Failed deleting in exp010")
 
                 try:
@@ -5975,11 +5975,11 @@ def insert_race_simulation(rcity, rcount, r_content):
                     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                     awards = cursor.fetchall()
 
-                    connection.commit()
-                    connection.close()
+                    # connection.commit()
+                    # connection.close()
 
                 except:
-                    connection.rollback()
+                    # connection.rollback()
                     print("Failed inserting in exp010")
 
                 try:
@@ -6003,11 +6003,11 @@ def insert_race_simulation(rcity, rcount, r_content):
                     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                     awards = cursor.fetchall()
 
-                    connection.commit()
-                    connection.close()
+                    # connection.commit()
+                    # connection.close()
 
                 except:
-                    connection.rollback()
+                    # connection.rollback()
                     print("Failed deleting in exp011")
 
                 try:
@@ -6031,11 +6031,11 @@ def insert_race_simulation(rcity, rcount, r_content):
                     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                     awards = cursor.fetchall()
 
-                    connection.commit()
-                    connection.close()
+                    # connection.commit()
+                    # connection.close()
 
                 except:
-                    connection.rollback()
+                    # connection.rollback()
                     print("Failed deleting in exp012")
 
             else:
@@ -6099,11 +6099,11 @@ def insert_race_simulation(rcity, rcount, r_content):
                         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                         awards = cursor.fetchall()
 
-                        connection.commit()
-                        connection.close()
+                        # connection.commit()
+                        # connection.close()
 
                     except:
-                        connection.rollback()
+                        # connection.rollback()
                         print("Failed inserting in exp011")
 
                     try:
@@ -6131,11 +6131,11 @@ def insert_race_simulation(rcity, rcount, r_content):
                         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                         awards = cursor.fetchall()
 
-                        connection.commit()
-                        connection.close()
+                        # connection.commit()
+                        # connection.close()
 
                     except:
-                        connection.rollback()
+                        # connection.rollback()
                         print("Failed inserting in exp012")
 
                 else:
@@ -6235,11 +6235,11 @@ def insert_race_judged_sql(rcity, rdate, rno, judged, judged_add, committee):
 
         # print((ret[0][0]))      # 재결사항 입력 여부
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed select error in rec013")
 
     if ret[0][0] == 0:
@@ -6265,11 +6265,11 @@ def insert_race_judged_sql(rcity, rdate, rno, judged, judged_add, committee):
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
             ret = cursor.fetchall()
 
-            connection.commit()
-            connection.close()
+            # connection.commit()
+            # connection.close()
 
         except:
-            connection.rollback()
+            # connection.rollback()
             print("Failed inserting in rec013 ")
     else:
         try:
@@ -6293,11 +6293,11 @@ def insert_race_judged_sql(rcity, rdate, rno, judged, judged_add, committee):
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
             ret = cursor.fetchall()
 
-            connection.commit()
-            connection.close()
+            # connection.commit()
+            # connection.close()
 
         except:
-            connection.rollback()
+            # connection.rollback()
             print("Failed updating in rec013")
 
     return ret
@@ -6321,11 +6321,11 @@ def get_jockey(horse):  # 출전등록 시뮬레이션 - 기수 select
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         jockey = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed inserting in exp010")
 
     return jockey
@@ -6376,11 +6376,11 @@ def get_weeks_status(rcity, rdate):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed inserting in weeksStatus")
 
     return result
@@ -6512,11 +6512,11 @@ def get_thethe9_ranks(
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting in thethe9_ranks")
 
     return result
@@ -6652,11 +6652,11 @@ def get_thethe9_ranks_jockey(
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print("Failed selecting in thethe9_ranks_jockey")
 
     return result

@@ -224,9 +224,9 @@ WSGI_APPLICATION = "letsrace.wsgi.application"
 #         "PORT": "3307",  # [6]
 #     }
 # }
-# DEBUG = True
+DEBUG = True
 
-DEBUG = False 
+# DEBUG = False 
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",  # [1]
@@ -240,7 +240,7 @@ DATABASES = {
     }
 } 
 
-# SECRET_KEY = get_secret("SECRET_KEY")
+# SECRET_KEY = get_secret("SECRET_KEY") 
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
