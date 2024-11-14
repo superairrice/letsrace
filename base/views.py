@@ -2090,7 +2090,7 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
         # )  # 기수, 조교사, 마주 연대현황 최근1년
 
     else:
-        trend_data, trend_title = get_trainer_trend(rcity, rdate, rno, 0)
+        trend_data, trend_title = get_trainer_trend(rcity, rdate, rno)
         # solidarity = get_solidarity(
         #     rcity, rdate, rno, "trainer", i_filter
         # )  # 기수, 조교사, 마주 연대현황 최근1년
