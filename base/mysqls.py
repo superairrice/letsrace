@@ -3671,45 +3671,45 @@ def get_prediction(i_rdate):
         print("Failed selecting in expect ")
 
     # awqard_j Query
-    # try:
-    #     cursor = connection.cursor()
+    try:
+        cursor = connection.cursor()
 
-    #     strSql = (
-    #         """
-    #             select rcity, jockey, count(*),
-    #                     sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) + sum(if(r_rank = 3, 1, 0)) rr123_cnt,
-    #                     sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) r123_cnt,
-    #                     sum(if(r_rank = 1, 1, 0)) rr1, sum(if(r_rank = 2, 1, 0)) rr2, sum(if(r_rank = 3, 1, 0)) rr3,
-    #                     sum(if(rank = 1, 1, 0)) r1, sum(if(rank = 2, 1, 0)) r2, sum(if(rank = 3, 1, 0)) r3
-    #             from expect a
-    #             where rdate between date_format(DATE_ADD('"""
-    #         + i_rdate
-    #         + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
-    #         + i_rdate
-    #         + """', INTERVAL + 3 DAY), '%Y%m%d')
-    #             and rno < 80
-    #             and 1 <> 1
-    #             group by rcity, jockey
-    #             order by rcity, sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) + sum(if(r_rank = 3, 1, 0)) desc,
-    #                             sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) desc,
-    #                             sum(if(r_rank = 1, 1, 0))  desc,
-    #                             sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) desc,
-    #                             sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0))  desc,
-    #                             sum(if(rank = 1, 1, 0)) desc
-    #             ; """
-    #     )
+        strSql = (
+            """
+                select rcity, jockey, count(*),
+                        sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) + sum(if(r_rank = 3, 1, 0)) rr123_cnt,
+                        sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) r123_cnt,
+                        sum(if(r_rank = 1, 1, 0)) rr1, sum(if(r_rank = 2, 1, 0)) rr2, sum(if(r_rank = 3, 1, 0)) rr3,
+                        sum(if(rank = 1, 1, 0)) r1, sum(if(rank = 2, 1, 0)) r2, sum(if(rank = 3, 1, 0)) r3, min(rdate), max(rdate)
+                from expect a
+                where rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL + 3 DAY), '%Y%m%d')
+                and rno < 80
+                -- and 1 <> 1
+                group by rcity, jockey
+                order by rcity, sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) + sum(if(r_rank = 3, 1, 0)) desc,
+                                sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) desc,
+                                sum(if(r_rank = 1, 1, 0))  desc,
+                                sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) desc,
+                                sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0))  desc,
+                                sum(if(rank = 1, 1, 0)) desc
+                ; """
+        )
 
-    #     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-    #     award_j = cursor.fetchall()
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        award_j = cursor.fetchall()
 
-    #     connection.commit()
-    #     connection.close()
+        # connection.commit()
+        # connection.close()
 
-    # except:
-    #     connection.rollback()
-    #     print("Failed selecting in BookListView")
-    # # print(r_cnt)
-    # # print(type(weeks[0]))
+    except:
+        # connection.rollback()
+        print("Failed selecting in BookListView")
+    # print(r_cnt)
+    # print(type(weeks[0]))
 
     # rdays Query
     try:
@@ -3777,7 +3777,7 @@ def get_prediction(i_rdate):
     #     connection.rollback()
     #     print("Failed selecting in judged jockey")
 
-    return race, expects, rdays
+    return race, expects, rdays, award_j
 
 
 def get_expects(i_rdate):

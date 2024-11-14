@@ -471,7 +471,7 @@ def home(request):
     # jname3 = request.GET.get("j3") if request.GET.get("j3") != None else ""
 
     racings = get_race(i_rdate, i_awardee="jockey")
-    race_board = get_board_list(i_rdate, i_awardee="jockey")
+    # race_board = get_board_list(i_rdate, i_awardee="jockey")
 
     # r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
     # r_results = RaceResult.objects.filter(
@@ -483,7 +483,8 @@ def home(request):
     #     Q(jockey6__icontains=q) |
     #     Q(jockey7__icontains=q)).order_by('rdate', 'rcity', 'rno')
 
-    race, expects, rdays = get_prediction(i_rdate)
+    race, expects, rdays, award_j = get_prediction(i_rdate)
+    # print(racings)
 
     # loadin = get_last2weeks_loadin(i_rdate)
 
@@ -522,13 +523,12 @@ def home(request):
         "fdate": fdate,
         # "loadin": loadin,
         # "race_detail": race_detail,
-        "race_board": race_board,
+        # "race_board": race_board,
         # "jname1": jname1,
         # "jname2": jname2,
         # "jname3": jname3,
-        # "award_j": award_j,
+        "award_j": award_j,
         "race": race,
-        "q": q,
         # "t_count": t_count,
         "rdays": rdays,
         # "judged_jockey": judged_jockey,
@@ -2090,7 +2090,7 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
         # )  # 기수, 조교사, 마주 연대현황 최근1년
 
     else:
-        trend_data, trend_title = get_trainer_trend(rcity, rdate, rno)
+        trend_data, trend_title = get_trainer_trend(rcity, rdate, rno, 0)
         # solidarity = get_solidarity(
         #     rcity, rdate, rno, "trainer", i_filter
         # )  # 기수, 조교사, 마주 연대현황 최근1년
