@@ -64,6 +64,7 @@ from base.mysqls import (
     get_train,
     get_train_audit,
     get_train_horse,
+    get_train_horse1,
     get_trainer_double_check,
     get_trainer_trend,
     get_training,
@@ -497,23 +498,23 @@ def home(request):
 
     # print(rflag)
 
-    # name = get_client_ip(request)
+    name = get_client_ip(request)
 
-    # if name[0:6] != "15.177":
-    #     update_visitor_count(name)
+    if name[0:6] != "15.177":
+        update_visitor_count(name)
 
-    #     # create a new Visitor instance
-    #     new_visitor = Visitor(
-    #         ip_address=name,
-    #         user_agent=request.META.get("HTTP_USER_AGENT"),
-    #         referer=request.META.get(
-    #             "HTTP_REFERER", "home"
-    #         ),  # referer 값이 없으면 기본값으로 "home" 설정
-    #         timestamp=timezone.now(),  # 현재 시간으로 설정
-    #     )
+        # create a new Visitor instance
+        new_visitor = Visitor(
+            ip_address=name,
+            user_agent=request.META.get("HTTP_USER_AGENT"),
+            referer=request.META.get(
+                "HTTP_REFERER", "home"
+            ),  # referer 값이 없으면 기본값으로 "home" 설정
+            timestamp=timezone.now(),  # 현재 시간으로 설정
+        )
 
-    #     # insert the new_visitor object into the database
-    #     new_visitor.save()
+        # insert the new_visitor object into the database
+        new_visitor.save()
 
     # t_count = visitor_count()
 
@@ -694,25 +695,25 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         # connection.rollback()
         print("Failed selecting in exp010 : 주별 경주현황")
 
-    # name = get_client_ip(request)
+    name = get_client_ip(request)
 
-    # if name[0:6] != "15.177":
-    #     update_visitor_count(name)
+    if name[0:6] != "15.177":
+        update_visitor_count(name)
 
-    #     # create a new Visitor instance
-    #     new_visitor = Visitor(
-    #         ip_address=name,
-    #         user_agent=request.META.get("HTTP_USER_AGENT"),
-    #         # referrer=request.META.get('HTTP_REFERER'),
-    #         # referer=rcity + " " + rdate + " " + str(rno) + " " + "racePrediction",
-    #         referer=request.META.get(
-    #             "HTTP_REFERER", rcity + " " + rdate + " " + str(rno) + " " + "racePrediction"
-    #         ),  # referer 값이 없으면 기본값으로 "home" 설정
-    #         # timestamp=timezone.now()
-    #     )
+        # create a new Visitor instance
+        new_visitor = Visitor(
+            ip_address=name,
+            user_agent=request.META.get("HTTP_USER_AGENT"),
+            # referrer=request.META.get('HTTP_REFERER'),
+            # referer=rcity + " " + rdate + " " + str(rno) + " " + "racePrediction",
+            referer=request.META.get(
+                "HTTP_REFERER", rcity + " " + rdate + " " + str(rno) + " " + "racePrediction"
+            ),  # referer 값이 없으면 기본값으로 "home" 설정
+            # timestamp=timezone.now()
+        )
 
-    #     # insert the new_visitor object into the database
-    #     new_visitor.save()
+        # insert the new_visitor object into the database
+        new_visitor.save()
 
     context = {
         "exp011s": exp011s,
@@ -2843,6 +2844,60 @@ def trainingAwardee(request, rdate, awardee, name):
     }
 
     return render(request, "base/training_awardee.html", context)
+
+# 출주마 이전 조교현황
+def trainingHorse(request, rcity, rdate, rno, hname):
+
+    hname = request.GET.get("hname") if request.GET.get("hname") != None else hname.strip()
+
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+    exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno, horse=hname).get()
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+            select gate, horse
+            from exp011 
+            where rcity = '"""
+            + rcity
+            + """'
+            and rdate = '"""
+            + rdate
+            + """' 
+            and rno = """
+            + str(rno)
+            + """
+            order by gate
+                ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        h_names = cursor.fetchall()
+
+        # connection.commit()
+        # connection.close()
+
+    except:
+        # connection.rollback()
+        print("Failed selecting in 게이트별 출주마")
+
+    train = get_train_horse1(rdate, hname)
+
+    # print(exp011s.rdate)
+    # print(hname in h_names)
+
+    context = {
+        "r_condition": r_condition,
+        "train": train,
+        "rdate": rdate,
+        "exp011s": exp011s,
+        "hname": hname,
+        "h_names": h_names,
+    }
+
+    return render(request, "base/training_horse.html", context)
 
 
 def awardStatusTrainer(request):

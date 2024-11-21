@@ -221,7 +221,7 @@
             </td>
 
 
-            {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex, jt_per, s1f_rank, i_cycle, rcount in expects %}  
+            {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex, jt_per, jt_cnt, s1f_rank, i_cycle, rcount in expects %}  
             {% if r_rcity == rcity and r_rdate == rdate and r_rno == rno %}
             
             <td align="center" style="font-family: Arial; color: var(--color-main);">
@@ -259,18 +259,19 @@
               <div style="padding: 0px 0px; font-size: 0.85rem;">
                 {% if i_cycle %}
                   {% if i_cycle <= 16 %} 
-                    <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r2);">
+                    <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r1); background-color:var(--color-light); padding:2px 4px; border-radius:7px;">
                       {{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.7rem;">w</sup>
                     </span>
                   {% elif i_cycle >= 68 %}
-                    <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r1);">{{i_cycle|div:7|floatformat:0}}<sup
-                        style="font-size: 0.7rem;">w</sup></span>
+                    <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r4); background-color:var(--color-light); padding:2px 4px; border-radius:7px;">
+                      {{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.7rem;">w</sup>
+                    </span>
                   {% else %}
-                    <span style="font-family: Arial; font-size:1.0rem; color:var(--color-gray);">{{i_cycle|div:7|floatformat:0}}<sup
+                    <span style="font-family: Arial; font-size:1.0rem; color:var(--color-light-gray);">{{i_cycle|div:7|floatformat:0}}<sup
                         style="font-size: 0.7rem;">w</sup></span>
                   {% endif %}
                 {% else %}
-                  <span style="font-family: Arial; font-size:0.7rem; color:var(--color-gray);">🐥</span>
+                  <span style="font-family: Arial; font-size:0.7rem; color:var(--color-light);">🐥</span>
                 {% endif %}
               </div>
 
@@ -295,7 +296,7 @@
                 {% elif s1f_rank > 0 and s1f_rank < 3 %}
                 <div style="font-size: 0.85rem; font-family: Arial; color:var(--color-r5); border-radius: 10px; background-color: bisque;">{{s1f_rank}}</div>
                 {% else %}
-                <div style="font-size: 0.85rem; font-family: Arial; color:var(--color-gray);">-</div>
+                <div style="font-size: 0.85rem; font-family: Arial; color:var(--color-light-gray);">-</div>
                 {% endif %}
               {% else %}
                 <div style="font-size: 0.85rem; font-family: Arial; color:var(--color-light-gray); ">&nbsp;</div>
@@ -318,46 +319,48 @@
               <div style="font-size: 0.9rem; font-family: Arial; color:var(--color-light-gray);">-</div>
               {% endif %}
 
-              <div style="padding-top:0.1rem; padding-bottom: 0.1rem;">
+              {# jt_per #}
+              <div>
+              {% if jt_cnt == 0 %}
+                <span style="font-size: 0.85rem; color:var(--color-r1);">🅾️</span>
+              {%else%}
 
-                  {% if jt_per %}
-                    {% if rcount|mul:1 > 12 and rank == 12 %}   {# 만약 12두 이상의 경주마가 출주했으면 줄임말 표시 #}
-                      <span class="blink tooltip" style=" font-size: 0.8rem; animation: blink-effect 1.0s step-end infinite;">m..
-                        <span class="tooltip-text">출주마가 더 있습니다.</span></span>
-                    {% else %}
-                      {% if jt_per == 100.0 %} 
-                      <span style="font-size: 0.85rem; color:var(--color-r1);">{{jt_per|floatformat:0}}</span> 
-                      {% elif jt_per >= 50 %} 
-                      <span style="font-size: 0.85rem; color:var(--color-r1);">{{jt_per|floatformat:1}}</span>
-                      {% elif jt_per >= 40 and jt_per < 50 %} 
-                      <span style="font-size: 0.85rem; color:var(--color-r2);">{{jt_per|floatformat:1}}</span>
-                      {% elif jt_per >= 30 and jt_per < 40 %} 
-                      <span style="font-size: 0.85rem; color:var(--color-r3);">{{jt_per|floatformat:1}}</span>
-                      {% elif jt_per >= 20 and jt_per < 30 %} 
-                      <span style="font-size: 0.85rem; color:var(--color-r4);">{{jt_per|floatformat:1}}</span>
-                      {% elif jt_per >= 10 and jt_per < 20 %} 
-                      <span style="font-size: 0.85rem; color:var(--color-r5);">{{jt_per|floatformat:1}}</span>
-                      {% elif jt_per >= 0 and jt_per < 10 %} 
-                      <span style="font-size: 0.85rem; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
-                      {% else %}
-                      <span style="font-size: 0.85rem; background-color:var(--color-r1);">{{jt_per|floatformat:1}}</span>
-                      {% endif %}
-                    {% endif %}
-                    
-                  {%else%}
-                    <span style="font-size: 0.85rem; color:var(--color-r1);">&nbsp;</span>
+                {% if rcount|mul:1 > 12 and rank == 12 %}   {# 만약 12두 이상의 경주마가 출주했으면 줄임말 표시 #}
+                  <span class="tooltip" style=" font-size: 0.8rem; animation: blink-effect 1.0s step-end infinite; z-index: 1;">m..
+                    <span class="tooltip-text" style="width:2rem; z-index: 1;">출주마가 더 있습니다.</span>
+                  </span>
+                {% else %}
+                  {% if jt_per == 100.0 %} 
+                  <span style="font-size: 0.85rem; color:var(--color-r1);">{{jt_per|floatformat:0}}</span> 
+                  {% elif jt_per >= 50 %} 
+                  <span style="font-size: 0.85rem; color:var(--color-r1);">{{jt_per|floatformat:1}}</span>
+                  {% elif jt_per >= 40 and jt_per < 50 %} 
+                  <span style="font-size: 0.85rem; color:var(--color-r2);">{{jt_per|floatformat:1}}</span>
+                  {% elif jt_per >= 30 and jt_per < 40 %} 
+                  <span style="font-size: 0.85rem; color:var(--color-r3);">{{jt_per|floatformat:1}}</span>
+                  {% elif jt_per >= 20 and jt_per < 30 %} 
+                  <span style="font-size: 0.85rem; color:var(--color-light-gray);">{{jt_per|floatformat:1}}</span>
+                  {% elif jt_per >= 10 and jt_per < 20 %} 
+                  <span style="font-size: 0.85rem; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
+                  {% elif jt_per > 0 and jt_per < 10 %} 
+                  <span style="font-size: 0.85rem; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
+                  {% else %}
+                  <span style="font-size: 0.85rem; color:var(--color-light); background-color: var(--color-r5); padding: 2px 4px; border-radius: 7px;">{{jt_cnt}}</span>
                   {% endif %}
+                {% endif %}
+                
+              {% endif %}
               </div>
 
               {# 부담중량 즘감 #}
               <div style="text-align: left;">
                 {% if handycap|sub:i_prehandy == 0 or handycap|sub:i_prehandy >= 10 %}
-                <div style="padding-top:0.1rem; font-size: 0.85rem; font-family: Arial; color:red; line-height:120%; text-align: center;">&nbsp;<br>-</div>
+                <div style="padding-top:0.1rem; font-size: 0.85rem; font-family: Arial; color:blue; line-height:120%; text-align: center;">&nbsp;<br>-</div>
                 {% else %}
                 {% if handycap|sub:i_prehandy > 0 %}
-                <div style="padding-top:0.1rem; font-size: 0.85rem; font-family: Arial; color:red; line-height:120%;">✚<br>{{handycap|sub:i_prehandy}}</div>
+                <div style="padding-top:0.1rem; font-size: 0.85rem; font-family: Arial; color:blue; line-height:120%;">✚<br>{{handycap|sub:i_prehandy}}</div>
                 {% else %}
-                <div style="padding-top:0.1rem; font-size: 0.85rem; font-family: Arial; color:blue; line-height:120%;">⊖<br>{{handycap|sub:i_prehandy|mul:-1}}</div>
+                <div style="padding-top:0.1rem; font-size: 0.85rem; font-family: Arial; color:red; line-height:120%;">⊖<br>{{handycap|sub:i_prehandy|mul:-1}}</div>
                 {% endif %}
                 {% endif %}
               </div>

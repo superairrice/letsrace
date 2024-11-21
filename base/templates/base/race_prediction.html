@@ -589,8 +589,8 @@
                 {# 기수 조교사 연대 출주 복승 회수 #}
                 <div style="font-size: 1.05rem; color:gray;">
                   {% if r.jt_cnt == 0 %}
-                  <span class="tooltip" style="font-family: Arial; color:var(--color-r1); border:1px solid orange; border-radius: 5px; padding: 0px 4px;">🅾️
-                    <span class="tooltip-text" style="z-index: 9; font-size: 1.1rem; border:1px solid orange;">🅾️&nbsp;최근 1년간 기수 & 조교사 경주&nbsp;🚫</span>
+                  <span class="tooltip" style="font-family: Arial; color:var(--color-r1); text-align: center;">🅾️
+                    <span class="tooltip-text" style="z-index: 9; font-size: 1.1rem;">🅾️&nbsp;최근 1년간 기수 & 조교사 경주&nbsp;🚫</span>
                   </span>
                   <span>&nbsp;&nbsp;&nbsp;</span>
                   {% else %}
@@ -892,7 +892,7 @@
             </td>
 
             {# 최근7경주 #}
-            <td align="center" style="font-family: Arial; font-size: 1.3rem;">
+            <td align="center" style="font-family: Arial;">
               
               {% if r.remark|slice:"0:1" == '1' and r.remark|slice:"1:2" == '-' %}
               <div style="font-size: 1.0rem; color:var(--color-r1);">{{r.remark|slice:"0:9"}}<br>{{r.remark|slice:"9:"}}</div>
@@ -1006,7 +1006,7 @@
     <!-- activities Start -->
     <div>
 
-      <div class="room__top" style="border-radius: 7px;">
+      <div class="room__top" style="border-radius: 5px;">
         
         <div class="room__topLeft">
 
@@ -1014,14 +1014,14 @@
           
             <!-- Logged In -->
             {% if request.user.is_authenticated %}
-            <div class="header__user">
+            <div class="header__logo">
               <a href="{% url 'update-user' %}">
                 <div class="avatar avatar--small active">
                   <img src="{% static request.user.avatar.url %}" />
                 </div>
-                <p style="font-size: 1.35rem;">{% if request.user.name %}{{request.user.name}}{% else %} 필명등록 {%endif%}
-                  <span style="font-size: xx-small;">@{{request.user.last_login}}</span>
-                </p>
+                <span style="font-size: 1.3rem;">{% if request.user.name %}{{request.user.name}}{% else %} 필명등록 {%endif%}
+                  <span style="font-size: 0.7rem;">@{{request.user.last_login}}</span>
+                </span>
               </a>
               
             </div>
@@ -1055,18 +1055,21 @@
       <a class="btn btn--main btn--pill" style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-bg); border-color: var(--color-dark-medium);" href="{% url 'race_related' r_condition.rcity r_condition.rdate r_condition.rno %}" onclick="window.open(this.href, 'w_related', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">기수 & 마방 & 마주</a>
       <hr style="border: solid 1px black;">
 
-      <table class="fold-table"  style="border-radius: 7px; table-layout: fixed">
+      <table class="fold-table" style="border-radius: 7px;">
         <thead>
         
           <tr>
-            <th rowspan="2"><span class="visible-big" style="padding: 0.1rem;">&nbsp;<br>마번<br>&nbsp;</span></th>
-            <th width="39%" rowspan="1"><span class="visible-big">부마</span></th>
-            <th width="45%" colspan="3"><span class="visible-big">연승률 & 총전적</span></th>
+            <th rowspan="2" style="vertical-align: middle; padding-bottom: 22.0px; padding-top: 22.0px;"><span>마번</span></th>
+            <th width="39%" rowspan="1"><span>부마</span></th>
+            <th width="45%" colspan="3"><span>연승률 & 총전적</span></th>
           </tr>
         
           <tr>
-            <th width="28%"><span class="visible-big">최근 거래가(천원)</span></th>
-            <th colspan="3"><span class="visible-big" style="color:var(--color-r5);">{{r_condition.distance}}ᴹ 연승률</span></th>
+            <th><span>최근 거래가(천원)</span></th>
+            <th colspan="3">
+              <span style="color:var(--color-r3);">{{r_condition.distance}}ᴹ</span>
+              <span style="color:var(--color-light-gray);">연승률</span>
+            </th>
           </tr>
         
         </thead>
@@ -1114,7 +1117,7 @@
               {%endif%}
               </div>
 
-              <div style="font-family: Arial; font-size:1.214rem; text-align: right;">
+              <div style="font-family: Arial; font-size:1.2rem; text-align: right;">
                 {% if price != price_old %}
                 {% if price >= 50000 %}
                 <span style="text-align: right; font-family: Arial; font-size:1.1rem; color:var(--color-r1)">{{price|floatformat:0|intcomma}}&nbsp;</span>

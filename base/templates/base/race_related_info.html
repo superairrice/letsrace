@@ -62,15 +62,15 @@
 
         <hr style="border: solid 1px black;"> 
 
-        <ul class="tabs" style="font-size: 1.4rem;">
-          <li class="tab-link current" data-tab="tab-1" style="padding: 4px 25px; border-radius: 4px;">조교현황</li>
-          <li class="tab-link" data-tab="tab-2" style="padding: 4px 25px; border-radius: 4px;">마필병력 & 재결</li>
-          <li class="tab-link" data-tab="tab-3" style="padding: 4px 25px; border-radius: 4px;">기수</li>
-          <li class="tab-link" data-tab="tab-4" style="padding: 4px 25px; border-radius: 4px;">마방</li>
-          <li class="tab-link" data-tab="tab-5" style="padding: 4px 25px; border-radius: 4px;">마주</li>
+        <ul class="tabs" style="font-size: 1.35rem;">
+          <li class="tab-link current" data-tab="tab-1" style="padding: 3px 25px; border-radius: 4px;">조교현황</li>
+          <li class="tab-link" data-tab="tab-2" style="padding: 3px 25px; border-radius: 4px;">마필병력 & 재결</li>
+          <li class="tab-link" data-tab="tab-3" style="padding: 3px 25px; border-radius: 4px;">기수</li>
+          <li class="tab-link" data-tab="tab-4" style="padding: 3px 25px; border-radius: 4px;">마방</li>
+          <li class="tab-link" data-tab="tab-5" style="padding: 3px 25px; border-radius: 4px;">마주</li>
         </ul>
 
-        <div id="tab-1" class="tab-content current">
+        <div id="tab-1" class="tab-content current" >
           <table class="fold-table" style="border-radius: 7px;">
             <thead>
           
@@ -87,6 +87,7 @@
                     onclick="window.open(this.href, 'w_status_stable', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">
                     <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">🐴&nbsp;Horse
                       <span class="tooltip-text">마방 경주마 보유현황 🔑</span>
+                    </span>
                   </a>
                 </th>
                 <th rowspan="2" style="vertical-align: middle;"><span>⚖️</span></th>
@@ -231,7 +232,7 @@
                 </td>
 
                 {# 경주마 이름 출주주기, 산지 성별 나이 #}
-                <td style="border-right: 0.2px solid var(--color-dark);">
+                <td>
                   <div style="font-size: 1.3rem;">
 
                     <span class="tooltip">
@@ -242,6 +243,7 @@
                       </span>
                     </span>&nbsp;
                     
+                    <a style="text-decoration: underline;" href="{% url 'training_horse' rcity rdate rno horse %}" onclick="window.open(this.href, 'w_training_horse', 'top=0 width=1000, height=800, left=window.screen.availWidth - 1000 toolbars=no, scrollbars=yes'); return false;">
                     {% if r_rank == 99 %}
                       <span style="font-style: italic; text-decoration:line-through; color:gray;">{{horse|slice:"0:6"|rjust:"6"}}</span>
                     {% else %}
@@ -260,10 +262,11 @@
                         <span style="font-style: italic; color:var(--color-r5);">{{horse|slice:"0:6"|rjust:"6"}}</span>
                           
                         {% else %}
-                          <span style="font-style: normal;">{{horse|slice:"0:6"|rjust:"6"}}</span>
+                          <span style="font-style: normal; color:var(--color-light-gray);">{{horse|slice:"0:6"|rjust:"6"}}</span>
                         {% endif %}
                       {%endif%}
                     {% endif %}
+                    </a>
                 
                     
                   </div>
@@ -361,7 +364,10 @@
                 </td>
                 {# 기수 / 조교사 #}
                 <td align="center">
+                  
                   <div style="font-size: 1.2rem; text-align: left; ">
+                  <a style="text-decoration: underline;" href="{% url 'training_awardee' rdate 'jockey' jockey %}" onclick="window.open(this.href, 'w_training_awardee', 'width=1120, height=800, toolbars=no, scrollbars=yes'); return false;">
+
                     <span style="color:var(--color-r2); font-size:0.9rem">
                     </span>
                     {% if jockey_old %}   {# 기수변경 #}
@@ -373,20 +379,22 @@
                       </span>
                       
                     {% else %}
-                      <span class="tooltip" style="color:var(--color-light-gray);">{{jockey}}
+                      <span style="color:var(--color-light-gray);">{{jockey}}
 
                       </span>
                     {%endif %}
-                    
+                  </a>
                   </div>
                   {% if trainer in trainer_double_check %}
-                  <div style="font-size: 1.2rem; text-align: right; color:var(--color-r3)"> 
+                  <div style="font-size: 1.2rem; text-align: right;"> 
                     {% for jname, cnt in training_cnt %}
                       {% if jockey == jname %}
                       <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-r1); border-radius: 7px; background-color: var(--color-bg); padding:2px 4px;">{{cnt}}</span>
                       {% endif %}
                     {% endfor %}
-                    {{trainer}}
+                    <a style="text-decoration: underline; color:var(--color-r3);" href="{% url 'training_awardee' rdate 'trainer' trainer %}" onclick="window.open(this.href, 'w_training_awardee', 'width=1120, height=800, toolbars=no, scrollbars=yes'); return false;">
+                      {{trainer}}
+                    </a>
                   </div>
                   {% else %}
                   <div style="color: var(--color-gray); font-size: 1.2rem; text-align: right;">
@@ -395,7 +403,9 @@
                       <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-r1); border-radius: 7px; background-color: var(--color-bg); padding:2px 4px;">{{cnt}}</span>
                       {% endif %}
                     {% endfor %}  
-                    {{trainer}}
+                    <a style="text-decoration: underline; color:var(--color-gray);" href="{% url 'training_awardee' rdate 'trainer' trainer %}" onclick="window.open(this.href, 'w_training_awardee', 'width=1120, height=800, toolbars=no, scrollbars=yes'); return false;">
+                      {{trainer}}
+                    </a>
                   </div>
                   {% endif %}
                 </td>
@@ -845,12 +855,8 @@
                 </td>
                 
               </tr>
-              <tr class="fold">
-                <td colspan="18">
-                  {% include 'base/m_trainning.html' %}
-                  
-                </td>
-              </tr>
+
+              <tr class="fold"></tr>
               {%endif%}
               {% endfor %}      
           
@@ -1356,25 +1362,25 @@
                           </td>
                           
                           <td align="center">
-                            <div style="font-size:1.1rem;">{{t_time}}</div>
+                            <div style="font-family: Arial; font-size:1.1rem;">{{t_time}}</div>
                           </td>
                           <td align="center">
                             {% if canter > '0' %}
-                            <div style="font-size:1.1rem; color:var(--color-r5);">{{canter}}</div>
+                            <div style="font-family: Arial; font-size:1.1rem; color:var(--color-r5);">{{canter}}</div>
                             {% else %}
-                            <div style="font-size:0.7rem; color:var(--color-gray);">{{canter}}</div>
+                            <div style="font-family: Arial; font-size:0.7rem; color:var(--color-gray);">{{canter}}</div>
                             {% endif %}
                           </td>
                           <td align="center">
                             {% if strong > '0' %}
-                            <span style="font-size:1.1rem; color:var(--color-light); background-color: var(--color-r1); padding: 1px 5px; border-radius: 7px;">{{strong}}</span>
+                            <span style="font-family: Arial, Helvetica, sans-serif; font-size:1.1rem; color:var(--color-light); background-color: var(--color-r1); padding: 2px 4px; border-radius: 7px;">{{strong}}</span>
                             {% else %}
-                            <span style="font-size:0.7rem; color:var(--color-gray);">{{strong}}</span>
+                            <span style="font-family: Arial, Helvetica, sans-serif; font-size:0.7rem; color:var(--color-gray);">{{strong}}</span>
                             {% endif %}
                           </td>
                           
                           <td align="center">
-                            <div style="font-size:1.1rem; color: var(--color-r1);">{{laps}}</div>
+                            <div style="font-family: Arial; font-size:1.1rem; color: var(--color-r1);">{{laps}}</div>
                           </td>
                           <td align="center">
                             {% if audit == '발주' %}

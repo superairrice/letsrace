@@ -65,7 +65,7 @@
   <td>
     <div style="font-size: 1.7rem; padding-bottom: 0.7rem;">
       <!-- <a href="{% url 'prediction_race' r_rcity r_rdate r_rno 0 'awardee' %}"> -->
-      <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}">
+      <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=1400, height=1000, toolbars=no, scrollbars=yes'); return false;">
         {% if r_rcity == '서울' %}
         <div style="font-size: 0.9rem; ">{{r_rcity}}</div>
         {% else %}
@@ -138,7 +138,7 @@
 
     <div align="center" style="font-size: 1.0rem;">
       {% if request.user.username == 'admin' %}
-      <a href="{% url 'update_changed_race' r_rcity r_rdate r_rno %}" onclick="window.open(this.href, '_blank', 'width=900, height=800, toolbars=no, scrollbars=yes'); return false;">
+      <a href="{% url 'update_changed_race' r_rcity r_rdate r_rno %}" onclick="window.open(this.href, 'w_update_changed_race', 'width=900, height=800, toolbars=no, scrollbars=yes'); return false;">
         <span class="tooltip" style="font-size: x-small; font-weight: 400; padding-top:0.9rem">🔏
           <span class="tooltip-text" style="text-align: center; width: 150px; z-index: 1;">인기도 & 경주결과(순위) 입력</span>
         </span>
@@ -157,8 +157,8 @@
   {% if r_rcity == rcity and r_rdate == rdate and r_rno == rno %}
 
   <td align="center" style="font-family: Arial; color: var(--color-main);">
-    <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}">
-
+    <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}"
+                onclick="window.open(this.href, 'w_race_prediction', 'width=1400, height=1000, toolbars=no, scrollbars=yes'); return false;">
       {# 마번 #}
       <div align="center" style="font-style: italic; font-size: 1.5rem; background-color:var(--color-bg); border-radius: 15px;">
         {% if r_rank %}
@@ -275,15 +275,15 @@
 
   <td align="center" style="border-right: 1px solid gray;">
 
-    <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}">
+    <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=1400, height=1000, toolbars=no, scrollbars=yes'); return false;">
 
       {# 인기도 #}
       <div style="font-style: italic; font-size: 1.0rem;">
         {% if r_pop >= 90 %}
-        <span style="font-family: Arial; color:var(--color-r1); border-radius: 7px; background-color:var(--color-light); padding: 2px 2px;">{{r_pop}}</span>
-        {% elif r_pop >= 60 and r_pop < 90 %} <span style="font-family: Arial; color:var(--color-bg); border-radius: 7px; background-color:var(--color-main); padding: 2px 2px;">{{r_pop}}</span>
+        <span style="font-family: Arial; color:var(--color-light); border-radius: 7px; background-color:var(--color-r1); padding: 2px 2px;">{{r_pop}}</span>
+        {% elif r_pop >= 50 and r_pop < 90 %} <span style="font-family: Arial; color:var(--color-bg); border-radius: 7px; background-color:var(--color-r3); padding: 2px 2px;">{{r_pop}}</span>
         
-        {% elif r_pop >= 20 and r_pop < 60 %} <span style="font-family: Arial; color:var(--color-light-gray);">{{r_pop}}</span>
+        {% elif r_pop >= 20 and r_pop < 50 %} <span style="font-family: Arial; color:var(--color-r3);">{{r_pop}}</span>
         {% elif r_pop >= 1 and r_pop < 20 %} <span style="font-family: Arial; color:var(--color-gray);">{{r_pop}}</span>
         {% else %}
         <span style=" font-family: Arial; color:var(--color-gray);">&nbsp;</span>
@@ -291,9 +291,9 @@
       </div>
 
       {# jt_per #}
-      <div>
+      <div style="font-family: Arial;">
       {% if jt_cnt == 0 %}
-        <span style="font-size: 0.85rem; color:var(--color-r1);">🆕</span>
+        <span style="font-size: 0.85rem; color:var(--color-r1);">🅾️</span>
       {%else%}
 
         {% if rcount|mul:1 > 12 and rank == 12 %}   {# 만약 12두 이상의 경주마가 출주했으면 줄임말 표시 #}
@@ -310,13 +310,13 @@
           {% elif jt_per >= 30 and jt_per < 40 %} 
           <span style="font-size: 0.85rem; color:var(--color-r3);">{{jt_per|floatformat:1}}</span>
           {% elif jt_per >= 20 and jt_per < 30 %} 
-          <span style="font-size: 0.85rem; color:var(--color-r4);">{{jt_per|floatformat:1}}</span>
+          <span style="font-size: 0.85rem; color:var(--color-light-gray);">{{jt_per|floatformat:1}}</span>
           {% elif jt_per >= 10 and jt_per < 20 %} 
-          <span style="font-size: 0.85rem; color:var(--color-r5);">{{jt_per|floatformat:1}}</span>
+          <span style="font-size: 0.85rem; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
           {% elif jt_per > 0 and jt_per < 10 %} 
-          <span style="font-size: 0.85rem; color:var(--color-r5);">{{jt_per|floatformat:1}}</span>
+          <span style="font-size: 0.85rem; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
           {% else %}
-          <span style="font-size: 0.85rem; color:var(--color-light); background-color: var(--color-r1); padding: 2px 4px; border-radius: 7px;">{{jt_cnt}}</span>
+          <span style="font-family: Arial; font-size: 0.85rem; color:var(--color-bg); background-color: var(--color-r5); padding: 2px 4px; border-radius: 7px;">{{jt_cnt}}</span>
           {% endif %}
         {% endif %}
         

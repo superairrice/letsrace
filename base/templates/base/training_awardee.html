@@ -45,14 +45,22 @@
         <thead>
       
           <tr>
-            <th rowspan="1"><span style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-bg); color:var(--color-r3); padding: 4px 6px;">🏇&nbsp;{{name}}</span></th>
+            <th rowspan="1" style="border-radius: 7px; background-color: var(--color-bg); color:var(--color-r3); vertical-align: middle;">
+              {% if awardee == 'jockey' %}
+                <span style="font-weight: 550;">🏇</span>
+              {% else %}
+                <span style="font-weight: 550;">🛖</span>
+              {% endif %}
+              <span>&nbsp;{{name}}</span>
+            </th>
             <th rowspan="1"><span>예상</span></th>
             <th rowspan="1"><span>마번</span></th>
             <th colspan="1">
-                <span style="font-size: 1.2rem; font-weight: 400;">🐴&nbsp;Horse</span>
+                <span style="font-size: 1.2rem; font-weight: 400;">🐴&nbsp;Horse
+                </span>
             </th>
-            <th rowspan="2" style="vertical-align: middle;"><span>체중<br>증감</span></th>
-            <th rowspan="2" style="vertical-align: middle;"><span>부담<br>중량</span></th>
+            <th rowspan="2" style="vertical-align: middle;"><span>⚖️</span></th>
+            <th rowspan="2" style="vertical-align: middle;"><span>🚛</span></th>
             <th rowspan="2" style="vertical-align: middle;">
               {% if awardee == 'jockey' %}
                 <span style="font-size: 1.4rem; font-weight: 550;">🛖</span>
@@ -107,8 +115,8 @@
 
             {# 경주번호 / 경주정보 #}
             <td align="right" >
-              <a href="{% url 'race_result' rcity rdate rno horse 0 0 0 %}"
-                onclick="window.open(this.href, 'w_result', 'width=1000, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
+              <a href="{% url 'race_prediction' rcity rdate rno horse 0 %}"
+                onclick="window.open(this.href, 'w_prediction', 'width=1400, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
                               
                 {# 경주정보 #}
                 <!-- <div style="text-align: right;"> -->
@@ -394,7 +402,7 @@
                     </span>
                     
                   {% else %}
-                    <span class="tooltip" style="color:var(--color-light-gray);">{{jockey}}</span>
+                    <span>{{jockey}}</span>
                   {% endif %}
                 </a>
                   
@@ -404,7 +412,7 @@
               <div style="font-size: 1.2rem; color:var(--color-light-gray); text-align: left;"> 
                 <a href="{% url 'training_awardee' rdate 'trainer' trainer %}" onclick="window.open(this.href, 'w_training_awardee', 'width=1100, height=800, toolbars=no, scrollbars=yes'); return false;">
                   {% if awardee == 'jockey' %}
-                  <span style="font-size: 1.2rem; color:var(--color-light-gray)">{{trainer}}</span>
+                  <span style="font-size: 1.2rem;">{{trainer}}</span>
                   {% endif %}
                 </a>
               </div>
@@ -412,7 +420,7 @@
 
               {% if jockey_old %}
                 {# 기수가 변경되었으면 기존 기수의 기록을 삭제 #}
-                <div style="font-size: 1.2rem; text-align: right;">
+                <div style="font-size: 1.1rem; text-align: right; background-color: var(--color-bg); border-radius: 7px; font-style: italic;">
                   {% if jt_per == 100.0 %} 
                   <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); text-decoration: line-through;">{{jt_per|floatformat:0}}</span> 
                   {% elif jt_per >= 50 %} 
@@ -428,11 +436,11 @@
                   {% else %}
                   <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-gray); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
                   {% endif %}
-                  <sup style="color:var(--color-gray); font-size:1.0rem; text-decoration:line-through;">%</sup>
+                  <sup style="color:var(--color-gray); font-size:0.7rem; text-decoration:line-through;">%</sup>
                 </div>
                 
               {% else %}
-                <div style="font-size: 1.2rem; text-align: right;">
+                <div style="font-size: 1.1rem; text-align: right; background-color: var(--color-bg); border-radius: 7px; font-style: italic;">
                   {% if jt_per == 100.0 %} 
                     <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1);">{{jt_per|floatformat:0}}</span> 
                     {% elif jt_per >= 50 %} 
@@ -448,7 +456,7 @@
                     {% else %}
                     <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
                     {% endif %}
-                  <sup style="color:var(--color-gray); font-size:1.0rem;">%</sup>
+                  <sup style="color:var(--color-gray); font-size:0.7rem;">%</sup>
                 </div>
               {% endif %}
             
