@@ -136,7 +136,7 @@
             <th rowspan="1" style="width:6rem;"><span class="visible-big">
 
               <a href="{% url 'race_prediction' r_condition.rcity r_condition.rdate r_condition.rno 0 'awardee' %}"
-                onclick="window.open(this.href, 'w_race_prediction', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                onclick="window.open(this.href, 'w_race_prediction', 'width=1370, height=1000, toolbars=no, scrollbars=yes'); return false;">
                 <span class="visible-big tooltip" style="text-transform:lowercase; font-style: italic; font-size:1.1rem; background-color: var(--color-bg); padding:1px 4px; border-radius: 7px;">thethe9
                   <span class="tooltip-text">thethe9.com 프로그램 예상</span>
                 </span>
@@ -414,12 +414,20 @@
                     {% endfor %}
                   </span>
                 </span>
+
+                {% for hname, max_date, cnt in disease %}
+                  {% if r.horse == hname %}
+                  <span class="tooltip" style="font-weight: 350; font-family: Arial; font-size: 1.0rem; color:var(--color-r5); border-radius: 10px; background-color: var(--color-bg); padding:2px 4px;">{{cnt}}
+                    <span class="tooltip-text" style="font-family: Arial, Helvetica, sans-serif; font-size: 1.15rem;">🏥&nbsp;&nbsp;{{max_date|slice:"0:4"}}.{{max_date|slice:"4:6"}}.{{max_date|slice:"6:8"}}</span>
+                  </span>
+                  {% endif %}
+                {% endfor %}  
               </div>
               {%else%}
 
                 {% if r.horse in judged %}
                   <div style="text-align:left; font-size: 1.2rem; font-style: italic;">
-                    <span class="tooltip" style="color: var(--color-r5);">{{r.jockey}}
+                    <span class="tooltip" style="color: var(--color-r5);">{{r.jockey|slice:"0:3"}}
                       <span class="tooltip-text" style="z-index: 9;">
                         {% for rank, gate, horse, horse, jname, trainer, t_sort, t_type, t_detail, t_reason in judged_list %}
                         {% if jname == r.jockey %}
@@ -430,14 +438,30 @@
                         {% endfor %}
                       </span>
                     </span>
+                    {% for hname, max_date, cnt in disease %}
+                      {% if r.horse == hname %}
+                      <span class="tooltip" style="font-weight: 350; font-family: Arial; font-size: 1.0rem; color:var(--color-r5); border-radius: 10px; background-color: var(--color-bg); padding:2px 4px;">{{cnt}}
+                        <span class="tooltip-text" style="font-family: Arial, Helvetica, sans-serif; font-size: 1.15rem;">🏥&nbsp;&nbsp;{{max_date|slice:"0:4"}}.{{max_date|slice:"4:6"}}.{{max_date|slice:"6:8"}}</span>
+                      </span>
+                      {% endif %}
+                    {% endfor %}  
                   </div>
                 {% else %}
                   <div style="text-align:left; font-size: 1.2rem;">
-                  {{r.jockey}}
+                  {{r.jockey|slice:"0:3"}}
+                  {% for hname, max_date, cnt in disease %}
+                    {% if r.horse == hname %}
+                    <span class="tooltip" style="font-weight: 350; font-family: Arial; font-size: 1.0rem; color:var(--color-r5); border-radius: 10px; background-color: var(--color-bg); padding:2px 4px;">{{cnt}}
+                      <span class="tooltip-text" style="font-family: Arial, Helvetica, sans-serif; font-size: 1.15rem;">🏥&nbsp;&nbsp;{{max_date|slice:"0:4"}}.{{max_date|slice:"4:6"}}.{{max_date|slice:"6:8"}}</span>
+                    </span>
+                    {% endif %}
+                  {% endfor %}  
                   </div>
                 {%endif%}
-
+                
               {%endif%}
+
+              
 
 
               {% if r.trainer in trainer_double_check %}
@@ -562,10 +586,9 @@
                 {# 기수 조교사 연대 출주 복승 회수 #}
                 <div style="font-size: 1.05rem; color:gray;">
                   {% if r.jt_cnt == 0 %}
-                  <span class="tooltip" style="font-family: Arial; color:var(--color-r1); border:1px solid orange; border-radius: 5px; padding: 0px 4px;">🅾️
-                    <span class="tooltip-text" style="z-index: 9; font-size: 1.1rem; border:1px solid orange;">🅾️&nbsp;최근 1년간 기수 & 조교사 경주&nbsp;🚫</span>
+                  <span class="tooltip" style="font-family: Arial; color:var(--color-r1); text-align: center;">🅾️
+                    <span class="tooltip-text" style="z-index: 9; font-size: 1.1rem;">🅾️&nbsp;최근 1년간 기수 & 조교사 경주&nbsp;🚫</span>
                   </span>
-                  <span>&nbsp;&nbsp;&nbsp;</span>
                   {% else %}
                     {% if r.jt_per == 0.0 %}
                     <span class="tooltip" style="font-family: Arial; color:var(--color-r5); border:1px solid orange; border-radius: 5px; padding: 0px 4px;">{{r.jt_cnt}}
@@ -948,7 +971,7 @@
       <br>
       <div class="form__group">
         <label for="room_description">심판위원 Report</label>
-        <textarea name="description" cols="400" rows="100" id="id_description" style="height: 20rem; font-size: 1.35rem; color:var(--color-light-gray); letter-spacing:0.5px; line-height:20px; font-weight: 350;">{{judged}}</textarea>
+        <textarea name="description" cols="400" rows="100" id="id_description" style="font-family:sans-serif; height: 20rem; font-size: 1.35rem; color:var(--color-light-gray); line-height:20px; font-weight: 350;">{{judged}}</textarea>
       </div>
       
 

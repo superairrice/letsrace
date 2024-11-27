@@ -32,6 +32,7 @@ from base.mysqls import (
     get_axis_rank,
     get_board_list,
     get_cycle_winning_rate,
+    get_disease,
     get_expects,
     get_jockey_trend,
     get_judged,
@@ -466,23 +467,8 @@ def home(request):
 
     # topics = Topic.objects.exclude(name__icontains=q)
 
-    # print(topics)
-    # jname1 = request.GET.get("j1") if request.GET.get("j1") != None else ""
-    # jname2 = request.GET.get("j2") if request.GET.get("j2") != None else ""
-    # jname3 = request.GET.get("j3") if request.GET.get("j3") != None else ""
-
     racings = get_race(i_rdate, i_awardee="jockey")
     # race_board = get_board_list(i_rdate, i_awardee="jockey")
-
-    # r_results = RaceResult.objects.all().order_by('rdate', 'rcity', 'rno')
-    # r_results = RaceResult.objects.filter(
-    #     Q(jockey1__icontains=q) |
-    #     Q(jockey2__icontains=q) |
-    #     Q(jockey3__icontains=q) |
-    #     Q(jockey4__icontains=q) |
-    #     Q(jockey5__icontains=q) |
-    #     Q(jockey6__icontains=q) |
-    #     Q(jockey7__icontains=q)).order_by('rdate', 'rcity', 'rno')
 
     race, expects, rdays, award_j = get_prediction(i_rdate)
     # print(racings)
@@ -496,27 +482,7 @@ def home(request):
             rflag = True
             break
 
-    # print(rflag)
-
-    name = get_client_ip(request)
-
-    if name[0:6] != "15.177":
-        update_visitor_count(name)
-
-        # create a new Visitor instance
-        new_visitor = Visitor(
-            ip_address=name,
-            user_agent=request.META.get("HTTP_USER_AGENT"),
-            referer=request.META.get(
-                "HTTP_REFERER", "home"
-            ),  # referer 값이 없으면 기본값으로 "home" 설정
-            timestamp=timezone.now(),  # 현재 시간으로 설정
-        )
-
-        # insert the new_visitor object into the database
-        new_visitor.save()
-
-    # t_count = visitor_count()
+    t_count = check_visit(request)
 
     context = {
         "racings": racings,
@@ -630,6 +596,7 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
     paternal_dist = get_paternal_dist(rcity, rdate, rno)  # 부마 거리별 3착 성적
 
     loadin = get_loadin(rcity, rdate, rno)
+    disease = get_disease(rcity, rdate, rno)
 
     trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
 
@@ -695,30 +662,13 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         # connection.rollback()
         print("Failed selecting in exp010 : 주별 경주현황")
 
-    name = get_client_ip(request)
-
-    if name[0:6] != "15.177":
-        update_visitor_count(name)
-
-        # create a new Visitor instance
-        new_visitor = Visitor(
-            ip_address=name,
-            user_agent=request.META.get("HTTP_USER_AGENT"),
-            # referrer=request.META.get('HTTP_REFERER'),
-            # referer=rcity + " " + rdate + " " + str(rno) + " " + "racePrediction",
-            referer=request.META.get(
-                "HTTP_REFERER", rcity + " " + rdate + " " + str(rno) + " " + "racePrediction"
-            ),  # referer 값이 없으면 기본값으로 "home" 설정
-            # timestamp=timezone.now()
-        )
-
-        # insert the new_visitor object into the database
-        new_visitor.save()
+    t_count = check_visit(request)
 
     context = {
         "exp011s": exp011s,
         "r_condition": r_condition,
         "loadin": loadin,  # 기수 기승가능 부딤중량
+        "disease": disease,  # 기수 기승가능 부딤중량
         "hr_records": hr_records,
         "compare_r": compare_r,
         "alloc": alloc,
@@ -826,6 +776,7 @@ def raceRelatedInfo(request, rcity, rdate, rno):
     award_j, award_t, award_h, race_detail = get_race_related(rcity, rdate, rno)
 
     loadin = get_loadin(rcity, rdate, rno)
+    disease = get_disease(rcity, rdate, rno)
 
     context = {
         "r_condition": r_condition,  # 기수 기승가능 부딤중량
@@ -842,6 +793,7 @@ def raceRelatedInfo(request, rcity, rdate, rno):
         "award_h": award_h,
         "race_detail": race_detail,
         "loadin": loadin,  # 기수 기승가능 부딤중량
+        "disease": disease,  # 기수 기승가능 부딤중량
     }
 
     return render(request, "base/race_related_info.html", context)
@@ -1664,6 +1616,8 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
     trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
 
+    disease = get_disease(rcity, rdate, rno)
+
     # print(len(judged))
     if len(judged) > 0:
         judged = judged[0][0]
@@ -1699,6 +1653,8 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
         # connection.rollback()
         print("Failed selecting in exp010 : 주별 경주현황")
 
+    check_visit(request)
+
     context = {
         "records": records,
         "r_condition": r_condition,
@@ -1713,6 +1669,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
         "track": track,
         "trainer_double_check": str(trainer_double_check),
         "training_cnt": training_cnt,
+        "disease": disease,
     }
 
     return render(request, "base/race_result.html", context)
@@ -2337,6 +2294,8 @@ def jtAnalysis(
         print("Failed selecting in 기승가능중량")
 
     # print(status)
+    
+    check_visit(request)
 
     context = {
         "status": status,
@@ -2344,6 +2303,7 @@ def jtAnalysis(
         "rcity": rcity,
         "fdate": fdate,
         "tdate": tdate,
+        "today": tdate[0:4] + tdate[5:7] + tdate[8:10],
         "jockey": jockey,
         "trainer": trainer,
         "host": host,
@@ -2510,6 +2470,7 @@ def jtAnalysisJockey(
         print("Failed selecting in 기승가능중량")
 
     # print(jockeys)
+    check_visit(request)
 
     context = {
         "status": status,
@@ -2517,6 +2478,7 @@ def jtAnalysisJockey(
         "rcity": rcity,
         "fdate": fdate,
         "tdate": tdate,
+        "today": tdate[0:4] + tdate[5:7] + tdate[8:10],
         "jockey": jockey,
         "trainer": trainer,
         "host": host,
@@ -2693,16 +2655,13 @@ def jtAnalysisMulti(
     t_string=""
     h_string=""
     for i, j in enumerate(jockeys):
-      # print(i, j[1], j[2], j[3])
-      j_string = j_string + j[1]
-      t_string = t_string + j[2]
-      h_string = h_string + j[3]
-      
-      
-    # print(j_string)
-    # print(t_string)
-    # print(h_string)
+        # print(i, j[1], j[2], j[3])
+        j_string = j_string + j[1]
+        t_string = t_string + j[2]
+        h_string = h_string + j[3]
 
+    check_visit(request)
+    
     context = {
         "status": status,
         "loadin": loadin,
@@ -2942,22 +2901,8 @@ def awardStatusTrainer(request):
     )
     loadin = get_last2weeks_loadin(friday)
 
-    # name = get_client_ip(request)
-    # if name[0:6] != "15.177":
-    #     update_visitor_count(name)
-
-    #     # create a new Visitor instance
-    #     new_visitor = Visitor(
-    #         ip_address=name,
-    #         user_agent=request.META.get("HTTP_USER_AGENT"),
-    #         # referrer=request.META.get('HTTP_REFERER'),
-    #         referer=fdate + " " + "마방 상금수득 현황",
-    #         # timestamp=timezone.now()
-    #     )
-
-    #     # insert the new_visitor object into the database
-    #     new_visitor.save()
-
+    check_visit(request)
+    
     context = {
         "weeks": weeks,
         "loadin": loadin,
@@ -3015,21 +2960,7 @@ def awardStatusJockey(request):
 
     loadin = get_last2weeks_loadin(friday)
 
-    name = get_client_ip(request)
-    if name[0:6] != "15.177":
-        update_visitor_count(name)
-
-        # create a new Visitor instance
-        new_visitor = Visitor(
-            ip_address=name,
-            user_agent=request.META.get("HTTP_USER_AGENT"),
-            # referrer=request.META.get('HTTP_REFERER'),
-            referer=fdate + " " + "기수 상금수득 현황",
-            # timestamp=timezone.now()
-        )
-
-        # insert the new_visitor object into the database
-        new_visitor.save()
+    check_visit(request)
 
     context = {
         "weeks": weeks,
@@ -3611,6 +3542,29 @@ def get_client_ip(request):
     else:
         ip = request.META.get("REMOTE_ADDR")
     return ip
+
+
+def check_visit(request):
+    name = get_client_ip(request)
+
+    if name[0:6] != "15.177":
+        update_visitor_count(name)
+
+        # create a new Visitor instance
+        new_visitor = Visitor(
+            ip_address=name,
+            user_agent=request.META.get("HTTP_USER_AGENT"),
+            current = request.build_absolute_uri(), # 현재 페이지 정보
+            referer=request.META.get( "HTTP_REFERER", "Unknown"),  # referer 값이 없으면 기본값으로 "home" 설정
+            timestamp=timezone.now(),  # 현재 시간으로 설정
+        )
+
+        # insert the new_visitor object into the database
+        new_visitor.save()
+
+    t_count = visitor_count()
+
+    return t_count
 
 
 def visitor_count():

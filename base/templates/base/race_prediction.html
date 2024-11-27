@@ -427,7 +427,7 @@
                 <span style="color:var(--color-r2); font-size:0.9rem">
                 </span>
                 {% if r.jockey_old %}   {# 기수변경 #}
-                  <span class="tooltip" style="font-style: italic; color:var(--color-r2);">{{r.jockey}}
+                  <span class="tooltip" style="font-style: italic; color:var(--color-r2);">{{r.jockey|slice:"0:3"}}
                     <span class="tooltip-text" style="z-index: 9;">
                       🐴 변경사유 : {{r.reason}}{% if r.jockey_old %}
                       <br>
@@ -437,10 +437,18 @@
                   </span>
                   
                 {% else %}
-                  <span class="tooltip" style="color:var(--color-light-gray);">{{r.jockey}}
+                  <span class="tooltip" style="color:var(--color-light-gray);">{{r.jockey|slice:"0:3"}}
 
                   </span>
                 {%endif %}
+
+                {% for hname, max_date, cnt in disease %}
+                  {% if r.horse == hname %}
+                  <span class="tooltip" style="font-weight: 350; font-family: Arial; font-size: 1.1rem; color:var(--color-r5); border-radius: 10px; background-color: var(--color-bg); padding:2px 4px;">{{cnt}}
+                    <span class="tooltip-text" style="font-family: Arial, Helvetica, sans-serif; font-size: 1.15rem;">🏥&nbsp;&nbsp;{{max_date|slice:"0:4"}}.{{max_date|slice:"4:6"}}.{{max_date|slice:"6:8"}}</span>
+                  </span>
+                  {% endif %}
+                {% endfor %}  
                 
               </div>
               
@@ -1042,7 +1050,7 @@
 
         <div class="room__topRight">
           {% if request.user.username == 'admin' %}
-          <a href="{% url 'update_changed_race' r_condition.rcity r_condition.rdate r_condition.rno %}" onclick="window.open(this.href, '_blank', 'width=900, height=800, toolbars=no, scrollbars=yes'); return false;">
+          <a href="{% url 'update_changed_race' r_condition.rcity r_condition.rdate r_condition.rno %}" onclick="window.open(this.href, 'w_update_changed_race', 'width=900, height=800, toolbars=no, scrollbars=yes'); return false;">
             <span class="tooltip" style="font-size: 1.35rem;">🔏
               <span class="tooltip-text" style="font-size:1.2rem; position:fixed ; text-align: center; width: 150px; z-index: 111;">인기도 & 경주제반 입력</span></span>
           </a>

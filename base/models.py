@@ -803,6 +803,7 @@ class Krafile(models.Model):
 class Visitor(models.Model):
     ip_address = models.CharField(max_length=50)
     user_agent = models.CharField(max_length=500)
+    current = models.CharField(max_length=500, blank=True, null=True)
     referer = models.CharField(max_length=500)
     timestamp = models.DateTimeField(default=timezone.now)
 

@@ -2340,6 +2340,45 @@ def get_loadin(i_rcity, i_rdate, i_rno):
     return loadin
 
 
+def get_disease(i_rcity, i_rdate, i_rno):
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+            select horse, max(tdate), count(*)
+            from
+            (
+            select horse, tdate, max(disease) 
+            from treat
+            where horse in (
+                select horse
+                from exp011
+                where rdate = '""" + i_rdate + """'
+                and rcity = '""" + i_rcity + """'
+                and rno = """ + str(i_rno) + """
+            )
+            and tdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 99 DAY), '%Y%m%d') and '""" + i_rdate + """'
+            and ( disease like '%절염%' or disease like '%골막염%' or disease like '%대염%' )
+            -- and ( disease like '%회복%'  )
+            group by horse, tdate
+            ) a
+            group by horse
+            
+        ; """
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        disease = cursor.fetchall()
+
+        # connection.commit()
+        # connection.close()
+
+    except:
+        # connection.rollback()
+        print("Failed selecting in 기승가능중량")
+
+    return disease
+
+
 def get_status_training(i_rdate):
     try:
         cursor = connection.cursor()
