@@ -33,7 +33,7 @@
 
   <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
 
-  <title>경주분석 '{{r_condition.rdate|slice:"2:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}}) {{r_condition.rcity}}&nbsp;&nbsp;{{r_condition.rno}}®</title>
+  <title>경주분석 '{{r_condition.rdate|slice:"2:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}}) {{r_condition.rcity}}&nbsp;&nbsp;{{r_condition.rno}}경주</title>
 
 </head>
 
@@ -51,7 +51,24 @@
       <a class="btn btn--main btn--pill" style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-bg); border-color: var(--color-dark-medium);" href="{% url 'race_training' r_condition.rcity r_condition.rdate r_condition.rno %}" onclick="window.open(this.href, 'w_training', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">조교현황</a>
       <a class="btn btn--main btn--pill" style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-bg); border-color: var(--color-dark-medium);" href="{% url 'race_judged' r_condition.rcity r_condition.rdate r_condition.rno %}" onclick="window.open(this.href, 'w_judged', 'width=1000, height=880, toolbars=no, scrollbars=yes'); return false;">마필병력 & 재결</a>
       {% if request.user.username == 'admin' %}
-      <a class="btn btn--main btn--pill" style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-bg); border-color: var(--color-dark-medium);" href="{% url 'race_related_info' r_condition.rcity r_condition.rdate r_condition.rno %}" onclick="window.open(this.href, 'w_related_info', 'width=1000, height=1400, toolbars=no, scrollbars=yes'); return false;">Related Info.</a>
+      <a class="btn btn--main btn--pill" style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-bg); border-color: var(--color-dark-medium);" href="{% url 'race_related_info' r_condition.rcity r_condition.rdate r_condition.rno %}" 
+                onclick="
+                let monitorWidth = 1920; // 특정 모니터의 너비 (예: 1920px)
+                let monitorHeight = 1080; // 특정 모니터의 높이 (예: 1080px)
+                let monitorOffset = 1920; // 첫 번째 모니터 끝에서 두 번째 모니터가 시작하는 위치
+                
+                let winWidth = 1000; // 새 창의 너비
+                let winHeight = 1400; // 새 창의 높이
+                
+                let winLeft = monitorOffset + (monitorWidth - winWidth); // 두 번째 모니터 우측 정렬
+                //let winLeft = monitorOffset; // 좌측 정렬: 모니터 시작 위치
+                let winTop = 0; // 상단 고정
+                window.open(
+                  this.href,
+                  'w_related_info',
+                  `width=${winWidth},height=${winHeight},toolbars=no,scrollbars=yes,left=${winLeft},top=${winTop}`
+                );
+                return false;">Related Info.</a>
       {% endif %}
       <hr style="border: solid 1px black;">
 
@@ -181,12 +198,12 @@
           {% for r in exp011s %}
           <tr class="view">
             
-            <td align="center" style="font-family: Arial; font-size: 1.3rem; color: var(--color-main-light);">
+            <td align="center" style="font-family: Arial; font-size: 1.4rem; color: var(--color-main-light);">
               <div style="font-family: Arial;">{% if r.rank > 20 %}<span style="font-size: 1.0rem;">🐣</span>{% else %} {{r.rank}} {% endif %}</div>
 
-              <div style="font-family: Arial; font-size: 1.1rem; text-align: right; ">
+              <div style="font-family: Arial; font-size: 1.0rem; text-align: right; ">
                 {% if compare_r.rating__max == r.rating and r.rating != 0 %}
-                <span style="font-family: Arial; color:var(--color-r1); font-weight: 700; border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">{{r.rating}}</span>
+                <span style="font-family: Arial; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">{{r.rating}}</span>
                 {% else %}
                 <span style="font-family: Arial; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">{{r.rating}}</span>
                 {% endif %}
@@ -199,28 +216,28 @@
               <span style="font-style: italic; text-decoration:line-through; color:gray;">{{r.gate}}</span>
               {% else %}
                 {% if r.rank == 1 %}
-                <span style="font-family: Arial; font-style: italic; color:var(--color-r1); font-weight: 700;">
+                <span style="font-family: Arial; font-style: italic; color:var(--color-r1);">
                   {{r.gate}}
                 </span>
                 {% elif r.rank == 2 %}
-                <span style="font-family: Arial; font-style: italic; color:var(--color-r2); font-weight: 700;">
+                <span style="font-family: Arial; font-style: italic; color:var(--color-r2);">
                   {{r.gate}}
                 </span>
                 {% elif r.rank == 3 %}
-                <span style="font-family: Arial; font-style: italic; color:var(--color-r3); font-weight: 700;">
+                <span style="font-family: Arial; font-style: italic; color:var(--color-r3);">
                   {{r.gate}}
                 </span>
                 {% elif r.rank == 4 %}
-                <span style="font-family: Arial; font-style: italic; color:var(--color-r4); font-weight: 700;">
+                <span style="font-family: Arial; font-style: italic; color:var(--color-r4);">
                   {{r.gate}}
                 </span>
                 {% elif r.rank == 5 %}
-                <span style="font-family: Arial; font-style: italic; color:var(--color-r5); font-weight: 700;">
+                <span style="font-family: Arial; font-style: italic; color:var(--color-r5);">
                   {{r.gate}}
                 </span>
                 {% else %}
                   {% if r.complex == r.complex5 %}
-                  <span style="font-family: Arial; font-style: italic; color:var(--color-r5); font-weight: 700;">{{r.gate}}</span>
+                  <span style="font-family: Arial; font-style: italic; color:var(--color-r5);">{{r.gate}}</span>
                   {% else %}
                   <span style="font-family: Arial; font-style: normal; ">{{r.gate}}</span>
                   {% endif %}
@@ -444,9 +461,7 @@
 
                 {% for hname, max_date, cnt in disease %}
                   {% if r.horse == hname %}
-                  <span class="tooltip" style="font-weight: 350; font-family: Arial; font-size: 1.1rem; color:var(--color-r5); border-radius: 10px; background-color: var(--color-bg); padding:2px 4px;">{{cnt}}
-                    <span class="tooltip-text" style="font-family: Arial, Helvetica, sans-serif; font-size: 1.15rem;">🏥&nbsp;&nbsp;{{max_date|slice:"0:4"}}.{{max_date|slice:"4:6"}}.{{max_date|slice:"6:8"}}</span>
-                  </span>
+                  <span style="font-family: Arial; font-size: 1.1rem; color:var(--color-r5); border-radius: 10px; background-color: var(--color-bg); padding:2px 4px;">{{cnt}}</span>
                   {% endif %}
                 {% endfor %}  
                 
@@ -656,16 +671,16 @@
             {# 경주전개 furlong 기록 #}
             <td align="center" style="font-size: 1.25rem;">
               {% if compare_r.i_s1f__min == r.i_s1f %}
-              <span style="font-family: Arial; color:var(--color-r1); font-weight: 500; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{r.cs1f}}</span>
+              <span style="font-family: Arial; color:var(--color-r1); background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{r.cs1f}}</span>
               {% elif r.i_s1f|sub:7 < compare_r.i_s1f__min %}
-              <span style="font-family: Arial; color:var(--color-r2); font-weight: 500;">{{r.cs1f}}</span>
+              <span style="font-family: Arial; color:var(--color-r2);">{{r.cs1f}}</span>
               {% else %}
               <span style="font-family: Arial; color:var(--color-light-gray);">{{r.cs1f}}</span>
               {% endif %}
 
               {% if r.s1f_rank %}
                 {% if compare_r.s1f_rank__min == r.s1f_rank %}
-                <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-r1); font-weight: 600;">{{r.s1f_rank}}</div>
+                <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-r1);">{{r.s1f_rank}}</div>
                 {% else %}
                 <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-gray);">
                   
@@ -687,16 +702,16 @@
             </td>
             <td align="center" style="font-size: 1.25rem;">
               {% if compare_r.i_g3f__min == r.i_g3f %}
-              <span style="font-family: Arial; color:var(--color-r1); font-weight: 500; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{r.cg3f}}</span>
+              <span style="font-family: Arial; color:var(--color-r1); background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{r.cg3f}}</span>
               {% elif r.i_g3f|sub:7 < compare_r.i_g3f__min %}
-              <span style="font-family: Arial; color:var(--color-r2); font-weight: 500;">{{r.cg3f}}</span>
+              <span style="font-family: Arial; color:var(--color-r2);">{{r.cg3f}}</span>
               {% else %}
               <span style="font-family: Arial; color:var(--color-light-gray);">{{r.cg3f}}</span>
               {% endif %}
 
               {% if r.g3f_rank %}
                 {% if compare_r.g3f_rank__min == r.g3f_rank %}
-                <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-r1); font-weight: 600;">{{r.g3f_rank}}</div>
+                <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-r1);">{{r.g3f_rank}}</div>
                 {% else %}
                 <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-gray);">
                   
@@ -718,16 +733,16 @@
             </td>
             <td align="center" style="font-size: 1.25rem;">
               {% if compare_r.i_g2f__min == r.i_g2f %}
-              <span style="font-family: Arial; color:var(--color-r1); font-weight: 500; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{r.cg2f}}</span>
+              <span style="font-family: Arial; color:var(--color-r1); background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{r.cg2f}}</span>
               {% elif r.i_g2f|sub:7 < compare_r.i_g2f__min %} 
-              <span style="font-family: Arial; color:var(--color-r2); font-weight: 500;">{{r.cg2f}}</span>
+              <span style="font-family: Arial; color:var(--color-r2);">{{r.cg2f}}</span>
               {% else %}
               <span style="font-family: Arial; color:var(--color-light-gray);">{{r.cg2f}}</span>
               {% endif %}
 
               {% if r.g2f_rank %}
                 {% if compare_r.g2f_rank__min == r.g2f_rank %}
-                <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-r1); font-weight: 600;">{{r.g2f_rank}}</div>
+                <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-r1);">{{r.g2f_rank}}</div>
                 {% else %}
                 <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-gray);">
                   
@@ -749,16 +764,16 @@
             <td align="center" style="font-size: 1.25rem;">
 
               {% if compare_r.i_g1f__min == r.i_g1f %}
-              <span style="font-family: Arial; color:var(--color-r1); font-weight: 500; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{r.cg1f}}</span>
+              <span style="font-family: Arial; color:var(--color-r1); background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{r.cg1f}}</span>
               {% elif r.i_g1f|sub:7 < compare_r.i_g1f__min %}
-              <span style="font-family: Arial; color:var(--color-r2); font-weight: 500;">{{r.cg1f}}</span>
+              <span style="font-family: Arial; color:var(--color-r2);">{{r.cg1f}}</span>
               {% else %}
               <span style="font-family: Arial; color:var(--color-light-var(--color-dark));">{{r.cg1f}}</span>
               {% endif %}
 
               {% if r.g1f_rank %}
                 {% if compare_r.g1f_rank__min == r.g1f_rank %}
-                <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-r1); font-weight: 600;">{{r.g1f_rank}}</div>
+                <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-r1);">{{r.g1f_rank}}</div>
                 {% else %}
                 <div style="font-family: Arial; text-align: right; font-size: 1.05rem; color:var(--color-gray);">
                   
@@ -831,7 +846,7 @@
                 {% else %}
 
                   {% if r.recent3 < r.complex5 %}
-                  <span style="font-family: Arial; color:rgb(0, 255,255); font-style: italic;">{{r.recent3|slice:"0:1"}}&nbsp;{{r.recent3|slice:"1:6"}}&nbsp;&nbsp;</span>
+                  <span style="font-family: Arial; color:greenyellow; font-style: italic;">{{r.recent3|slice:"0:1"}}&nbsp;{{r.recent3|slice:"1:6"}}&nbsp;&nbsp;</span>
                   {% else %}
                     {% if r.recent3 < r.convert_r and r.recent3 < r.recent5 %}
                     <span style="font-family: Arial; color: var(--color-light);">{{r.recent3|slice:"0:1"}}&nbsp;{{r.recent3|slice:"1:6"}}&nbsp;&nbsp;</span>
@@ -847,7 +862,7 @@
                 <span style="font-family: Arial; color: var(--color-r1); font-style: italic;">&nbsp;&nbsp;{{r.recent5|slice:"0:1"}}&nbsp;{{r.recent5|slice:"1:6"}}</span>
                 {% else %}
                   {% if r.recent5 < r.complex5 %}
-                  <span style="font-family: Arial; color:aqua; font-style: italic;">&nbsp;&nbsp;{{r.recent5|slice:"0:1"}}&nbsp;{{r.recent5|slice:"1:6"}}</span>
+                  <span style="font-family: Arial; color:greenyellow; font-style: italic;">&nbsp;&nbsp;{{r.recent5|slice:"0:1"}}&nbsp;{{r.recent5|slice:"1:6"}}</span>
                   {% else %}
                     {% if r.recent5 < r.convert_r and r.recent5 < r.recent3 %}
                     <span style="font-family: Arial; color: var(--color-light);">&nbsp;&nbsp;{{r.recent5|slice:"0:1"}}&nbsp;{{r.recent5|slice:"1:6"}}</span>
@@ -868,7 +883,7 @@
                 {% else %}
 
                   {% if r.convert_r < r.complex5 %}
-                  <span style="font-family: Arial; color:aqua; font-style: italic;">{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}</span>
+                  <span style="font-family: Arial; color:greenyellow; font-style: italic;">{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}</span>
                   {% else %}
                     {% if r.convert_r < r.recent5 and r.convert_r < r.recent3 %}
                     <span style="font-family: Arial; color: var(--color-light);">{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}</span>

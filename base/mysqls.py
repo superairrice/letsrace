@@ -4301,7 +4301,9 @@ def get_status_stable(i_rcity, i_rdate, i_rno):
 
             strSql = (
                 """ 
-                    SELECT b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, b.host, b.horse, b.rating, a.trainer, a.grade, a.wdate, count(*) cnt, sum(a.year_1st) r1cnt
+                    SELECT b.rank, b.gate, b.r_rank, b.r_pop, b.jockey, b.host, b.horse, b.rating, a.trainer, a.grade, a.wdate, count(*) cnt, 
+                    -- sum(a.year_1st ) r1cnt
+                    sum( if( a.host = b.host, 1, 0)) r1cnt 
                     FROM horse_w a,
                         expect b
                     where a.trainer = b.trainer 
