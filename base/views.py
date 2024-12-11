@@ -570,6 +570,7 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         horse__in=exp011s.values("horse"),
     ).order_by("horse", "-rdate")
 
+    # print(hr_records)
     compare_r = exp011s.aggregate(
         Min("i_s1f"),
         Min("i_g1f"),
@@ -3391,8 +3392,8 @@ def writeSignificant(request, rdate, horse):
 
             # print(r_significant)
 
-            connection.commit()
-            connection.close()
+            # connection.commit()
+            # connection.close()
 
         except:
             connection.rollback()

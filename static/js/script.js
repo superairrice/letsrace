@@ -59,3 +59,4 @@ function popupCenter(href, w, h) {
 
 	window.open(href, "pop_name", "width="+w+", height="+h+", left="+xPos+", top="+yPos+", menubar=yes, status=yes, titlebar=yes, resizable=yes");
 }
+

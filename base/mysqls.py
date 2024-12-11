@@ -3805,7 +3805,7 @@ def get_prediction(i_rdate):
                     complex5, gap_back, 
                     jt_per, jt_cnt, 
                     -- if( isnull(s1f_rank), 0, s1f_rank) jt_per
-                    rcount
+                    rcount, jockey_old, reason
                 from expect a
                 where rdate between date_format(DATE_ADD('"""
             + i_rdate
