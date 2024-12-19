@@ -101,8 +101,8 @@ def mock_insert(rcity, rdate, rno):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
         connection.rollback()
@@ -133,8 +133,8 @@ def mock_insert(rcity, rdate, rno):
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
             result = cursor.fetchall()
 
-            connection.commit()
-            connection.close()
+            # connection.commit()
+            # connection.close()
 
         except:
             connection.rollback()
@@ -164,8 +164,8 @@ def mock_insert(rcity, rdate, rno):
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
             result = cursor.fetchall()
 
-            connection.commit()
-            connection.close()
+            # connection.commit()
+            # connection.close()
 
         except:
             connection.rollback()
@@ -211,8 +211,8 @@ def mock_traval(r_condition, weight):
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
             gate_con = cursor.fetchall()
 
-            connection.commit()
-            connection.close()
+            # connection.commit()
+            # connection.close()
 
         except:
             connection.rollback()
@@ -762,8 +762,8 @@ def set_rank(rcity, rdate, rno):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         race = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
         connection.rollback()
@@ -808,8 +808,8 @@ def set_rank(rcity, rdate, rno):
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 rank = cursor.fetchall()
 
-                connection.commit()
-                connection.close()
+                # connection.commit()
+                # connection.close()
 
             except:
                 connection.rollback()
@@ -845,8 +845,8 @@ def set_rank(rcity, rdate, rno):
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 rank = cursor.fetchall()
 
-                connection.commit()
-                connection.close()
+                # connection.commit()
+                # connection.close()
 
             except:
                 connection.rollback()
@@ -878,11 +878,46 @@ def set_rank(rcity, rdate, rno):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
         connection.rollback()
         print("Failed uptating complex5 update --- set rank")
+
+    try:
+        cursor = connection.cursor()
+
+        # complex5 update
+        strSql = (
+            """ 
+            UPDATE exp011  a
+            SET rank = ( select rank from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+                complex = ( select complex from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+                complex5 = ( select complex5 from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+                gap = ( select gap from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+                gap_back = ( select gap_back from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate )
+            WHERE rcity = '"""
+            + rcity
+            + """'
+            AND rdate = '"""
+            + rdate
+            + """'
+            AND rno  = """
+            + str(rno)
+            + """
+            ; """
+        )
+
+        # print(strSql)
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        # connection.commit()
+        # connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed uptating exp011 update --- set rank")
 
     return 

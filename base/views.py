@@ -1879,8 +1879,8 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 weight = cursor.fetchall()
 
-                connection.commit()
-                connection.close()
+                # connection.commit()
+                # connection.close()
 
                 # print(list(r_condition))
 
