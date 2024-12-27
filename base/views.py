@@ -1764,7 +1764,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 def raceSimulation(request, rcity, rdate, rno, hname, awardee):
 
     weight = get_weight(rcity, rdate, rno)
-    print(weight)
+    # print(weight) 
     mock_insert(rcity, rdate, rno)
 
     w_avg = (

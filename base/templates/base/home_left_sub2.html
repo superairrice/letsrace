@@ -68,25 +68,7 @@
 
   {# 경주번호 / 경주조건 #}
   <td style="vertical-align: middle; background-color: var(--color-dark-medium);">
-    <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}" 
-      onclick="
-                let monitorWidth = 1920; // 특정 모니터의 너비 (예: 1920px)
-                let monitorHeight = 1080; // 특정 모니터의 높이 (예: 1080px)
-                let monitorOffset = 1920; // 첫 번째 모니터 끝에서 두 번째 모니터가 시작하는 위치
-                
-                let winWidth = 1370; // 새 창의 너비
-                let winHeight = 1400; // 새 창의 높이
-                
-                let winLeft = monitorOffset + (monitorWidth - winWidth); // 두 번째 모니터 우측 정렬
-                //let winLeft = monitorOffset; // 좌측 정렬: 모니터 시작 위치
-                let winTop = 0; // 상단 고정
-                window.open(
-                  this.href,
-                  'w_race_prediction',
-                  `width=${winWidth},height=${winHeight},toolbars=no,scrollbars=yes,left=${winLeft},top=${winTop}`
-                );return false;"> 
-
-      <!-- {# onclick="window.open(this.href, 'w_race_prediction', 'width=1370, height=1000, toolbars=no, scrollbars=yes'); return false;">  -->
+    <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=1370, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
       
       <div class="tooltip" style="font-size: 1.7rem; background-color: var(--color-bg); padding: 10px 12px; border-radius: 10px;">
         {% if r_rcity == '서울' %}
@@ -106,12 +88,12 @@
   </td>
 
   <td align="right" style="border-right: 1px solid gray; background-color: var(--color-dark-medium);">
-    <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=1370, height=1000, toolbars=no, scrollbars=yes'); return false;">
+    <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=1370, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
       <span>
-        <div style="font-family: Arial; font-size: 1.0rem; text-align: right; color: var(--color-gray);">{{rtime}}</div>
+        <div style="font-family: Arial; font-size: 1.0rem; text-align: right; color: var(--color-main);">{{rtime}}</div>
         <div style="font-family: Arial; font-size: 1.0rem; text-align: right; color: var(--color-light);">{{distance}}</div>
-        <div style="font-family: Arial; font-size: 1.0rem; text-align: right; color: var(--color-main);">{{grade|slice:"0:2"}}</div>
-        <div style="font-family: Arial; font-size: 1.0rem; text-align: right; color: var(--color-main);">{{dividing|slice:"0:2"}}</div>
+        <div style="font-family: Arial; font-size: 1.0rem; text-align: right; color: var(--color-gray);">{{grade|slice:"0:2"}}</div>
+        <div style="font-family: Arial; font-size: 1.0rem; text-align: right; color: var(--color-gray);">{{dividing|slice:"0:2"}}</div>
       </span>
     </a>
   </td>
@@ -268,7 +250,7 @@
 
     {# jt_per #}
     <a href="{% url 'jt_analysis_multi' rcity rdate|mul:1|sub:10000 rdate jockey trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
-      <div style="padding-top: 0.2rem;">
+      <div style="padding-top: 0.2rem; font-family: Arial;">
       {% if jt_cnt == 0 %}
         <span style="font-size: 0.85rem; color:var(--color-r1);">🅾️</span>
       {%else%}
@@ -279,21 +261,21 @@
           </span>
         {% else %}
           {% if jt_per == 100.0 %} 
-          <span style="font-size: 0.85rem; color:var(--color-r1);">{{jt_per|floatformat:0}}</span> 
+          <span style="font-family: Arial; font-size: 0.9rem; color:var(--color-r1);">{{jt_per|floatformat:0}}</span> 
           {% elif jt_per >= 50 %} 
-          <span style="font-size: 0.85rem; color:var(--color-r1);">{{jt_per|floatformat:1}}</span>
+          <span style="font-family: Arial; font-size: 0.9rem; color:var(--color-r1);">{{jt_per|floatformat:1}}</span>
           {% elif jt_per >= 40 and jt_per < 50 %} 
-          <span style="font-size: 0.85rem; color:var(--color-r2);">{{jt_per|floatformat:1}}</span>
+          <span style="font-family: Arial; font-size: 0.9rem; color:var(--color-r2);">{{jt_per|floatformat:1}}</span>
           {% elif jt_per >= 30 and jt_per < 40 %} 
-          <span style="font-size: 0.85rem; color:var(--color-r3);">{{jt_per|floatformat:1}}</span>
+          <span style="font-family: Arial; font-size: 0.9rem; color:var(--color-r3);">{{jt_per|floatformat:1}}</span>
           {% elif jt_per >= 20 and jt_per < 30 %} 
-          <span style="font-size: 0.85rem; color:var(--color-light-gray);">{{jt_per|floatformat:1}}</span>
+          <span style="font-family: Arial; font-size: 0.9rem; color:var(--color-light-gray);">{{jt_per|floatformat:1}}</span>
           {% elif jt_per >= 10 and jt_per < 20 %} 
-          <span style="font-size: 0.85rem; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
+          <span style="font-family: Arial; font-size: 0.9rem; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
           {% elif jt_per > 0 and jt_per < 10 %} 
-          <span style="font-size: 0.85rem; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
+          <span style="font-family: Arial; font-size: 0.9rem; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
           {% else %}
-          <span style="font-family: Arial, Helvetica, sans-serif; font-size: 0.85rem; color:var(--color-light); background-color:blue; padding: 2px 4px; border-radius: 7px;">{{jt_cnt}}</span>
+          <span style="font-family: Arial; font-size: 0.9rem; color:var(--color-light); background-color:blue; padding: 2px 4px; border-radius: 7px;">{{jt_cnt}}</span>
           {% endif %}
         {% endif %}
         

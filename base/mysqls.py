@@ -3730,9 +3730,9 @@ def get_print_prediction(i_rcity, i_rdate):
         strSql = (
             """
                 select a.rcity, a.rdate, a.rday, a.rno, b.gate, b.rank, b.r_rank, b.horse, b.remark, b.jockey, b.trainer, b.host, b.r_pop, a.distance, b.handycap, b.i_prehandy, b.complex,
-                    b.complex5, b.gap_back,
+                    b.complex5, b.gap_back, 
                     b.jt_per, b.jt_cnt,
-                    b.s1f_rank, b.i_cycle, a.rcount
+                    b.s1f_rank, b.i_cycle, a.rcount, recent3, recent5, convert_r
                 from exp010 a, exp011 b
                 where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
                 and a.rcity = '"""
@@ -4602,9 +4602,9 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
 
         strSql = (
             """ 
-              select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, CONCAT( RPAD(b.jockey, 5),RPAD( b.trainer, 5), b.host), a.wdate, a.year_per, CONCAT(debut, ' ', age, '_', wcnt) debut, weeks
-              from
-              (
+            select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, CONCAT( RPAD(b.jockey, 5),RPAD( b.trainer, 5), b.host), a.wdate, a.year_per, CONCAT(debut, ' ', age, '_', wcnt) debut, weeks
+            from
+            (
                 SELECT wdate, jockey, cast( year_3per as DECIMAL(4,1))*10 year_per, tot_1st, debut, CONCAT(wrace, '`', w1st, '`', w2nd, '`', w3rd) weeks, 
                         ( select concat( max(age) , ' ', max(tot_1st) ) from jockey_w c where c.jockey = d.jockey and c.wdate < '"""
             + i_rdate
@@ -4625,18 +4625,20 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
                 and wdate < '"""
             + i_rdate
             + """'
-              ) a  right outer join  expect b  on a.jockey = b.jockey 
-              where b.rdate = '"""
+            ) a  right outer join  expect b  on a.jockey = b.jockey 
+            where b.rdate = '"""
             + i_rdate
             + """' and b.rcity = '"""
             + i_rcity
             + """' and b.rno = """
             + str(i_rno)
             + """
-              order by b.rank, a.wdate desc
-              ; """
+            order by b.rank, a.wdate desc
+            ; """
         )
 
+        # print(strSql)
+        
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 

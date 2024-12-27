@@ -129,9 +129,9 @@
               <th rowspan="1"><span class="visible-big" style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">실순</span></th>
               {% endif %}
               <th rowspan="1">
-                <span class="visible-big" style="font-size:1.2rem;">인기도(데뷔)</span>
+                <span class="visible-big" style="font-size:1.2rem;">총 승 [데뷔년도]</span>
               </th>
-              <th rowspan="1"><span class="visible-big" style="font-size:1.2rem;">총1위_금주</span></th>
+              <th rowspan="1"><span class="visible-big" style="font-size:1.2rem;">금주입상</span></th>
 
               <th rowspan="1" width="5.5%" style="border-radius: 7px; background-color: var(--color-bg); color:var(--color-main);"><span class="visible-big">{{trend_title.11.0}}</span></th>
               <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.10.0}}</span></th>
@@ -241,14 +241,25 @@
                   {% endif %}
                 </div>
       
-                <div style="font-family: Arial; font-size:1.1rem; color:var(--color-r5); text-align: right;">
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-light-gray);font-size: 1.05rem;">({{debut|slice:"0:4"}})</span>
+                <div style="font-family: Arial; font-size:1.15rem; color:var(--color-r5); text-align: right;">
+                  {% with wcnt=debut|slice:"14:-6" %}
+                  {% if wcnt|mod:100 >= 96 %}
+                  <span style="font-family: Arial; font-size: 1.10rem; padding: 2px 4px; color: var(--color-r1); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
+                  {% elif wcnt|mod:100 >= 91 and wcnt|mod:100 < 96 %}
+                  <span style="font-family: Arial; font-size: 1.10rem; padding: 2px 4px; color: var(--color-r3); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
+                  {% else %}
+                  <span style="font-family: Arial; font-size: 1.10rem; padding: 2px 4px; color: var(--color-gray); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
+                  {% endif %}
+                  <!-- <span style="font-family: Arial; font-size:1.15rem; color:var(--color-r5);">{{twin}}</span> -->
+                  {% endwith %}
+                  <span>&nbsp;</span>
+                  <span style="font-family: Arial; color:var(--color-light-gray);font-size: 1.05rem;">[ {{debut|slice:"0:4"}} ]</span>
                 </div>
               </td>
       
               {# 이름(나이) #}
               <td>
-                <div style="font-size: 1.25rem; text-align: left;">
+                <div style="font-size: 1.2rem; text-align: left;">
                   {% with man=t_awardee|slice:"0:4" %}
                   {% if awardee == 'jockey' %}
                   <a href="{% url 'jt_analysis_multi' r_condition.rcity r_condition.rdate|mul:1|sub:10000 r_condition.rdate man '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' r_condition.rno '%' %}" onclick="window.open(this.href, 'jt_analysis_multi', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;">
@@ -261,11 +272,11 @@
                   {% endwith %}
                   
                 </div>
-                <div style="font-size: 1.05rem; text-align: right;">
+                <div style="font-size: 1.05rem; text-align: center;">
                   {% if debut|slice:"-5:" == '0`0`0' %}
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r5);">{{debut|slice:"14:"}}</span>
+                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r5);">{{debut|slice:"-5:"}}</span>
                   {% else %}
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r2);">{{debut|slice:"14:"}}</span>
+                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r2);">{{debut|slice:"-5:"}}</span>
                   {% endif %}
                   
                 </div>

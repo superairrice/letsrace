@@ -43,8 +43,8 @@ def get_weight(rcity, rdate, rno):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         weight = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
         connection.rollback()
@@ -67,8 +67,8 @@ def get_weight(rcity, rdate, rno):
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
             weight = cursor.fetchall()
 
-            connection.commit()
-            connection.close()
+            # connection.commit()
+            # connection.close()
 
         except:
             connection.rollback()
@@ -276,8 +276,8 @@ def get_jockey_ability(rdate, handycap, distance, jockey, gate):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         i_jockey = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
         connection.rollback()
@@ -319,8 +319,8 @@ def get_jockey_ability(rdate, handycap, distance, jockey, gate):
 
             # print(r_cnt)
 
-            connection.commit()
-            connection.close()
+            # connection.commit()
+            # connection.close()
 
         except:
             connection.rollback()
@@ -355,8 +355,8 @@ def get_jockey_ability(rdate, handycap, distance, jockey, gate):
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 i_jockey = cursor.fetchall()
 
-                connection.commit()
-                connection.close()
+                # connection.commit()
+                # connection.close()
 
             except:
                 connection.rollback()
@@ -389,21 +389,21 @@ def set_common(rcity, rdate, distance, horse, i_jockey):
             --  INTO :i_s1f,	:i_r1c,	:i_r2c,	:i_r3c,	:i_r4c,	:i_g3f,	:i_g2f,	:i_g1f,	:i_avg, :i_slow,	:i_fast
             from record_s a
             WHERE a.rdate between '20180722' and '""" + rdate + """'
-              and a.rdate < '""" + rdate + """'
-              AND a.horse  = '""" + horse + """'
-              AND a.distance = """ + str(distance) + """
-              and r_flag = '0'
-              and a.rdate between ( select date_format(DATE_ADD( max(rdate), INTERVAL - 777 DAY), '%Y%m%d') from record_s where horse = a.horse and rdate < '""" + rdate + """'  )         
-                              and ( select max(rdate) from record_s where horse = a.horse and rdate < '""" + rdate + """' )
-              ; """
+            and a.rdate < '""" + rdate + """'
+            AND a.horse  = '""" + horse + """'
+            AND a.distance = """ + str(distance) + """
+            and r_flag = '0'
+            and a.rdate between ( select date_format(DATE_ADD( max(rdate), INTERVAL - 777 DAY), '%Y%m%d') from record_s where horse = a.horse and rdate < '""" + rdate + """'  )         
+                            and ( select max(rdate) from record_s where horse = a.horse and rdate < '""" + rdate + """' )
+            ; """
         )
 
         # print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         common = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
         connection.rollback()
@@ -437,22 +437,22 @@ def set_common(rcity, rdate, distance, horse, i_jockey):
                       ( select avg( adv_s1f ) from adv_furlong where rcity = '""" + rcity + """' and dist1 = """ + str(distance) + """ and dist2 = a.distance ) ) ),
                 ifnull( avg( (i_g1f * (i_convert - """ + str(i_jockey) + """) )/i_record ), 0) +
                         avg( ifnull( ( select adv_g1f from adv_furlong where rcity = '""" + rcity + """' and grade = a.grade and dist1 = """ + str(distance) + """ and dist2 = a.distance ), 
-                      ( select avg( adv_g1f ) from adv_furlong where rcity = '""" + rcity + """' and dist1 = """ + str(distance) + """ and dist2 = a.distance ) ) ),
+                    ( select avg( adv_g1f ) from adv_furlong where rcity = '""" + rcity + """' and dist1 = """ + str(distance) + """ and dist2 = a.distance ) ) ),
                 ifnull( avg( (i_g2f * (i_convert - """ + str(i_jockey) + """) )/i_record ), 0) +
                         avg( ifnull( ( select adv_g2f from adv_furlong where rcity = '""" + rcity + """' and grade = a.grade and dist1 = """ + str(distance) + """ and dist2 = a.distance ), 
                       ( select avg( adv_g2f ) from adv_furlong where rcity = '""" + rcity + """' and dist1 = """ + str(distance) + """ and dist2 = a.distance ) ) ),
                 ifnull( avg( (i_g3f * (i_convert - """ + str(i_jockey) + """) )/i_record ), 0) +
                         avg( ifnull( ( select adv_g3f from adv_furlong where rcity = '""" + rcity + """' and grade = a.grade and dist1 = """ + str(distance) + """ and dist2 = a.distance ), 
-                      ( select avg( adv_g3f ) from adv_furlong where rcity = '""" + rcity + """' and dist1 = """ + str(distance) + """ and dist2 = a.distance ) ) )
+                    ( select avg( adv_g3f ) from adv_furlong where rcity = '""" + rcity + """' and dist1 = """ + str(distance) + """ and dist2 = a.distance ) ) )
             --  INTO :i_cs1f,	:i_cg1f,	:i_cg2f,	:i_cg3f
-              from record_s a
+            from record_s a
             WHERE a.rdate between '20180722' and '""" + rdate + """'
-              and a.rdate < '""" + rdate + """'
-              AND a.horse  = '""" + horse + """'
-              -- AND a.distance = """ + str(distance) + """
-              and r_flag = '0'
-              and a.rdate between ( select date_format(DATE_ADD( max(rdate), INTERVAL - 777 DAY), '%Y%m%d') from record_s where horse = a.horse and rdate < '""" + rdate + """'  )         
-                              and ( select max(rdate) from record_s where horse = a.horse and rdate < '""" + rdate + """' )
+            and a.rdate < '""" + rdate + """'
+            AND a.horse  = '""" + horse + """'
+            -- AND a.distance = """ + str(distance) + """
+            and r_flag = '0'
+            and a.rdate between ( select date_format(DATE_ADD( max(rdate), INTERVAL - 777 DAY), '%Y%m%d') from record_s where horse = a.horse and rdate < '""" + rdate + """'  )         
+                            and ( select max(rdate) from record_s where horse = a.horse and rdate < '""" + rdate + """' )
 
               ; """
         )
@@ -461,8 +461,8 @@ def set_common(rcity, rdate, distance, horse, i_jockey):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         furlong = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
         connection.rollback()
@@ -485,7 +485,7 @@ def set_common(rcity, rdate, distance, horse, i_jockey):
         strSql = (
             """ 
             UPDATE exp011s1  
-              SET rs1f = substr(The1.f_t2s(""" + str(i_s1f) + """), -4),	
+            SET rs1f = substr(The1.f_t2s(""" + str(i_s1f) + """), -4),	
                 r1c = The1.f_t2s(""" + str(i_r1c) + """),	
                 r2c = The1.f_t2s(""" + str(i_r2c) + """),	
                 r3c = The1.f_t2s(""" + str(i_r3c) + """),	
@@ -522,18 +522,18 @@ def set_common(rcity, rdate, distance, horse, i_jockey):
             WHERE rdate = '"""
             + rdate
             + """'
-              AND horse  = '"""
+            AND horse  = '"""
             + horse
             + """'
-          ; """
+        ; """
         )
 
         # print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         furlong = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
         connection.rollback()
@@ -562,17 +562,17 @@ def set_record(rcity, rdate, distance, horse, i_jockey, weight, i_avg, i_fast, i
             SELECT distance, i_s1f + i_g1f + adv_track, rank, i_convert - """ + str(i_jockey) + """, rstate, rdate,
                 ( ( i_convert )/a.distance ) * """ + str(distance) + """ - """ + str(i_jockey) + """ + 
                     ifnull( ( select adv_dist from adv_distance where rcity = '""" + rcity + """'
-                                                                  and grade = a.grade 
-                                                                  and dist1 = """ + str(distance) + """
-                                                                  and dist2 = a.distance ), 
-                ( select avg( adv_dist ) from adv_distance where dist1 = """ + str(distance) + """
+                                                                and grade = a.grade 
+                                                                and dist1 = """ + str(distance) + """
+                                                                and dist2 = a.distance ), 
+            ( select avg( adv_dist ) from adv_distance where dist1 = """ + str(distance) + """
                                                             and dist2 = a.distance ) )		-- 해당경주의 등급별 기록이 없으면, 평균값 치환
             FROM record_s 	a  
             WHERE a.rdate between '20180722' and '""" + rdate + """' and a.rdate < '""" + rdate + """'
-              AND a.horse  = '""" + horse + """'
-              and r_flag = '0'
-              and a.rdate between ( select date_format(DATE_ADD( max(rdate), INTERVAL - 777 DAY), '%Y%m%d') from record_s where horse = a.horse and rdate < '""" + rdate + """'  )         
-                              and ( select max(rdate) from record_s where horse = a.horse and rdate < '""" + rdate + """' )
+            AND a.horse  = '""" + horse + """'
+            and r_flag = '0'
+            and a.rdate between ( select date_format(DATE_ADD( max(rdate), INTERVAL - 777 DAY), '%Y%m%d') from record_s where horse = a.horse and rdate < '""" + rdate + """'  )         
+                            and ( select max(rdate) from record_s where horse = a.horse and rdate < '""" + rdate + """' )
             ORDER BY a.rdate DESC 
             ; """
         )
@@ -581,8 +581,8 @@ def set_record(rcity, rdate, distance, horse, i_jockey, weight, i_avg, i_fast, i
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         recent_race = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
         connection.rollback()
@@ -693,7 +693,7 @@ def set_record(rcity, rdate, distance, horse, i_jockey, weight, i_avg, i_fast, i
         strSql = (
             """ 
             UPDATE exp011s1  
-              SET recent3 = The1.f_t2s(""" + str(i_recent3) + """),
+            SET recent3 = The1.f_t2s(""" + str(i_recent3) + """),
                 recent5 = The1.f_t2s(""" + str(i_recent5) + """),
                 complex = The1.f_t2s(""" + str(i_complex) + """),
                 convert_r = The1.f_t2s(""" + str(i_convert) + """),
@@ -713,18 +713,18 @@ def set_record(rcity, rdate, distance, horse, i_jockey, weight, i_avg, i_fast, i
             WHERE rdate = '"""
             + rdate
             + """'
-              AND horse  = '"""
+            AND horse  = '"""
             + horse
             + """'
-          ; """
+        ; """
         )
 
         # print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         furlong = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
+        # connection.commit()
+        # connection.close()
 
     except:
         connection.rollback()
@@ -751,10 +751,10 @@ def set_rank(rcity, rdate, rno):
               AND rdate = '"""
             + rdate
             + """'
-              AND rno  = """
+            AND rno  = """
             + str(rno)
             + """
-            ORDER BY i_complex    ASC, gate      ASC
+            AND rank < 90 ORDER BY i_complex    ASC, gate      ASC
             ; """
         )
 
@@ -786,7 +786,7 @@ def set_rank(rcity, rdate, rno):
 
                 # 기수의 거리별 게이트별 역량 + 부담중량까지 감안된 adv_jpckey
                 strSql = (
-                  """ 
+                """ 
                     UPDATE exp011s1  															
                     SET rank = 98
                     WHERE rcity = '"""
@@ -814,7 +814,7 @@ def set_rank(rcity, rdate, rno):
             except:
                 connection.rollback()
                 print(
-                  "Failed setting 경주 rank "
+                    "Failed setting 경주 rank "
                 )
 
         else:
@@ -827,17 +827,17 @@ def set_rank(rcity, rdate, rno):
                     UPDATE exp011s1  															
                     SET rank = """ + str(index) + """
                     WHERE rcity = '"""
-                      + rcity
-                      + """'
-                      AND rdate = '"""
-                      + rdate
-                      + """'
-                      AND rno  = """
-                      + str(rno)
-                      + """
-                      AND gate  = """
-                      + str(gate)
-                      + """
+                    + rcity
+                    + """'
+                    AND rdate = '"""
+                    + rdate
+                    + """'
+                    AND rno  = """
+                    + str(rno)
+                    + """
+                    AND gate  = """
+                    + str(gate)
+                    + """
                     ; """
                 )
 
@@ -859,19 +859,19 @@ def set_rank(rcity, rdate, rno):
         strSql = (
             """ 
             UPDATE exp011s1  a
-              SET complex5 = ( select complex from exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank  = 4 ),
-                  gap = a.i_complex - ( select i_complex from exp011s1 where rcity = a.rcity and rdate = a.rdate AND rno = a.rno AND rank = a.rank - 1 ),
-                  gap_back = ( select i_complex from exp011s1 where rcity = a.rcity and rdate = a.rdate AND rno = a.rno AND rank = a.rank + 1 ) - a.i_complex 
+            SET complex5 = ( select complex from exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank  = 4 ),
+                gap = a.i_complex - ( select i_complex from exp011s1 where rcity = a.rcity and rdate = a.rdate AND rno = a.rno AND rank = a.rank - 1 ),
+                gap_back = ( select i_complex from exp011s1 where rcity = a.rcity and rdate = a.rdate AND rno = a.rno AND rank = a.rank + 1 ) - a.i_complex 
             WHERE rcity = '"""
             + rcity
             + """'
-                      AND rdate = '"""
+                    AND rdate = '"""
             + rdate
             + """'
-                      AND rno  = """
+                    AND rno  = """
             + str(rno)
             + """
-          ; """
+        ; """
         )
 
         # print(strSql)
