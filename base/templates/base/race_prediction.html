@@ -275,13 +275,13 @@
             <td>
               
               <div style="font-size: 1.3rem;">
-                <span class="tooltip">
+                <!-- <span class="tooltip">
                   <progress value={{r.r_pop}} max="99" style="width: 2.5rem"></progress>
                   <span class="tooltip-text" style="z-index: 9;">
                     <div>📊&nbsp;{{r.horse}}</div>
                     <div style="text-align: right;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;인기도&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{r.r_pop}}</div>
                   </span>
-                </span>&nbsp;
+                </span>&nbsp; -->
                 
                 {% if r.r_rank == 99 %}
                   <span style="font-size: 1.3rem; font-style: italic; text-decoration:line-through; color:gray;">{{r.horse|slice:"0:6"}}</span>
@@ -464,30 +464,31 @@
                   </span>
                 {%endif %}
 
+                {% for jockey, cnt in training_cnt %}
+                  {% if r.jockey == jockey %}
+                  <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-r1); border-radius: 7px; background-color: var(--color-bg); padding:2px 4px;">{{cnt}}</span>
+                  {% endif %}
+                {% endfor %}
+                
+              </div>
+              
+              {% if r.trainer in trainer_double_check %}
+              <div style="font-size: 1.2rem; text-align: right; color:var(--color-r3)">
                 {% for hname, max_date, cnt in disease %}
                   {% if r.horse == hname %}
                   <span style="font-family: Arial; font-size: 1.1rem; color:var(--color-r5); border-radius: 10px; background-color: var(--color-bg); padding:2px 4px;">{{cnt}}</span>
                   {% endif %}
                 {% endfor %}  
                 
-              </div>
-              
-              {% if r.trainer in trainer_double_check %}
-              <div style="font-size: 1.2rem; text-align: right; color:var(--color-r3)">
-                {% for jockey, cnt in training_cnt %}
-                  {% if r.jockey == jockey %}
-                  <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-r1); border-radius: 7px; background-color: var(--color-bg); padding:2px 4px;">{{cnt}}</span>
-                  {% endif %}
-                {% endfor %}
                 {{r.trainer}}
               </div>
               {% else %}
               <div style="color: var(--color-gray); font-size: 1.2rem; text-align: right;">
-                {% for jockey, cnt in training_cnt %}
-                  {% if r.jockey == jockey %}
-                  <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-r1); border-radius: 7px; background-color: var(--color-bg); padding:2px 4px;">{{cnt}}</span>
+                {% for hname, max_date, cnt in disease %}
+                  {% if r.horse == hname %}
+                  <span style="font-family: Arial; font-size: 1.1rem; color:var(--color-r5); border-radius: 10px; background-color: var(--color-bg); padding:2px 4px;">{{cnt}}</span>
                   {% endif %}
-                {% endfor %}
+                {% endfor %}  
                 {{r.trainer}}
               </div>
               {% endif %}

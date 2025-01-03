@@ -98,7 +98,7 @@
     </a>
   </td>
 
-  {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex, jt_per, jt_cnt, rcount, jockey_old, reason in expects %}
+  {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex, jt_per, jt_cnt, jt_3rd, s1f_rank, i_cycle, rcount, recent3, recent5, convert_r, disease, tcnt in expects %}  
   {% if r_rcity == rcity and r_rdate == rdate and r_rno == rno %}
   
   <td align="center" style="font-family: Arial; color: var(--color-main);">
@@ -190,21 +190,21 @@
 
     {# 출주 주기 #}
     <div>
-
-      {% if remark %}
-        {% if remark <= 16 %} 
-          <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r2); border-radius: 10px; background-color:var(--color-bg); padding:1px 1px;">
-            {{remark|div:7|floatformat:0}}<sup style="font-size: 0.7rem;">w</sup>
+      {% if i_cycle %}
+        {% if i_cycle <= 16 %} 
+          <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r1); background-color:var(--color-r5); padding:2px 4px; border-radius:7px;">
+            {{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.7rem;">w</sup>
           </span>
-        {% elif remark >= 68 %}
-          <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding:1px 1px;">{{remark|div:7|floatformat:0}}<sup
-              style="font-size: 0.7rem;">w</sup></span>
+        {% elif i_cycle >= 68 %}
+          <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r4); background-color:var(--color-r5); padding:2px 4px; border-radius:7px;">
+            {{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.7rem;">w</sup>
+          </span>
         {% else %}
-          <span style="font-family: Arial; font-size:1.0rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-dark); padding:1px 1px;">{{remark|div:7|floatformat:0}}<sup
+          <span style="font-family: Arial; font-size:1.0rem; color:var(--color-light-gray);">{{i_cycle|div:7|floatformat:0}}<sup
               style="font-size: 0.7rem;">w</sup></span>
         {% endif %}
       {% else %}
-        <span style="font-family: Arial; font-size:0.7rem; color:var(--color-gray);">🐥</span>
+        <span style="font-family: Arial; font-size:0.7rem; color:var(--color-light);">🆕</span>
       {% endif %}
     </div>
 
@@ -233,7 +233,7 @@
 
   <td align="center" style="border-right: 1px solid gray;">
 
-    {# 인기도 #}
+    <!-- {# 인기도 #}
     <div style="font-size: 1.0rem;">
       {% if r_pop >= 90 %}
       <span style="font-family: Arial; color:var(--color-r1); border-radius: 7px; background-color:var(--color-light); padding: 1px 2px;">{{r_pop}}</span>
@@ -246,6 +246,20 @@
       {% else %}
       <span style="font-family: Arial; color:var(--color-gray); padding: 1px 2px;">&nbsp;</span>
       {% endif %}
+    </div> -->
+
+    <div style="font-size: 0.9rem; font-family: Arial; text-align: right;">
+    {% if s1f_rank %}
+      {% if s1f_rank >= 7 %}
+      <span style="font-size: 0.9rem; padding:1px 1px; font-family: Arial; color:var(--color-light-gray); ">{{s1f_rank}}</span>
+      {% elif s1f_rank >= 3 and s1f_rank < 7 %}
+      <span style="font-size: 0.9rem; padding:1px 1px; font-family: Arial; color:var(--color-r2);">{{s1f_rank}}</span>
+      {% else %}
+      <span style="font-size: 0.9rem; padding:1px 1px; font-family: Arial; color:var(--color-r1); border-radius: 10px; background-color: bisque;">{{s1f_rank}}</span>
+      {% endif %}
+    {% else %}
+      <span style="font-size: 0.9rem; padding:1px 1px; font-family: Arial; color:var(--color-light-gray);">&nbsp;</span>
+    {% endif %}
     </div>
 
     {# jt_per #}

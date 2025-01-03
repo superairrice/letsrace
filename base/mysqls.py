@@ -3731,8 +3731,32 @@ def get_print_prediction(i_rcity, i_rdate):
             """
                 select a.rcity, a.rdate, a.rday, a.rno, b.gate, b.rank, b.r_rank, b.horse, b.remark, b.jockey, b.trainer, b.host, b.r_pop, a.distance, b.handycap, b.i_prehandy, b.complex,
                     b.complex5, b.gap_back, 
-                    b.jt_per, b.jt_cnt,
-                    b.s1f_rank, b.i_cycle, a.rcount, recent3, recent5, convert_r
+                    b.jt_per, b.jt_cnt, b.jt_3rd,
+                    b.s1f_rank, b.i_cycle, a.rcount, recent3, recent5, convert_r, 
+                    ( 
+                        select count(disease) 
+                        from treat
+                        where horse = b.horse
+                        and tdate between date_format(DATE_ADD('"""
+                        + i_rdate
+                        + """', INTERVAL - 99 DAY), '%Y%m%d') and '"""
+                        + i_rdate
+                        + """'
+                        and ( disease like '%절염%' or disease like '%골막염%' or disease like '%대염%' )
+                        -- group by horse, tdate
+                    ),
+            
+                    ( select count(*) from The1.train 
+                        where tdate between date_format(DATE_ADD('"""
+                        + i_rdate
+                        + """' , INTERVAL - 21 DAY), '%Y%m%d') and '"""
+                        + i_rdate
+                        + """' 
+                        and horse = b.horse
+                        and rider = b.jockey
+                    --    group by horse, rider 
+                    -- having count(*) >= 7
+                    )
                 from exp010 a, exp011 b
                 where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
                 and a.rcity = '"""
@@ -3746,7 +3770,7 @@ def get_print_prediction(i_rcity, i_rdate):
                 ; """
         )
 
-        print(strSql)
+        # print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         expects = cursor.fetchall()
 
@@ -3799,21 +3823,20 @@ def get_prediction(i_rdate):
 
         strSql = (
             """
-                select rcity, rdate, rday, rno, gate, rank, r_rank, horse, i_cycle, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex,
-                    --  ( select complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = 5 ) complex5, 
-                    --  ( select i_complex from expect  where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = a.rank + 1 ) - i_complex, 
-                    complex5, gap_back, 
-                    jt_per, jt_cnt, 
-                    -- if( isnull(s1f_rank), 0, s1f_rank) jt_per
-                    rcount, jockey_old, reason
-                from expect a
-                where rdate between date_format(DATE_ADD('"""
+                select a.rcity, a.rdate, a.rday, a.rno, b.gate, b.rank, b.r_rank, b.horse, b.remark, b.jockey, b.trainer, b.host, b.r_pop, a.distance, b.handycap, b.i_prehandy, b.complex,
+                    b.complex5, b.gap_back, 
+                    b.jt_per, b.jt_cnt, b.jt_3rd,
+                    b.s1f_rank, b.i_cycle, a.rcount, recent3, recent5, convert_r, 0, 0
+                
+                from exp010 a, exp011 b
+                where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
+                and b.rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL + 4 DAY), '%Y%m%d')
-                and rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98 )
-                order by rcity, rdate, rno, rank, gate
+                and b.rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98 )
+                order by b.rcity, b.rdate, b.rno, b.rank, b.gate
                 ; """
         )
 

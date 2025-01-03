@@ -3426,9 +3426,9 @@ def writeSignificant(request, rdate, horse):
 
     try:
         cursor = connection.cursor()
-        strSql = """ select r_code, r_name from race_cd where cd_type = 'R1' order by r_code; """
+        strSql = """ select cd_type, r_code, r_name from race_cd order by r_code; """
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        r_start = cursor.fetchall()
+        race_cd = cursor.fetchall()
 
         # connection.commit()
         # connection.close()
@@ -3437,67 +3437,68 @@ def writeSignificant(request, rdate, horse):
         # connection.rollback()
         print("Failed selecting r_start")
 
-    try:
-        cursor = connection.cursor()
-        strSql = """ select r_code, r_name from race_cd where cd_type = 'R2' order by r_code; """
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        r_corners = cursor.fetchall()
+    # try:
+    #     cursor = connection.cursor()
+    #     strSql = """ select r_code, r_name from race_cd where cd_type = 'R2' order by r_code; """
+    #     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+    #     r_corners = cursor.fetchall()
 
-        # connection.commit()
-        # connection.close()
+    #     # connection.commit()
+    #     # connection.close()
 
-    except:
-        # connection.rollback()
-        print("Failed selecting r_corners")
+    # except:
+    #     # connection.rollback()
+    #     print("Failed selecting r_corners")
 
-    try:
-        cursor = connection.cursor()
-        strSql = """ select r_code, r_name from race_cd where cd_type = 'R3' order by r_code; """
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        r_finish = cursor.fetchall()
+    # try:
+    #     cursor = connection.cursor()
+    #     strSql = """ select r_code, r_name from race_cd where cd_type = 'R3' order by r_code; """
+    #     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+    #     r_finish = cursor.fetchall()
 
-        # connection.commit()
-        # connection.close()
+    #     # connection.commit()
+    #     # connection.close()
 
-    except:
-        # connection.rollback()
-        print("Failed selecting r_finish")
+    # except:
+    #     # connection.rollback()
+    #     print("Failed selecting r_finish")
 
-    try:
-        cursor = connection.cursor()
-        strSql = """ select r_code, r_name from race_cd where cd_type = 'R4' order by r_code; """
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        r_wrapup = cursor.fetchall()
+    # try:
+    #     cursor = connection.cursor()
+    #     strSql = """ select r_code, r_name from race_cd where cd_type = 'R4' order by r_code; """
+    #     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+    #     r_wrapup = cursor.fetchall()
 
-        # connection.commit()
-        # connection.close()
+    #     # connection.commit()
+    #     # connection.close()
 
-    except:
-        # connection.rollback()
-        print("Failed selecting r_wrapup")
+    # except:
+    #     # connection.rollback()
+    #     print("Failed selecting r_wrapup")
 
-    try:
-        cursor = connection.cursor()
-        strSql = """ select r_code, r_name from race_cd where cd_type = 'R0' order by r_code; """
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        r_flag = cursor.fetchall()
+    # try:
+    #     cursor = connection.cursor()
+    #     strSql = """ select r_code, r_name from race_cd where cd_type = 'R0' order by cd_type, r_code; """
+    #     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+    #     r_flag = cursor.fetchall()
 
-        # connection.commit()
-        # connection.close()
+    #     # connection.commit()
+    #     # connection.close()
 
-    except:
-        # connection.rollback()
-        print("Failed selecting r_flag ; 집계 제외 사유")
+    # except:
+    #     # connection.rollback()
+    #     print("Failed selecting r_flag ; 집계 제외 사유")
 
     context = {
         "rdate": rdate,
         "horse": horse,
         "r_significant": r_significant,
-        "r_start": r_start,
-        "r_corners": r_corners,
-        "r_finish": r_finish,
-        "r_wrapup": r_wrapup,
-        "r_flag": r_flag,
+        "race_cd": race_cd,
+        # "r_start": r_start,
+        # "r_corners": r_corners,
+        # "r_finish": r_finish,
+        # "r_wrapup": r_wrapup,
+        # "r_flag": r_flag,
     }
     return render(request, "base/write_significant.html", context)
 
