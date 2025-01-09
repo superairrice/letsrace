@@ -59,7 +59,7 @@ def get_paternal(rcity, rdate, rno, distance):
 
         strSql = (
             """ 
-              SELECT a.gate, a.rank, a.horse, 
+            SELECT a.gate, a.rank, a.horse, 
                     b.paternal, 
                     sum( if(c.distance = """
             + str(distance)
@@ -1599,7 +1599,7 @@ def get_treat_horse(i_rcity, i_rdate, i_rno):
 
         strSql = (
             """ 
-                    select horse, tdate, max(disease) disease, max(laps) laps,  max(t_time) t_time, max(canter) canter,  max(strong) strong, 
+                    select horse, tdate, disease, max(laps) laps,  max(t_time) t_time, max(canter) canter,  max(strong) strong, 
                             audit, max(rider) rider, max(judge) judge,
                             weekday(tdate) days
                     from
@@ -1695,7 +1695,7 @@ def get_treat_horse(i_rcity, i_rdate, i_rno):
             + i_rdate
             + """'
                     ) a
-                    group by horse, tdate, audit
+                    group by horse, tdate, audit, disease
                     order by tdate desc
                     
             ;"""
@@ -3794,8 +3794,7 @@ def get_prediction(i_rdate):
 
         strSql = (
             """ 
-                select a.rcity, a.rdate, a.rday, a.rno, a.rtime, a.distance, b.r2alloc, b.r333alloc, b.r123alloc, a.grade, a.dividing,
-                ( select judged from rec013 where a.rcity = rcity and a.rdate = rdate and a.rno = rno ) judged
+                select a.rcity, a.rdate, a.rday, a.rno, a.rtime, a.distance, b.r2alloc, b.r333alloc, b.r123alloc, a.grade, a.dividing, a.r1award  
                 from exp010 a left outer join 
                     rec010 b on a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
                 where a.rdate between date_format(DATE_ADD('"""
@@ -3826,7 +3825,7 @@ def get_prediction(i_rdate):
                 select a.rcity, a.rdate, a.rday, a.rno, b.gate, b.rank, b.r_rank, b.horse, b.remark, b.jockey, b.trainer, b.host, b.r_pop, a.distance, b.handycap, b.i_prehandy, b.complex,
                     b.complex5, b.gap_back, 
                     b.jt_per, b.jt_cnt, b.jt_3rd,
-                    b.s1f_rank, b.i_cycle, a.rcount, recent3, recent5, convert_r, 0, 0
+                    b.s1f_rank, b.i_cycle, a.rcount, recent3, recent5, convert_r, jockey_old, reason
                 
                 from exp010 a, exp011 b
                 where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
@@ -3864,7 +3863,7 @@ def get_prediction(i_rdate):
                         date_format(DATE_ADD( min(rdate) , INTERVAL - 7 DAY), '%Y%m%d'),
                         -- min(rdate), 
                         max(rdate)
-                from expect a
+                from exp011 a
                 where rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
@@ -3882,7 +3881,7 @@ def get_prediction(i_rdate):
                                 count(*) desc
                 ; """
         )
-        # print(strSql) 
+        # print(strSql)
 
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         award_j = cursor.fetchall()
@@ -3926,43 +3925,43 @@ def get_prediction(i_rdate):
         print("Failed selecting rdays")
 
     # judged_jockey Query
-    # try:
-    #     cursor = connection.cursor()
+    try:
+        cursor = connection.cursor()
 
-    #     strSql = (
-    #         """
-    #         SELECT distinct b.rcity, b.rdate, b.rno, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
-    #             FROM exp011     a,
-    #                 rec015     b
-    #             where a.jockey = b.jockey and 1 <> 1
-    #             AND b.t_sort = '기수'
-    #             AND b.rdate between date_format(DATE_ADD('"""
-    #         + i_rdate
-    #         + """', INTERVAL - 100 DAY), '%Y%m%d') and '"""
-    #         + i_rdate
-    #         + """'
-    #             AND a.rdate between '"""
-    #         + i_rdate
-    #         + """' and date_format(DATE_ADD('"""
-    #         + i_rdate
-    #         + """', INTERVAL + 3 DAY), '%Y%m%d')
-    #         ORDER BY b.rdate desc
+        strSql = (
+            """
+            SELECT distinct b.rcity, b.rdate, b.rno, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
+                FROM exp011     a,
+                    rec015     b
+                where a.jockey = b.jockey -- and 1 <> 1
+                AND b.t_sort = '기수'
+                AND b.rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 30 DAY), '%Y%m%d') and '"""
+            + i_rdate
+            + """'
+                AND a.rdate between '"""
+            + i_rdate
+            + """' and date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL + 3 DAY), '%Y%m%d')
+            ORDER BY b.rdate desc
 
-    #         ; """
-    #     )
+            ; """
+        )
 
-    #     # print(strSql)
-    #     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-    #     judged_jockey = cursor.fetchall()
+        # print(strSql)
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        judged_jockey = cursor.fetchall()
 
-    #     connection.commit()
-    #     connection.close()
+        connection.commit()
+        connection.close()
 
-    # except:
-    #     connection.rollback()
-    #     print("Failed selecting in judged jockey")
+    except:
+        connection.rollback()
+        print("Failed selecting in judged jockey")
 
-    return race, expects, rdays, award_j
+    return race, expects, rdays, award_j, judged_jockey
 
 
 def get_expects(i_rdate):
@@ -6934,7 +6933,7 @@ def get_thethe9_ranks_multi(
                     a.s1f_rank, a.g3f_rank, a.g2f_rank, a.g1f_rank, 
                     a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
                     a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
-                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, d.adv_track, 
+                    a.j_per, a.t_per, a.rating, c.r2alloc1, c.r333alloc1, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, d.adv_track, 
                     c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f
                 FROM 
                     The1.exp011 a

@@ -78,7 +78,7 @@
         <th style="vertical-align: middle; font-size:1.1rem; border:1px solid orange; border-radius: 10px; "><span style="font-size:1.1rem;">Record</span></th>
         <th rowspan="2" style="vertical-align:middle"><span class="visible-big" style="font-size:1.2rem;">마<br>번</span></th>
         <th rowspan="2" style="vertical-align:middle"><span class="visible-big" style="font-size:1.2rem;">코너 전개</span></th>
-        <th rowspan="2" style="vertical-align:middle"><span class="visible-big" style="font-size:1.2rem;">순<br>위</span></th>
+        <th rowspan="1" style="vertical-align:middle"><span class="visible-big" style="font-size:1.2rem;">순위</span></th>
         <th rowspan="2" style="vertical-align:middle"><span class="visible-big" style="font-size:1.2rem;">착<br>차</span></th>
 
         <th rowspan="1" style="vertical-align:middle">
@@ -86,7 +86,7 @@
             <span class="tooltip-text" style="font-size:1.1rem;">🐎 출주마 수</span>
           </span>
         </th>
-        <th><span style="font-size:1.2rem;">인기</span></th>
+        <!-- <th><span style="font-size:1.2rem;">인기</span></th> -->
         <th><span style="font-size:1.2rem;">단식</span></th>
         
         <th rowspan="2" style="vertical-align:middle">
@@ -137,12 +137,14 @@
           <span style="text-transform:lowercase; font-style: italic; font-size:1.15rem; padding:1px 4px; border-radius: 7px;">thethe9</span>
         </th>
 
+        <th rowspan="1" style="vertical-align:middle"><span class="visible-big" style="font-size:0.8rem;">인기/예상</span></th>
+
         <th rowspan="1" style="vertical-align:middle">
           <span class="tooltip" style="font-size:1.0rem; color:var(--color-r4);">(암)
             <span class="tooltip-text" style="font-size:1.1rem;">🐎 암말 수</span>
           </span>
         </th>
-        <th><span style="font-size:1.2rem;">예상</span></th>
+        <!-- <th><span style="font-size:1.2rem;">예상</span></th> -->
         <th><span style="font-size:1.2rem;">연식</span></th>
         
       </tr>
@@ -157,19 +159,20 @@
         {# rating #}
         <td>
           {% if hr.rating %}
-          <div style="font-size:1.2rem; padding:2px 4px; color:var(--color-r3); font-family: Arial; border-radius: 7px; background-color:var(--color-bg);">{{hr.rating}}</div>
+          <div style="font-size:1.15rem; padding:4px 1px; color:var(--color-r3); font-family: Arial; border-radius: 10px; background-color:var(--color-bg);">{{hr.rating}}</div>
           {% else %}
           <div>&nbsp;</div>
           {% endif %}
 
-          {% if hr.judge == NONE %}
+          <!-- {% if hr.judge == NONE %}
           <span class="tooltip">
             <progress value={{hr.r_pop}} max="99" style="width: 1.5rem"></progress>
             <span class="tooltip-text" style="z-index: 9;">
               <div style="font-size: 1.1rem;">📊&nbsp;인기도&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{% if hr.r_pop %}{{hr.r_pop}}{% endif %}</div>
             </span>
           </span>
-          {% endif %}
+          {% endif %} -->
+
         </td>
         
         
@@ -690,6 +693,7 @@
 
         {# rank #}
         <td style="font-size: 1.2rem; font-family: Arial;">
+          <div>
           {% if hr.rank %}
           {% if hr.rank == 1 %}
           <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-r1); color:var(--color-light); padding: 2px 4px;">
@@ -716,6 +720,51 @@
           <span style="font-family: Arial; border-radius: 10px; background-color:bisque; padding: 3px;">
             {% if hr.rank > 20 %}﹆{% else %} {{hr.rank}} {% endif %}
           </span>
+          {% endif %}
+          {% endif %}
+
+          </div>
+
+            {# 인기순위 / 프로그램 예상순위 #}
+          {% if hr.pop_rank %}
+          {% if hr.judge == NONE %}
+            {% if hr.pop_rank == 1 %}
+            <span style="color:var(--color-light); font-size: 1.0rem;">
+              <span style="font-family: Arial; background-color: var(--color-r1); padding: 1px 2px; border-radius: 10px;"> {% if hr.pop_rank > 20 %}﹆{% else %} {{hr.pop_rank}} {% endif %}</span>
+            </span>
+            {% elif hr.pop_rank == 2 %}
+            <span style="color:var(--color-light); font-size: 1.0rem;">
+              <span style="font-family: Arial; background-color: var(--color-r2); padding: 1px 2px; border-radius: 10px;"> {% if hr.pop_rank > 20 %}﹆{% else %} {{hr.pop_rank}} {% endif %}</span>
+            </span>
+            {% elif hr.pop_rank == 3 %}
+            <span style="color:var(--color-bg); font-size: 1.0rem;">
+              <span style="font-family: Arial; background-color: var(--color-r3); padding: 1px 2px; border-radius: 10px;"> {% if hr.pop_rank > 20 %}﹆{% else %} {{hr.pop_rank}} {% endif %}</span>
+            </span>
+            {% else %}
+            <span style="font-family: Arial; font-size: 1.0rem; padding: 1px 2px; ">
+              {% if hr.pop_rank > 20 %}﹆{% else %} {{hr.pop_rank}} {% endif %}
+            </span>
+            {% endif %}
+            
+            {% if hr.p_rank %}
+              {% if hr.p_rank == 1 %}
+              <span style="color:var(--color-light); text-align: right; font-size: 1.0rem;">
+                <span style="font-family: Arial; background-color: var(--color-r1); padding: 1px 2px; border-radius: 10px;">{% if hr.p_rank > 20 %}﹆{% else %} {{hr.p_rank}} {% endif %}</span>
+              </span>
+              {% elif hr.p_rank == 2 %}
+              <span style="color:var(--color-light); text-align: right; font-size: 1.0rem;">
+                <span style="font-family: Arial; background-color: var(--color-r2); padding: 1px 2px; border-radius: 10px;">{% if hr.p_rank > 20 %}﹆{% else %} {{hr.p_rank}} {% endif %}</span>
+              </span>
+              {% elif hr.p_rank == 3 %}
+              <span style="color:var(--color-bg); text-align: right; font-size: 1.0rem;">
+                <span style="font-family: Arial; background-color: var(--color-r3); padding: 1px 2px; border-radius: 10px;">{% if hr.p_rank > 20 %}﹆{% else %} {{hr.p_rank}} {% endif %}</span>
+              </span>
+              {% else %}
+              <span style="font-family: Arial; text-align: right; font-size: 1.0rem; padding: 1px 2px; ">
+                {% if hr.p_rank > 20 %}﹆{% else %} {{hr.p_rank}} {% endif %}
+              </span>
+              {% endif %}
+            {% endif %}
           {% endif %}
           {% endif %}
         </td>
@@ -756,52 +805,7 @@
           <div style="font-size: 1.05rem; font-family: Arial; color: var(--color-r1);">{% if hr.h_cnt %}{{hr.h_mare}}{% endif %}</div>
           {% endif %}
         </td>
-
-        {# 인기순위 / 프로그램 예상순위 #}
-        <td style="text-align: center; font-size: 1.2rem;">
-          {% if hr.pop_rank %}
-          {% if hr.judge == NONE %}
-            {% if hr.pop_rank == 1 %}
-            <div style="color:var(--color-light); font-size: 1.0rem;">
-              <span style="font-family: Arial, Helvetica, sans-serif; background-color: var(--color-r1); padding: 2px 4px; border-radius: 10px;"> {% if hr.pop_rank > 20 %}﹆{% else %} {{hr.pop_rank}} {% endif %}</span>
-            </div>
-            {% elif hr.pop_rank == 2 %}
-            <div style="color:var(--color-light); font-size: 1.0rem;">
-              <span style="font-family: Arial, Helvetica, sans-serif; background-color: var(--color-r2); padding: 2px 4px; border-radius: 10px;"> {% if hr.pop_rank > 20 %}﹆{% else %} {{hr.pop_rank}} {% endif %}</span>
-            </div>
-            {% elif hr.pop_rank == 3 %}
-            <div style="color:var(--color-bg); font-size: 1.0rem;">
-              <span style="font-family: Arial, Helvetica, sans-serif; background-color: var(--color-r3); padding: 2px 4px; border-radius: 10px;"> {% if hr.pop_rank > 20 %}﹆{% else %} {{hr.pop_rank}} {% endif %}</span>
-            </div>
-            {% else %}
-            <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.0rem;">
-              {% if hr.pop_rank > 20 %}﹆{% else %} {{hr.pop_rank}} {% endif %}
-            </div>
-            {% endif %}
-            
-            {% if hr.p_rank %}
-              {% if hr.p_rank == 1 %}
-              <div style="color:var(--color-light); text-align: right; font-size: 1.0rem;">
-                <span style="font-family: Arial, Helvetica, sans-serif; background-color: var(--color-r1); padding: 2px 4px; border-radius: 10px;">{% if hr.p_rank > 20 %}﹆{% else %} {{hr.p_rank}} {% endif %}</span>
-              </div>
-              {% elif hr.p_rank == 2 %}
-              <div style="color:var(--color-light); text-align: right; font-size: 1.0rem;">
-                <span style="font-family: Arial, Helvetica, sans-serif; background-color: var(--color-r2); padding: 2px 4px; border-radius: 10px;">{% if hr.p_rank > 20 %}﹆{% else %} {{hr.p_rank}} {% endif %}</span>
-              </div>
-              {% elif hr.p_rank == 3 %}
-              <div style="color:var(--color-bg); text-align: right; font-size: 1.0rem;">
-                <span style="font-family: Arial, Helvetica, sans-serif; background-color: var(--color-r3); padding: 2px 4px; border-radius: 10px;">{% if hr.p_rank > 20 %}﹆{% else %} {{hr.p_rank}} {% endif %}</span>
-              </div>
-              {% else %}
-              <div style="font-family: Arial, Helvetica, sans-serif; text-align: right; font-size: 1.0rem;">
-                {% if hr.p_rank > 20 %}﹆{% else %} {{hr.p_rank}} {% endif %}
-              </div>
-              {% endif %}
-            {% endif %}
-          {% endif %}
-          {% endif %}
-        </td>
-
+        
         {# 단식 / 연식 #}
         <td align="right" style="font-size: 1.1rem; font-family: Arial;">
         {% if hr.alloc1r %}

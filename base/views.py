@@ -470,7 +470,7 @@ def home(request):
     racings = get_race(i_rdate, i_awardee="jockey")
     # race_board = get_board_list(i_rdate, i_awardee="jockey")
 
-    race, expects, rdays, award_j = get_prediction(i_rdate)
+    race, expects, rdays, award_j, judged_jockey = get_prediction(i_rdate)
     # print(racings)
 
     # loadin = get_last2weeks_loadin(i_rdate)
@@ -498,7 +498,7 @@ def home(request):
         "race": race,
         # "t_count": t_count,
         "rdays": rdays,
-        # "judged_jockey": judged_jockey,
+        "judged_jockey": judged_jockey,
         "rflag": rflag,  # 경마일, 비경마일 구분
         # "topics": topics,  
         
@@ -697,6 +697,8 @@ def raceTraining(request, rcity, rdate, rno):
 
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
+    check_visit(request)
+
     context = {
         "train": train,
         "train_title": train_title,
@@ -718,6 +720,8 @@ def raceJudged(request, rcity, rdate, rno):
     trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
 
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+
+    check_visit(request)
 
     context = {
         "pedigree": pedigree,
@@ -743,6 +747,8 @@ def raceRelated(request, rcity, rdate, rno):
     judged_jockey = get_judged_jockey(rcity, rdate, rno)
 
     trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
+
+    check_visit(request)
 
     context = {
         "r_condition": r_condition,  # 기수 기승가능 부딤중량
@@ -794,7 +800,7 @@ def raceRelatedInfo(request, rcity, rdate, rno):
         "award_h": award_h,
         "race_detail": race_detail,
         "loadin": loadin,  # 기수 기승가능 부딤중량
-        "disease": disease,  # 기수 기승가능 부딤중량
+        "disease": disease,  # 경주마 중대 질병 진료 회수
     }
 
     return render(request, "base/race_related_info.html", context)
@@ -2748,6 +2754,8 @@ def printPrediction(request):
     jname3 = request.GET.get("j3") if request.GET.get("j3") != None else ""
 
     race, expects = get_print_prediction(rcity, rdate)
+
+    check_visit(request)
 
     if race:
         context = {
