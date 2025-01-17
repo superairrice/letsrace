@@ -388,7 +388,7 @@ def activityPage(request):
     ).get()
     print(horse.horse)
 
-    # print(datetime.today().weekday())
+    # print(datetime.today().weekday()) 
 
     h_records = RecordS.objects.filter(horse=horse.horse).order_by("-rdate")
 
@@ -2852,6 +2852,7 @@ def trainingHorse(request, rcity, rdate, rno, hname):
         print("Failed selecting in 게이트별 출주마")
 
     train = get_train_horse1(rdate, hname)
+    check_visit(request)
 
     # print(exp011s.rdate)
     # print(hname in h_names)

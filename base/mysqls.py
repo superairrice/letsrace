@@ -6535,8 +6535,8 @@ def get_weeks_status(rcity, rdate):
                     a.s1f_rank, a.g3f_rank, a.g2f_rank, a.g1f_rank, 
                     a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
                     a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
-                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, 
-                    d.adv_track, c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f
+                    a.j_per, a.t_per, a.rating, c.r2alloc1, c.r333alloc1, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, 
+                    d.adv_track, c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f 
                 FROM 
                     The1.exp011 a
                 LEFT JOIN 

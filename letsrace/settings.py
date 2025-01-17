@@ -226,7 +226,7 @@ WSGI_APPLICATION = "letsrace.wsgi.application"
 # }
 # DEBUG = True
 
-DEBUG = False 
+DEBUG = False
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",  # [1]
