@@ -546,6 +546,9 @@ class RecordS(models.Model):
     g3f_rank = models.DecimalField(
         max_digits=4, decimal_places=1, blank=True, null=True
     )
+    g2f_rank = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
     g1f_rank = models.DecimalField(
         max_digits=4, decimal_places=1, blank=True, null=True
     )

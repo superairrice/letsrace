@@ -3855,30 +3855,36 @@ def get_prediction(i_rdate):
 
         strSql = (
             """
-                select rcity, jockey, count(*),
-                        sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) + sum(if(r_rank = 3, 1, 0)) rr123_cnt,
-                        sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) r123_cnt,
-                        sum(if(r_rank = 1, 1, 0)) rr1, sum(if(r_rank = 2, 1, 0)) rr2, sum(if(r_rank = 3, 1, 0)) rr3,
-                        sum(if(rank = 1, 1, 0)) r1, sum(if(rank = 2, 1, 0)) r2, sum(if(rank = 3, 1, 0)) r3, 
-                        date_format(DATE_ADD( min(rdate) , INTERVAL - 7 DAY), '%Y%m%d'),
-                        -- min(rdate), 
+                select a.rcity, a.jockey, count(*),
+                        sum(if(r_rank = 1, 1, 0) ) +  sum(if(r_rank = 2, 1, 0) ) +  sum(if(r_rank = 3, 1, 0) ) rr123_cnt,
+                        sum(if(r_rank = 1, 1, 0)) rr1, 
+                        sum(if(r_rank = 2, 1, 0)) rr2, 
+                        sum(if(r_rank = 3, 1, 0)) rr3,
+                        
+                        max(b.wrace),
+                        max(w1st) r1, max(w2nd) r2, max(w3rd) r3, 
+                        max(w1st) + max(w2nd) + max(w3rd) w3, 
+                        b.tot_1st tot_1st, 
+                        b.year_1st year_1st, 
+                        date_format(DATE_ADD(  '"""
+            + i_rdate
+            + """' , INTERVAL - 7 DAY), '%Y%m%d'),
                         max(rdate)
-                from exp011 a
-                where rdate between date_format(DATE_ADD('"""
+                from exp011 a, jockey_w b
+                where a.jockey = b.jockey
+                and b.wdate = ( select max(wdate) from jockey_w where wdate < '"""
+            + i_rdate
+            + """' )
+                and rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL + 3 DAY), '%Y%m%d')
                 and rno < 80
                 -- and 1 <> 1
-                group by rcity, jockey
-                order by rcity, sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) + sum(if(r_rank = 3, 1, 0)) desc,
-                                sum(if(r_rank = 1, 1, 0)) + sum(if(r_rank = 2, 1, 0)) desc,
-                                sum(if(r_rank = 1, 1, 0))  desc,
-                                sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0)) + sum(if(rank = 3, 1, 0)) desc,
-                                sum(if(rank = 1, 1, 0)) + sum(if(rank = 2, 1, 0))  desc,
-                                sum(if(rank = 1, 1, 0)) desc,
-                                count(*) desc
+                group by a.rcity, a.jockey
+                order by max(w1st) desc, max(w2nd) desc, max(w3rd) desc, max(b.wrace) desc
+                
                 ; """
         )
         # print(strSql)
@@ -6637,7 +6643,7 @@ def get_thethe9_ranks(
                     a.s1f_rank, a.g3f_rank, a.g2f_rank, a.g1f_rank, 
                     a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
                     a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
-                    a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, 
+                    a.j_per, a.t_per, a.rating, c.r2alloc1, c.r333alloc1, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, 
                     d.adv_track, c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f
                 FROM 
                     The1.exp011 a

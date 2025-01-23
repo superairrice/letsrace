@@ -44,61 +44,49 @@
     <table class="fold-table" style="border-radius: 7px;">
       <thead>
         <tr>
-          <th rowspan="2" colspan="1" style="text-transform:capitalize; vertical-align: middle; padding-top: 2.00rem; padding-bottom: 2.00rem; width:25%;">Jockey</th>
-          <th colspan="1" rowspan = "2" style="vertical-align: middle; border-left: solid 1px gray; border-right: solid 1px gray;"><span>출주</span></th>
-          <th colspan="4" style="border-right: solid 1px gray;"><span style="text-transform:lowercase;">thethe9.com</span></th>
-          <th colspan="4" style="border-right: solid 1px gray;"><span style="text-transform:capitalize;">Race Result</span></th>
+          <th rowspan="2" colspan="2" style="width:50%; text-transform:capitalize; vertical-align: middle; padding-top: 2.00rem; padding-bottom: 2.00rem; width:25%; border-right: solid 1px gray;">Jockey</th>
+          <th colspan="4" style="width:25%; border-right: solid 1px gray;"><span style="text-transform:lowercase;">금주</span></th>
+          <th colspan="4" style="width:25%; border-right: solid 1px gray;"><span style="text-transform:capitalize;">전주</span></th>
         </tr>
 
         <tr>
+          <th style="border-right: solid 1px gray;"><span>R</span></th>
           <th><span>1</span></th>
           <th><span>2</span></th>
-          <th><span>3</span></th>
-          <th style="border-right: solid 1px gray;"><span>합</span></th>
+          <th style="border-right: solid 1px gray;"><span>3</span></th>
+          <th style="border-right: solid 1px gray;"><span>R</span></th>
           <th><span>1</span></th>
           <th><span>2</span></th>
-          <th><span>3</span></th>
-          <th style="border-right: solid 1px gray;"><span>합</span></th>
+          <th style="border-right: solid 1px gray;"><span>3</span></th>
           
         </tr>
       </thead>
 
       <tbody>
-        {% for rcity, jockey, rcnt, rr123cnt, r123cnt, rr1, rr2, rr3, r1, r2, r3, from, to in award_j %}
+        {% for rcity, jockey, rcnt, rr123cnt, rr1, rr2, rr3, wrace, w1st, w2nd, w3rd, w3, tot_1st, year_1st, from, to in award_j %}
         {% if rcity == '서울' %}
-        
+
         <tr class="view" align="center">
           <td>
             <div style="font-size: 1.2rem;">
               <span>{{jockey}}</span>
             </div>
           </td>
+          <td align="right">
+            {% if tot_1st|mod:100 >= 96 %}
+            <span style="font-family: Arial; font-size: 1.1rem; padding: 1px; color: var(--color-r1); border-radius: 5px; background-color: var(--color-bg);">{{tot_1st}}</span>
+            {% elif tot_1st|mod:100 >= 91 and tot_1st|mod:100 < 96 %}
+            <span style="font-family: Arial; font-size: 1.1rem; padding: 1px; color: var(--color-r3); border-radius: 5px; background-color: var(--color-bg);">{{tot_1st}}</span>
+            {% else %}
+            <span style="font-family: Arial; font-size: 1.1rem; padding: 1px; color: var(--color-gray); border-radius: 5px; background-color: var(--color-bg);">{{tot_1st}}</span>
+            {% endif %}
+          </td>
           <td>
             <a href="{% url 'jt_analysis' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1300, height=800, top=0, toolbars=no, scrollbars=yes'); return false;">
-              <div style="font-size: 1.2rem; font-family: Arial; background-color: var(--color-bg); border-radius: 7px; padding: 2px 4px;">
+              <div style="font-size: 1.2rem; font-family: Arial; background-color: var(--color-bg); border-radius: 7px;">
                 <span style="font-family: Arial; border-bottom:1px solid orange; border-radius: 5px; padding: 2px 4px;">{{rcnt}}</span>
               </div>
             </a>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem;">
-              <span style="font-family: Arial; color:var(--color-r1)">{%if r1 == 0%}•{%else%}{{r1}}{%endif%}</span>
-            </div>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem;">
-              <span style="font-family: Arial; color:var(--color-r2)">{%if r2 == 0%}•{%else%}{{r2}}{%endif%}</span>
-            </div>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem;">
-              <span style="font-family: Arial; color:var(--color-r3)">{%if r3 == 0%}•{%else%}{{r3}}{%endif%}</span>
-            </div>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem;">
-              <span style="font-family: Arial; color:var(--color-light); background-color:var(--color-bg); padding:2px 4px; border-radius: 5px;;">{%if r123cnt == 0%}•{%else%}{{r123cnt}}{%endif%}</span>
-            </div>
           </td>
           <td>
             <div style="font-size: 1.2rem;">
@@ -116,8 +104,25 @@
             </div>
           </td>
           <td>
+            <a href="{% url 'jt_analysis' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1300, height=800, top=0, toolbars=no, scrollbars=yes'); return false;">
+              <div style="font-size: 1.2rem; font-family: Arial; background-color: var(--color-dark); border-radius: 7px;">
+                <span style="font-family: Arial; padding: 2px 4px;">{{wrace}}</span>
+              </div>
+            </a>
+          </td>
+          <td>
             <div style="font-size: 1.2rem;">
-              <span style="font-family: Arial; color:var(--color-light); background-color:var(--color-bg); padding:2px 4px; border-radius: 5px;">{%if rr123cnt == 0%}•{%else%}{{rr123cnt}}{%endif%}</span>
+              <span style="font-family: Arial; color:var(--color-r1)">{%if w1st == 0%}•{%else%}{{w1st}}{%endif%}</span>
+            </div>
+          </td>
+          <td>
+            <div style="font-size: 1.2rem;">
+              <span style="font-family: Arial; color:var(--color-r2)">{%if w2nd == 0%}•{%else%}{{w2nd}}{%endif%}</span>
+            </div>
+          </td>
+          <td>
+            <div style="font-size: 1.2rem;">
+              <span style="font-family: Arial; color:var(--color-r3)">{%if w3rd == 0%}•{%else%}{{w3rd}}{%endif%}</span>
             </div>
           </td>
           
@@ -193,61 +198,49 @@
     <table class="fold-table" style="border-radius: 7px;">
       <thead>
         <tr>
-          <th rowspan="2" colspan="1" style="text-transform:capitalize; vertical-align: middle; padding-top: 2.00rem; padding-bottom: 2.00rem; width:25%;">Jockey</th>
-          <th colspan="1" rowspan = "2" style="vertical-align: middle; border-left: solid 1px gray; border-right: solid 1px gray;"><span>출주</span></th>
-          <th colspan="4" style="border-right: solid 1px gray;"><span style="text-transform:lowercase;">thethe9.com</span></th>
-          <th colspan="4" style="border-right: solid 1px gray;"><span style="text-transform:capitalize;">Race Result</span></th>
+          <th rowspan="2" colspan="2" style="width:50%; text-transform:capitalize; vertical-align: middle; padding-top: 2.00rem; padding-bottom: 2.00rem; width:25%; border-right: solid 1px gray;">Jockey</th>
+          <th colspan="4" style="width:25%; border-right: solid 1px gray;"><span style="text-transform:lowercase;">금주</span></th>
+          <th colspan="4" style="width:25%; border-right: solid 1px gray;"><span style="text-transform:capitalize;">전주</span></th>
         </tr>
 
         <tr>
+          <th style="border-right: solid 1px gray;"><span>R</span></th>
           <th><span>1</span></th>
           <th><span>2</span></th>
-          <th><span>3</span></th>
-          <th style="border-right: solid 1px gray;"><span>합</span></th>
+          <th style="border-right: solid 1px gray;"><span>3</span></th>
+          <th style="border-right: solid 1px gray;"><span>R</span></th>
           <th><span>1</span></th>
           <th><span>2</span></th>
-          <th><span>3</span></th>
-          <th style="border-right: solid 1px gray;"><span>합</span></th>
+          <th style="border-right: solid 1px gray;"><span>3</span></th>
           
         </tr>
       </thead>
 
       <tbody>
-        {% for rcity, jockey, rcnt, rr123cnt, r123cnt, rr1, rr2, rr3, r1, r2, r3, from, to in award_j %}
-        {% if rcity != '서울' %}
-        
+        {% for rcity, jockey, rcnt, rr123cnt, rr1, rr2, rr3, wrace, w1st, w2nd, w3rd, w3, tot_1st, year_1st, from, to in award_j %}
+        {% if rcity == '부산' %}
+
         <tr class="view" align="center">
           <td>
             <div style="font-size: 1.2rem;">
               <span>{{jockey}}</span>
             </div>
           </td>
+          <td align="right">
+            {% if tot_1st|mod:100 >= 96 %}
+            <span style="font-family: Arial; font-size: 1.1rem; padding: 1px; color: var(--color-r1); border-radius: 5px; background-color: var(--color-bg);">{{tot_1st}}</span>
+            {% elif tot_1st|mod:100 >= 91 and tot_1st|mod:100 < 96 %}
+            <span style="font-family: Arial; font-size: 1.1rem; padding: 1px; color: var(--color-r3); border-radius: 5px; background-color: var(--color-bg);">{{tot_1st}}</span>
+            {% else %}
+            <span style="font-family: Arial; font-size: 1.1rem; padding: 1px; color: var(--color-gray); border-radius: 5px; background-color: var(--color-bg);">{{tot_1st}}</span>
+            {% endif %}
+          </td>
           <td>
-            <a href="{% url 'jt_analysis' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1300, height=800, toolbars=no, scrollbars=yes'); return false;">
-              <div style="font-size: 1.2rem; font-family: Arial; background-color: var(--color-bg); border-radius: 7px; padding: 2px 4px;">
+            <a href="{% url 'jt_analysis' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1300, height=800, top=0, toolbars=no, scrollbars=yes'); return false;">
+              <div style="font-size: 1.2rem; font-family: Arial; background-color: var(--color-bg); border-radius: 7px;">
                 <span style="font-family: Arial; border-bottom:1px solid orange; border-radius: 5px; padding: 2px 4px;">{{rcnt}}</span>
               </div>
             </a>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem;">
-              <span style="font-family: Arial; color:var(--color-r1)">{%if r1 == 0%}•{%else%}{{r1}}{%endif%}</span>
-            </div>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem;">
-              <span style="font-family: Arial; color:var(--color-r2)">{%if r2 == 0%}•{%else%}{{r2}}{%endif%}</span>
-            </div>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem;">
-              <span style="font-family: Arial; color:var(--color-r3)">{%if r3 == 0%}•{%else%}{{r3}}{%endif%}</span>
-            </div>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem;">
-              <span style="font-family: Arial; color:var(--color-light); background-color:var(--color-bg); padding:2px 4px; border-radius: 5px;">{%if r123cnt == 0%}•{%else%}{{r123cnt}}{%endif%}</span>
-            </div>
           </td>
           <td>
             <div style="font-size: 1.2rem;">
@@ -265,15 +258,33 @@
             </div>
           </td>
           <td>
+            <a href="{% url 'jt_analysis' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1300, height=800, top=0, toolbars=no, scrollbars=yes'); return false;">
+              <div style="font-size: 1.2rem; font-family: Arial; background-color: var(--color-dark); border-radius: 7px;">
+                <span style="font-family: Arial; padding: 2px 4px;">{{wrace}}</span>
+              </div>
+            </a>
+          </td>
+          <td>
             <div style="font-size: 1.2rem;">
-              <span style="font-family: Arial; color:var(--color-light); background-color:var(--color-bg); padding:2px 4px; border-radius: 5px;">{%if rr123cnt == 0%}•{%else%}{{rr123cnt}}{%endif%}</span>
+              <span style="font-family: Arial; color:var(--color-r1)">{%if w1st == 0%}•{%else%}{{w1st}}{%endif%}</span>
+            </div>
+          </td>
+          <td>
+            <div style="font-size: 1.2rem;">
+              <span style="font-family: Arial; color:var(--color-r2)">{%if w2nd == 0%}•{%else%}{{w2nd}}{%endif%}</span>
+            </div>
+          </td>
+          <td>
+            <div style="font-size: 1.2rem;">
+              <span style="font-family: Arial; color:var(--color-r3)">{%if w3rd == 0%}•{%else%}{{w3rd}}{%endif%}</span>
             </div>
           </td>
           
         </tr>
 
         <tr class="fold">
-            <td colspan="10">
+
+          <td colspan="10">
             <div class="fold-content" style="position:static">
               {# 재결사항 #}
               <table class="small-friendly" style="z-index: 0;">
@@ -325,6 +336,7 @@
 
             </div>
           </td>
+
         </tr>
   
         {%endif%}

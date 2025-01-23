@@ -2189,6 +2189,7 @@ def weeksStatus(request, rcity, rdate):
         "r_rank2": len(r_rank2),
         "r_rank3": len(r_rank3),
         "rcount": len(status),
+        "winname": "weeksStatus",
     }
 
     return render(request, "base/weeks_status.html", context)
