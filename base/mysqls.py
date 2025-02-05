@@ -83,7 +83,7 @@ def get_paternal(rcity, rdate, rno, distance):
                     ( select price/1000 from horse_w where horse = a.horse and wdate = ( select min(wdate) from horse_w where horse = a.horse and price > 0)  )
                 FROM exp011	a,
                     ( select horse, paternal, price, tot_prize 
-                        from horse_w where wdate = ( select max(wdate) from horse_w where wdate <= '"""
+                        from horse_w where wdate = ( select max(wdate) from horse_w where wdate < '"""
             + rdate
             + """' )) b left outer join paternal c on b.paternal = c.paternal 
                 where  a.horse = b.horse
@@ -2318,7 +2318,7 @@ def get_loadin(i_rcity, i_rdate, i_rno):
 
         strSql = (
             """ 
-            select jockey, cast(load_in as decimal) 
+            select jockey, cast(load_in as decimal), tot_1st
             from jockey_w 
             where wdate = ( select max(wdate) from jockey_w where wdate < '"""
             + i_rdate
@@ -3883,7 +3883,7 @@ def get_prediction(i_rdate):
                 and rno < 80
                 -- and 1 <> 1
                 group by a.rcity, a.jockey
-                order by max(w1st) desc, max(w2nd) desc, max(w3rd) desc, max(b.wrace) desc
+                order by max(w1st) desc, max(w2nd) desc, max(w3rd) desc, max(b.wrace) asc
                 
                 ; """
         )
@@ -5708,6 +5708,12 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
             if horse[0:1] == "[":
                 horse = horse[3:]
 
+            if items[12][3:].replace('(', '').replace(')', '')[0:1] == '-' :
+                h_weight = items[12][0:3] + " " + items[12][3:].replace('(', '').replace(')', '')
+            else:
+                h_weight = items[12][0:3] + " +" + items[12][3:].replace('(', '').replace(')', '')                
+                
+            # print(h_weight)
             alloc1r = items[13]
             alloc3r = items[14]
 
@@ -5721,6 +5727,9 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
                         set r_rank = """
                     + r_rank
                     + """,
+                            h_weight = '"""
+                    + h_weight
+                    + """',
                             alloc1r = '"""
                     + alloc1r
                     + """',
@@ -5780,10 +5789,10 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
                     + """'
                         where rcity = '"""
                     + rcity
-                    + """' 
+                    + """'
                     and rdate = '"""
                     + rdate
-                    + """' 
+                    + """'
                     and rno = """
                     + rno
                     + """
@@ -5793,7 +5802,7 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
                 ; """
                 )
 
-                print(strSql)
+                # print(strSql)
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 awards = cursor.fetchall()
 
@@ -5839,10 +5848,10 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
                     + """'
                         where rcity = '"""
                     + rcity
-                    + """' 
+                    + """'
                     and rdate = '"""
                     + rdate
-                    + """' 
+                    + """'
                     and rno = """
                     + rno
                     + """
@@ -5852,7 +5861,7 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
                 ; """
                 )
 
-                print(strSql)
+                # print(strSql)
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 awards = cursor.fetchall()
 
@@ -5945,12 +5954,14 @@ def insert_horse_disease(r_content):
 
     lines = r_content.split("\n")
 
+    r_lines = 0
     for index, line in enumerate(lines):
         items = line.split("\t")
 
-        # print(index, items)
+        if len(items) == 6 and items[0] != '순':
+            r_lines = r_lines + 1
+            # print(index, items[0], items)
 
-        if items[0]:
             num = items[0]
             tdate = items[1][0:4] + items[1][5:7] + items[1][8:10]
             horse = items[2]
@@ -5958,8 +5969,6 @@ def insert_horse_disease(r_content):
             team = items[3][0:-1].zfill(2)
             hospital = items[4]
             disease = items[5]
-
-            # print(tdate, horse, team, hospital, disease)
 
             try:
                 cursor = connection.cursor()
@@ -6014,14 +6023,14 @@ def insert_horse_disease(r_content):
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 awards = cursor.fetchall()
 
-                connection.commit()
-                connection.close()
+                # connection.commit()
+                # connection.close()
 
             except:
                 connection.rollback()
                 print("Failed inserting in swim : 말 진료현황")
 
-    return len(lines)
+    return r_lines
 
 
 # 경주 변경 내용 update - 경주순위
@@ -6343,7 +6352,7 @@ def insert_race_judged(rcity, r_content):
     # print(r_content)
     # print(rcount)
 
-    lines = r_content.split("\n")
+    lines = r_content.split("\n") 
 
     rno = 0
     judged = ""
@@ -6351,20 +6360,20 @@ def insert_race_judged(rcity, r_content):
     for index, line in enumerate(lines):
         items = line.split("\t")
 
-        # print(items[0])
+        # print(index,items[0])
 
         if items[0]:
-            if index == 0:
-                # print(items[0][14:16])
-                if items[0][14:16] == "서울":
+            if index == 27:
+                # print(items[0][3:5])
+                if items[0][3:5] == "서울":
                     rcity = "서울"
                 else:
                     rcity = "부산"
                 # print(items[1])
 
-            elif index == 3:
+            elif index == 32:
                 rdate = items[1][0:4] + items[1][6:8] + items[1][10:12]
-            elif index > 5:
+            elif index > 36:
                 # print(items[0][-4:])
                 if items[0][-2:] == "경주":
                     rno = items[0][-4:][0:2]
@@ -6397,7 +6406,7 @@ def insert_race_judged(rcity, r_content):
                             pass
 
                         else:
-                            # print(rdate)
+                            # print(rcity, rdate, rno, judged, "", committee)
                             ret = insert_race_judged_sql(
                                 rcity, rdate, rno, judged, "", committee
                             )
