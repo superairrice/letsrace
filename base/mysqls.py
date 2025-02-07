@@ -3193,8 +3193,8 @@ def get_race_related(i_rcity, i_rdate, i_rno):
         cursor = connection.cursor()
 
         strSql = (
-            """ 
-                select rcity, jockey awardee, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey j_name, trainer t_name, host h_name, r_pop, distance, handycap, jt_per, s1f_rank, corners, g3f_rank, g1f_rank, alloc3r, jockey_old, reason
+            """  
+                select rcity, jockey awardee, rdate, rday, rno, grade, dividing, gate, rank, r_rank, horse, remark, jockey j_name, trainer t_name, host h_name, r_pop, distance, handycap, jt_per, jt_cnt, remark, s1f_rank, corners, g3f_rank, g1f_rank, alloc3r, jockey_old, reason
                 from expect
                 where rdate between date_format(DATE_ADD('"""
             + i_rdate
@@ -3853,6 +3853,15 @@ def get_prediction(i_rdate):
     try:
         cursor = connection.cursor()
 
+        # 경마일 check
+        r_check = rdate_check(i_rdate)
+        if r_check[0][0] != 0:
+            week1 = '0'
+            week2 = '7'
+        else:
+            week1 = '7'
+            week2 = '14' 
+
         strSql = (
             """
                 select a.rcity, a.jockey, count(*),
@@ -3866,15 +3875,10 @@ def get_prediction(i_rdate):
                         max(w1st) + max(w2nd) + max(w3rd) w3, 
                         b.tot_1st tot_1st, 
                         b.year_1st year_1st, 
-                        date_format(DATE_ADD(  '"""
-            + i_rdate
-            + """' , INTERVAL - 7 DAY), '%Y%m%d'),
+                        date_format(DATE_ADD(  '""" + i_rdate + """' , INTERVAL - """ + week2 + """ DAY), '%Y%m%d'),
                         max(rdate)
-                from exp011 a, jockey_w b
-                where a.jockey = b.jockey
-                and b.wdate = ( select max(wdate) from jockey_w where wdate < '"""
-            + i_rdate
-            + """' )
+                from exp011 a right OUTER JOIN jockey_w b ON  a.jockey = b.jockey
+                and b.wdate = ( select max(wdate) from jockey_w where wdate < date_format(DATE_ADD(  '""" + i_rdate + """' , INTERVAL - """ + week1 + """ DAY), '%Y%m%d') )
                 and rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
@@ -3883,15 +3887,13 @@ def get_prediction(i_rdate):
                 and rno < 80
                 -- and 1 <> 1
                 group by a.rcity, a.jockey
-                order by max(w1st) desc, max(w2nd) desc, max(w3rd) desc, max(b.wrace) asc
+                order by max(w1st) desc, max(w2nd) desc, max(w3rd) desc, b.year_1st desc
                 
                 ; """
         )
-        # print(strSql)
 
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         award_j = cursor.fetchall()
-
         # connection.commit()
         # connection.close()
 
@@ -3967,7 +3969,36 @@ def get_prediction(i_rdate):
         connection.rollback()
         print("Failed selecting in judged jockey")
 
-    return race, expects, rdays, award_j, judged_jockey
+    # 출전표 변경
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """
+            SELECT rcity, rday, rno, gate, horse, jockey_old, jockey, reason, r_rank
+            FROM expect
+            where rdate between '"""
+            + i_rdate
+            + """' and date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL + 3 DAY), '%Y%m%d')
+            and reason is not null
+            order by rcity, rdate, rno, gate
+            ; """
+        )
+
+        # print(strSql)
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        changed_race = cursor.fetchall()
+
+        connection.commit()
+        connection.close()
+
+    except:
+        connection.rollback()
+        print("Failed selecting in judged jockey")
+
+    return race, expects, rdays, award_j, judged_jockey, changed_race
 
 
 def get_expects(i_rdate):
@@ -6996,6 +7027,35 @@ def get_thethe9_ranks_multi(
             + """%'
 
             order by a.rdate desc, b.rtime desc, a.r_rank, a.rank
+        ; """
+        )
+
+        # print(strSql) 
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        result = cursor.fetchall()
+
+        # connection.commit()
+        # connection.close()
+
+    except:
+        # connection.rollback()
+        print("Failed selecting in thethe9_ranks_jockey")
+
+    return result
+
+# thethe9 경마일 체크
+def rdate_check(i_rdate):
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ SELECT count(*)
+                FROM The1.exp010
+                WHERE rdate between date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 10 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
+            + i_rdate
+            + """', INTERVAL - 7 DAY), '%Y%m%d')
         ; """
         )
 

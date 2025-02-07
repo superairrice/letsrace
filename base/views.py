@@ -470,7 +470,7 @@ def home(request):
     racings = get_race(i_rdate, i_awardee="jockey")
     # race_board = get_board_list(i_rdate, i_awardee="jockey")
 
-    race, expects, rdays, award_j, judged_jockey = get_prediction(i_rdate)
+    race, expects, rdays, award_j, judged_jockey, changed_race = get_prediction(i_rdate)
     # print(racings)
 
     # loadin = get_last2weeks_loadin(i_rdate)
@@ -499,6 +499,7 @@ def home(request):
         # "t_count": t_count,
         "rdays": rdays,
         "judged_jockey": judged_jockey,
+        "changed_race": changed_race,               #출마표 젼경
         "rflag": rflag,  # 경마일, 비경마일 구분
         # "topics": topics,  
         
@@ -3446,58 +3447,6 @@ def writeSignificant(request, rdate, horse):
     except:
         # connection.rollback()
         print("Failed selecting r_start")
-
-    # try:
-    #     cursor = connection.cursor()
-    #     strSql = """ select r_code, r_name from race_cd where cd_type = 'R2' order by r_code; """
-    #     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-    #     r_corners = cursor.fetchall()
-
-    #     # connection.commit()
-    #     # connection.close()
-
-    # except:
-    #     # connection.rollback()
-    #     print("Failed selecting r_corners")
-
-    # try:
-    #     cursor = connection.cursor()
-    #     strSql = """ select r_code, r_name from race_cd where cd_type = 'R3' order by r_code; """
-    #     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-    #     r_finish = cursor.fetchall()
-
-    #     # connection.commit()
-    #     # connection.close()
-
-    # except:
-    #     # connection.rollback()
-    #     print("Failed selecting r_finish")
-
-    # try:
-    #     cursor = connection.cursor()
-    #     strSql = """ select r_code, r_name from race_cd where cd_type = 'R4' order by r_code; """
-    #     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-    #     r_wrapup = cursor.fetchall()
-
-    #     # connection.commit()
-    #     # connection.close()
-
-    # except:
-    #     # connection.rollback()
-    #     print("Failed selecting r_wrapup")
-
-    # try:
-    #     cursor = connection.cursor()
-    #     strSql = """ select r_code, r_name from race_cd where cd_type = 'R0' order by cd_type, r_code; """
-    #     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-    #     r_flag = cursor.fetchall()
-
-    #     # connection.commit()
-    #     # connection.close()
-
-    # except:
-    #     # connection.rollback()
-    #     print("Failed selecting r_flag ; 집계 제외 사유")
 
     context = {
         "rdate": rdate,
