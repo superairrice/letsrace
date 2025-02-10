@@ -3983,7 +3983,7 @@ def get_prediction(i_rdate):
             + i_rdate
             + """', INTERVAL + 3 DAY), '%Y%m%d')
             and reason is not null
-            order by rcity, rdate, rno, gate
+            order by rdate desc, rcity, rno, gate
             ; """
         )
 
