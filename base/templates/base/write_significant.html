@@ -24,108 +24,110 @@
 <br>
 
 <div class="container">
+  <div class="roomList" style="height: auto;">
 
-  <div class="room__top">
-    <div class="room__topLeft">
-      <span style="font-size:1.5rem; color: var(--color-r3); font-weight: 600;">🐴&nbsp;&nbsp;{{horse}}</span>
-      <span style="font-size:1.5rem; color: var(--color-main); font-weight: 600;">&nbsp;&nbsp;{{rdate|slice:"0:4"}}.{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
+    <div class="room__top">
+      <div class="room__topLeft">
+        <span style="font-size:1.7rem; color: var(--color-r3); font-weight: 600;">🐴&nbsp;&nbsp;{{horse}}</span>
+        <span style="font-size:1.7rem; color: var(--color-main); font-weight: 600;">&nbsp;&nbsp;{{rdate|slice:"0:4"}}.{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
 
-      <span style="font-size:1.5rem; color: var(--color-light); font-weight: 600;">&nbsp;경주 메모</span>
+        <span style="font-size:1.7rem; color: var(--color-light); font-weight: 600;">&nbsp;경주 메모</span>
+      </div>
+    
     </div>
-  
+
+    <hr style="border: solid 1px gray;">
+
+    <form class="header__search" action="" method="POST">
+      {% csrf_token %}
+      <label style="padding-bottom: 0%;">
+        <div style="width:80px">✔︎&nbsp;Start :</div>
+        <div>
+        <select name="start" style="font-size: 1.4rem; width: 300px; border-radius: 5px;">
+          <option value="-" {% if start == '-' %} selected {% endif %}>&nbsp;</option>
+          {% for cd_type, r_code, r_name in race_cd %}
+          {% if cd_type == 'R1' %}
+          <option value="{{r_code}}" {% if r_code == r_significant.0.0 %} selected {% endif %}>{{r_name}}</option>
+          {% endif %}
+          {% endfor %}
+        </select>
+        </div>
+      </label>
+
+      <label style="padding-bottom: 0%;">
+        <div style="width:80px">✔︎&nbsp;Corners :</div>
+        <div>
+        <select name="corners" style="font-size: 1.4rem; width: 300px; border-radius: 5px;">
+          <option value="-" {% if corners == '-' %} selected {% endif %}>&nbsp;</option>
+          {% for cd_type, r_code, r_name in race_cd %}
+          {% if cd_type == 'R2' %}
+          <option value="{{r_code}}" {% if r_code == r_significant.0.1 %} selected {% endif %}>{{r_name}}</option>
+          {% endif %}
+          {% endfor %}
+        </select>
+        </div>
+      </label>
+
+      <label style="padding-bottom: 0%;">
+        <div style="width:80px">✔︎&nbsp;Finish :</div>
+        <div>
+        <select name="finish" style="font-size: 1.4rem; width: 300px; border-radius: 5px;">
+          <option value="-" {% if finish == '-' %} selected {% endif %}>&nbsp;</option>
+          {% for cd_type, r_code, r_name in race_cd %}
+          {% if cd_type == 'R3' %}
+          <option value="{{r_code}}" {% if r_code == r_significant.0.2 %} selected {% endif %}>{{r_name}}</option>
+          {% endif %}
+          {% endfor %}
+        </select>
+        </div>
+      </label>
+      <label>
+        <div style="width:80px">✔︎&nbsp;Wrap up :</div>
+        <div>
+        <select name="wrapup" style="font-size: 1.4rem; width: 300px; border-radius: 5px;">
+          <option value="-" {% if wrapup == '-' %} selected {% endif %}>&nbsp;</option>
+          {% for cd_type, r_code, r_name in race_cd %}
+          {% if cd_type == 'R4' %}
+          <option value="{{r_code}}" {% if r_code == r_significant.0.3 %} selected {% endif %}>{{r_name}}</option>
+          {% endif %}
+          {% endfor %}
+        </select>
+        </div>
+      </label>
+
+      <label>
+        <div style="width:80px">✔︎&nbsp;Etc. :</div>
+        <div>
+          <textarea name="r_etc" rows="4" placeholder="Enter Your Text Here by Replacing it" style="font-size: 1.4rem; width: 300px; padding: 10px;">
+            {% if r_significant.0.4 %}{{r_significant.0.4}}{% else %}&nbsp;{% endif %}
+          </textarea>
+        </div>
+      </label>
+
+      <label>
+        <div style="width:80px">✔︎&nbsp;제외 사유 :</div>
+        <div>
+        <select name="r_flag" style="font-size: 1.4rem; width: 300px; border-radius: 5px;">
+          <!-- <option value="0" {% if r_flag == '0' %} selected {% endif %}>&nbsp;</option> -->
+          {% for cd_type, r_code, r_name in race_cd %}
+          {% if cd_type == 'R0' %}
+          <option value="{{r_code}}" {% if r_code == r_significant.0.5 %} selected {% endif %}>{{r_name}}</option>
+          {% endif %}
+          {% endfor %}
+        </select>
+        </div>
+      </label>
+
+      <button class="btn btn--link" type="submit" style="font-size: 1.5rem;">💾&nbsp;Save</button>
+
+      <div class="form__action" style="font-size: 1.5rem;">
+        <a class="btn btn--dark"  onclick="window.close()">Close</a>
+      </div>
+
+    </form>
+
+
   </div>
-
-  <hr style="border: solid 1px gray;">
-
-  <form class="header__search" action="" method="POST">
-    {% csrf_token %}
-    <label style="padding-bottom: 0%;">
-      <div style="width:80px">✔︎&nbsp;Start :</div>
-      <div>
-      <select name="start" style="font-size: 1.25rem; width: 300px; border-radius: 5px;">
-        <option value="-" {% if start == '-' %} selected {% endif %}>&nbsp;</option>
-        {% for cd_type, r_code, r_name in race_cd %}
-        {% if cd_type == 'R1' %}
-        <option value="{{r_code}}" {% if r_code == r_significant.0.0 %} selected {% endif %}>{{r_name}}</option>
-        {% endif %}
-        {% endfor %}
-      </select>
-      </div>
-    </label>
-
-    <label style="padding-bottom: 0%;">
-      <div style="width:80px">✔︎&nbsp;Corners :</div>
-      <div>
-      <select name="corners" style="font-size: 1.25rem; width: 300px; border-radius: 5px;">
-        <option value="-" {% if corners == '-' %} selected {% endif %}>&nbsp;</option>
-        {% for cd_type, r_code, r_name in race_cd %}
-        {% if cd_type == 'R2' %}
-        <option value="{{r_code}}" {% if r_code == r_significant.0.1 %} selected {% endif %}>{{r_name}}</option>
-        {% endif %}
-        {% endfor %}
-      </select>
-      </div>
-    </label>
-
-    <label style="padding-bottom: 0%;">
-      <div style="width:80px">✔︎&nbsp;Finish :</div>
-      <div>
-      <select name="finish" style="font-size: 1.25rem; width: 300px; border-radius: 5px;">
-        <option value="-" {% if finish == '-' %} selected {% endif %}>&nbsp;</option>
-        {% for cd_type, r_code, r_name in race_cd %}
-        {% if cd_type == 'R3' %}
-        <option value="{{r_code}}" {% if r_code == r_significant.0.2 %} selected {% endif %}>{{r_name}}</option>
-        {% endif %}
-        {% endfor %}
-      </select>
-      </div>
-    </label>
-    <label>
-      <div style="width:80px">✔︎&nbsp;Wrap up :</div>
-      <div>
-      <select name="wrapup" style="font-size: 1.25rem; width: 300px; border-radius: 5px;">
-        <option value="-" {% if wrapup == '-' %} selected {% endif %}>&nbsp;</option>
-        {% for cd_type, r_code, r_name in race_cd %}
-        {% if cd_type == 'R4' %}
-        <option value="{{r_code}}" {% if r_code == r_significant.0.3 %} selected {% endif %}>{{r_name}}</option>
-        {% endif %}
-        {% endfor %}
-      </select>
-      </div>
-    </label>
-
-    <label>
-      <div style="width:80px">✔︎&nbsp;Etc. :</div>
-      <div>
-        <textarea name="r_etc" rows="2" placeholder="Enter Your Text Here by Replacing it" style="font-size: 1.2rem; width: 300px; padding: 10px;">
-          {% if r_significant.0.4 %}{{r_significant.0.4}}{% else %}&nbsp;{% endif %}
-        </textarea>
-      </div>
-    </label>
-
-    <label>
-      <div style="width:80px">✔︎&nbsp;제외 사유 :</div>
-      <div>
-      <select name="r_flag" style="font-size: 1.25rem; width: 300px; border-radius: 5px;">
-        <!-- <option value="0" {% if r_flag == '0' %} selected {% endif %}>&nbsp;</option> -->
-        {% for cd_type, r_code, r_name in race_cd %}
-        {% if cd_type == 'R0' %}
-        <option value="{{r_code}}" {% if r_code == r_significant.0.5 %} selected {% endif %}>{{r_name}}</option>
-        {% endif %}
-        {% endfor %}
-      </select>
-      </div>
-    </label>
-
-    <button class="btn btn--link" type="submit" style="font-size: 1.3rem;">💾&nbsp;Save</button>
-
-    <div class="form__action">
-      <a class="btn btn--dark" onclick="window.close()">Close</a>
-    </div>
-
-  </form>
-
-
 </div>
 
 

@@ -75,13 +75,16 @@
       <table class="fold-table" style="border-radius: 7px;">
         <thead>
           <tr>
-            <th rowspan="1" valign="center"><span>예상</span></th>
+
             
             {% if alloc.r2alloc %}
-            <th rowspan="1"><span>마번</span></th>
+            <th rowspan="1"><span>예상</span></th>
             {% else %}
-            <th rowspan="2" style="vertical-align: middle;"><div>마번</div></th>
+            <th rowspan="2" style="vertical-align: middle;"><div>예상<br>순위</div></th>
             {% endif %}
+
+            <th rowspan="1" valign="center"><span>마번</span></th>
+
             <th colspan="2">
               <a href="{% url 'status_stable' r_condition.rcity r_condition.rdate r_condition.rno %}"
                 onclick="window.open(this.href, 'w_status_stable', 'width=900, height=880, toolbars=no, scrollbars=yes'); return false;">
@@ -150,6 +153,7 @@
             {% if alloc.r2alloc %} {# 경주결과가 입력되었으면 #}
             <th rowspan="1"><span style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 2px;">실순</span></th>
             {% endif %}
+
             <th rowspan="1"><span style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">레이팅</span></th>
 
             <th>
@@ -225,6 +229,7 @@
                 {% else %}
                 <span style="font-family: Arial; font-size:1.0rem; color:var(--color-gray); text-align: right; padding:2px 4px; border-radius: 7px;">{{r.r_rank}}</span>
                 {% endif %}
+                
               {% endif %}
               </div>
             </td>
@@ -902,7 +907,7 @@
               </div>
 
               {% if r.r_record %}
-                <div style=" font-size: 1.15rem; text-align: right; padding-top:0.2rem;">
+                <div style=" font-size: 1.15rem; text-align: right;">
                 {% if r.r_rank == 1 %}
                 <span style="color:var(--color-light); font-style: italic; font-family: Arial; padding:2px 4px; border-radius: 7px; background-color: var(--color-r1);">{{r.r_record|slice:"0:1"}}&nbsp;{{r.r_record|slice:"1:6"}}</span>
                 {% elif r.r_rank == 2 %}
@@ -989,7 +994,7 @@
                 <span style=" font-size:1.0rem; font-family: Arial; color:var(--color-gray);"></span>
                 {% endif %}
 
-                <a href="{% url 'write_significant' r.rdate r.horse %}" onclick="window.open(this.href, 'w_significant', 'top=0, left=0, width=550, height=440'); return false;">
+                <a href="{% url 'write_significant' r.rdate r.horse %}" onclick="window.open(this.href, 'w_significant', 'top=100, left=0, width=450, height=400'); return false;">
                           
                   {% for hname, r_etc, r_flag in r_memo %}
                     {% if hname == r.horse %}
@@ -1009,7 +1014,7 @@
               {% else %}
               
               <div style="text-align: center; font-size:1.1rem; color:var(--color-light-gray);">
-                <a href="{% url 'write_significant' r.rdate r.horse %}" onclick="window.open(this.href, 'w_significant', 'top=0, left=0, width=550, height=440'); return false;">
+                <a href="{% url 'write_significant' r.rdate r.horse %}" onclick="window.open(this.href, 'w_significant', 'top=100, left=0, width=450, height=400'); return false;">
                   {% for hname, r_etc, r_flag in r_memo %}
                     {% if r.horse in hname %}
                     <div style="font-family: Arial; font-size:0.9rem; color:var(--color-light); text-align: center;">
@@ -1155,7 +1160,7 @@
                 <span style="font-size: 1.2rem; ">{{paternal|slice:"0:12"}}</span>
               </div>
 
-              <div align="right" style="font-size: 1.24rem; color:var(--color-gray);">
+              <div align="right" style="font-size: 1.235rem; color:var(--color-gray);">
                 {% if price != price_old %}
                   {% if price >= 50000 %}
                   <span style="text-align: right; font-family: Arial; font-size:1.1rem; color:var(--color-r1)">{{price|floatformat:0|intcomma}}&nbsp;</span>

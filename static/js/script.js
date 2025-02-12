@@ -60,3 +60,32 @@ function popupCenter(href, w, h) {
 	window.open(href, "pop_name", "width="+w+", height="+h+", left="+xPos+", top="+yPos+", menubar=yes, status=yes, titlebar=yes, resizable=yes");
 }
 
+function openCenteredPopup(url, name, width, height) {
+    // 현재 화면의 너비와 높이 가져오기
+    const screenWidth = window.innerWidth || document.documentElement.clientWidth || screen.width;
+    const screenHeight = window.innerHeight || document.documentElement.clientHeight || screen.height;
+
+    // 팝업을 중앙에 배치하기 위한 좌표 계산
+    const left = (screenWidth - width) / 2;
+    const top = (screenHeight - height) / 2;
+
+    // 팝업 창 열기
+    window.open(url, name, `width=${width}, height=${height}, top=${top}, left=${left}, resizable=yes, scrollbars=yes`);
+}
+
+function openCenteredWindow(url, name, width, height) {
+  // 현재 화면 크기 가져오기
+  const screenWidth = window.screen.width;
+  const screenHeight = window.screen.height;
+
+  // 팝업을 중앙에 배치하기 위한 좌표 계산
+  const left = (screenWidth - width) / 2;
+  const top = (screenHeight - height) / 2;
+
+  // 새 창 열기
+  window.open(
+    url,
+    name,
+    `width=${width}, height=${height}, top=${top}, left=${left}, resizable=yes, scrollbars=yes`
+  );
+}

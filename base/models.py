@@ -526,6 +526,12 @@ class RecordS(models.Model):
     alloc3r = models.DecimalField(
         max_digits=10, decimal_places=4, blank=True, null=True
     )
+    r2alloc1 = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True
+    )
+    r2alloc2 = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True
+    )
     judge = models.CharField(
         max_length=4, db_collation="euckr_korean_ci", blank=True, null=True
     )
@@ -573,18 +579,6 @@ class RecordS(models.Model):
     i_cycle = models.IntegerField(blank=True, null=True)
     gap_b = models.CharField(
         max_length=20, db_collation="euckr_korean_ci", blank=True, null=True
-    )
-    gear1 = models.CharField(
-        max_length=20, db_collation="euckr_korean_ci", blank=True, null=True
-    )
-    gear2 = models.CharField(
-        max_length=20, db_collation="euckr_korean_ci", blank=True, null=True
-    )
-    treat1 = models.CharField(
-        max_length=40, db_collation="euckr_korean_ci", blank=True, null=True
-    )
-    treat2 = models.CharField(
-        max_length=40, db_collation="euckr_korean_ci", blank=True, null=True
     )
     jockey_old = models.CharField(
         max_length=10, db_collation="euckr_korean_ci", blank=True, null=True
