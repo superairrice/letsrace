@@ -98,8 +98,8 @@
 
 <div>
   <ul class="tabs">
-    <li class="tab-link current" data-tab="tab-1">서울</li>
-    <li class="tab-link" data-tab="tab-2">부산</li>
+    <li class="tab-link current" data-tab="tab-1" style="padding: 6px 25px; border-radius: 4px;">서울</li>
+    <li class="tab-link" data-tab="tab-2" style="padding: 6px 25px; border-radius: 4px;">부산</li>
   </ul>
   
 
@@ -127,7 +127,7 @@
           <th><span class="visible-big">전전월</span>
         
           <th><span class="visible-big">3개월 합</span></th>
-          <th colspan="2"><span class="visible-big">1~5 순위별 횟수</span></th>
+          <th colspan="2"><span class="visible-big">1~3 순위별 횟수</span></th>
           <th><span class="visible-big">월평균</span></th>
         
           <th><span class="visible-big">2주상금</span>
@@ -199,14 +199,16 @@
           </td>
 
           <td align="right">
-            {% if wcnt >= 50 %}
-            <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r1); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
-            {% elif wcnt >= 40 and wcnt < 50 %}
-            <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r3); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
-            {% elif wcnt >= 30 and wcnt < 40 %}
-            <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r5); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
-            {% else %}
-            <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 2px 3px; color: var(--color-gray); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
+            {% if wcnt %}
+              {% if wcnt >= 50 %}
+              <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r1); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
+              {% elif wcnt >= 40 and wcnt < 50 %}
+              <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r3); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
+              {% elif wcnt >= 30 and wcnt < 40 %}
+              <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r5); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
+              {% else %}
+              <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 2px 3px; color: var(--color-gray); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
+              {% endif %}
             {% endif %}
           </td>
           
@@ -258,9 +260,11 @@
           <td>-</td>
           {%else%}
           <td align="right" style="font-family: Arial; font-size: 1.23rem ">
-            <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 2px 3px; color: var(--color-gray); border-radius: 5px; background-color: var(--color-bg);">{{rcnt}}</span>
+            <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 2px 3px; color: var(--color-gray); border-radius: 5px; background-color: var(--color-bg);">
+              {{r1cnt|add:r2cnt|add:r3cnt}}
+            </span>
           </td>
-          <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-gray); ">{{r1cnt}}-{{r2cnt}}-{{r3cnt}}-{{r4cnt}}-{{r5cnt}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-gray);">{{r1cnt}}-{{r2cnt}}-{{r3cnt}}</td>
           {%endif%}
 
           {% if rmonth1|add:rmonth2|add:rmonth3 == None %}
@@ -281,14 +285,33 @@
             <td align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-light-gray) ">{{award|floatformat:0|intcomma}}</td>
           {% endif %}
 
-            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw1_sat|add:lw1_sun}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw1_sat1|add:lw1_sun1|add:lw1_sat2|add:lw1_sun2|add:lw1_sat3|add:lw1_sun3}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-gray); font-style: italic; ">{{lw1_sat1|add:lw1_sun1}}-{{lw1_sat2|add:lw1_sun2}}-{{lw1_sat3|add:lw1_sun3}}</td>
+          {% if lw1_sat|add:lw1_sun == 0 %}
+            <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-main-light); font-style: italic; ">&nbsp;</td>
+          {% else %}
+            <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-main-light); font-style: italic; ">{{lw1_sat|add:lw1_sun}}</td>
+          {% endif %}
+          
+          {% if lw1_sat1|add:lw1_sun1|add:lw1_sat2|add:lw1_sun2|add:lw1_sat3|add:lw1_sun3 == 0 %}
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-r3); font-style: italic; ">&nbsp;</td>
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-r3); font-style: italic; ">&nbsp;</td>
+          {% else %}
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-r3); font-style: italic; ">{{lw1_sat1|add:lw1_sun1|add:lw1_sat2|add:lw1_sun2|add:lw1_sat3|add:lw1_sun3}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray); font-style: italic; ">{{lw1_sat1|add:lw1_sun1}}-{{lw1_sat2|add:lw1_sun2}}-{{lw1_sat3|add:lw1_sun3}}</td>
+          {% endif %}
 
-            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw2_sat|add:lw2_sun}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw2_sat1|add:lw2_sun1|add:lw2_sat2|add:lw2_sun2|add:lw2_sat3|add:lw2_sun3}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-gray); font-style: italic; ">{{lw2_sat1|add:lw2_sun1}}-{{lw2_sat2|add:lw2_sun2}}-{{lw2_sat3|add:lw2_sun3}}</td>
+          {% if lw2_sat|add:lw2_sun == 0 %}
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-main-light); font-style: italic; ">&nbsp;</td>
+          {% else %}
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-main-light); font-style: italic; ">{{lw2_sat|add:lw2_sun}}</td>
+          {% endif %}
 
+          {% if lw2_sat1|add:lw2_sun1|add:lw2_sat2|add:lw2_sun2|add:lw2_sat3|add:lw2_sun3 == 0 %}
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-r3); font-style: italic; ">&nbsp;</td>
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray); font-style: italic; ">&nbsp;</td>
+          {% else %}
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-r3); font-style: italic; ">{{lw2_sat1|add:lw2_sun1|add:lw2_sat2|add:lw2_sun2|add:lw2_sat3|add:lw2_sun3}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray); font-style: italic; ">{{lw2_sat1|add:lw2_sun1}}-{{lw2_sat2|add:lw2_sun2}}-{{lw2_sat3|add:lw2_sun3}}</td>
+          {% endif %}
         </tr>
         <tr class="fold">
           <td colspan="21">
@@ -369,11 +392,11 @@
           <td align="right">
             {% for flag, jockey, tot_1st, load_in in loadin %}
             {% if flag == 'T' and awardee == jockey %}
-              <span style="font-family: Arial; font-size: 1.2rem; padding: 1px; border-radius: 5px; background-color: var(--color-bg); color: var(--color-gray);">{{load_in}}</span>
+            <span style="font-family: Arial; font-size: 1.2rem; padding: 1px; border-radius: 5px; background-color: var(--color-bg); color: var(--color-gray);">{{load_in}}</span>
             {% endif %}
             {% endfor %}
           </td>
-
+          
           <td align="right">
             
             {% for flag, jockey, tot_1st, load_in in loadin %}
@@ -402,18 +425,20 @@
           </td>
 
           <td align="right">
-            {% if wcnt >= 50 %}
-            <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r1); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
-            {% elif wcnt >= 40 and wcnt < 50 %}
-            <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r3); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
-            {% elif wcnt >= 30 and wcnt < 40 %}
-            <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r5); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
-            {% else %}
-            <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 2px 3px; color: var(--color-gray); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
+            {% if wcnt %}
+              {% if wcnt >= 50 %}
+              <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r1); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
+              {% elif wcnt >= 40 and wcnt < 50 %}
+              <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r3); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
+              {% elif wcnt >= 30 and wcnt < 40 %}
+              <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 1px; color: var(--color-r5); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
+              {% else %}
+              <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 2px 3px; color: var(--color-gray); border-radius: 5px; background-color: var(--color-bg);">{{wcnt}}</span>
+              {% endif %}
             {% endif %}
           </td>
           
-          <td align="center" style="font-family: Arial; font-size: 1.23rem;">{% if rdate1 > 0 %}{{rdate1}}{% else %}-{% endif %}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.23rem;">{% if rdate2 > 0 %}{{rdate2}}{% else %}-{% endif %}</td>
           <td align="center" style="font-family: Arial; font-size: 1.23rem;">{% if rdate3 > 0 %}{{rdate3}}{% else %}-{% endif %}</td>
           
           {% if rmonth1 == None %}
@@ -461,9 +486,11 @@
           <td>-</td>
           {%else%}
           <td align="right" style="font-family: Arial; font-size: 1.23rem ">
-            <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 2px 3px; color: var(--color-gray); border-radius: 5px; background-color: var(--color-bg);">{{rcnt}}</span>
+            <span style="text-align:center; font-family: Arial; font-size: 1.2rem; padding: 2px 3px; color: var(--color-gray); border-radius: 5px; background-color: var(--color-bg);">
+              {{r1cnt|add:r2cnt|add:r3cnt}}
+            </span>
           </td>
-          <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-gray); ">{{r1cnt}}-{{r2cnt}}-{{r3cnt}}-{{r4cnt}}-{{r5cnt}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-gray);">{{r1cnt}}-{{r2cnt}}-{{r3cnt}}</td>
           {%endif%}
 
           {% if rmonth1|add:rmonth2|add:rmonth3 == None %}
@@ -484,14 +511,33 @@
             <td align="right" style="font-family: Arial; font-size: 1.23rem; color:var(--color-light-gray) ">{{award|floatformat:0|intcomma}}</td>
           {% endif %}
 
-            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw1_fri|add:lw1_sun}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw1_fri1|add:lw1_sun1|add:lw1_fri2|add:lw1_sun2|add:lw1_fri3|add:lw1_sun3}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-gray); font-style: italic; ">{{lw1_fri1|add:lw1_sun1}}-{{lw1_fri2|add:lw1_sun2}}-{{lw1_fri3|add:lw1_sun3}}</td>
+          {% if lw1_sat|add:lw1_sun == 0 %}
+            <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-main-light); font-style: italic; ">&nbsp;</td>
+          {% else %}
+            <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-main-light); font-style: italic; ">{{lw1_sat|add:lw1_sun}}</td>
+          {% endif %}
+          
+          {% if lw1_sat1|add:lw1_sun1|add:lw1_sat2|add:lw1_sun2|add:lw1_sat3|add:lw1_sun3 == 0 %}
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-r3); font-style: italic; ">&nbsp;</td>
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-r3); font-style: italic; ">&nbsp;</td>
+          {% else %}
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-r3); font-style: italic; ">{{lw1_sat1|add:lw1_sun1|add:lw1_sat2|add:lw1_sun2|add:lw1_sat3|add:lw1_sun3}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray); font-style: italic; ">{{lw1_sat1|add:lw1_sun1}}-{{lw1_sat2|add:lw1_sun2}}-{{lw1_sat3|add:lw1_sun3}}</td>
+          {% endif %}
 
-            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw2_fri|add:lw2_sun}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-main-light); font-style: italic; ">{{lw2_fri1|add:lw2_sun1|add:lw2_fri2|add:lw2_sun2|add:lw2_fri3|add:lw2_sun3}}</td>
-            <td align="center" style="font-family: Arial; font-size: 1.23rem; color:var(--color-gray); font-style: italic; ">{{lw2_fri1|add:lw2_sun1}}-{{lw2_fri2|add:lw2_sun2}}-{{lw2_fri3|add:lw2_sun3}}</td>
+          {% if lw2_sat|add:lw2_sun == 0 %}
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-main-light); font-style: italic; ">&nbsp;</td>
+          {% else %}
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-main-light); font-style: italic; ">{{lw2_sat|add:lw2_sun}}</td>
+          {% endif %}
 
+          {% if lw2_sat1|add:lw2_sun1|add:lw2_sat2|add:lw2_sun2|add:lw2_sat3|add:lw2_sun3 == 0 %}
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-r3); font-style: italic; ">&nbsp;</td>
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray); font-style: italic; ">&nbsp;</td>
+          {% else %}
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-r3); font-style: italic; ">{{lw2_sat1|add:lw2_sun1|add:lw2_sat2|add:lw2_sun2|add:lw2_sat3|add:lw2_sun3}}</td>
+          <td align="center" style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray); font-style: italic; ">{{lw2_sat1|add:lw2_sun1}}-{{lw2_sat2|add:lw2_sun2}}-{{lw2_sat3|add:lw2_sun3}}</td>
+          {% endif %}
         </tr>
         <tr class="fold">
           <td colspan="21">

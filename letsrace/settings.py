@@ -237,7 +237,8 @@ DATABASES = {
         "HOST": "database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com",
         "PORT": "3306",  # [6]
         "OPTIONS": {"init_command": "SET sql_mode='STRICT_TRANS_TABLES'"},
-    }
+    },
+    # 'ATOMIC_REQUESTS': False,  # 중복 실행 방지
 } 
 
 # SECRET_KEY = get_secret("SECRET_KEY") 

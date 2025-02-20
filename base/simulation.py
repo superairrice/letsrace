@@ -84,29 +84,21 @@ def mock_insert(rcity, rdate, rno):
         strSql = (
             """ 
             SELECT count(*) FROM exp011s1
-            where rcity =  '"""
-            + rcity
-            + """'
-            and rdate = '"""
-            + rdate
-            + """'
-            and rno =  """
-            + str(rno)
-            + """
+            WHERE rcity = %s
+            AND rdate = %s
+            AND rno = %s
             ; """
         )
+        params = (rcity, rdate, rno)
+        cursor.execute(strSql, params)  # 결과값 개수 반환
 
-        # print(strSql)
-
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
-
-        # connection.commit()
-        # connection.close()
 
     except:
         connection.rollback()
         print("Failed selecting in exp011s1")
+    finally:
+        cursor.close()
 
     # print(result)
 
@@ -133,12 +125,10 @@ def mock_insert(rcity, rdate, rno):
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
             result = cursor.fetchall()
 
-            # connection.commit()
-            # connection.close()
-
         except:
-            connection.rollback()
             print("Failed inserting in exp011s1")
+        finally:
+            cursor.close()
     else:
         try:
             cursor = connection.cursor()
@@ -164,12 +154,10 @@ def mock_insert(rcity, rdate, rno):
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
             result = cursor.fetchall()
 
-            # connection.commit()
-            # connection.close()
-
         except:
-            connection.rollback()
             print("Failed inserting in exp011s1")
+        finally:
+            cursor.close()
 
     return result
 
@@ -211,14 +199,12 @@ def mock_traval(r_condition, weight):
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
             gate_con = cursor.fetchall()
 
-            # connection.commit()
-            # connection.close()
-
         except:
-            connection.rollback()
             print(
                 "Failed selecting in 게이트별 조건 Query, 등급, 거리, 경주마, 부담중량, 기수, 마방, 기수복승률, 조교사 복승률 등"
             )
+        finally:
+            cursor.close()
 
         # 기수 역량 가중치 쿼리 : 기수의 거리별 게이트별 역량 + 부담중량까지 감안된 adv_jockey Query
         i_jockey = get_jockey_ability(
@@ -758,18 +744,15 @@ def set_rank(rcity, rdate, rno):
             ; """
         )
 
-        # print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         race = cursor.fetchall()
 
-        # connection.commit()
-        # connection.close()
-
     except:
-        connection.rollback()
         print(
             "Failed setting 경주 rank "
         )
+    finally:
+        cursor.close()
 
     # print(race)
     # rank = 0
@@ -804,18 +787,15 @@ def set_rank(rcity, rdate, rno):
                     ; """
                 )
 
-                # print(strSql)
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 rank = cursor.fetchall()
 
-                # connection.commit()
-                # connection.close()
-
             except:
-                connection.rollback()
                 print(
                     "Failed setting 경주 rank "
                 )
+            finally:
+                cursor.close()
 
         else:
             try:
@@ -841,16 +821,13 @@ def set_rank(rcity, rdate, rno):
                     ; """
                 )
 
-                # print(strSql)
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 rank = cursor.fetchall()
 
-                # connection.commit()
-                # connection.close()
-
             except:
-                connection.rollback()
                 print("Failed setting 경주 rank ")
+            finally:
+                cursor.close()
 
     try:
         cursor = connection.cursor()
@@ -878,12 +855,10 @@ def set_rank(rcity, rdate, rno):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
-        # connection.commit()
-        # connection.close()
-
     except:
-        connection.rollback()
         print("Failed uptating complex5 update --- set rank")
+    finally:
+        cursor.close()
 
     try:
         cursor = connection.cursor()
@@ -909,15 +884,12 @@ def set_rank(rcity, rdate, rno):
             ; """
         )
 
-        # print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
-        # connection.commit()
-        # connection.close()
-
     except:
-        connection.rollback()
         print("Failed uptating exp011 update --- set rank")
+    finally:
+        cursor.close()
 
     return 

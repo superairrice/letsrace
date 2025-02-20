@@ -59,8 +59,7 @@
                 <span style="font-size: 1.2rem; font-weight: 400;">🐴&nbsp;Horse
                 </span>
             </th>
-            <th rowspan="2" style="vertical-align: middle;"><span>⚖️</span></th>
-            <th rowspan="2" style="vertical-align: middle;"><span>🚛</span></th>
+
             <th rowspan="2" style="vertical-align: middle;">
               {% if awardee == 'jockey' %}
                 <span style="font-size: 1.4rem; font-weight: 550;">🛖</span>
@@ -129,30 +128,11 @@
                   <span style="font-size: 1.05rem; border-radius:7px; background-color: var(--color-bg); color: var(--color-r4);">({{rday}})</span>
                   {% endif %}
 
-                  <span style="font-size: 1.2rem; font-family: Arial;">{{distance}}<sup style="font-size: 0.8rem;">m</sup></span>
+                  <!-- <span style="font-size: 1.2rem; font-family: Arial;">{{distance}}<sup style="font-size: 0.8rem;">m</sup></span> -->
 
                 </div>
                               
-                <div align="right" style="font-size: 1.15rem; color:var(--color-gray);">
-                  <!-- <span style="font-size: 1.0rem; color:var(--color-main); border-radius:7px; background-color: var(--color-bg);">'{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}&nbsp;</span> -->
-                  {% if grade|slice:"1:2" == 'O' %}
-                    <span style="font-size: 0.9rem; color:var(--color-light); background-color: var(--color-bg); border-radius: 7px; padding: 1px 3px;">{{grade|slice:"0:2"}}</span>
-                    <span style="font-size: 1.1rem;">{{dividing|slice:"0:1"}}</span>
-                  {% else %}
-                    {% if grade|slice:"0:2" == '1등' %}
-                    <span style="font-size: 1.1rem; color:tomato;">{{grade|slice:"0:2"}}</span>
-                    {% else %}
-                    <span style="font-size: 1.1rem; color: var(--color-gray);">{{grade|slice:"0:2"}}</span>
-                    {% endif %}
-                    
-                    {% if dividing|slice:"0:1" == '핸' %}
-                    <span style="font-size: 1.1rem; color:tomato;">{{dividing|slice:"0:1"}}</span>
-                    {% else %}
-                    <span style="font-size: 1.1rem; color: var(--color-gray);">{{dividing|slice:"0:1"}}</span>
-                    {% endif %}
-                  {% endif %}
-                  &nbsp;
-                </div>
+
               </a>
 
               
@@ -230,14 +210,6 @@
             <td style="border-right: 0.2px solid var(--color-dark);">
               <div style="font-size: 1.2rem;">
 
-                <span class="tooltip">
-                  <progress value={{r_pop}} max="99" style="width: 2.5rem"></progress>
-                  <span class="tooltip-text" style="z-index: 9;">
-                    <div>📊&nbsp;{{horse}}</div>
-                    <div style="text-align: right;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;인기도&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{r_pop}}</div>
-                  </span>
-                </span>&nbsp;
-                
                 {% if r_rank == 99 %}
                   <span style="font-style: italic; text-decoration:line-through; color:gray;">{{horse|slice:"0:6"|rjust:"6"}}</span>
                 {% else %}
@@ -316,79 +288,6 @@
               
             </td>
 
-            {# 마체중 #}
-            <td style="font-family: Arial; font-size: 1.2rem; ">
-            
-              <div style="text-align:center">
-            
-                {# 경주마 체중 증감 #}
-                {% if h_weight|length > 3 %}
-                <span style="font-family: Arial; color:var(--color-gray);">{{h_weight|slice:"0:3"}}<sup style="font-size: 0.9rem; font-style: italic;">㎏</sup></span>
-                {% else %}
-                  {% if h_weight|slice:"0:3" <= '440' %} 
-                  <span style="font-family: Arial; color:var(--color-r5);">{{h_weight|slice:"0:3"}}<sup style="font-size: 0.9rem; font-style: italic;">㎏</sup></span>
-                  {% elif h_weight|slice:"0:3" >= '500' %}
-                  <span style="font-family: Arial; color:var(--color-r2);">{{h_weight|slice:"0:3"}}<sup style="font-size: 0.9rem; font-style: italic;">㎏</sup></span>
-                  {% else %}
-                  <span style="font-family: Arial; color:var(--color-gray);">{{h_weight|slice:"0:3"}}<sup style="font-size: 0.9rem; font-style: italic;">㎏</sup></span>
-                  {% endif %}
-                {% endif %}
-          
-              </div>
-
-                {% if h_weight|slice:"4:" %}
-                  {% if h_weight|slice:"4:5" == '+' %}
-                  <div style="text-align:right; font-style: italic; font-size: 1.2rem;  color:var(--color-r5);">
-                    <span style="font-family: Arial; border-radius: 7px; background-color: var(--color-bg); padding:1px 4px;">{{h_weight|slice:"4:"}}</span>
-                  </div>
-                  {% else %}
-                  <div style="text-align:right; font-style: italic; font-size: 1.2rem;  color:var(--color-r1);">
-                    <span style="font-family: Arial; border-radius: 7px; background-color: var(--color-bg); padding:1px 4px;">{{h_weight|slice:"4:"}}</span>
-                  </div>
-                  {% endif %}
-                {% endif %}
-            
-            </td>
-
-            {# 부담중량 #}
-            <td style="font-family: Arial; font-size: 1.2rem;">
-
-              <div align="center" style="font-size:1.2rem;">
-                {# 부담중량 #}
-                  {% if handycap|floatformat:0 <= load_in|mul:1|floatformat:0 %}
-                  <span style="padding:2px 2px; font-family: Arial; font-style:italic; font-size:1.1rem; color:var(--color-r3); border-radius:7px; background-color:var(--color-bg);">{{handycap}}</span>
-                  {% elif handycap|floatformat:0 <= load_in|mul:1|add:1|floatformat:0 %}
-                  <span style="padding:2px 2px; font-family: Arial; font-style:italic; font-size:1.1rem; color:var(--color-light-gray); border-radius:7px; background-color:var(--color-bg);">{{handycap}}</span>
-                  {% else %}
-                  <span style="padding:2px 2px; font-family: Arial; color:var(--color-gray);">{{handycap}}</span>
-                  {% endif %}
-    
-              </div>
-
-              <div style="text-align: right; font-size: 1.2rem;">
-                {# 부담중량 증감 #}
-                {% if i_prehandy == 0.0 %}
-                  <span style="font-family: Arial; font-style: italic; font-size: 1.0rem; color: var(--color-gray); text-align: right;">신마</span>
-                {% else %}
-                  {% if handycap|sub:i_prehandy == 0 %}
-                    <span style="font-family: Arial; font-style: italic; font-size: 1.1rem; color: var(--color-gray); text-align: right;">&nbsp;</span>
-                  {% elif handycap|sub:i_prehandy > 0 and handycap|sub:i_prehandy <= 1 %}
-                    <span style="font-family: Arial; font-style: italic; font-size: 1.1rem; color: var(--color-r2); text-align: right;">+{{handycap|sub:i_prehandy}}</span>
-                  {% elif handycap|sub:i_prehandy < 0 and handycap|sub:i_prehandy >= -1 %}
-                    <span style="font-family: Arial; font-style: italic; font-size: 1.1rem; color: var(--color-r4); text-align: right;">{{handycap|sub:i_prehandy}}</span>
-                  {% elif handycap|sub:i_prehandy > 1 %}
-                    <span style="font-family: Arial; font-style: italic; font-size: 1.1rem; color: var(--color-r1); text-align: right; padding:2px; border-radius: 7px; background-color: var(--color-bg);">+{{handycap|sub:i_prehandy}}</span>
-                  {% elif handycap|sub:i_prehandy < -1 %}
-                    <span style="font-family: Arial; font-style: italic; font-size: 1.1rem; color: var(--color-r5); text-align: right; padding:2px; border-radius: 7px; background-color: var(--color-bg);">{{handycap|sub:i_prehandy}}</span>
-                  {% else %}
-                    <span style="font-family: Arial; font-style: italic; font-size: 1.1rem; color: var(--color-r5); text-align: right;">{{handycap|sub:i_prehandy}}</span>
-                  
-                  {% endif %}
-                {% endif %}
-              </div>
-              
-            </td>
-            
             <td align="left">
               {% if awardee == 'trainer' %}
               <div style="font-size: 1.2rem;">

@@ -57,6 +57,7 @@ from base.mysqls import (
     get_solidarity,
     get_status_stable,
     get_status_train,
+    get_status_week,
     get_swim_horse,
     get_thethe9_ranks,
     get_thethe9_ranks_jockey,
@@ -87,6 +88,7 @@ from base.mysqls import (
     trend_title,
 )
 from base.simulation import mock_insert, mock_traval, get_weight
+from base.templatetags.race import recordsByHorse
 from letsrace.settings import KRAFILE_ROOT
 
 # import base.mysqls
@@ -470,7 +472,7 @@ def home(request):
     racings = get_race(i_rdate, i_awardee="jockey")
     # race_board = get_board_list(i_rdate, i_awardee="jockey")
 
-    race, expects, rdays, award_j, judged_jockey, changed_race = get_prediction(i_rdate)
+    race, expects, rdays, judged_jockey, changed_race, award_j = get_prediction(i_rdate)
     # print(racings)
 
     # loadin = get_last2weeks_loadin(i_rdate)
@@ -482,7 +484,7 @@ def home(request):
             rflag = True
             break
 
-    t_count = check_visit(request)
+    check_visit(request)
 
     context = {
         "racings": racings,
@@ -507,51 +509,8 @@ def home(request):
 
     return render(request, "base/home.html", context)
 
-
-def homePage_a(request, rcity, rdate):
-    racings = Racing.objects.filter(rcity=rcity, rdate=rdate)
-    print(racings.query)
-    context = {"rcity": rcity, "racings": racings}
-
-    return render(request, "base/home_a.html", context)
-
-
-def activityPage_a(request, hname):
-    # q = request.GET.get('q') if request.GET.get('q') != None else ''
-
-    h_records = RecordS.objects.filter(horse=hname).order_by("-rdate")
-
-    horse = h_records[0]
-
-    context = {"horse": horse, "h_records": h_records}
-
-    return render(request, "base/activity_a.html", context)
-
-
-def activityComponentPage_a(request, hname):
-    # q = request.GET.get('q') if request.GET.get('q') != None else ''
-
-    h_records = RecordS.objects.filter(horse=hname).order_by("-rdate")
-
-    horse = h_records[0]
-
-    context = {"horse": horse, "h_records": h_records}
-
-    return render(request, "base/activity_component_a.html", context)
-
-
 # @login_required(login_url="home")
 def racePrediction(request, rcity, rdate, rno, hname, awardee):
-
-    # if request.user.is_authenticated == False:
-    #     context = {
-    #         "rcity": rcity,
-    #         "rdate": rdate,
-    #         "rno": rno,
-    #         "hname": hname,
-    #         "awardee": awardee,
-    #     }
-    #     return redirect("prediction_list", rcity=rcity, rdate=rdate, rno=rno)
 
     exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
         "rank", "gate"
@@ -563,15 +522,8 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
 
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
-    # rdate_1year = str(int(rdate[0:4]) - 1) + rdate[4:8]  # 최근 1년 경주성적 조회조건 추가
-    hr_records = RecordS.objects.filter(
-        # hr_records = PRecord.objects.filter(
-        # rdate__gt=rdate_1year,
-        rdate__lt=rdate,
-        horse__in=exp011s.values("horse"),
-    ).order_by("horse", "-rdate")
+    hr_records = recordsByHorse(rcity, rdate, rno)
 
-    # print(hr_records)
     compare_r = exp011s.aggregate(
         Min("i_s1f"),
         Min("i_g1f"),
@@ -611,60 +563,39 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         rcity, rdate, rno
     )  # 경주거리별 등급별 평균기록, 최고기록, 최저기록
 
+    # 경주 메모 Query
     try:
-        cursor = connection.cursor()
+        with connection.cursor() as cursor:
+            query = """
+                SELECT horse, r_etc, r_flag
+                FROM rec011 
+                WHERE rcity = %s
+                AND rdate = %s
+                AND rno = %s;
+            """
+            cursor.execute(query, (rcity, rdate, rno))
+            r_memo = cursor.fetchall()
 
-        strSql = (
-            """ 
-            select horse, r_etc, r_flag
-            from rec011 
-            where rcity =  '"""
-            + rcity
-            + """'
-            and rdate = '"""
-            + rdate
-            + """'
-            and rno =  """
-            + str(rno)
-            + """
-            ; """
-        )
+    except Exception as e:
+        print(f"❌ Failed selecting in 경주 메모: {e}")
 
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        r_memo = cursor.fetchall()
-
-        # connection.commit()
-        # connection.close()
-
-    except:
-        # connection.rollback()
-        print("Failed selecting in 경주 메모")
-
+    # 경주일 - 출주정보
     try:
-        cursor = connection.cursor()
+        with connection.cursor() as cursor:
+            query = """
+                SELECT rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, 
+                    rname, rcon1, rcon2, rtime
+                FROM exp010 
+                WHERE rdate = %s
+                ORDER BY rdate, rtime;
+            """
+            cursor.execute(query, (rdate,))
+            weeksrace = cursor.fetchall()
 
-        strSql = (
-            """ 
-                select rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime
-                from exp010 a 
-                where rdate = '"""
-            + rdate
-            + """'
-                order by rdate, rtime
-                ; """
-        )
+    except Exception as e:
+        print(f"❌ Failed selecting in exp010 : 주별 경주현황 - {e}")
 
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        weeksrace = cursor.fetchall()
-
-        # connection.commit()
-        # connection.close()
-
-    except:
-        # connection.rollback()
-        print("Failed selecting in exp010 : 주별 경주현황")
-
-    t_count = check_visit(request)
+    check_visit(request)
 
     context = {
         "exp011s": exp011s,
@@ -805,328 +736,6 @@ def raceRelatedInfo(request, rcity, rdate, rno):
     }
 
     return render(request, "base/race_related_info.html", context)
-
-
-def predictionRace(request, rcity, rdate, rno, hname, awardee):
-
-    if request.user.is_authenticated == False:
-        context = {
-            "rcity": rcity,
-            "rdate": rdate,
-            "rno": rno,
-            "hname": hname,
-            "awardee": awardee,
-        }
-        return redirect("prediction_list", rcity=rcity, rdate=rdate, rno=rno)
-
-    exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
-        "rank", "gate"
-    )
-    if exp011s:
-        pass
-    else:
-        return render(request, "base/home.html")
-
-    # if exp011s.values("rank")[4].get("rank") > 90:  # 신마일경우 skip
-    #     complex5 = "0:00.0"``
-    # else:
-    #     complex5 = exp011s.values("complex")[4]
-
-    #     if complex5:
-    #         pass
-    #     else:
-    #         return render(request, "base/home.html")
-
-    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
-
-    # h_records = RecordS.objects.filter(
-    #     rdate__lt=rdate, horse=horse.horse).order_by('-rdate')
-
-    # rdate_1year = str(int(rdate[0:4]) - 1) + rdate[4:8]  # 최근 1년 경주성적 조회조건 추가
-    hr_records = RecordS.objects.filter(
-        # hr_records = PRecord.objects.filter(
-        # rdate__gt=rdate_1year,
-        rdate__lt=rdate,
-        horse__in=exp011s.values("horse"),
-    ).order_by("horse", "-rdate")
-
-    # hr_pedigree = Exp012.objects.filter(
-    #     rdate__lt=rdate, horse__in=exp011s.values("horse")).order_by('-rdate')
-
-    # print(hr_records.query)
-
-    # training_team = get_training_team(rcity, rdate, rno)
-
-    racings, race_detail, race_board = get_race(rdate, i_awardee="jockey")
-
-    compare_r = exp011s.aggregate(
-        Min("i_s1f"),
-        Min("i_g1f"),
-        Min("i_g2f"),
-        Min("i_g3f"),
-        Max("handycap"),
-        Max("rating"),
-        Max("r_pop"),
-        Max("j_per"),
-        Max("t_per"),
-        Max("jt_per"),
-        Min("recent5"),
-        Min("recent3"),
-        Min("convert_r"),
-        Min("s1f_rank"),
-    )
-
-    try:
-        alloc = Rec010.objects.get(rcity=rcity, rdate=rdate, rno=rno)
-    except:
-        alloc = None
-
-    paternal = get_paternal(rcity, rdate, rno, r_condition.distance)  # 부마 3착 성적
-    paternal_dist = get_paternal_dist(rcity, rdate, rno)  # 부마 거리별 3착 성적
-
-    pedigree = get_pedigree(rcity, rdate, rno)  # 병력
-    # training = get_training(rcity, rdate, rno)
-    # train = get_train(rcity, rdate, rno)
-    train = get_train_horse(rcity, rdate, rno)
-
-    treat = get_treat_horse(rcity, rdate, rno)
-    track = get_track_record(
-        rcity, rdate, rno
-    )  # 경주거리별 등급별 평균기록, 최고기록, 최저기록
-    # swim = get_swim_horse(rcity, rdate, rno)
-    # train = sorted(train, key=lambda x: x[4] or 99)
-
-    # print(training_cnt)
-
-    # h_audit = get_train_audit(rcity, rdate, rno)      # get_treat_horse 함수 통합
-
-    popularity_rate, award_j = get_popularity_rate_j(
-        rcity, rdate, rno
-    )  # 인기순위별 승률
-    popularity_rate_t, award_t = get_popularity_rate_t(
-        rcity, rdate, rno
-    )  # 인기순위별 승률
-    popularity_rate_h, award_h = get_popularity_rate_h(
-        rcity, rdate, rno
-    )  # 인기순위별 승률
-
-    loadin = get_loadin(rcity, rdate, rno)
-    # print(loadin)
-
-    # judged = get_judged(rcity, rdate, rno)
-    judged_horse = get_judged_horse(rcity, rdate, rno)
-    judged_jockey = get_judged_jockey(rcity, rdate, rno)
-
-    # trend_jockey = get_jockey_trend(rcity, rdate, rno)
-    # trend_trainer = get_trainer_trend(rcity, rdate, rno)
-
-    # # print(trend_j.to_html())
-
-    # trend_j = trend_jockey.values.tolist()
-    # trend_j_title = trend_jockey.columns.tolist()
-
-    # trend_t = trend_trainer.values.tolist()
-    # trend_t_title = trend_trainer.columns.tolist()
-
-    # print(trend_j_title)
-    # print(trend_j)
-
-    trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
-
-    # axis = get_axis(rcity, rdate, rno)
-    axis1 = get_axis_rank(rcity, rdate, rno, 1)
-    axis2 = get_axis_rank(rcity, rdate, rno, 2)
-    axis3 = get_axis_rank(rcity, rdate, rno, 3)
-
-    try:
-        cursor = connection.cursor()
-
-        strSql = (
-            """ 
-            select horse, r_etc, r_flag
-            from rec011 
-            where rcity =  '"""
-            + rcity
-            + """'
-            and rdate = '"""
-            + rdate
-            + """'
-            and rno =  """
-            + str(rno)
-            + """
-
-            ; """
-        )
-
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        r_memo = cursor.fetchall()
-
-        connection.commit()
-        connection.close()
-
-    except:
-        connection.rollback()
-        print("Failed selecting in 경주 메모")
-
-    name = get_client_ip(request)
-
-    if name[0:6] != "15.177":
-        update_visitor_count(name)
-
-        # create a new Visitor instance
-        new_visitor = Visitor(
-            ip_address=name,
-            user_agent=request.META.get("HTTP_USER_AGENT"),
-            # referrer=request.META.get('HTTP_REFERER'),
-            referer=rcity + " " + rdate + " " + str(rno) + " " + "predictionRace",
-            # timestamp=timezone.now()
-        )
-
-        # insert the new_visitor object into the database
-        new_visitor.save()
-
-    context = {
-        "exp011s": exp011s,
-        "r_condition": r_condition,
-        "loadin": loadin,  # 기수 기승가능 부딤중량
-        "hr_records": hr_records,
-        "compare_r": compare_r,
-        "alloc": alloc,
-        #    'judged': judged,
-        "judged_horse": judged_horse,
-        "judged_jockey": judged_jockey,
-        "race_detail": race_detail,
-        "pedigree": pedigree,
-        "paternal": paternal,
-        "paternal_dist": paternal_dist,
-        # 'hr_pedigree': hr_pedigree,
-        "popularity_rate": popularity_rate,
-        "award_j": award_j,
-        "award_t": award_t,
-        "award_h": award_h,
-        "popularity_rate_t": popularity_rate_t,
-        "popularity_rate_h": popularity_rate_h,
-        "train": train,
-        "training_cnt": training_cnt,
-        "treat": treat,
-        "track": track,
-        #    'swim': swim,
-        # "h_audit": h_audit,
-        "trainer_double_check": str(trainer_double_check),
-        "axis1": axis1,
-        "axis2": axis2,
-        "axis3": axis3,
-        "r_memo": r_memo,
-        # "trend_j": trend_j.to_html(
-        #     index=False,
-        #     header=True,
-        #     justify="right",
-        #     classes="rwd-table",
-        #     table_id="rwd-table",
-        # ),
-        # "trend_j": trend_j,
-        # "trend_j_title": trend_j_title,
-        # "trend_t": trend_t,
-        # "trend_t_title": trend_t_title,
-    }
-
-    return render(request, "base/prediction_race.html", context)
-
-
-def predictionList(request, rcity, rdate, rno):
-    exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by("gate")
-    if exp011s:
-        pass
-    else:
-        return render(request, "base/home.html")
-
-    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
-
-    compare_r = exp011s.aggregate(
-        Min("i_s1f"),
-        Min("i_g1f"),
-        Min("i_g2f"),
-        Min("i_g3f"),
-        Max("handycap"),
-        Max("rating"),
-        Max("r_pop"),
-        Max("j_per"),
-        Max("t_per"),
-        Max("jt_per"),
-        Min("recent5"),
-        Min("recent3"),
-        Min("convert_r"),
-        Min("s1f_rank"),
-    )
-
-    try:
-        alloc = Rec010.objects.get(rcity=rcity, rdate=rdate, rno=rno)
-    except:
-        alloc = None
-
-    track = get_track_record(
-        rcity, rdate, rno
-    )  # 경주거리별 등급별 평균기록, 최고기록, 최저기록
-
-    trainer_double_check = get_trainer_double_check(rcity, rdate, rno)
-
-    paternal = get_paternal(rcity, rdate, rno, r_condition.distance)  # 부마 3착 성적
-    paternal = sorted(paternal, key=lambda x: x[0] or 99)  # 게이트 순으로 정렬
-
-    try:
-        cursor = connection.cursor()
-
-        strSql = (
-            """ 
-                select rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime
-                from exp010 a 
-                where rdate = '"""
-            + rdate
-            + """'
-                order by rdate, rtime
-                ; """
-        )
-
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        weeksrace = cursor.fetchall()
-
-        connection.commit()
-        connection.close()
-
-    except:
-        connection.rollback()
-        print("Failed selecting in exp010 : 주별 경주현황")
-
-    name = get_client_ip(request)
-
-    if name[0:6] != "15.177":
-        update_visitor_count(name)
-
-        # create a new Visitor instance
-        new_visitor = Visitor(
-            ip_address=name,
-            user_agent=request.META.get("HTTP_USER_AGENT"),
-            # referrer=request.META.get('HTTP_REFERER'),
-            referer=rcity + " " + rdate + " " + str(rno) + " " + "predictionList",
-            # timestamp=timezone.now()
-        )
-
-        # insert the new_visitor object into the database
-        new_visitor.save()
-
-    context = {
-        "exp011s": exp011s,
-        "r_condition": r_condition,
-        "compare_r": compare_r,
-        "alloc": alloc,
-        "track": track,
-        "trainer_double_check": str(trainer_double_check),
-        "paternal": paternal,
-        "weeksrace": weeksrace,
-    }
-
-    return render(request, "base/prediction_list.html", context)
-
 
 def awards(request):
     q = request.GET.get("q") if request.GET.get("q") != None else ""
@@ -1590,20 +1199,21 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     records = RecordS.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
         "rank", "gate"
     )
-    if records:
-        pass
-    else:
+    if not records:
         return render(request, "base/home.html")
 
-    r_condition = Rec010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+    # r_condition = Rec010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+    r_condition = Rec010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).first()
 
-    rdate_1year = (
-        str(int(rdate[0:4]) - 1) + rdate[4:8]
-    )  # 최근 1년 경주성적 조회조건 추가
+    # rdate_1year = (
+    #     str(int(rdate[0:4]) - 1) + rdate[4:8]
+    # )  # 최근 1년 경주성적 조회조건 추가
 
-    hr_records = RecordS.objects.filter(
-        rdate__lt=rdate, rdate__gt=rdate_1year, horse__in=records.values("horse")
-    ).order_by("horse", "-rdate")
+    # hr_records = RecordS.objects.filter(
+    #     rdate__lt=rdate, horse__in=records.values("horse")
+    # ).order_by("horse", "-rdate")
+
+    hr_records = recordsByHorse(rcity, rdate, rno)
 
     compare_r = records.aggregate(
         Min("i_s1f"),
@@ -1626,40 +1236,29 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
     disease = get_disease(rcity, rdate, rno)
 
-    # print(len(judged))
-    if len(judged) > 0:
-        judged = judged[0][0]
+    # if len(judged) > 0:
+    #     judged = judged[0][0]
 
     horses = Exp011.objects.values("horse").filter(rcity=rcity1, rdate=rdate1, rno=rno1)
 
     try:
         alloc = Rec010.objects.get(rcity=rcity, rdate=rdate, rno=rno)
-    except:
+    except Rec010.DoesNotExist:
         alloc = None
 
     try:
-        cursor = connection.cursor()
+        with connection.cursor() as cursor:
+            query = """
+                SELECT rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime
+                FROM exp010 
+                WHERE rdate = %s
+                ORDER BY rdate, rtime;
+            """
+            cursor.execute(query, (rdate,))
+            weeksrace = cursor.fetchall()
 
-        strSql = (
-            """ 
-                select rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime
-                from exp010 a 
-                where rdate = '"""
-            + rdate
-            + """'
-                order by rdate, rtime
-                ; """
-        )
-
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        weeksrace = cursor.fetchall()
-
-        # connection.commit()
-        # connection.close()
-
-    except:
-        # connection.rollback()
-        print("Failed selecting in exp010 : 주별 경주현황")
+    except Exception as e:
+        print(f"❌ Failed selecting in exp010 : 주별 경주현황 - {e}")
 
     check_visit(request)
 
@@ -1670,7 +1269,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
         "compare_r": compare_r,
         "hname": hname,
         "judged_list": judged_list,
-        "judged": judged,
+        "judged": " ".join(str(item) for sublist in judged for item in sublist),
         "horses": horses,
         "alloc": alloc,
         "weeksrace": weeksrace,
@@ -1880,22 +1479,14 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
                 ; """
                 )
 
-                # print(strSql)
-                # print(weight_mock)
-
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 weight = cursor.fetchall()
 
-                # connection.commit()
-                # connection.close()
-
-                # print(list(r_condition))
-
-                # print( r_condition[0][0])
-
             except:
-                connection.rollback()
                 print("Failed inserting in weight_s1")
+            finally:
+                connection.commit()
+                connection.close()
 
             mock = mock_traval(r_condition, weight_mock)
 
@@ -1925,13 +1516,7 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
     else:
         return render(request, "base/home.html")
 
-    hr_records = RecordS.objects.filter(
-        # hr_records = PRecord.objects.filter(
-        # rdate__gt=rdate_1year,
-        rdate__lt=rdate,
-        horse__in=exp011s.values("horse"),
-    ).order_by("horse", "-rdate")
-
+    hr_records = recordsByHorse(rcity, rdate, rno)
     compare_r = exp011s.aggregate(
         Min("i_s1f"),
         Min("i_g1f"),
@@ -2125,24 +1710,6 @@ def cycleWinningRate(request, rcity, rdate, rno, awardee, i_filter):
     return render(request, "base/cycle_winning_rate.html", context)
 
 
-# 기수 or 조교사 or 마주 44일 경주결과
-def getRaceAwardee(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host):
-    solidarity = get_recent_awardee(
-        rdate, awardee, i_name
-    )  # 기수, 조교사, 마주 연대현황 최근1년
-
-    # print(solidarity)
-
-    context = {
-        "solidarity": solidarity,
-        "awardee": awardee,
-        "i_jockey": i_jockey,
-        "i_trainer": i_trainer,
-        "i_host": i_host,
-    }
-
-    return render(request, "base/get_race_awardee.html", context)
-
 
 # 주별 입상마 경주전개 현황
 def weeksStatus(request, rcity, rdate):
@@ -2158,25 +1725,18 @@ def weeksStatus(request, rcity, rdate):
     try:
         cursor = connection.cursor()
 
-        strSql = (
-            """ 
-            select jockey, cast(load_in as decimal) 
-            from jockey_w 
-            where wdate = ( select max(wdate) from jockey_w where wdate < '"""
-            + rdate
-            + """' ) 
-                ; """
-        )
-
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        strSql = """
+            SELECT jockey, CAST(load_in AS DECIMAL)
+            FROM jockey_w
+            WHERE wdate = (SELECT MAX(wdate) FROM jockey_w WHERE wdate < %s);
+        """
+        cursor.execute(strSql, (rdate,))
         loadin = cursor.fetchall()
 
-        connection.commit()
-        connection.close()
-
     except:
-        connection.rollback()
         print("Failed selecting in 기승가능중량")
+    finally:
+        cursor.close()
 
     # print(status)
 
@@ -2278,31 +1838,18 @@ def jtAnalysis(
     r_rank3 = [item for item in status if item[16] == 3]  # item[16] : 실제착순(r_rank)
 
     try:
-        cursor = connection.cursor()
+        with connection.cursor() as cursor:
+            query = """
+                SELECT jockey, CAST(load_in AS DECIMAL)
+                FROM jockey_w
+                WHERE wdate = (SELECT MAX(wdate) FROM jockey_w WHERE wdate < %s);
+            """
+            cursor.execute(query, (tdate[0:4] + tdate[5:7] + tdate[8:10],))
+            loadin = cursor.fetchall()
 
-        strSql = (
-            """ 
-            select jockey, cast(load_in as decimal) 
-            from jockey_w 
-            where wdate = ( select max(wdate) from jockey_w where wdate < '"""
-            + tdate[0:4]
-            + tdate[5:7]
-            + tdate[8:10]
-            + """' ) 
-                ; """
-        )
+    except Exception as e:
+        print(f"Failed selecting in 기승가능중량: {e}")
 
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        loadin = cursor.fetchall()
-
-        connection.commit()
-        connection.close()
-
-    except:
-        connection.rollback()
-        print("Failed selecting in 기승가능중량")
-
-    # print(status)
     
     check_visit(request)
 
@@ -2422,29 +1969,17 @@ def jtAnalysisJockey(
     r_rank3 = [item for item in status if item[16] == 3]  # item[16] : 실제착순(r_rank)
 
     try:
-        cursor = connection.cursor()
+        with connection.cursor() as cursor:
+            query = """
+                SELECT jockey, CAST(load_in AS DECIMAL)
+                FROM jockey_w
+                WHERE wdate = (SELECT MAX(wdate) FROM jockey_w WHERE wdate < %s);
+            """
+            cursor.execute(query, (tdate[0:4] + tdate[5:7] + tdate[8:10],))
+            loadin = cursor.fetchall()
 
-        strSql = (
-            """ 
-            select jockey, cast(load_in as decimal) 
-            from jockey_w 
-            where wdate = ( select max(wdate) from jockey_w where wdate < '"""
-            + tdate[0:4]
-            + tdate[5:7]
-            + tdate[8:10]
-            + """' ) 
-                ; """
-        )
-
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        loadin = cursor.fetchall()
-
-        connection.commit()
-        connection.close()
-
-    except:
-        connection.rollback()
-        print("Failed selecting in 기승가능중량")
+    except Exception as e:
+        print(f"Failed selecting in 기승가능중량: {e}")
 
     try:
         cursor = connection.cursor()
@@ -2603,61 +2138,34 @@ def jtAnalysisMulti(
     r_rank3 = [item for item in status if item[16] == 3]  # item[16] : 실제착순(r_rank)
 
     try:
-        cursor = connection.cursor()
+        with connection.cursor() as cursor:
+            query = """
+                SELECT jockey, CAST(load_in AS DECIMAL)
+                FROM jockey_w
+                WHERE wdate = (SELECT MAX(wdate) FROM jockey_w WHERE wdate < %s);
+            """
+            cursor.execute(query, (tdate[0:4] + tdate[5:7] + tdate[8:10],))
+            loadin = cursor.fetchall()
 
-        strSql = (
-            """ 
-            select jockey, cast(load_in as decimal) 
-            from jockey_w 
-            where wdate = ( select max(wdate) from jockey_w where wdate < '"""
-            + tdate[0:4]
-            + tdate[5:7]
-            + tdate[8:10]
-            + """' ) 
-                ; """
-        )
+    except Exception as e:
+        print(f"Failed selecting in 기승가능중량: {e}")
 
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        loadin = cursor.fetchall()
-
-        # connection.commit()
-        # connection.close()
-
-    except:
-        # connection.rollback()
-        print("Failed selecting in 기승가능중량")
-
+    # 경주별 출주 기수, 조교사, 마주 
     try:
-        cursor = connection.cursor()
+        with connection.cursor() as cursor:
+            query = """
+                SELECT gate, jockey, trainer, host, horse
+                FROM exp011 
+                WHERE rcity = %s
+                AND rdate = %s
+                AND rno = %s
+                ORDER BY gate, jockey;
+            """
+            cursor.execute(query, (rcity, tdate[0:4] + tdate[5:7] + tdate[8:10], rno))
+            jockeys = cursor.fetchall()
 
-        strSql = (
-            """ 
-            select gate, jockey, trainer, host, horse
-            from exp011 
-            where rcity = '"""
-            + rcity
-            + """'
-            and rdate = '"""
-            + tdate[0:4]
-            + tdate[5:7]
-            + tdate[8:10]
-            + """' 
-            and rno = """
-            + str(rno)
-            + """
-            order by gate, jockey
-                ; """
-        )
-
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        jockeys = cursor.fetchall()
-
-        # connection.commit()
-        # connection.close()
-
-    except:
-        # connection.rollback()
-        print("Failed selecting in 기승가능중량")
+    except Exception as e:
+        print(f"Failed selecting in 기승가능중량: {e}")
 
     # print(jockeys)
     j_string=""
@@ -2670,7 +2178,7 @@ def jtAnalysisMulti(
         h_string = h_string + j[3]
 
     check_visit(request)
-    
+
     context = {
         "status": status,
         "loadin": loadin,
@@ -2705,27 +2213,6 @@ def jtAnalysisMulti(
     }
 
     return render(request, "base/jt_analysis_multi.html", context)
-
-
-# 기수 or 조교사 or 마주 44일 경주결과
-def getRaceHorse(request, rdate, awardee, i_name, i_jockey, i_trainer, i_host):
-    if i_host == "":
-        i_host = " "
-
-    solidarity = get_recent_horse(
-        "99991231", awardee, i_name
-    )  # 기수, 조교사, 마주 연대현황 최근1년
-    # print(solidarity)
-
-    context = {
-        "solidarity": solidarity,
-        "awardee": awardee,
-        "i_jockey": i_jockey,
-        "i_trainer": i_trainer,
-        "i_host": i_host,
-    }
-
-    return render(request, "base/get_race_horse.html", context)
 
 
 def raceTrain(request, rcity, rdate, rno):
@@ -2985,6 +2472,63 @@ def awardStatusJockey(request):
     }
 
     return render(request, "base/award_status_jockey.html", context)
+
+
+def awardStatusWeek(request):
+    q = request.GET.get("q") if request.GET.get("q") != None else ""
+    jname1 = request.GET.get("j1") if request.GET.get("j1") != None else ""
+    jname2 = request.GET.get("j2") if request.GET.get("j2") != None else ""
+    jname3 = request.GET.get("j3") if request.GET.get("j3") != None else ""
+
+    if q == "":
+        today = datetime.today()
+        if today.weekday() == 4:  # {0:월, 1:화, 2:수, 3:목, 4:금, 5:토, 6:일}
+            rdate = Racing.objects.values("rdate").distinct()[0]["rdate"]
+        elif today.weekday() == 5:
+            rdate = Racing.objects.values("rdate").distinct()[1]["rdate"]
+        else:
+            rdate = Racing.objects.values("rdate").distinct()[2]["rdate"]
+
+        friday = Racing.objects.values("rdate").distinct()[0]["rdate"]  # weeks 기준일
+        fdate = friday[0:4] + "-" + friday[4:6] + "-" + friday[6:8]
+
+    else:
+        # print(q[5:7] + "-" + q[8:10] + "-" + q[0:4])
+        today = datetime.strptime(q[5:7] + "-" + q[8:10] + "-" + q[0:4], "%m-%d-%Y")
+        # print(today)
+
+        if today.weekday() == 4:
+            rdate = q[0:4] + q[5:7] + q[8:10]
+            friday = rdate
+            fdate = friday[0:4] + "-" + friday[4:6] + "-" + friday[6:8]
+
+        else:
+            rdate = q[0:4] + q[5:7] + q[8:10]
+
+            friday = rdate
+            fdate = q
+
+            # messages.warning(request, "선택된 날짜가 금요일이 아닙니다.")
+
+    week = get_status_week(
+        friday
+    )
+
+    loadin = get_last2weeks_loadin(friday)
+
+    check_visit(request)
+
+    context = {
+        "week": week,
+        "loadin": loadin,
+        "fdate": fdate,
+        "rdate": rdate,
+        "jname1": jname1,
+        "jname2": jname2,
+        "jname3": jname3,
+    }
+
+    return render(request, "base/award_status_week.html", context)
 
 
 def dataManagement(request):
@@ -3504,28 +3048,44 @@ def get_client_ip(request):
         ip = request.META.get("REMOTE_ADDR")
     return ip
 
-
 def check_visit(request):
     name = get_client_ip(request)
 
-    if name[0:6] != "15.177":
-        update_visitor_count(name)
+    if name.startswith("15.177"):
+        return
 
-        # create a new Visitor instance
-        new_visitor = Visitor(
-            ip_address=name,
-            user_agent=request.META.get("HTTP_USER_AGENT"),
-            current = request.build_absolute_uri(), # 현재 페이지 정보
-            referer=request.META.get( "HTTP_REFERER", "Unknown"),  # referer 값이 없으면 기본값으로 "home" 설정
-            timestamp=timezone.now(),  # 현재 시간으로 설정
-        )
+    update_visitor_count(name)
 
-        # insert the new_visitor object into the database
-        new_visitor.save()
+    new_visitor = Visitor(
+        ip_address=name,
+        user_agent=request.META.get("HTTP_USER_AGENT"),
+        current=request.build_absolute_uri(),
+        referer=request.META.get("HTTP_REFERER", "Unknown"),
+        timestamp=timezone.now(),
+    )
+    new_visitor.save()
 
-    t_count = visitor_count()
+# def check_visit(request):
+#     name = get_client_ip(request)
 
-    return t_count
+#     if name[0:6] != "15.177":
+#         update_visitor_count(name)
+
+#         # create a new Visitor instance
+#         new_visitor = Visitor(
+#             ip_address=name,
+#             user_agent=request.META.get("HTTP_USER_AGENT"),
+#             current = request.build_absolute_uri(), # 현재 페이지 정보
+#             referer=request.META.get( "HTTP_REFERER", "Unknown"),  # referer 값이 없으면 기본값으로 "home" 설정
+#             timestamp=timezone.now(),  # 현재 시간으로 설정
+#         )
+
+#         # insert the new_visitor object into the database
+#         new_visitor.save()
+
+#     # t_count = visitor_count()
+
+#     return 0
 
 
 def visitor_count():

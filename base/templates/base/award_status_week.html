@@ -1,5 +1,82 @@
-{% load humanize %}
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-BFZZL101LZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-BFZZL101LZ');
+  </script>
+  <!-- End Google tag -->
+  
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" type="image/x-icon" href="{% static '/images/number-9.png' %}" />
+  <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
+  <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
+
+  <script src="{% static 'js/script.js' %}"></script>
+
+  <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
+
+  <title>상금수득 현황(기수)</title>
+
+  <form class="header__search" method="GET" action="{% url 'award_status_jockey' %}">
+    <label> 
+      <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+        <title>search</title>
+        <path
+          d="M32 30.586l-10.845-10.845c1.771-2.092 2.845-4.791 2.845-7.741 0-6.617-5.383-12-12-12s-12 5.383-12 12c0 6.617 5.383 12 12 12 2.949 0 5.649-1.074 7.741-2.845l10.845 10.845 1.414-1.414zM12 22c-5.514 0-10-4.486-10-10s4.486-10 10-10c5.514 0 10 4.486 10 10s-4.486 10-10 10z">
+        </path>
+      </svg>
+      마요일을 선택하십시오 :
+      <input style=" width: 12rem;" type="date" value={{fdate}} name="q" >
+
+      관심기수 :
+      <input style="width: 5rem; color:var(--color-main-light);" type="text" value='{{jname1}}' placeholder="세영" name="j1">
+      <input style="width: 5rem; color:var(--color-main-light);" type="text" value='{{jname2}}' placeholder="안토니오" name="j2">
+      <input style="width: 5rem; color:var(--color-main-light);" type="text" value='{{jname3}}' placeholder="이혁" name="j3">
+
+      <button class="btn" style="background: var(--color-main);">Submit</button>
+      
+      {% for message in messages %}
+      {{ message.tag }}
+      {{ message }}
+      {% endfor %}
+    </label>
+  </form>
+  
+  
+</head>
+
+
+
+
 {% load mathfilters %}
+{% load humanize %}
+
+{% block content %}
+
+<script>
+  $(function () {
+    $(".fold-table tr.view").on("click", function () {
+      if ($(this).hasClass("open")) {
+        $(this).removeClass("open").next(".fold").removeClass("open");
+      } else {
+        $(".fold-table tr.view").removeClass("open").next(".fold").removeClass("open");
+        $(this).addClass("open").next(".fold").addClass("open");
+      }
+    });
+  });
+
+</script>
 
 <script>
   $(document).ready(function () {
@@ -17,31 +94,15 @@
   })
 </script>
 
-<!-- <script>
-  $(function () {
-    $(".fold-table tr.view").on("click", function () {
-      if ($(this).hasClass("open")) {
-        $(this).removeClass("open").next(".fold").removeClass("open");
-      } else {
-        $(".fold-table tr.view").removeClass("open").next(".fold").removeClass("open");
-        $(this).addClass("open").next(".fold").addClass("open");
-      }
-    });
-  });
+<div class="loader"></div>
 
-</script> -->
-
-
-<div>
-
+<div class="container">
   <ul class="tabs1">
     <li class="tab-link current" data-tab="tab-right1" style="padding: 6px 25px; border-radius: 4px;">서울</li>
     <li class="tab-link" data-tab="tab-right2" style="padding: 6px 25px; border-radius: 4px;">부산</li>
-    <li class="tab-link" data-tab="tab-right3" style="padding: 6px 25px; border-radius: 4px;">출전표변경</li>
   </ul>
 
   <div id="tab-right1" class="tab-content1 current">
-
     <table class="fold-table" style="border-radius: 7px;">
       <thead>
         <tr>
@@ -65,7 +126,7 @@
       </thead>
 
       <tbody>
-        {% for rcity, jockey, rcnt, rr123cnt, rr1, rr2, rr3, wrace, w1st, w2nd, w3rd, w3, tot_1st, year_1st, from, to in award_j %}
+        {% for rcity, jockey, rcnt, rr123cnt, rr1, rr2, rr3, wrace, w1st, w2nd, w3rd, w3, tot_1st, year_1st, from, to in week %}
         {% if rcity == '서울' %}
         
         <tr class="view" align="center">
@@ -222,6 +283,7 @@
       </tbody>
     </table>
 
+    <table>aaa</table>
   </div>
 
   <div id="tab-right2" class="tab-content1">
@@ -249,7 +311,7 @@
       </thead>
 
       <tbody>
-        {% for rcity, jockey, rcnt, rr123cnt, rr1, rr2, rr3, wrace, w1st, w2nd, w3rd, w3, tot_1st, year_1st, from, to in award_j %}
+        {% for rcity, jockey, rcnt, rr123cnt, rr1, rr2, rr3, wrace, w1st, w2nd, w3rd, w3, tot_1st, year_1st, from, to in week %}
         {% if rcity == '부산' %}
 
         <tr class="view" align="center">
@@ -408,112 +470,15 @@
 
   </div>
 
-  <div id="tab-right3" class="tab-content1">
-
-    <table class="fold-table" style="border-radius: 7px;">
-      <thead>
-        <tr>
-          <th rowspan="2" colspan="2" style="width: 42%; text-transform:capitalize; vertical-align: middle; padding-top: 2.00rem; padding-bottom: 2.00rem; border-right: solid 1px gray;">Horse</th>
-          <th crowspan="2" colspan="1" style="width: 14%; border-right: solid 1px gray;"><span style="text-transform:capitalize;">Jockey</span></th>
-          <th rowspan="2" style="width: 4%; border-right: solid 1px gray;"><span style="text-transform:capitalize;">R</span></th>
-          <th rowspan="2" style="width: 40%; border-right: solid 1px gray; vertical-align: middle;"><span style="text-transform:capitalize;">Reason</span></th>
-        </tr>
-
-      </thead>
-
-      <tbody>
-        {% for rcity, rday, rno, gate, horse, jockey_old, jockey, reason, r_rank in changed_race %}
-        <tr class="view" align="left">
-          <td>
-            <div style="font-size: 1.2rem; font-style: italic;">
-              {% if rday == '금' %}
-              <span style="font-size: 1.1rem; font-family: Arial; color: var(--color-r2);">{{rday}}</span>
-              {% elif rday == '토' %}
-              <span style="font-size: 1.1rem; font-family: Arial; color: var(--color-r4);">{{rday}}</span>
-              {% else %}
-              <span style="font-size: 1.1rem; font-family: Arial; color: var(--color-r3);">{{rday}}</span>
-              {% endif %}
-
-              {% if rcity == '서울' %}
-              <span style="font-size: 0.9rem; font-family: Arial; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg); font-style: italic; color:var(--color-r2);">
-                {{rcity|slice:"0:1"}}</span>
-              {% else %}
-                <span style="font-size: 0.9rem; font-family: Arial; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg); font-style: italic; color:var(--color-r5);">
-                {{rcity|slice:"0:1"}}</span>
-              {% endif %}
-
-            </div>
-            <div style="color: var(--color-main); font-size: 1.1rem; font-family: Arial; font-style: italic; text-align: right;">{{rno}}ᴿ</div>
-            
-          </td>
-
-          <td style="font-size: 1.2rem;">
-            <div style="text-align: left;">
-              {% if jockey_old %}
-              <span style="color: var(--color-light-gray);">{{horse|slice:"0:6"}}</span>
-              {% else %}
-              <span style="color:var(--color-r2); text-decoration: line-through;">{{horse|slice:"0:6"}}</span>
-              {% endif %}
-              
-            </div>
-          </td>
-
-          <td>
-            <div style="font-size: 1.1rem; text-align: left;">
-              <span style="color: var(--color-gray);">{% if jockey_old %}{{jockey_old|slice:"0:3"}}{% else %}{{jockey|slice:"0:3"}}{% endif %}</span>
-            </div>
-            {% if jockey_old %} 
-            <div style="font-size: 1.1rem; text-align: right;">
-              <span style="color: var(--color-main);">{{jockey|slice:"0:3"}}</span>
-            </div>
-            {% endif %}
-          </td>
-          
-          <td align="center">
-            {% if r_rank %}
-              {% if r_rank == 1 %}
-              <span style="font-family: Arial; font-size:1.0rem; color:var(--color-main-light); padding:2px 4px; border-radius: 7px; background-color: var(--color-r1);">{{r_rank}}</span>
-              {% elif r_rank == 2 %}
-              <span style="font-family: Arial; font-size:1.0rem; color:var(--color-light); padding:2px 4px; border-radius: 7px; background-color: var(--color-r2);">{{r_rank}}</span>
-              {% elif r_rank == 3 %}
-              <span style="font-family: Arial; font-size:1.0rem; color:var(--color-bg); padding:2px 4px; border-radius: 7px; background-color: var(--color-r3);">{{r_rank}}</span>
-              {% elif r_rank == 4 %}
-              <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r4); padding:2px 4px; border-radius: 7px;">{{r_rank}}</span>
-              {% elif r_rank == 5 %}
-              <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r5); padding:2px 4px; border-radius: 7px;">{{r_rank}}</span>
-              {% elif r_rank == 99 %}
-              <span style="font-family: Arial; font-size:0.8rem; color:var(--color-gray); padding:2px 4px; border-radius: 7px;">&nbsp;</span>
-              {% else %}
-              <span style="font-family: Arial; font-size:1.0rem; color:var(--color-gray); padding:2px 4px; border-radius: 7px;">{{r_rank}}</span>
-              {% endif %}
-            {% endif %}
-          </td>
-          <td>
-            <div style="font-size: 1.1rem;">
-              <span style="color: var(--color-light-gray);">{{reason}}</span>
-            </div>
-          </td>
-
-          
-        </tr>
-
-        <tr class="fold">
-
-          <td colspan="10">
-
-          </td>
-
-        </tr>
-  
-        {% endfor %}
-    
-      </tbody>
-    </table>
-
-  </div>
-
-
 </div>
+<div>aaa</div>
+<script>
+  $(window).on('load', function () {
+    $('.loader').fadeOut();
+  });
+</script>
 
+</main>
+{% endblock %}
 
-
+</html>

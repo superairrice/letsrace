@@ -24,13 +24,7 @@ urlpatterns = [
     path("race/", views.racingPage, name="race"),
     path("left_component/", views.leftPage, name="left_component"),
     path("right_component/", views.rightPage, name="right_component"),
-    path("activity_a/<str:hname>", views.activityPage_a, name="activity_a"),
-    path(
-        "activityComponent_a/<str:hname>",
-        views.activityComponentPage_a,
-        name="activityComponent_a",
-    ),
-    path("home_a/<str:rcity>/<str:rdate>", views.homePage_a, name="home_a"),
+
     path(
         "race_prediction/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",
         views.racePrediction,
@@ -103,6 +97,7 @@ urlpatterns = [
         "award_status_trainer/", views.awardStatusTrainer, name="award_status_trainer"
     ),
     path("award_status_jockey/", views.awardStatusJockey, name="award_status_jockey"),
+    path("award_status_week/", views.awardStatusWeek, name="award_status_week"),
     path("data_management/", views.dataManagement, name="data_management"),
     path("race_breakingnews/", views.raceBreakingNews, name="race_breakingnews"),
     path("krafile_input/", views.krafileInput, name="krafile_input"),
@@ -159,16 +154,7 @@ urlpatterns = [
         views.jtAnalysisMulti,
         name="jt_analysis_multi",
     ),
-    path(
-        "get_race_awardee/<str:rdate>/<str:awardee>/<str:i_name>/<str:i_jockey>/<str:i_trainer>/<str:i_host>",
-        views.getRaceAwardee,
-        name="get_race_awardee",
-    ),
-    path(
-        "get_race_horse/<str:rdate>/<str:awardee>/<str:i_name>/<str:i_jockey>/<str:i_trainer>/<str:i_host>",
-        views.getRaceHorse,
-        name="get_race_horse",
-    ),
+
     path(
         "write_significant/<str:rdate>/<str:horse>",
         views.writeSignificant,
