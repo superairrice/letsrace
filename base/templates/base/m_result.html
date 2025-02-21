@@ -55,9 +55,9 @@
         </th>
 
         <th width="5.9%">
-          <a href="{% url 'jt_analysis_multi' r.rcity r.rdate|mul:1|sub:10000 r.rdate r.jockey r.trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
-            <span class="tooltip" style="font-size:1.2rem; color:var(--color-r5);">J&T<sup style="font-size: 0.7rem;">%</sup>
-              <span class="tooltip-text" style="font-size:1.1rem;">🏇🛖&nbsp;[<span style="color:var(--color-r3);">{{r.jockey}}</span>]&nbsp;&&nbsp;[<span style="color:var(--color-r3);">{{r.trainer}}</span>] 최근 1년 경주성적</span>
+          <a href="{% url 'jt_analysis_multi' r.rno r.rdate|mul:1|sub:10000 r.rdate '%' '%' r.host '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+            <span class="tooltip" style="font-size:1.0rem; color:var(--color-r5);">
+              🤠<span class="tooltip-text" style="font-size:1.1rem;">🤠&nbsp;[<span style="color:var(--color-r3);">{{r.host}}</span>]&nbsp;마주 최근 1년 경주성적</span>
             </span>
           </a>
         </th>
@@ -103,11 +103,12 @@
         </th>
           
         <th>
-          <a href="{% url 'jt_analysis_multi' r.rno r.rdate|mul:1|sub:10000 r.rdate '%' '%' r.host '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
-            <span class="tooltip" style="font-size:1.0rem; color:var(--color-r5);">
-              🤠<span class="tooltip-text" style="font-size:1.1rem;">🤠&nbsp;[<span style="color:var(--color-r3);">{{r.host}}</span>]&nbsp;마주 최근 1년 경주성적</span>
+          <a href="{% url 'jt_analysis_multi' r.rcity r.rdate|mul:1|sub:10000 r.rdate r.jockey r.trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+            <span class="tooltip" style="font-size:1.2rem; color:var(--color-r5);">J&T<sup style="font-size: 0.7rem;">%</sup>
+              <span class="tooltip-text" style="font-size:1.1rem;">🏇🛖&nbsp;[<span style="color:var(--color-r3);">{{r.jockey}}</span>]&nbsp;&&nbsp;[<span style="color:var(--color-r3);">{{r.trainer}}</span>] 최근 1년 경주성적</span>
             </span>
           </a>
+          
         </th>
         <th rowspan="1">
           <span class="tooltip" style="font-size:1.0rem;">🌥️
@@ -189,13 +190,11 @@
 
             <div style="text-align: left; color:dodgerblue; font-style: italic; text-align: left; font-size: 1.2rem;">
               <span style="font-size: 1.2rem; font-family: Arial;">'{{rdate|slice:"2:4" }}.{{rdate|slice:"4:6" }}.{{rdate|slice:"6:8"}}</span>
-              ­­­»
               {% if r_condition.distance == distance %}
-              <span style="font-size: 1.2rem; font-family: Arial; color:tomato; font-weight: 700;">{{distance}}</span>
+              <span style="font-size: 1.2rem; padding: 2px 4px; border-radius: 7px; font-family: Arial; color:var(--color-r1); font-weight: 1000;">{{distance}}</span>
               {%else%}
-              <span style="font-size: 1.2rem; font-family: Arial; font-weight: 300;">{% if distance %}{{distance}}{% else %}취소{% endif %}</span>
+              <span style="font-size: 1.2rem; padding: 2px 4px; border-radius: 7px; font-family: Arial;">{% if distance %}{{distance}}{% else %}취소{% endif %}</span>
               {%endif%}
-              &nbsp;
             </div>
           
             {# 경주정보 #}
@@ -321,6 +320,18 @@
         {# J&T % / 마주 #}
         <td style="font-size: 1.2rem">
 
+          {% if r.host == host %}
+          <div style="color:var(--color-gray); text-align: left; font-size: 1.15rem;">
+              <span style="color:var(--color-gray); text-align: left; font-size: 1.15rem;">{{host|slice:"0:3"}}</span>
+          </div>
+          {%else%}
+          <div style="color:var(--color-r1); text-align: left; font-size: 1.15rem;">
+            {% if host %}
+              <span style="color:var(--color-r1); text-align: left; font-size: 1.15rem">{{host|slice:"0:3"}}</span>
+            {% endif %}
+          </div>
+          {% endif %}
+
           {% if judge == NONE %} {# 주행검사 아니면  #}
             {% if jockey_old %}
               {# 기수가 변경되었으면 기존 기수의 기록을 라인 스루 #}
@@ -441,17 +452,7 @@
             {% endif %}
           {% endif %}
           
-          {% if r.host == host %}
-          <div style="color:var(--color-gray); text-align: left; font-size: 1.15rem;">
-              <span style="color:var(--color-gray); text-align: left; font-size: 1.15rem;">{{host|slice:"0:3"}}</span>
-          </div>
-          {%else%}
-          <div style="color:var(--color-r1); text-align: left; font-size: 1.15rem;">
-            {% if host %}
-              <span style="color:var(--color-r1); text-align: left; font-size: 1.15rem">{{host|slice:"0:3"}}</span>
-            {% endif %}
-          </div>
-          {%endif%}
+          
         </td>
 
         {# 날씨 / 주로 #}
