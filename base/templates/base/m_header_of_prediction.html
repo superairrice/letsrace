@@ -193,11 +193,37 @@
     </span>
 
     {% if alloc.r2alloc %} {# 경주결과가 입력되었으면 #}
-    <span style="color: var(--color-main); padding:0.4rem;">
+    <span style="color: var(--color-main); padding-top: 0.6rem;">
       <a href="{% url 'race_result' r_condition.rcity r_condition.rdate r_condition.rno 0 0 0 0 %}"
         onclick="window.open(this.href, 'w_result', 'width=900, height=1000, toolbars=no, scrollbars=yes'); return false;">
         <span class="tooltip" style="font-size: 1.35rem;">📃
           <span class="tooltip-text" style="width:11rem; text-align: center;">📃&nbsp;Race Result</span>
+        </span>
+      </a>
+    </span>
+    {% endif %}
+
+    {% if request.user.username == 'admin' %}
+    <span style="color: var(--color-main); padding-top: 0.6rem;">
+      <a href="{% url 'update_changed_race' r_condition.rcity r_condition.rdate r_condition.rno %}" 
+                onclick="
+                monitorWidth = 1920; // 특정 모니터의 너비 (예: 1920px)
+                 monitorHeight = 1080; // 특정 모니터의 높이 (예: 1080px)
+                 monitorOffset = 1920; // 첫 번째 모니터 끝에서 두 번째 모니터가 시작하는 위치
+                
+                 winWidth = 900; // 새 창의 너비
+                 winHeight = 800; // 새 창의 높이
+                
+                // winLeft =  monitorOffset + (monitorWidth - winWidth); // 두 번째 모니터 우측 정렬
+                 winLeft = 1246; // 좌측 정렬: 모니터 시작 위치
+                 winTop = 0; // 상단 고정
+                window.open(
+                  this.href,
+                  'w_update_changed_race',
+                  `width=${winWidth},height=${winHeight},toolbars=no,scrollbars=yes,left=${winLeft},top=${winTop}`
+                );
+                return false;">🔧
+          <span style="font-size: 1.35rem;">
         </span>
       </a>
     </span>
