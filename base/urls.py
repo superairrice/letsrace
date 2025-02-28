@@ -24,7 +24,6 @@ urlpatterns = [
     path("race/", views.racingPage, name="race"),
     path("left_component/", views.leftPage, name="left_component"),
     path("right_component/", views.rightPage, name="right_component"),
-
     path(
         "race_prediction/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",
         views.racePrediction,
@@ -51,14 +50,14 @@ urlpatterns = [
         name="race_related_info",
     ),
     path(
-        "training_awardee/<str:rdate>/<str:awardee>/<str:name>",
+        "training_awardee/<str:rdate>/<str:awardee>/<str:name>/<str:hname>", 
         views.trainingAwardee,
         name="training_awardee",
     ),
     path(
         "training_horse/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>",
         views.trainingHorse,
-        name="training_horse", 
+        name="training_horse",
     ),
     # path(
     #     "prediction_race/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",
@@ -154,7 +153,6 @@ urlpatterns = [
         views.jtAnalysisMulti,
         name="jt_analysis_multi",
     ),
-
     path(
         "write_significant/<str:rdate>/<str:horse>",
         views.writeSignificant,

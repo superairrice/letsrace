@@ -149,23 +149,37 @@
           {% endif %}
 
           {% if request.user.username == 'admin' %}
-          <div>
-            <a href="{% url 'write_significant' rdate horse %}" onclick="window.open(this.href, 'w_significant', 'top=100, left=0, width=450, height=400'); return false;">
-              {% if r_flag and r_flag > '0' %}
-              <span class="tooltip" style="font-family: Arial; font-size:0.9rem; color:var(--color-gray); text-align: center;">집계❌
-                <span class="tooltip-text" style="font-size: 1.15rem; width:20rem; text-align: left;">{{r_etc}}</span>
-              </span>
-                
-              {% else %}
-                {% if r_etc %}
-                  <span class="tooltip" style="font-family: Arial; font-size:1.0rem; color:var(--color-r5); text-align: center;">
-                      {{r_etc|slice:"0:5"}}
-                    <span class="tooltip-text" style="font-size: 1.15rem; width:20rem; text-align: left;">{{r_etc}}</span>
-                  </span>
+          <div style="text-align: right;">
+            <a href="{% url 'write_significant' rdate horse %}" 
+                              onclick="
+                                let monitorWidth = 1920; // 특정 모니터의 너비 (예: 1920px)
+                                let monitorHeight = 1080; // 특정 모니터의 높이 (예: 1080px)
+                                let monitorOffset = 1920; // 첫 번째 모니터 끝에서 두 번째 모니터가 시작하는 위치
+                                
+                                let winWidth = 500; // 새 창의 너비
+                                let winHeight = 550; // 새 창의 높이
+                                
+                                let winLeft =  monitorOffset + (monitorWidth - winWidth); // 두 번째 모니터 우측 정렬
+                                //let winLeft = 1246; // 좌측 정렬: 모니터 시작 위치
+                                let winTop = 0; // 상단 고정
+                                window.open(
+                                  this.href,
+                                  'w_related',
+                                  `width=${winWidth},height=${winHeight},toolbars=no,scrollbars=yes,left=${winLeft},top=${winTop}`
+                                );
+                                return false;">
+              {% if r_flag %}
+                {% if r_flag != '0'  %}
+                <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1);">📕
+                  <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📕&nbsp;&nbsp;{{r_etc}}</span>
+                </span>
                 {% else %}
-                  <span class="tooltip" style="font-family: Arial; font-size:1.0rem; color:var(--color-r5); text-align: center; padding-top: 4px; padding-bottom: 0px;">🔏</span>
+                <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1);">📘
+                  <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📘&nbsp;&nbsp;{{r_etc}}</span>
+                </span>
                 {% endif %}
-
+              {% else %}
+                <span style="font-family: Arial; font-size:1.05rem; color:var(--color-gray);">📃</span>
               {% endif %}
             </a>
           </div>

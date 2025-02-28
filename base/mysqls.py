@@ -41,16 +41,17 @@ def get_paternal(rcity, rdate, rno, distance):
         with connection.cursor() as cursor:  # 자동으로 cursor 닫기
             strSql = """ 
                 SELECT 
-                    a.gate, a.rank, a.horse, 
-                    b.paternal, 
-                    SUM(IF(c.distance = %s, r1, 0)) AS rd1,
-                    SUM(IF(c.distance = %s, r2, 0)) AS rd2,
-                    SUM(IF(c.distance = %s, r3, 0)) AS rd3,
-                    SUM(IF(c.distance = %s, rtot, 0)) AS rdtot,
-                    SUM(r1) AS r1,
-                    SUM(r2) AS r2,
-                    SUM(r3) AS r3,
-                    SUM(rtot) AS rtot,
+                    a.gate, a.rank, a.horse, a.r_rank, a.rating, a.birthplace, a.h_sex, a.h_age, a.i_cycle, a.complex5, 
+                    b.paternal,
+                    SUM(IF(c.distance = %s, c.r1, 0)) AS rd1,
+                    SUM(IF(c.distance = %s, c.r2, 0)) AS rd2,
+                    SUM(IF(c.distance = %s, c.r3, 0)) AS rd3,
+                    SUM(IF(c.distance = %s, c.rtot, 0)) AS rdtot,
+                    SUM(c.r1) AS r1,
+                    SUM(c.r2) AS r2,
+                    SUM(c.r3) AS r3,
+                    SUM(c.rtot) AS rtot,
+                    
                     b.price / 1000 AS price,
                     (SELECT price / 1000 
                         FROM horse_w 
@@ -70,12 +71,21 @@ def get_paternal(rcity, rdate, rno, distance):
                     a.rcity = %s
                     AND a.rdate = %s
                     AND a.rno = %s
-                GROUP BY a.gate, a.rank, a.horse, b.paternal 
+                GROUP BY a.gate, a.rank, a.horse, b.paternal
                 ORDER BY a.rank, a.gate, a.horse, b.paternal;
             """
 
             # 안전한 SQL 파라미터 바인딩
-            params = (distance, distance, distance, distance, rdate, rcity, rdate, rno)
+            params = (
+                distance,
+                distance,
+                distance,
+                distance,
+                rdate,
+                rcity,
+                rdate,
+                rno,
+            )
 
             cursor.execute(strSql, params)
             result = cursor.fetchall()

@@ -16,34 +16,33 @@
 
   <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
 
-  <title>🐴{{rdate|slice:"0:4"}}.{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}&nbsp;{{horse}}&nbsp;&nbsp;경주 메모</title>
+  <title>📘&nbsp;경주 메모</title>
 
 </head>
 
 {% block content %}
-<br>
 
 <div class="container">
   <div class="roomList" style="height: auto;">
 
-    <div class="room__top">
-      <div class="room__topLeft">
-        <span style="font-size:1.7rem; color: var(--color-r3); font-weight: 600;">🐴&nbsp;&nbsp;{{horse}}</span>
-        <span style="font-size:1.7rem; color: var(--color-main); font-weight: 600;">&nbsp;&nbsp;{{rdate|slice:"0:4"}}.{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
+    <div class="room__top" style="border-radius: 7px;">
+      <div class="room__topLeft" style="font-style: italic;">
+        <span style="font-size: 1.6rem; color: var(--color-r3);;">🐴&nbsp;&nbsp;{{horse}}</span>
+        <span style="font-size: 1.6rem; color: var(--color-main);;">&nbsp;&nbsp;{{rdate|slice:"0:4"}}.{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
 
-        <span style="font-size:1.7rem; color: var(--color-light); font-weight: 600;">&nbsp;경주 메모</span>
+        <span style="font-size: 1.6rem; color: var(--color-light);;">&nbsp;경주 메모</span>
       </div>
     
     </div>
 
-    <hr style="border: solid 1px gray;">
+    <hr style="border: solid 1px black;">
 
     <form class="header__search" action="" method="POST">
       {% csrf_token %}
       <label style="padding-bottom: 0%;">
-        <div style="width:80px">✔︎&nbsp;Start :</div>
+        <div style="width:10rem; font-size: 1.5rem;">📚&nbsp;Start :</div>
         <div>
-        <select name="start" style="font-size: 1.4rem; width: 300px; border-radius: 5px;">
+        <select name="start" style="font-size: 1.5rem; width: 45rem; border-radius: 5px;">
           <option value="-" {% if start == '-' %} selected {% endif %}>&nbsp;</option>
           {% for cd_type, r_code, r_name in race_cd %}
           {% if cd_type == 'R1' %}
@@ -55,9 +54,9 @@
       </label>
 
       <label style="padding-bottom: 0%;">
-        <div style="width:80px">✔︎&nbsp;Corners :</div>
+        <div style="width:10rem; font-size: 1.5rem;">📚&nbsp;Corners :</div>
         <div>
-        <select name="corners" style="font-size: 1.4rem; width: 300px; border-radius: 5px;">
+        <select name="corners" style="font-size: 1.5rem; width: 45rem; border-radius: 5px;">
           <option value="-" {% if corners == '-' %} selected {% endif %}>&nbsp;</option>
           {% for cd_type, r_code, r_name in race_cd %}
           {% if cd_type == 'R2' %}
@@ -69,9 +68,9 @@
       </label>
 
       <label style="padding-bottom: 0%;">
-        <div style="width:80px">✔︎&nbsp;Finish :</div>
+        <div style="width:10rem; font-size: 1.5rem;">📚&nbsp;Finish :</div>
         <div>
-        <select name="finish" style="font-size: 1.4rem; width: 300px; border-radius: 5px;">
+        <select name="finish" style="font-size: 1.5rem; width: 45rem; border-radius: 5px;">
           <option value="-" {% if finish == '-' %} selected {% endif %}>&nbsp;</option>
           {% for cd_type, r_code, r_name in race_cd %}
           {% if cd_type == 'R3' %}
@@ -82,9 +81,9 @@
         </div>
       </label>
       <label>
-        <div style="width:80px">✔︎&nbsp;Wrap up :</div>
+        <div style="width:10rem; font-size: 1.5rem;">📚&nbsp;Wrap up :</div>
         <div>
-        <select name="wrapup" style="font-size: 1.4rem; width: 300px; border-radius: 5px;">
+        <select name="wrapup" style="font-size: 1.5rem; width: 45rem; border-radius: 5px;">
           <option value="-" {% if wrapup == '-' %} selected {% endif %}>&nbsp;</option>
           {% for cd_type, r_code, r_name in race_cd %}
           {% if cd_type == 'R4' %}
@@ -96,18 +95,18 @@
       </label>
 
       <label>
-        <div style="width:80px">✔︎&nbsp;Etc. :</div>
+        <div style="width:10rem; font-size: 1.5rem;">📚&nbsp;Etc. :</div>
         <div>
-          <textarea name="r_etc" rows="4" placeholder="Enter Your Text Here by Replacing it" style="font-size: 1.4rem; width: 300px; padding: 10px;">
+          <textarea name="r_etc" rows="10" placeholder="Enter Your Text Here by Replacing it" style="font-size: 1.5rem; width: 45rem; padding: 10px;">
             {% if r_significant.0.4 %}{{r_significant.0.4}}{% else %}&nbsp;{% endif %}
           </textarea>
         </div>
       </label>
 
       <label>
-        <div style="width:80px">✔︎&nbsp;제외 사유 :</div>
+        <div style="width:10rem; font-size: 1.5rem;">📚&nbsp;제외 사유 :</div>
         <div>
-        <select name="r_flag" style="font-size: 1.4rem; width: 300px; border-radius: 5px;">
+        <select name="r_flag" style="font-size: 1.5rem; width: 45rem; border-radius: 5px;">
           <!-- <option value="0" {% if r_flag == '0' %} selected {% endif %}>&nbsp;</option> -->
           {% for cd_type, r_code, r_name in race_cd %}
           {% if cd_type == 'R0' %}
@@ -117,11 +116,11 @@
         </select>
         </div>
       </label>
-
-      <button class="btn btn--link" type="submit" style="font-size: 1.5rem;">💾&nbsp;Save</button>
-
-      <div class="form__action" style="font-size: 1.5rem;">
-        <a class="btn btn--dark"  onclick="window.close()">Close</a>
+      
+      <br>
+      <div class="form__action">
+        <button class="btn btn--link" type="submit">💾&nbsp;Save</button>
+        <a class="btn btn--dark" onclick="window.close()">Close</a>
       </div>
 
     </form>

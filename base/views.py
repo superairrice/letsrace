@@ -546,8 +546,8 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
     except:
         alloc = None
 
-    paternal = get_paternal(rcity, rdate, rno, r_condition.distance)  # 부마 3착 성적
-    paternal_dist = get_paternal_dist(rcity, rdate, rno)  # 부마 거리별 3착 성적
+    # paternal = get_paternal(rcity, rdate, rno, r_condition.distance)  # 부마 3착 성적
+    # paternal_dist = get_paternal_dist(rcity, rdate, rno)  # 부마 거리별 3착 성적
 
     loadin = get_loadin(rcity, rdate, rno)
     disease = get_disease(rcity, rdate, rno)
@@ -605,8 +605,8 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         "hr_records": hr_records,
         "compare_r": compare_r,
         "alloc": alloc,
-        "paternal": paternal,
-        "paternal_dist": paternal_dist,
+        # "paternal": paternal,
+        # "paternal_dist": paternal_dist,
         "trainer_double_check": str(trainer_double_check),
         "training_cnt": training_cnt,
         # "axis1": axis1,
@@ -712,7 +712,10 @@ def raceRelatedInfo(request, rcity, rdate, rno):
     judged_horse = get_judged_horse(rcity, rdate, rno)
     judged_jockey = get_judged_jockey(rcity, rdate, rno)
 
-    award_j, award_t, award_h, race_detail = get_race_related(rcity, rdate, rno)
+    # award_j, award_t, award_h, race_detail = get_race_related(rcity, rdate, rno)
+
+    paternal = get_paternal(rcity, rdate, rno, r_condition.distance)  # 부마 3착 성적
+    paternal_dist = get_paternal_dist(rcity, rdate, rno)  # 부마 거리별 3착 성적
 
     loadin = get_loadin(rcity, rdate, rno)
     disease = get_disease(rcity, rdate, rno)
@@ -727,10 +730,12 @@ def raceRelatedInfo(request, rcity, rdate, rno):
         "treat": treat,  # 기수 기승가능 부딤중량
         "judged_horse": judged_horse,  # 기수 기승가능 부딤중량
         "judged_jockey": judged_jockey,
-        "award_j": award_j,
-        "award_t": award_t,
-        "award_h": award_h,
-        "race_detail": race_detail,
+        # "award_j": award_j,
+        # "award_t": award_t,
+        # "award_h": award_h,
+        # "race_detail": race_detail,
+        "paternal": paternal,  
+        "paternal_dist": paternal_dist,  
         "loadin": loadin,  # 기수 기승가능 부딤중량
         "disease": disease,  # 경주마 중대 질병 진료 회수
     }
@@ -1710,7 +1715,6 @@ def cycleWinningRate(request, rcity, rdate, rno, awardee, i_filter):
     return render(request, "base/cycle_winning_rate.html", context)
 
 
-
 # 주별 입상마 경주전개 현황
 def weeksStatus(request, rcity, rdate):
     status = get_weeks_status(rcity, rdate)
@@ -2286,7 +2290,7 @@ def printPrediction(request):
 
 
 # 기수/조교사 주별 출주마 조교현황
-def trainingAwardee(request, rdate, awardee, name):
+def trainingAwardee(request, rdate, awardee, name, hname):
 
     status = get_training_awardee(rdate, awardee, name)
     train_title = trend_title(rdate)
@@ -2298,6 +2302,7 @@ def trainingAwardee(request, rdate, awardee, name):
         "train_title": train_title,
         "awardee": awardee,
         "name": name,
+        "hname": hname,
     }
 
     return render(request, "base/training_awardee.html", context)
