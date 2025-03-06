@@ -448,7 +448,7 @@ def get_race(i_rdate, i_awardee):
         strSql = (
             """ 
             select rcity, rdate, rno, rday, rseq,distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime, r1award/1000, r2award/1000, r3award/1000, r4award/1000, r5award/1000, sub1award/1000, sub2award/1000, sub3award/1000,
-            ( select count(*) from rboard where a.rcity = rcity and a.rdate = rdate and a.rno = rno ) rcnt
+            0 rcnt
             from exp010 a 
             where rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
             order by rdate, rtime
@@ -1517,33 +1517,33 @@ def get_treat_horse(i_rcity, i_rdate, i_rno):
                 (
                 select distinct  horse, tdate, if( length(disease) > 2, trim(disease), trim(hospital) ) disease, '' laps,  '' t_time, '' canter,  '' strong, '' audit, '' rider, '' judge
                 from treat 
-                where horse in ( select horse from exp011 where rdate = %s and rcity = %s and rno = %s )
+                where horse in ( select horse from exp011 where rcity = %s and rdate = %s and rno = %s )
                 and tdate between date_format(DATE_ADD(%s, INTERVAL - 99 DAY), '%%Y%%m%%d') and %s
                 union all
                 select horse, tdate, '', laps, '', '', '', '', '', ''
                 from swim 
-                where horse in ( select horse from exp011 where rdate = %s and rcity = %s and rno = %s )
+                where horse in ( select horse from exp011 where rcity = %s and rdate = %s and rno = %s )
                 and tdate between date_format(DATE_ADD(%s, INTERVAL - 99 DAY), '%%Y%%m%%d') and %s
                 union all
                 select horse, tdate, '', '', t_time, canter, strong, '', rider, ''
                 from train 
-                where horse in ( select horse from exp011 where rdate = %s and rcity = %s and rno = %s )
+                where horse in ( select horse from exp011 where rcity = %s and rdate = %s and rno = %s )
                 and tdate between date_format(DATE_ADD(%s, INTERVAL - 99 DAY), '%%Y%%m%%d') and %s
                 union all
                 select horse, tdate, '', '', '', '', '', '출발', rider, judge
                 from start_train 
-                where horse in ( select horse from exp011 where rdate = %s and rcity = %s and rno = %s )
+                where horse in ( select horse from exp011 where rcity = %s and rdate = %s and rno = %s )
                 and tdate between date_format(DATE_ADD(%s, INTERVAL - 99 DAY), '%%Y%%m%%d') and %s
                 union all
                 select horse, rdate, '', '', '', '', '', '발주', rider, judge
                 from start_audit 
-                where horse in ( select horse from exp011 where rdate = %s and rcity = %s and rno = %s )
+                where horse in ( select horse from exp011 where rcity = %s and rdate = %s and rno = %s )
                 and rdate between date_format(DATE_ADD(%s, INTERVAL - 99 DAY), '%%Y%%m%%d') and %s
                 union all
                 select horse, rdate, concat( mid(grade,1,2), ' ', 'Race: ', convert(rcount, char),'두, 인기도:', convert(r_pop, char)), '', '', '', '', '경주', jockey, 
                             concat( convert(r_rank, char), '  ﹆  ', convert(rank, char))
                 from expect
-                where horse in ( select horse from exp011 where rdate = %s and rcity = %s and rno = %s )
+                where horse in ( select horse from exp011 where rcity = %s and rdate = %s and rno = %s )
                 and rdate between date_format(DATE_ADD(%s, INTERVAL - 99 DAY), '%%Y%%m%%d') and %s
                 ) a
                 group by horse, tdate, audit, disease
@@ -1551,7 +1551,7 @@ def get_treat_horse(i_rcity, i_rdate, i_rno):
                 
             ;"""
         )
-        params = (i_rdate, i_rcity, i_rno, i_rdate, i_rdate, i_rdate, i_rcity, i_rno, i_rdate, i_rdate, i_rdate, i_rcity, i_rno, i_rdate, i_rdate, i_rdate, i_rcity, i_rno, i_rdate, i_rdate, i_rdate, i_rcity, i_rno, i_rdate, i_rdate, i_rdate, i_rcity, i_rno, i_rdate, i_rdate)
+        params = (i_rcity, i_rdate, i_rno, i_rdate, i_rdate, i_rcity, i_rdate, i_rno, i_rdate, i_rdate,i_rcity, i_rdate, i_rno, i_rdate, i_rdate,i_rcity, i_rdate, i_rno, i_rdate, i_rdate,i_rcity, i_rdate, i_rno, i_rdate, i_rdate,i_rcity, i_rdate, i_rno, i_rdate, i_rdate)
         cursor.execute(strSql, params)
 
         result = cursor.fetchall()
@@ -1574,11 +1574,11 @@ def get_track_record(i_rcity, i_rdate, i_rno):
                 AND %s
                 AND (rcity, distance, grade) IN (
                     SELECT rcity, distance, grade FROM exp010 
-                    WHERE rdate = %s AND rcity = %s AND rno = %s
+                    WHERE rcity = %s AND rdate = %s AND  rno = %s
                 );
             """
 
-            params = (i_rdate, i_rdate, i_rdate, i_rcity, i_rno)
+            params = (i_rdate, i_rdate, i_rcity, i_rdate, i_rno)
             cursor.execute(strSql, params)  # 안전한 파라미터 바인딩 방식
             result = cursor.fetchall()
 
@@ -2135,8 +2135,8 @@ def get_disease(i_rcity, i_rdate, i_rno):
                     WHERE horse IN (
                         SELECT horse
                         FROM exp011
-                        WHERE rdate = %s
-                        AND rcity = %s
+                        WHERE rcity = %s
+                        AND rdate = %s
                         AND rno = %s
                     )
                     AND tdate BETWEEN DATE_FORMAT(DATE_ADD(%s, INTERVAL -99 DAY), '%%Y%%m%%d') AND %s
@@ -2147,7 +2147,7 @@ def get_disease(i_rcity, i_rdate, i_rno):
             """
 
             # 안전한 SQL 파라미터 바인딩
-            cursor.execute(strSql, [i_rdate, i_rcity, i_rno, i_rdate, i_rdate])
+            cursor.execute(strSql, [i_rcity, i_rdate, i_rno, i_rdate, i_rdate])
             disease = cursor.fetchall()
 
             return disease if disease else None  # 결과가 없으면 None 반환
@@ -2772,6 +2772,7 @@ def get_race_related(i_rcity, i_rdate, i_rno):
         strSql = (
             """
             select b.rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
+                ,c.wrace, c.w1st, c.w2nd, c.w3rd, c.tot_1st, c.year_1st, c.year_per, c.year_3per
             from
             (
             select jockey, count(*) rcnt, 
@@ -2801,21 +2802,24 @@ def get_race_related(i_rcity, i_rdate, i_rno):
                 sum(if(r_rank = 10, 1, 0)) rr10,
                 sum(if(r_rank = 11, 1, 0)) rr11,
                 sum(if(r_rank >= 12, 1, 0)) rr12
-            from expect a
+            from exp011 a
             where rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
             and rno < 80
             group by jockey
             
             ) a right outer join  exp011 b  on a.jockey = b.jockey
+                right outer join  ( select jockey, wdate, wrace, w1st, w2nd, w3rd, tot_1st, year_1st, year_per, year_3per from jockey_w where wdate = ( select max(wdate) from jockey_w where wdate < %s ) ) c  on c.jockey = b.jockey 
             where b.rcity =  %s
                 and b.rdate = %s
                 and b.rno =  %s
                 order by b.rank, b.gate
             ; """
         )
+
+        # print(strSql % (i_rdate, i_rdate, i_rdate, i_rcity, i_rdate, i_rno))  # SQL문 출력
         cursor.execute(
-            strSql, (i_rdate, i_rdate, i_rcity, i_rdate, i_rno)
-        ) # SQL문 실행 
+            strSql, (i_rdate, i_rdate, i_rdate, i_rcity, i_rdate, i_rno)
+        )  # SQL문 실행
         award_j = cursor.fetchall()
 
     except:
@@ -2826,9 +2830,9 @@ def get_race_related(i_rcity, i_rdate, i_rno):
     try:
         cursor = connection.cursor()
 
-        strSql = (
-            """
+        strSql = """
             select b.rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
+                ,c.wrace, c.w1st, c.w2nd, c.w3rd, c.tot_1st, c.year_1st, c.year_per, c.year_3per
             from
             (
             select trainer, count(*) rcnt, 
@@ -2864,13 +2868,13 @@ def get_race_related(i_rcity, i_rdate, i_rno):
             group by trainer
             
             ) a right outer join  exp011 b  on a.trainer = b.trainer
+                right outer join  ( select trainer, wdate, wrace, w1st, w2nd, w3rd, tot_1st, year_1st, year_per, year_3per from trainer_w where wdate = ( select max(wdate) from trainer_w where wdate < %s ) ) c  on c.trainer = b.trainer 
             where b.rcity = %s
                 and b.rdate = %s
                 and b.rno = %s
                 order by b.rank, b.gate
             ; """
-        )
-        cursor.execute(strSql, (i_rdate, i_rdate, i_rcity, i_rdate, i_rno))
+        cursor.execute(strSql, (i_rdate, i_rdate, i_rdate, i_rcity, i_rdate, i_rno))
         award_t = cursor.fetchall()
 
     except:
@@ -2884,6 +2888,7 @@ def get_race_related(i_rcity, i_rdate, i_rno):
         strSql = (
             """
             select b.rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
+                ,c.h_total, c.h_cancel, c.h_current, c.debut, c.year_race, c.year_prize/1000000, c.tot_race, c.tot_prize/1000000
             from
             (
             select host, count(*) rcnt, 
@@ -2913,18 +2918,30 @@ def get_race_related(i_rcity, i_rdate, i_rno):
                 sum(if(r_rank = 10, 1, 0)) rr10,
                 sum(if(r_rank = 11, 1, 0)) rr11,
                 sum(if(r_rank >= 12, 1, 0)) rr12
-            from expect a
-            where rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
+            from exp011 a
+            where rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d') 
             and rno < 80
             group by host
             
             ) a right outer join  exp011 b  on a.host = b.host
+                left outer join  
+                ( select host, sum(h_total) h_total, 
+                                sum(h_cancel) h_cancel, 
+                                sum(h_current) h_current, 
+                                max(debut) debut, 
+                                max(year_race) year_race, 
+                                max(tot_race) tot_race, 
+                                sum(year_prize) year_prize, 
+                                sum(tot_prize) tot_prize 
+                                from host 
+                                group by host ) c  on c.host = b.host
             where b.rcity =  %s
                 and b.rdate = %s
                 and b.rno =  %s
                 order by b.rank, b.gate
             ; """
         )
+        # print(strSql % (i_rdate, i_rdate, i_rcity, i_rdate, i_rno))  # SQL문 출력
         cursor.execute(strSql, (i_rdate, i_rdate, i_rcity, i_rdate, i_rno))
         award_h = cursor.fetchall()
 
@@ -2936,15 +2953,40 @@ def get_race_related(i_rcity, i_rdate, i_rno):
     try:
         cursor = connection.cursor()
 
-        strSql = (
-            """  
-            select rcity, jockey awardee, rdate, rday, rno, grade, dividing, gate, rank, r_rank, horse, remark, jockey j_name, trainer t_name, host h_name, r_pop, distance, handycap, jt_per, jt_cnt, remark, s1f_rank, corners, g3f_rank, g1f_rank, alloc3r, jockey_old, reason
-            from expect
-            where rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
-            and rno < 80
-            order by rdate, rtime, gate
+        strSql = """  
+            select b.rcity,
+                b.jockey awardee,
+                b.rdate,
+                a.rday,
+                b.rno,
+                a.grade,
+                dividing,
+                b.gate,
+                b.rank,
+                b.r_rank,
+                b.horse,
+                b.remark,
+                b.jockey j_name,
+                b.trainer t_name, b.host h_name,
+                r_pop,
+                a.distance,
+                handycap,
+                jt_per,
+                jt_cnt,
+                remark,
+                s1f_rank,
+                corners,
+                g3f_rank,
+                g1f_rank,
+                alloc3r,
+                jockey_old,
+                reason
+            from The1.exp010 a, The1.exp011 b 
+            where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
+            and a.rdate between date_format(DATE_ADD(%s, INTERVAL - 10 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
+            and a.rno < 80
+            order by a.rdate, a.rtime, gate
             ; """
-        )
         cursor.execute(strSql, (i_rdate, i_rdate))
         race_detail = cursor.fetchall()
 
@@ -6316,9 +6358,8 @@ def get_weeks_status(rcity, rdate):
             LEFT OUTER JOIN 
                 The1.rec011 d ON a.rcity = d.rcity AND a.rdate = d.rdate AND a.rno = d.rno and a.gate = d.gate
             where a.rcity = %s
-            and a.rdate between date_format(DATE_ADD(%s, INTERVAL - 10 DAY), '%%Y%%m%%d') 
-            and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
-            and ( a.r_rank between 1 and 1 )
+            and a.rdate between date_format(DATE_ADD(%s, INTERVAL - 10 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
+            and ( a.r_rank between 1 and 3 )
             -- and ( a.r_rank between 1 and 3 or ( a.r_rank = 0 and a.rank <= 3 ) )
             order by a.rcity, a.rdate, a.rno, a.r_rank, a.rank
         ; """

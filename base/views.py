@@ -456,8 +456,27 @@ def home(request):
     if q == "":
         # rdate = Racing.objects.values("rdate").distinct()[0]["rdate"]  # 초기값은 금요일
 
-        rdate = Racing.objects.values("rdate").distinct()
-        i_rdate = rdate[0]["rdate"]
+        # rdate = Racing.objects.values("rdate").distinct().order_by("rdate")[:1]
+
+        try:
+            cursor = connection.cursor()
+
+            strSql = """ 
+                    SELECT min(rdate)
+                    FROM The1.exp010
+                    WHERE rdate >= ( SELECT MAX(DATE_FORMAT(CAST(rdate AS DATE) - INTERVAL 4 DAY, '%Y%m%d')) FROM The1.exp010 WHERE rno < 80)
+                ; """
+            
+            cursor.execute(strSql)
+            rdate = cursor.fetchall()
+
+        except:
+            print("Failed selecting in rdate")
+        finally:
+            cursor.close()
+
+        # print(rdate[0][0], type(rdate))
+        i_rdate = rdate[0][0]
 
         fdate = i_rdate[0:4] + "-" + i_rdate[4:6] + "-" + i_rdate[6:8]
 
@@ -583,7 +602,7 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
     try:
         with connection.cursor() as cursor:
             query = """
-                SELECT rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, 
+                SELECT rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing,
                     rname, rcon1, rcon2, rtime
                 FROM exp010 
                 WHERE rdate = %s
@@ -1257,7 +1276,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
                 SELECT rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime
                 FROM exp010 
                 WHERE rdate = %s
-                ORDER BY rdate, rtime;
+                ORDER BY rtime;
             """
             cursor.execute(query, (rdate,))
             weeksrace = cursor.fetchall()
@@ -1591,7 +1610,7 @@ def statusStable(request, rcity, rdate, rno):
     stable, stable_g, stable_h = get_status_stable(rcity, rdate, rno)
     stable_list = stable.values.tolist()
     stable_list_g = stable_g.values.tolist()
-    stable_title = stable.columns.tolist()
+    stable_title = stable.columns.tolist() 
 
     try:
         cursor = connection.cursor()
@@ -1618,12 +1637,10 @@ def statusStable(request, rcity, rdate, rno):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         trainer_double_check = cursor.fetchall()
 
-        # connection.commit()
-        # connection.close()
-
     except:
-        # connection.rollback()
         print("Failed selecting in trainer double cheeck")
+    finally:
+        connection.close()
 
     context = {
         "r_condition": r_condition,

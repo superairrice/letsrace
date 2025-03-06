@@ -356,11 +356,11 @@
                   <span>주행</span>
                   {% else %}
                     {% if r.i_cycle <= 16 %}
-                    <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{r.i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">주</sup></span>
+                    <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{r.i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                     {% elif r.i_cycle >= 68 %}
-                    <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r2); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{r.i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">주</sup></span>
+                    <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r2); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{r.i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                     {% else %}
-                    <span style="font-family: Arial; font-size:1.15rem; color:var(--color-gray); ">{{r.i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">주</sup></span>
+                    <span style="font-family: Arial; font-size:1.15rem; color:var(--color-gray); ">{{r.i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                     {% endif %}
                   {% endif %}
                   &nbsp;
@@ -833,8 +833,8 @@
                 <div style="font-family: Arial; text-align: left; color: var(--color-r3);">{{r.corners|slice:"0:9"}}</div>
                 <div style="font-family: Arial; text-align: right; color: var(--color-r3);">{{r.corners|slice:"9:20"}}</div>
                 {% else %}
-                <div style="font-family: Arial; text-align: left;">{{r.corners|slice:"0:9"}}</div>
-                <div style="font-family: Arial; text-align: right;">{{r.corners|slice:"9:20"}}</div>
+                <div style="font-family: Arial; text-align: left; color: var(--color-gray);">{{r.corners|slice:"0:9"}}</div>
+                <div style="font-family: Arial; text-align: right; color: var(--color-gray);">{{r.corners|slice:"9:20"}}</div>
                 {% endif %}
               {% endif %}
               
@@ -853,11 +853,11 @@
                 </div>
               {%endif%}
 
-              <div style="font-size: 1.2rem; font-style: italic;">
+              <div style="font-size: 1.25rem; font-style: italic; padding-top: 0.25rem;">
                 {% if r.horse == hname %}
                 <span style="font-family: Arial; color:var(--color-r3); background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{r.record|slice:"0:1"}}&nbsp;{{r.record|slice:"1:6"}}</span>
                 {% else %}
-                <span style="font-family: Arial; color:var(--color-light);">{{r.record|slice:"0:1"}}&nbsp;{{r.record|slice:"1:6"}}</span>
+                <span style="font-family: Arial; color:var(--color-light-gray);">{{r.record|slice:"0:1"}}&nbsp;{{r.record|slice:"1:6"}}</span>
                 {% endif %}
               </div>
 
@@ -865,58 +865,38 @@
             
             {# 프로그램 예상기록 /  환산기록 #}
             <td align="center">
-
-              {% if r.p_record %}
-              
-                <!-- {% if compare_r.p_record__min == r.p_record %}
-                <div style="background-color: var(--color-light); border-radius: 7px; font-family: Arial; font-size: 1.2rem; color:var(--color-r1);">{% if r.p_rank <= 20 %}{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}{% endif %}</div>
-                {% else %}
-                <div style="background-color: var(--color-dark-medium); border-radius: 7px; font-family: Arial; font-size: 1.2rem; color:var(--color-light-gray);">{% if r.p_rank <= 20 %}{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}{% endif %}</div>
-                {% endif %} -->
-
-                {% if r.p_rank %}
+              <div style="font-size: 1.2rem;  text-align: center;">
                 {% if r.p_rank == 1 %}
-                <div style="background-color: var(--color-r1); border-radius: 7px; color:var(--color-light); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: center;">
+                <span style="font-family: Arial; padding:2px 4px; background-color: var(--color-r1); border-radius: 7px; color:var(--color-light); font-style: italic;">
                   {% if r.p_rank <= 20 %}{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}{% endif %}
-                </div>
+                </span>
                 {% elif r.p_rank == 2 %}
-                <div style="background-color: var(--color-r2); border-radius: 7px; color:var(--color-light); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: center;">
+                <span style="font-family: Arial; padding:2px 4px; background-color: var(--color-r2); border-radius: 7px; color:var(--color-light); font-style: italic;">
                   {% if r.p_rank <= 20 %}{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}{% endif %}
-                </div>
+                </span>
                 {% elif r.p_rank == 3 %}
-                <div style="background-color: var(--color-r3); border-radius: 7px; color:var(--color-bg); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: center;">
+                <span style="font-family: Arial; padding:2px 4px; background-color: var(--color-r3); border-radius: 7px; color:var(--color-bg); font-style: italic;">
                   {% if r.p_rank <= 20 %}{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}{% endif %}
-                </div>
+                </span>
                 {% elif r.p_rank == 4 %}
-                <div style="background-color: var(--color-dark-medium); border-radius: 7px; color:var(--color-r4); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: center;">
+                <span style="font-family: Arial; padding:2px 4px; background-color: var(--color-dark-medium); border-radius: 7px; color:var(--color-r4); font-style: italic;">
                   {% if r.p_rank <= 20 %}{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}{% endif %}
-                </div>
+                </span>
                 {% elif r.p_rank == 5 %}
-                <div style="background-color: var(--color-dark-medium); border-radius: 7px; color:var(--color-r5); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: center;">
+                <span style="font-family: Arial; padding:2px 4px; background-color: var(--color-dark-medium); border-radius: 7px; color:var(--color-r5); font-style: italic;">
                   {% if r.p_rank <= 20 %}{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}{% endif %}
-                </div>
+                </span>
                 {% else %}
-                <div style="background-color: var(--color-dark-medium); border-radius: 7px; font-weight:300; color:var(--color-gray); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: center;">
+                <span style="font-family: Arial; padding:2px 4px; background-color: var(--color-dark-medium); border-radius: 7px; font-weight:300; color:var(--color-gray); font-style: italic;">
                   {% if r.p_rank <= 20 %}{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}{% endif %}
-                </div>
+                </span>
                 {% endif %}
-                {% endif %}
-            
-                {% if compare_r.convert_r__min == r.convert_r and r.convert_r %}
-                <div style="font-family: Arial; font-size: 1.2rem; color:var(--color-r1); text-align: right;">{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}</div>
-                {% else %}
-                <div style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray); text-align: right;">{% if r.convert_r %}{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}{% endif %}</div>
-                {% endif %}
-
-              {% endif %}
-
-              {% if r.judge %}
-              {% if r.judge == '불' %}
-              <div style="font-family: Arial; font-size: 1.2rem; color:var(--color-r1); text-align: right;">{{r.judge_reason}}({{r.judge}})</div>
+              </div>
+          
+              {% if compare_r.convert_r__min == r.convert_r and r.convert_r %}
+              <div style="font-family: Arial; font-size: 1.2rem; color:var(--color-r1); text-align: right;">{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}</div>
               {% else %}
-              <div style="font-family: Arial; font-size: 1.2rem; color:var(--color-r5); text-align: right;">{{r.judge_reason}}({{r.judge}})</div>
-              {% endif %}
-              <div style="font-family: Arial; font-size: 1.0rem; color:var(--color-light-gray); text-align: left;">{{r.audit_reason}}</div>
+              <div style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray); text-align: right;">{% if r.convert_r %}{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}{% endif %}</div>
               {% endif %}
             </td>
 
@@ -1015,7 +995,6 @@
         <textarea name="description" cols="400" rows="100" id="id_description" style="font-family:sans-serif; height: 20rem; font-size: 1.35rem; color:var(--color-light-gray); line-height:20px; font-weight: 350;">{{judged}}</textarea>
       </div>
       
-
     </div>
 
   </div>

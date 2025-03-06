@@ -34,7 +34,7 @@ def recordsByHorse(rcity, rdate, rno):
                       AND rdate = %s
                       AND rno = %s
                 )
-                AND a.rdate < %s
+                AND b.rdate < %s
                 ORDER BY a.rdate DESC;
             """
 
