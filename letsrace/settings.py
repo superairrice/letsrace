@@ -224,9 +224,9 @@ WSGI_APPLICATION = "letsrace.wsgi.application"
 #         "PORT": "3307",  # [6]
 #     }
 # }
-DEBUG = True
-
-# DEBUG = False
+# DEBUG = True
+# 
+DEBUG = False
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",  # [1]
