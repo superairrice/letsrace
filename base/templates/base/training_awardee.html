@@ -14,7 +14,7 @@
 
   <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
 
-  <title>🐴&nbsp;{{name}} 금주 출주현황</title>
+  <title>🐴&nbsp;{{name}} 금주 출주마 조교현황</title>
 
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-BFZZL101LZ"></script>
@@ -43,13 +43,13 @@
       <thead>
     
         <tr>
-          <th rowspan="1" style="border-radius: 7px; background-color: var(--color-bg); color:var(--color-r3); vertical-align: middle; font-size: 1.2rem;">
+          <th rowspan="1" style="border-radius: 7px; color:var(--color-r3); vertical-align: middle;">
             {% if awardee == 'jockey' %}
               <span>🏇</span>
             {% else %}
               <span>🛖</span>
             {% endif %}
-            <span>&nbsp;{{name}}&nbsp;&nbsp;&nbsp;</span>
+            <span style=" font-size: 1.25rem;">&nbsp;{{name}}&nbsp;&nbsp;&nbsp;</span>
           </th>
 
           <th rowspan="1" valign="center"><span>마번</span></th>
@@ -253,6 +253,7 @@
           <td style="border-right: 0.2px solid var(--color-dark);">
             <div style="font-size: 1.2rem;">
 
+              <a href="{% url 'training_horse' rcity rdate rno horse %}" onclick="window.open(this.href, 'w_training_horse', 'top=0 width=900, height=800, left=window.screen.availWidth - 1000 toolbars=no, scrollbars=yes'); return false;">
               {% if r_rank == 99 %}
                 <span style="font-style: italic; text-decoration:line-through; color:gray;">{{horse|slice:"0:6"|rjust:"6"}}</span>
               {% else %}
@@ -270,7 +271,7 @@
                   <span style="font-style: normal;">{{horse|slice:"0:6"|rjust:"6"}}</span>
                 {%endif%}
               {% endif %}
-              
+              </a>
             </div>
 
             <div align="right" style="font-size: 1.2rem; color:var(--color-gray);">
@@ -286,14 +287,14 @@
                 <span style="font-size: 1.15rem;">&nbsp;</span>
                 {% else %}
                   {% if i_cycle <= 16 %}
-                  <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">주</sup></span>
+                  <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                   {% elif i_cycle >= 68 %}
-                  <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r2); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">주</sup></span>
+                  <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r2); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                   {% else %}
-                  <span style="font-family: Arial; font-size:1.15rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-dark); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">주</sup></span>
+                  <span style="font-family: Arial; font-size:1.15rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-dark); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                   {% endif %}
                 {% endif %}
-                &nbsp;
+                
                 {# 출생지 #}
                 {% if birthplace == '한' %}
                 <span style="font-size: 1.15rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 1px 2px;">{{birthplace}}</span>
@@ -334,7 +335,7 @@
           <td align="left">
             {% if awardee == 'trainer' %}
             <div style="font-size: 1.2rem;">
-              <a href="{% url 'training_awardee' rdate 'jockey' jockey horse %}" onclick="window.open(this.href, 'w_training_awardee', 'width=1100, height=800, toolbars=no, scrollbars=yes'); return false;">
+              <a href="{% url 'training_awardee' rdate 'jockey' jockey horse %}" onclick="window.open(this.href, 'w_training_awardee', 'width=900, height=800, toolbars=no, scrollbars=yes'); return false;">
                 
                 {% if jockey_old %}   {# 기수변경 #}
                   <span class="tooltip" style="font-style: italic; color:var(--color-r2);">{{jockey}}
@@ -352,7 +353,7 @@
             {% else %}
             
             <div style="font-size: 1.2rem; text-align: left;"> 
-              <a href="{% url 'training_awardee' rdate 'trainer' trainer horse %}" onclick="window.open(this.href, 'w_training_awardee', 'width=1100, height=800, toolbars=no, scrollbars=yes'); return false;">
+              <a href="{% url 'training_awardee' rdate 'trainer' trainer horse %}" onclick="window.open(this.href, 'w_training_awardee', 'width=900, height=800, toolbars=no, scrollbars=yes'); return false;">
                 {% if awardee == 'jockey' %}
                 <span style="font-size: 1.2rem; color:var(--color-light-gray); ">{{trainer}}</span>
                 {% endif %}
@@ -362,43 +363,45 @@
 
             {% if jockey_old %}
               {# 기수가 변경되었으면 기존 기수의 기록을 삭제 #}
-              <div style="font-size: 1.1rem; text-align: right; background-color: var(--color-bg); border-radius: 7px; font-style: italic;">
+              <div style="font-size: 1.15rem; text-align: right; font-style: italic;">
+                <a href="{% url 'jt_analysis_multi' rcity rdate|mul:1|sub:10000 rdate jockey trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
                 {% if jt_per == 100.0 %} 
-                <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); text-decoration: line-through;">{{jt_per|floatformat:0}}</span> 
+                <span style="font-family: Arial; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r1); text-decoration: line-through;">{{jt_per|floatformat:0}}</span> 
                 {% elif jt_per >= 50 %} 
-                <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
+                <span style="font-family: Arial; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r1); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
                 {% elif jt_per >= 40 and jt_per < 50 %} 
-                <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r2); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
+                <span style="font-family: Arial; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r2); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
                 {% elif jt_per >= 30 and jt_per < 40 %} 
-                <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r3); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
+                <span style="font-family: Arial; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r3); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
                 {% elif jt_per >= 20 and jt_per < 30 %} 
-                <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r4); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
+                <span style="font-family: Arial; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r4); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
                 {% elif jt_per >= 10 and jt_per < 20 %} 
-                <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r5); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
+                <span style="font-family: Arial; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r5); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
                 {% else %}
-                <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-gray); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
+                <span style="font-family: Arial; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-gray); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
                 {% endif %}
-                <sup style="color:var(--color-gray); font-size:0.7rem; text-decoration:line-through;">%</sup>
+                </a>
               </div>
               
             {% else %}
-              <div style="font-size: 1.1rem; text-align: right; background-color: var(--color-bg); border-radius: 7px; font-style: italic;">
+              <div style="font-size: 1.15rem; text-align: right; font-style: italic;">
+                <a href="{% url 'jt_analysis_multi' rcity rdate|mul:1|sub:10000 rdate jockey trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
                 {% if jt_per == 100.0 %} 
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1);">{{jt_per|floatformat:0}}</span> 
+                  <span style="font-family: Arial; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r1);">{{jt_per|floatformat:0}}</span> 
                   {% elif jt_per >= 50 %} 
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1);">{{jt_per|floatformat:1}}</span>
+                  <span style="font-family: Arial; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r1);">{{jt_per|floatformat:1}}</span>
                   {% elif jt_per >= 40 and jt_per < 50 %} 
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r2);">{{jt_per|floatformat:1}}</span>
+                  <span style="font-family: Arial; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r2);">{{jt_per|floatformat:1}}</span>
                   {% elif jt_per >= 30 and jt_per < 40 %} 
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r3);">{{jt_per|floatformat:1}}</span>
+                  <span style="font-family: Arial; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r3);">{{jt_per|floatformat:1}}</span>
                   {% elif jt_per >= 20 and jt_per < 30 %} 
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r4);">{{jt_per|floatformat:1}}</span>
+                  <span style="font-family: Arial; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r4);">{{jt_per|floatformat:1}}</span>
                   {% elif jt_per >= 10 and jt_per < 20 %} 
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r5);">{{jt_per|floatformat:1}}</span>
+                  <span style="font-family: Arial; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-r5);">{{jt_per|floatformat:1}}</span>
                   {% else %}
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
+                  <span style="font-family: Arial; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
                   {% endif %}
-                <sup style="color:var(--color-gray); font-size:0.7rem;">%</sup>
+                </a>
               </div>
             {% endif %}
           
@@ -407,7 +410,7 @@
           <td align="center" style="border-radius: 10px; border: 0.5px solid gray;">
             <div style="font-family: Arial; font-size:1.15rem; font-style: italic;">
               
-              <span style="font-size: 1.15rem;">{{d1|add:d2|add:d3|add:d4|add:d5|add:d6|add:d7|add:d8|add:d9|add:d10|add:d11|add:d12|add:d13|add:d14}}</span>
+              <span style="font-family: Arial; font-size: 1.05rem;">{{d1|add:d2|add:d3|add:d4|add:d5|add:d6|add:d7|add:d8|add:d9|add:d10|add:d11|add:d12|add:d13|add:d14}}</span>
               {% if laps %}
               <span style="font-family: Arial; font-size:1.0rem; color:var(--color-light); border-radius: 7px; background-color:darkblue; padding: 2px 4px;">{{laps}}</span>
               {% else %}
