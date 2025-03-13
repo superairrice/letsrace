@@ -939,8 +939,8 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
                                             max(r11), max(d11), max(c11), max(s11) , 
                                             max(r12), max(d12), max(c12), max(s12) , 
                                             max(r13), max(d13), max(c13), max(s13) , 
-                                            max(r14), max(d14), max(c14), max(s14) , 0
-                    -- ( select sum(laps) from swim aa where aa.horse = a.horse and aa.tdate between date_format(DATE_ADD(a.rdate, INTERVAL - 14 DAY), '%Y%m%d') and a.rdate ) swims
+                                            max(r14), max(d14), max(c14), max(s14) ,
+                    ( select sum(laps) from swim aa where aa.horse = a.horse and aa.tdate between date_format(DATE_ADD(a.rdate, INTERVAL - 14 DAY), '%Y%m%d') and a.rdate ) swims
                     from
                     (
                         select rdate, gate, b.rank, r_rank, r_pop, a.horse, b.jockey, b.trainer, b.rcity, rno, j_per, t_per, jt_per,h_weight, distance, b.grade, rating, dividing, i_cycle,
@@ -1020,7 +1020,7 @@ def get_train_horse(i_rcity, i_rdate, i_rno):
                             + """) 
                         ) b 
                         where a.horse = b.horse
-                        and tdate between date_format(DATE_ADD(rdate, INTERVAL - 12 DAY), '%Y%m%d') and rdate
+                        and tdate between date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d') and rdate
                     ) a
                     group by rdate, gate, rank, r_rank, r_pop, horse, jockey, trainer
                     order by rdate desc, rank, gate
@@ -1130,7 +1130,7 @@ def get_train_horse1(i_rdate, i_hname):
                                 from expect  
                               where horse = '""" + i_hname + """' ) b 
                         where a.horse = b.horse
-                        and tdate between date_format(DATE_ADD(rdate, INTERVAL - 12 DAY), '%Y%m%d') and rdate
+                        and tdate between date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d') and rdate
                         -- and 1<>1
                       ) a
                       group by rdate, gate, rank, r_rank, r_pop, horse, jockey, trainer
@@ -1540,8 +1540,7 @@ def get_treat_horse(i_rcity, i_rdate, i_rno):
                 where horse in ( select horse from exp011 where rcity = %s and rdate = %s and rno = %s )
                 and rdate between date_format(DATE_ADD(%s, INTERVAL - 99 DAY), '%%Y%%m%%d') and %s
                 union all
-                select horse, rdate, concat( mid(grade,1,2), ' ', 'Race: ', convert(rcount, char),'두, 인기도:', convert(r_pop, char)), '', '', '', '', '경주', jockey, 
-                            concat( convert(r_rank, char), '  ﹆  ', convert(rank, char))
+                select horse, rdate, concat( mid(grade,1,2), ' ', 'Race: ', convert(rcount, char),'두'), '', '', '', '', '경주', jockey, '﹆'
                 from expect
                 where horse in ( select horse from exp011 where rcity = %s and rdate = %s and rno = %s )
                 and rdate between date_format(DATE_ADD(%s, INTERVAL - 99 DAY), '%%Y%%m%%d') and %s
@@ -2553,7 +2552,7 @@ def get_training_awardee(i_rdate, i_awardee, i_name):
                 from
                 (
                     select b.rcity, b.rdate, b.rday, b.rno, b.gate, b.rank, b.r_rank, b.r_pop, a.horse, b.trainer, b.jockey, b.jt_per, b.handycap, b.j_per, b.t_per, b.h_weight,
-                        b.distance, b.grade, b.rating, b.dividing, b.host, b.i_prehandy, jockey_old, reason, birthplace, h_sex, h_age, i_cycle,
+                        b.distance, b.grade, b.rating, b.dividing, b.host, b.i_prehandy, jockey_old, reason, birthplace, h_sex, h_age, i_cycle, rtime,
                         if( tdate = date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 1 DAY), '%Y%m%d'), rider, '' ) r1,
@@ -2725,7 +2724,7 @@ def get_training_awardee(i_rdate, i_awardee, i_name):
                     from train a right outer join  
                     ( 
                         select rcity, rdate, rday, rno, trainer, jockey, jt_per, gate, rank, r_rank, r_pop, horse, handycap, j_per, t_per, h_weight, distance, grade, rating, dividing, host, i_prehandy,
-                            jockey_old, reason, birthplace, h_sex, h_age, i_cycle
+                            jockey_old, reason, birthplace, h_sex, h_age, i_cycle, rtime
                         from expect 
                         where rdate between date_format(DATE_ADD('"""
             + i_rdate
@@ -2745,7 +2744,7 @@ def get_training_awardee(i_rdate, i_awardee, i_name):
             + """'
                 ) a
                 group by rcity, rdate, rday, rno, gate, rank, horse
-                order by rcity, rdate, rday, rno, gate
+                order by rdate, rtime
             ;"""
         )
 
@@ -6161,7 +6160,7 @@ def insert_race_judged(rcity, r_content):
 
         if items[0]:
             if index == 27:
-                # print(items[0][3:5])
+                # print(items, items[0][3:5])
                 if items[0][3:5] == "서울":
                     rcity = "서울"
                 else:
@@ -6170,7 +6169,8 @@ def insert_race_judged(rcity, r_content):
 
             elif index == 32:
                 rdate = items[1][0:4] + items[1][6:8] + items[1][10:12]
-            elif index > 36:
+                # print(items, items[0][3:5])
+            elif index >= 36:
                 # print(items[0][-4:])
                 if items[0][-2:] == "경주":
                     rno = items[0][-4:][0:2]
@@ -6203,6 +6203,7 @@ def insert_race_judged(rcity, r_content):
                             pass
 
                         else:
+                            # pass
                             # print(rcity, rdate, rno, judged, "", committee)
                             ret = insert_race_judged_sql(
                                 rcity, rdate, rno, judged, "", committee
