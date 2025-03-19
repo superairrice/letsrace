@@ -11,7 +11,7 @@
         <th colspan="1" rowspan="2" style="vertical-align:middle">
           <span style="background-color:var(--color-bg); border-radius: 10px; font-size: 1.15rem; color:var(--color-r3); padding: 6px 4px; writing-mode: vertical-lr;">레이팅</span>
         </th>
-        <th colspan="3" rowspan="1">
+        <th colspan="1" rowspan="1">
           <a href="{% url 'jt_analysis' '%' r.rdate|mul:1|sub:50000 r.rdate '%' '%' '%' r.horse '1' '99' '1' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'w_jt_analysis', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
             <span style="color:var(--color-r5); font-size:1.2rem;">🐴&nbsp;{{r.horse|slice:"0:6"}}</span>
             
@@ -92,7 +92,7 @@
         
       </tr>
       <tr>
-        <th colspan="3" rowspan="1"><span style="font-size:1.2rem; text-transform: capitalize;">Race Info.</span></th>
+        <th colspan="1" rowspan="1"><span style="font-size:1.2rem; text-transform: capitalize;">Race Info.</span></th>
         
         <th>
           <a href="{% url 'jt_analysis_multi' r.rno r.rdate|mul:1|sub:10000 r.rdate '%' r.trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
@@ -145,11 +145,11 @@
         {# rating #}
         <td>
           {% if rating %}
-          <span style="font-size:1.1rem; padding:2px 2px; color:var(--color-r3); font-family: Arial; border-radius: 30%; background-color:var(--color-dark-medium);">{{rating}}</span>
+          <div style="font-size:1.15rem; color:var(--color-r3); font-family: Arial; border-radius: 10px; background-color:var(--color-bg);">{{rating}}</div>
           {% endif %}
 
           {% if request.user.username == 'admin' %}
-          <div style="text-align: right; padding-top: 2px;">
+          <div style="text-align: right;">
             <a href="{% url 'write_significant' rdate horse %}" 
                               onclick="
                                 let monitorWidth = 1920; // 특정 모니터의 너비 (예: 1920px)
@@ -198,87 +198,68 @@
         
         
         {# 경주정보 #}
-        <td align="right" style="font-size: 1.2rem; vertical-align: middle;">
-          <a href="{% url 'race_result' rcity rdate rno horse r_condition.rcity r_condition.rdate r_condition.rno %}"
+        <td style="font-size: 1.2rem;">
+          <a style="text-decoration:underline" href="{% url 'race_result' rcity rdate rno horse r_condition.rcity r_condition.rdate r_condition.rno %}"
             onclick="window.open(this.href, 'w_result', 'width=900, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
-            <div style="text-align: left; color:var(--color-dark); font-style: italic; text-align: left;">
-              <span style="font-size: 1.2rem; font-style: italic; font-family: Arial; color: var(--color-bg); text-decoration: underline; font-weight: bold;">'{{rdate|slice:"2:4" }}.{{rdate|slice:"4:6" }}.{{rdate|slice:"6:8"}}</span>
-              
+
+            <div style="text-align: left; color:dodgerblue; font-style: italic; text-align: left; font-size: 1.2rem;">
+              <span style="font-size: 1.2rem; font-family: Arial;">'{{rdate|slice:"2:4" }}.{{rdate|slice:"4:6" }}.{{rdate|slice:"6:8"}}</span>
+              {% if r_condition.distance == distance %}
+              <span style="font-size: 1.2rem; padding: 2px 4px; border-radius: 7px; font-family: Arial; color:var(--color-r1); font-weight: 1000;">{{distance}}</span>
+              {%else%}
+              <span style="font-size: 1.2rem; padding: 2px 4px; border-radius: 7px; font-family: Arial;">{% if distance %}{{distance}}{% else %}취소{% endif %}</span>
+              {%endif%}
             </div>
           
             {# 경주정보 #}
-            <div style="font-size: 1.2rem; color:var(--color-gray); padding-top: 1px;">
-
-              {# 출주주기 #}
-              {% if r_rank == 99 %}
-              <span style="font-size: 1.15rem;">&nbsp;</span>
-              <span style="font-size:0.9rem; color:gray;">{% if reason %}{{reason|slice:"0:8"}}{% endif %}</span>
-              {% else %}
-
-                {% if rank >= 20 %}
-                <span style="font-size: 1.15rem;">&nbsp;</span>
+            <div style="text-align: right; font-style: italic;">
+              {% if i_cycle %}
+                {% if i_cycle <= 16 %}
+                <span style="font-family: Arial; color:var(--color-light); border-radius: 5px; background-color:var(--color-r1); padding:2px 3px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                {% elif i_cycle >= 68 %}
+                <span style="font-family: Arial; color:var(--color-light); border-radius: 5px; background-color:var(--color-r2); padding:2px 3px; font-size:1.0rem;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                 {% else %}
-                  {% if i_cycle <= 16 %}
-                  <span style="font-family: Arial; font-size:1.10rem; color:var(--color-light); background-color: var(--color-r1); border-radius:10px; padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
-                  {% elif i_cycle >= 68 %}
-                  <span style="font-family: Arial; font-size:1.10rem; color:var(--color-light); background-color: var(--color-r2); border-radius:10px; padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
-                  {% else %}
-                  <span style="font-family: Arial; font-size:1.15rem; color:var(--color-gray); background-color: var(--color-light); border-radius:10px; padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
-                  {% endif %}
+                <span style="font-family: Arial; color:var(--color-bg); border-radius: 5px; background-color:aquamarine; padding:2px 3px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                 {% endif %}
-                
-                
-                {# 성별 #}
-                {% if h_sex == '암' %}
-                <span style="font-size: 1.15rem; color:var(--color-r5); padding: 1px 1px;">{{h_sex}}</span>
-                {% elif h_sex == '거' %}
-                <span style="font-size: 1.15rem; color:var(--color-r1); padding: 1px 1px;">{{h_sex}}</span>
-                {%else%}
-                <span style="font-size: 1.15rem; color:var(--color-light-gray); padding: 1px 1px;">{{h_sex}}</span>
-                {%endif%}
-                
-                
               {% endif %}
+            
+              {% if grade %}
+                {% if grade|slice:"0:2" == '주행'%}
+                <span style="font-size: 1.1rem; color:var(--color-r4)">{{grade|slice:"0:4"}}</span>
+                {%else%}
 
+                  {% if grade|slice:"1:2" == 'O' %}
+                    <span class="tooltip" style="font-size: 1.0rem; color:var(--color-light); background-color: var(--color-bg); border-radius: 7px; padding: 0px 2px; font-weight: 350;">
+                      {{grade|slice:"0:2"}}
+                      <span class="tooltip-text" style="font-size: 1.1rem;">🏆&nbsp;{{rname}}</span>
+                    </span>
+
+                  {% else %}
+                    {% if grade|slice:"0:2" == r_condition.grade|slice:"0:2" %}
+                    <span style="font-size: 1.1rem; color:tomato;">{{grade|slice:"0:2"}}</span>
+                    {% else %}
+                    <span style="font-size: 1.1rem;">{{grade|slice:"0:2"}}</span>
+                    {% endif %}
+                  {%endif %}
+                  
+                  {% if dividing|slice:"0:2" == r_condition.dividing|slice:"0:2"%}
+                  <span style="font-size: 1.1rem; color:tomato;">{{dividing|slice:"0:1"}}</span>
+                  {% else %}
+                  <span style="font-size: 1.1rem;">{{dividing|slice:"0:1"}}</span>
+                  {% endif %}
+
+                {%endif%}
+              {%endif%}
+              &nbsp;
+              {% if h_sex|slice:"0:1" == '거' %}
+              <span style="font-size: 1.0rem; font-family: Arial; color:var(--color-r2); font-style: normal; background-color: var(--color-light); padding: 2px 4px; border-radius: 7px;">{{h_sex}}
+              </span>
+              {% else %}
+              <span style="font-size: 1.0rem; font-family: Arial; color:var(--color-r4); padding: 2px 4px; ">{{h_sex}}
+              </span>
+              {% endif %}
             </div>
           </a>
-        </td>
-
-        <td align="right" style="border-left: 0px; vertical-align: middle;">
-
-          <div style="font-size: 1.2rem;">
-            <span style="font-size: 1.2rem; font-style: italic; font-family: Arial; color: var(--color-r5); text-decoration: underline; font-weight: 500;">{{rno}}<sup style="font-size: 0.8rem;">R</sup></span>
-          </div>
-
-          {# 나이 #}
-          {% if h_age >= 5.9 %}
-          <span style="font-family: Arial; font-size: 1.1rem; font-style: italic; color:var(--color-r1);">{{h_age}}</span>
-          {% elif h_age < 3 %}
-          <span style="font-family: Arial; font-size: 1.1rem; font-style: italic; color:var(--color-r2);">{{h_age}}</span>
-          {%else%}
-          <span style="font-family: Arial; font-size: 1.1rem; font-style: italic; color:var(--color-gray);">{{h_age}}</span>
-          {%endif%}
-
-        </td>
-
-        {# 경주거리 / 경주정보 #}
-        <td align="right" style="border-left: 0px; vertical-align: middle;">
-
-          {% if distance == r_condition.distance %}
-          <div style="font-size: 1.2rem; font-family: Arial; color:var(--color-r1); text-align: center; font-style: italic; font-weight: bold;">{{distance}}</div>
-          {% else %}
-          <div style="font-size: 1.2rem; font-family: Arial; color:var(--color-bg); text-align: center; font-style: italic; font-weight: normal;">{{distance}}</div>
-          {% endif %}
-          
-          {% if '주행' in grade %}
-            <div style="font-size: 1.1rem; padding-top: 0.8px; color:var(--color-light-gray);">주행</div>
-          {% else %}
-            {% if 'O' in grade %}
-            <div style="font-size: 1.1rem; padding-top: 0.8px; color:var(--color-r1);">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}</div>
-            {% else %}
-            <div style="font-size: 1.1rem; padding-top: 0.8px; color:var(--color-light-gray);">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}</div>
-            {% endif %}
-          {% endif %}
         </td>
         
         
@@ -704,33 +685,9 @@
         {# gate #}
         <td style="font-size: 1.2rem;">
           
-          {% if rank == 99 %}
-          <span style="text-decoration:line-through; color:gray;">{{gate}}</span>
-          {% else %}
-            {% if rank == 1 %}
-            <span style="border:0.5px solid var(--color-r1); border-radius: 50%; padding: 2px 4px; font-weight: bold; color:var(--color-r1);">
-              {{gate}}
-            </span>
-            {% elif rank == 2 %}
-            <span style="border:0.5px solid var(--color-r2); border-radius: 50%; padding: 2px 4px; font-weight: bold; color:var(--color-r2);">
-              {{gate}}
-            </span>
-            {% elif rank == 3 %}
-            <span style="border:0.5px solid var(--color-r3); border-radius: 50%; padding: 2px 4px; font-weight: bold; color:var(--color-r3);">
-              {{gate}}
-            </span>
-            {% elif rank == 4 %}
-            <span style="border:0.5px solid var(--color-r4); border-radius: 50%; padding: 2px 4px; font-weight: bold; color:var(--color-r4);">
-              {{gate}}
-            </span>
-            {% elif rank == 5 %}
-            <span style="border:0.5px solid var(--color-r5); border-radius: 50%; padding: 2px 4px; font-weight: bold; color:var(--color-r5);">
-              {{gate}}
-            </span>
-            {% else %}
-            <span style="border:0.5px solid var(--color-bg); border-radius: 50%; padding: 2px 4px; font-weight: bold; ">{{gate}}</span>
-            {% endif %}
-          {% endif %}
+          <span style="font-family: Arial; border-radius: 10px; background-color:lightblue; padding: 2px 4px;">
+            {% if rank > 20 %}﹆{% else %} {{gate}} {% endif %}
+          </span>
           
         </td>
 
@@ -749,31 +706,33 @@
         {# rank #}
         <td style="font-size: 1.2rem; font-family: Arial;">
           <div>
+          {% if rank %}
           {% if rank == 1 %}
-          <span style="font-family: Arial; border-radius: 50%; background-color:var(--color-r1); color:var(--color-light); padding: 2px 4px;">
+          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-r1); color:var(--color-light); padding: 2px 4px;">
             {% if rank > 20 %}﹆{% else %} {{rank}} {% endif %}
           </span>
           {% elif rank == 2 %}
-          <span style="font-family: Arial; border-radius: 50%; background-color:var(--color-r2); color:var(--color-light); padding: 2px 4px;">
+          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-r2); color:var(--color-light); padding: 2px 4px;">
             {% if rank > 20 %}﹆{% else %} {{rank}} {% endif %}
           </span>
           {% elif rank == 3 %}
-          <span style="font-family: Arial; border-radius: 50%; background-color:var(--color-r3); color:var(--color-bg); padding: 2px 4px;">
+          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-r3); color:var(--color-bg); padding: 2px 4px;">
             {% if rank > 20 %}﹆{% else %} {{rank}} {% endif %}
           </span>
           {% elif rank == 4 %}
-          <span style="font-family: Arial; border-radius: 50%; background-color:var(--color-r4); color:var(--color-bg); padding: 2px 4px;">
+          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-r4); color:var(--color-bg); padding: 2px 4px;">
             {% if rank > 20 %}﹆{% else %} {{rank}} {% endif %}
           </span>
           {% elif rank == 5 %}
-          <span style="font-family: Arial; border-radius: 50%; background-color:var(--color-r5); color:var(--color-light); padding: 2px 4px;">
+          <span style="font-family: Arial; border-radius: 10px; background-color:var(--color-r5); color:var(--color-light); padding: 2px 4px;">
             {% if rank > 20 %}﹆{% else %} {{rank}} {% endif %}
           </span>
           
           {% else %}
-          <span style="font-family: Arial; border-radius: 50%; background-color:bisque; padding: 3px;">
+          <span style="font-family: Arial; border-radius: 10px; background-color:bisque; padding: 3px;">
             {% if rank > 20 %}﹆{% else %} {{rank}} {% endif %}
           </span>
+          {% endif %}
           {% endif %}
 
           </div>
@@ -782,26 +741,26 @@
           {% if pop_rank %}
           {% if judge == NONE %}
             {% if pop_rank == 1 %}
-              <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-r1); border: 1px solid var(--color-r1); padding: 1px 3px; border-radius: 50%;">{{pop_rank}}</span>
+              <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-light); background-color: var(--color-r1); padding: 1px 2px; border-radius: 10px;"> {% if pop_rank > 20 %}﹆{% else %} {{pop_rank}} {% endif %}</span>
             {% elif pop_rank == 2 %}
-              <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-r2); border: 1px solid var(--color-r2); padding: 1px 3px; border-radius: 50%;">{{pop_rank}}</span>
+              <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-light); background-color: var(--color-r2); padding: 1px 2px; border-radius: 10px;"> {% if pop_rank > 20 %}﹆{% else %} {{pop_rank}} {% endif %}</span>
             {% elif pop_rank == 3 %}
-              <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-r3); border: 1px solid var(--color-r3); padding: 1px 3px; border-radius: 50%;">{{pop_rank}}</span>
+              <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-bg); background-color: var(--color-r3); padding: 1px 2px; border-radius: 10px;"> {% if pop_rank > 20 %}﹆{% else %} {{pop_rank}} {% endif %}</span>
             {% else %}
-              <span style="font-family: Arial; font-size: 1.0rem; padding: 1px 1px; ">
+              <span style="font-family: Arial; font-size: 1.0rem; padding: 1px 2px; ">
                 {% if pop_rank > 20 %}﹆{% else %} {{pop_rank}} {% endif %}
               </span>
             {% endif %}
             
             {% if p_rank %}
               {% if p_rank == 1 %}
-                <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-r1); border: 1px solid var(--color-r1); padding: 1px 3px; border-radius: 50%;">{{p_rank}}</span>
+                <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-light); background-color: var(--color-r1); padding: 1px 2px; border-radius: 10px;">{% if p_rank > 20 %}﹆{% else %} {{p_rank}} {% endif %}</span>
               {% elif p_rank == 2 %}
-                <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-r2); border: 1px solid var(--color-r2); padding: 1px 3px; border-radius: 50%;">{{p_rank}}</span>
+                <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-light); background-color: var(--color-r2); padding: 1px 2px; border-radius: 10px;">{% if p_rank > 20 %}﹆{% else %} {{p_rank}} {% endif %}</span>
               {% elif p_rank == 3 %}
-                <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-r3); border: 1px solid var(--color-r3); padding: 1px 3px; border-radius: 50%;">{{p_rank}}</span>
+                <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-bg); background-color: var(--color-r3); padding: 1px 2px; border-radius: 10px;">{% if p_rank > 20 %}﹆{% else %} {{p_rank}} {% endif %}</span>
               {% else %}
-                <span style="font-family: Arial; font-size: 1.0rem; padding: 1px 1px; ">
+                <span style="font-family: Arial; font-size: 1.0rem; padding: 1px 2px; ">
                   {% if p_rank > 20 %}﹆{% else %} {{p_rank}} {% endif %}
                 </span>
               {% endif %}

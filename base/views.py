@@ -2902,9 +2902,6 @@ def writeSignificant(request, rdate, horse):
         r_etc = request.POST.get("r_etc")
         r_flag = request.POST.get("r_flag")
 
-        # print(start, corners, finish, wrapup, r_etc)
-        # print(r_flag)
-
         try:
             cursor = connection.cursor()
 
@@ -2940,15 +2937,11 @@ def writeSignificant(request, rdate, horse):
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
             awards = cursor.fetchall()
 
-            # connection.commit()
-            # connection.close()
-
-            # return render(request, 'base/update_popularity.html', context)
-            # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
-
         except:
             # connection.rollback()
             print("Failed updating in rec011")
+        finally:
+            cursor.close()
 
         try:
             cursor = connection.cursor()
@@ -2967,14 +2960,11 @@ def writeSignificant(request, rdate, horse):
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
             r_significant = cursor.fetchall()
 
-            # print(r_significant)
-
-            # connection.commit()
-            # connection.close()
-
         except:
             connection.rollback()
             print("Failed updating r_flag")
+        finally:
+            cursor.close()
 
     try:
         cursor = connection.cursor()
@@ -2984,22 +2974,18 @@ def writeSignificant(request, rdate, horse):
                     where rdate = '"""
             + rdate
             + """'
-                    and horse like '%"""
+                    and horse = '"""
             + horse
-            + """%'
+            + """'
                     ;"""
         )
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         r_significant = cursor.fetchall()
 
-        # print(r_significant)
-
-        # connection.commit()
-        # connection.close()
-
     except:
-        # connection.rollback()
         print("Failed selecting start")
+    finally:
+        cursor.close()
 
     try:
         cursor = connection.cursor()
@@ -3007,12 +2993,12 @@ def writeSignificant(request, rdate, horse):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         race_cd = cursor.fetchall()
 
-        # connection.commit()
-        # connection.close()
-
     except:
-        # connection.rollback()
         print("Failed selecting r_start")
+    finally:
+        cursor.close()
+        
+    # print(r_significant, a)
 
     context = {
         "rdate": rdate,
