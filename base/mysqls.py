@@ -1128,7 +1128,11 @@ def get_train_horse1(i_rdate, i_hname):
                             ( select rcity, rdate, rno, gate, rank, r_rank, r_pop, horse, jockey, trainer, 
                                     j_per, t_per, jt_per, h_weight, distance, grade, rating, dividing, i_cycle, reason, jockey_old, birthplace, h_sex, h_age, complex, complex5
                                 from expect  
-                              where horse = '""" + i_hname + """' ) b 
+                              where horse = '"""
+            + i_hname
+            + """' and rdate <= '"""
+            + i_rdate
+            + """' ) b 
                         where a.horse = b.horse
                         and tdate between date_format(DATE_ADD(rdate, INTERVAL - 14 DAY), '%Y%m%d') and rdate
                         -- and 1<>1
