@@ -151,23 +151,7 @@
           {% if request.user.username == 'admin' %}
           <div style="text-align: right; padding-top: 2px;">
             <a href="{% url 'write_significant' rdate horse %}" 
-                              onclick="
-                                let monitorWidth = 1920; // 특정 모니터의 너비 (예: 1920px)
-                                let monitorHeight = 1080; // 특정 모니터의 높이 (예: 1080px)
-                                let monitorOffset = 1920; // 첫 번째 모니터 끝에서 두 번째 모니터가 시작하는 위치
-                                
-                                let winWidth = 500; // 새 창의 너비
-                                let winHeight = 550; // 새 창의 높이
-                                
-                                let winLeft =  monitorOffset + (monitorWidth - winWidth); // 두 번째 모니터 우측 정렬
-                                //let winLeft = 1246; // 좌측 정렬: 모니터 시작 위치
-                                let winTop = 0; // 상단 고정
-                                window.open(
-                                  this.href,
-                                  'w_write_significant',
-                                  `width=${winWidth},height=${winHeight},toolbars=no,scrollbars=yes,left=${winLeft},top=${winTop}`
-                                );
-                                return false;">
+                              onclick="window.open(this.href, 'write_significant', 'top=' + window.screenTop + ', left=' + window.screen.width + ', width=500, height=550, toolbars=no, scrollbars=yes'); return false;">
               {% if r_flag %}
                 {% if r_flag != '0'  %}
                 <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1);">📕
@@ -271,12 +255,15 @@
           {% endif %}
           
           {% if '주행' in grade %}
-            <div style="font-size: 1.1rem; padding-top: 0.8px; color:var(--color-light-gray);">주행</div>
+            <div style="font-size: 1.1rem; color:var(--color-light-gray);">주행</div>
           {% else %}
             {% if 'O' in grade %}
-            <div style="font-size: 1.1rem; padding-top: 0.8px; color:var(--color-r1);">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}</div>
+            <div class="tooltip" style="font-size: 1.1rem; color:var(--color-light); background-color: var(--color-r1); border-radius: 5px; font-weight: normal;">
+              {{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}
+              <span class="tooltip-text" style="font-size: 1.1rem; z-index: 9; font-weight: normal;">&nbsp;&nbsp;&nbsp;&nbsp;🏇&nbsp;{{rname}}&nbsp;&nbsp;{{rcon1}}&nbsp;&nbsp;{{rcon2}}</span>
+            </div>
             {% else %}
-            <div style="font-size: 1.1rem; padding-top: 0.8px; color:var(--color-light-gray);">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}</div>
+            <div style="font-size: 1.1rem; color:var(--color-gray);">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}</div>
             {% endif %}
           {% endif %}
         </td>
@@ -522,6 +509,8 @@
             <span style="font-weight: 400; font-style: normal; font-size: 1.0rem; border-radius: 7px; background-color: var(--color-r1); padding: 1px 3px; color:var(--color-light);">7</span>
             {% elif race_speed == '⑧' %}
             <span style="font-weight: 400; font-style: normal; font-size: 1.0rem; border-radius: 7px; background-color: var(--color-r1); padding: 1px 3px; color:var(--color-light);">8</span>
+            {% elif race_speed == '⑨' %}
+            <span style="font-weight: 400; font-style: normal; font-size: 1.0rem; border-radius: 7px; background-color: var(--color-bg); padding: 1px 3px; color:var(--color-light);">9</span>
             {% else %}
             <span>{% if race_speed %}{{race_speed}}{% else %}{% endif %}</span>
             {% endif %}
@@ -541,14 +530,26 @@
             {%endif%}
           {%endif%}
 
-          {% if adv_track >= 0 %}
-          <div style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:1px 2px; border-radius: 15px; background-color:var(--color-main-light); color:var(--color-r2);">
+          {% if adv_track >= 40 %}
+          <span style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:1px 2px; border-radius: 15px; background-color:var(--color-r1); color:var(--color-light);">
             {{adv_track|floatformat:1}}
-          </div>
+          </span>
+          {% elif adv_track >= 20 and adv_track < 40 %}
+          <span style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:1px 2px; border-radius: 15px; background-color:var(--color-main-medium); color:var(--color-r2);">
+            {{adv_track|floatformat:1}}
+          </span>
+          {% elif adv_track > -20 and adv_track < 20 %}
+          <span style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:1px 2px; border-radius: 15px; background-color:var(--color-light); color:var(--color-r2);">
+            {{adv_track|floatformat:1}}
+          </span>
+          {% elif adv_track > -40 and adv_track < -20 %}
+          <span style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:1px 2px; border-radius: 15px; background-color:var(--color-dark-light); color:var(--color-r2);">
+            {{adv_track|floatformat:1}}
+          </span>
           {% else %}
-          <div style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:1px 2px; border-radius: 15px; background-color:var(--color-light); color:var(--color-r1);">
+          <span style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:1px 2px; border-radius: 15px; background-color:var(--color-r5); color:var(--color-light);">
             {{adv_track|floatformat:1}}
-          </div>
+          </span>
           
           {% endif %}
           
