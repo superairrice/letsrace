@@ -185,9 +185,11 @@ def get_judged(rcity, rdate, rno):
             params = (rcity, rdate, rno)
             cursor.execute(strSql, params)
             rec015 = cursor.fetchall()
-
+            
     except Exception as e:
         print(f"❌ Failed selecting in rec015: {e}")
+    finally:
+        cursor.close()
 
     try:
         with connection.cursor() as cursor:
@@ -204,71 +206,10 @@ def get_judged(rcity, rdate, rno):
 
     except Exception as e:
         print(f"❌ Failed selecting in rec013: {e}")
+    finally:
+        cursor.close()
 
     return rec015, rec013
-# def get_judged(rcity, rdate, rno):
-#     try:
-#         cursor = connection.cursor()
-
-#         strSql = (
-#             """
-#               SELECT distinct a.rank, a.gate, a.horse, b.horse, b.jockey, b.trainer, b.t_sort, b.t_type, b.t_detail, b.t_reason
-#                 FROM rec011	a right outer join
-#                     rec015	b on a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno and a.horse = b.horse
-#                 where a.rcity = '"""
-#             + rcity
-#             + """'
-#                 AND a.rdate = '"""
-#             + rdate
-#             + """'
-#                 AND a.rno = """
-#             + str(rno)
-#             + """
-#               order by a.rank
-#             ; """
-#         )
-
-#         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-#         rec015 = cursor.fetchall()
-
-#         # connection.commit()
-#         # connection.close()
-
-#     except:
-#         # connection.rollback()
-#         print("Failed selecting in rec015")
-
-#     try:
-#         cursor = connection.cursor()
-
-#         strSql = (
-#             """
-#             SELECT judged
-#             FROM rec013
-#                 where rcity = '"""
-#             + rcity
-#             + """'
-#                 AND rdate = '"""
-#             + rdate
-#             + """'
-#                 AND rno = """
-#             + str(rno)
-#             + """
-#             ; """
-#         )
-
-#         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-#         rec013 = cursor.fetchall()
-
-#         # connection.commit()
-#         # connection.close()
-
-#     except:
-#         # connection.rollback()
-#         print("Failed selecting in rec013")
-
-#     return rec015, rec013
-
 
 def get_pedigree(rcity, rdate, rno):
     try:
