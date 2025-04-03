@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+{% load static %}
+
+{% load mathfilters %}
+{% load humanize %}
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
+  <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
+
+  <script src="{% static 'js/script.js' %}"></script>
+
+  <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
+
+  <title>기수 & 마방 최근1년 입상</title>
+
+</head>
+
+<hr style="border: solid 1px black;"> 
+{% load mathfilters %}
+{% load humanize %}
+
+<div class="container">
+
+  <table class="tt9light-table" style="border-radius: 7px;">
+    <thead>
+    
+      <tr>
+        <th style="background-color: var(--color-main-medium);">
+          <span style="font-size: 1.5rem; color:var(--color-r3); font-weight: 500;">🏇</span>
+          <span style="font-size: 1.5rem; color:var(--color-dark); font-weight: 500; padding:2px 3px;">{{collaboration.0.0}}</span>
+        </th>
+
+
+        <th><span style="font-size:1.4rem;">연승율</span></th>
+        <th><span style="font-size:1.4rem;">Race</span></th>
+
+        <th><span style="font-size:1.4rem;">1위</span></th>
+        <th><span style="font-size:1.4rem;">2위</span></th>
+        <th><span style="font-size:1.4rem;">3위</span></th>
+        <th><span style="font-size:1.4rem;">4위</span></th>
+        <th><span style="font-size:1.4rem;">5위</span></th>
+        <th><span style="font-size:1.4rem;">6위>></span></th>
+
+
+      </tr>
+      
+    
+    </thead>
+  
+    <tbody>
+      {% for jockey, trainer, b_trainer, race, r_1st, r_2nd, r_3rd, r_4th, r_5th, r_etc in collaboration %}
+      <tr {% if trainer == b_trainer  %} style="background-color: var(--color-light-gray); border-radius: 10px; border: 0.5px solid gray;" {% endif %}>
+        
+        {# 조교사 #}
+        <td align="center">
+          {% if trainer == b_trainer %}
+          <span style="font-size:1.4rem; color:var(--color-bg); background-color: var(--color-main-medium); padding:2px 4px; border-radius: 5px;">{{b_trainer}}</span>
+          {% else %}
+          <span style="font-size:1.4rem; color:var(--color-bg);">{{b_trainer}}</span>
+          {% endif %}
+        </td>
+
+
+        <td align="right">
+
+          {% if r_1st|add:r_2nd|add:r_3rd > 0 %}
+            {% if r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 == 100.0 %} 
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r1);">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span> 
+            {% elif r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 >= 50 %} 
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r1);">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
+            {% elif r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 >= 40 and r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 < 50 %} 
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r2);">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
+            {% elif r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 >= 30 and r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 < 40 %} 
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r3);">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
+            {% elif r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 >= 20 and r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 < 30 %} 
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r4);">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
+            {% elif r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 >= 10 and r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 < 20 %} 
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r5);">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
+            {% else %}
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-gray);">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
+            {% endif %}
+          {% else %}
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif;">0.0%</span>
+          {% endif %}
+
+        </td>
+
+        <td align="right"><span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif;">{{race}}</span></td>
+
+        <td align="right"><span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color: var(--color-r1); background-color: var(--color-main-light); padding:2px 4px; border-radius: 5px;">{{r_1st}}</span></td>
+        <td align="right"><span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color: var(--color-r2); background-color: var(--color-main-light); padding:2px 4px; border-radius: 5px;">{{r_2nd}}</span></td>
+        <td align="right"><span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color: var(--color-r3); background-color: var(--color-main-light); padding:2px 4px; border-radius: 5px;">{{r_3rd}}</span></td>
+        <td align="right"><span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color: var(--color-r4); background-color: var(--color-main-light); padding:2px 4px; border-radius: 5px;">{{r_4th}}</span></td>
+        <td align="right"><span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color: var(--color-r5); background-color: var(--color-main-light); padding:2px 4px; border-radius: 5px;">{{r_5th}}</span></td>
+        <td align="right"><span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color: var(--color-bg); background-color: var(--color-main-light); padding:2px 4px; border-radius: 5px;">{{r_etc}}</span></td>
+
+        
+      </tr>
+
+      {% endfor %}      
+    </tbody>
+
+  </table>
+
+  
+</div>
+
+
+
+
+
+{% include 'footer.html' %}

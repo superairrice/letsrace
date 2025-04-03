@@ -35,6 +35,7 @@ from base.mysqls import (
     get_disease,
     get_expects,
     get_jockey_trend,
+    get_jt_collaboration,
     get_judged,
     get_judged_horse,
     get_judged_jockey,
@@ -586,7 +587,7 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
     try:
         with connection.cursor() as cursor:
             query = """
-                SELECT horse, r_etc, r_flag
+                SELECT replace( replace( horse, '[서]', ''), '[부]', ''), r_etc, r_flag
                 FROM rec011 
                 WHERE rcity = %s
                 AND rdate = %s
@@ -692,7 +693,7 @@ def raceRelated(request, rcity, rdate, rno):
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
     award_j, award_t, award_h, race_detail = get_race_related(rcity, rdate, rno)
-
+    
     loadin = get_loadin(rcity, rdate, rno)
 
     judged_jockey = get_judged_jockey(rcity, rdate, rno)
@@ -2378,6 +2379,20 @@ def trainingHorse(request, rcity, rdate, rno, hname):
     }
 
     return render(request, "base/training_horse.html", context)
+
+
+# 기수 마방 연대 현황
+def jtCollaboration(request, rcity, rdate, rno, jockey, trainer):
+
+    collaboration = get_jt_collaboration(rcity, rdate, rno, jockey, trainer)
+    check_visit(request)
+
+    context = {
+        "collaboration": collaboration,
+        "rdate": rdate,
+    }
+
+    return render(request, "base/jt_collaboration.html", context)
 
 
 def awardStatusTrainer(request):

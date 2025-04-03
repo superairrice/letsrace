@@ -72,7 +72,7 @@
         <th><span style="font-size:1.2rem;">G3F</span></th>
         <th><span style="font-size:1.2rem;">G2F</span></th>
         <th><span style="font-size:1.2rem;">G1F</span></th>
-        <th style="vertical-align: middle; font-size:1.1rem; border:1px solid orange; border-radius: 10px; "><span style="font-size:1.1rem;">Record</span></th>
+        <th style="vertical-align: middle; font-size:1.1rem; border:1px solid orange; border-radius: 10px; "><span style="font-size:1.1rem;">기록</span></th>
         <th rowspan="2" style="vertical-align:middle"><span style="font-size:1.2rem;">마<br>번</span></th>
         <th rowspan="2" style="vertical-align:middle"><span style="font-size:1.2rem;">코너 전개</span></th>
         <th rowspan="1" style="vertical-align:middle"><span style="font-size:1.2rem;">순위</span></th>
@@ -92,7 +92,35 @@
         
       </tr>
       <tr>
-        <th colspan="3" rowspan="1"><span style="font-size:1.2rem; text-transform: capitalize;">Race Info.</span></th>
+        <th colspan="3" rowspan="1">
+          <span style="font-size:1.2rem; text-transform: capitalize;">Race Info.</span>
+          &nbsp;&nbsp;
+          <a href="{% url 'write_significant' r.rdate r.horse %}" 
+                  onclick="window.open(this.href, 'write_significant', 'top=' + window.screenTop + ', left=' + window.screen.width + ', width=500, height=550, toolbars=no, scrollbars=yes'); return false;">
+            {% for hname, r_etc, r_flag in r_memo %}
+              {% if hname == r.horse %}
+                {% if r_flag %}
+                  {% if r_flag != '0'  %}
+                  <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1); padding: 0px 0px;">📕
+                    <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📕&nbsp;&nbsp;{{r_etc}}</span>
+                  </span>
+                  {% else %}
+                  <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1); padding: 0px 0px;">📘
+                    <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📘&nbsp;&nbsp;{{r_etc}}</span>
+                  </span>
+                  {% endif %}
+                {% else %}
+                  <span style="font-family: Arial; font-size:1.05rem; color:var(--color-gray); padding: 0px 0px;">📃</span>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </a>
+          &nbsp;&nbsp;
+          <a href="{% url 'jt_collaboration' r.rcity r.rdate r.rno r.jockey r.trainer %}" 
+                    onclick="window.open(this.href, 'w_jt_collaboration', 'top=' + (window.screen.availHeight / 2 ) + ', left=' + window.screenX + ', width=550, height=300, toolbars=no, scrollbars=yes'); return false;">
+                    🎵
+          </a>
+        </th>
         
         <th>
           <a href="{% url 'jt_analysis_multi' r.rno r.rdate|mul:1|sub:10000 r.rdate '%' r.trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
@@ -120,7 +148,7 @@
         <th colspan="3"><span style="text-transform:lowercase; font-style: italic; font-size:1.15rem; padding:1px 4px; border-radius: 7px;">경주편성강도</span></th>
 
         <th style="vertical-align: middle; font-size:1.1rem; border:1px solid orange; border-radius: 10px;">
-          <span style="text-transform:lowercase; font-style: italic; font-size:1.15rem; padding:1px 4px; border-radius: 7px;">thethe9</span>
+          <span style="text-transform:lowercase; font-style: italic; font-size:1.0rem; padding:1px 4px; border-radius: 7px;">thethe9</span>
         </th>
 
         <th rowspan="1" style="vertical-align:middle"><span style="font-size:0.8rem;">인기/예상</span></th>
@@ -213,12 +241,14 @@
                 
                 
                 {# 성별 #}
+                {% if h_sex %}
                 {% if h_sex == '암' %}
                 <span style="font-size: 1.15rem; color:var(--color-r5); padding: 1px 1px;">{{h_sex}}</span>
                 {% elif h_sex == '거' %}
                 <span style="font-size: 1.15rem; color:var(--color-r1); padding: 1px 1px;">{{h_sex}}</span>
                 {%else%}
                 <span style="font-size: 1.15rem; color:var(--color-light-gray); padding: 1px 1px;">{{h_sex}}</span>
+                {%endif%}
                 {%endif%}
                 
                 
@@ -235,6 +265,7 @@
           </div>
 
           {# 나이 #}
+          {% if h_age %}
           {% if h_age >= 5.9 %}
           <span style="font-family: Arial; font-size: 1.1rem; font-style: italic; color:var(--color-r1);">{{h_age}}</span>
           {% elif h_age < 3 %}
@@ -242,18 +273,22 @@
           {%else%}
           <span style="font-family: Arial; font-size: 1.1rem; font-style: italic; color:var(--color-gray);">{{h_age}}</span>
           {%endif%}
+          {%endif%}
 
         </td>
 
         {# 경주거리 / 경주정보 #}
         <td align="right" style="border-left: 0px; vertical-align: middle;">
 
+          {% if distance %}
           {% if distance == r_condition.distance %}
           <div style="font-size: 1.2rem; font-family: Arial; color:var(--color-r1); text-align: center; font-style: italic; font-weight: bold;">{{distance}}</div>
           {% else %}
           <div style="font-size: 1.2rem; font-family: Arial; color:var(--color-bg); text-align: center; font-style: italic; font-weight: normal;">{{distance}}</div>
           {% endif %}
+          {% endif %}
           
+          {% if grade %}
           {% if '주행' in grade %}
             <div style="font-size: 1.1rem; color:var(--color-light-gray);">주행</div>
           {% else %}
@@ -265,6 +300,7 @@
             {% else %}
             <div style="font-size: 1.1rem; color:var(--color-gray);">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}</div>
             {% endif %}
+          {% endif %}
           {% endif %}
         </td>
         

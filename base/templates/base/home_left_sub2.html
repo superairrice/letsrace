@@ -99,7 +99,7 @@
 
   </td>
 
-  {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex, jt_per, jt_cnt, jt_3rd, s1f_rank, i_cycle, rcount, recent3, recent5, convert_r, jockey_old, reason in expects %}  
+  {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex, jt_per, jt_cnt, jt_3rd, s1f_rank, i_cycle, rcount, recent3, recent5, convert_r, jockey_old, reason, alloc3r in expects %}  
   {% if r_rcity == rcity and r_rdate == rdate and r_rno == rno %}
   
   <td align="center" {% if rank < 90 %} style="font-family: Arial; color: var(--color-main);" {% else %} style="font-family: Arial; color: var(--color-main); background-color: var(--color-dark-light);" {% endif %}>
@@ -223,7 +223,7 @@
     <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
 
       {% if jockey_old %}
-      <div style="font-size: 0.9rem; color:var(--color-light); background-color: brown; border-radius: 50%; padding:2px 3px; margin: 0px;">
+      <div style="font-size: 0.83rem; color:var(--color-light); background-color: brown; border-radius: 50%; padding:2px 2px; margin: 0px;">
         <span class="tooltip">
           {{jockey|slice:"-2:"}}
           <span class="tooltip-text" style="text-align: left; font-size: 1.0rem;">
@@ -235,7 +235,7 @@
         </span>
       </div>
       {% else %}
-        <div style="font-size: 0.9rem; color:var(--color-main-light); background-color:var(--color-dark); border-radius: 50%; padding:2px 3px; margin: 0px;">{{jockey|slice:"-2:"}}</div>
+        <div style="font-size: 0.83rem; color:var(--color-main-light); background-color:var(--color-dark); border-radius: 50%; padding:2px 2px; margin: 0px;">{{jockey|slice:"-2:"}}</div>
       {% endif %}
     </a>
 
@@ -244,19 +244,33 @@
   
   <td align="center" {% if rank < 90 %} style="font-family: Arial; color: var(--color-main); border-right: 1px solid gray;" {% else %} style="font-family: Arial; color: var(--color-main); background-color: var(--color-dark-light); border-right: 1px solid gray;" {% endif %}>
 
-    <div style="font-size: 0.9rem; font-family: Arial; text-align: right; padding-top: 0.4rem;">
-    {% if s1f_rank %}
-      {% if s1f_rank >= 7 %}
-      <span style="font-size: 0.9rem; padding:2.4px 1.2px; font-family: Arial; color:var(--color-light-gray); ">{{s1f_rank}}</span>
-      {% elif s1f_rank >= 3 and s1f_rank < 7 %}
-      <span style="font-size: 0.9rem; padding:2.4px 1.2px; font-family: Arial; color:var(--color-r2);">{{s1f_rank}}</span>
-      {% else %}
-      <span style="font-size: 0.9rem; padding:2.4px 1.2px; font-family: Arial; color:var(--color-r1); border-radius: 50%; background-color: var(--color-light);">{{s1f_rank}}</span>
-      {% endif %}
+    {% if alloc3r %}
+      <div style="font-size: 0.9rem; font-family: Arial; text-align: right; padding-top: 0.4rem;">
+        {% if alloc3r >= 1.0 and alloc3r < 2.0 %}
+        <span style="font-size: 0.9rem; padding:3px 3px; font-family: Arial; color:var(--color-r1); border-radius: 50%; background-color: var(--color-main);">{{alloc3r}}</span>
+        {% elif alloc3r >= 2.0 and alloc3r < 3.0 %}
+        <span style="font-size: 0.9rem; padding:3px 3px; font-family: Arial; color:var(--color-r2); border-radius: 50%; background-color: var(--color-bg);">{{alloc3r}}</span>
+        {% else %}
+        <span style="font-size: 0.9rem; padding:2.4px 1.2px; font-family: Arial; ">{{alloc3r}}</span>
+        {% endif %}
+      </div>
     {% else %}
-      <span style="font-size: 0.9rem; padding:2.4px 1.2px; font-family: Arial; color:var(--color-light-gray);">&nbsp;</span>
+      <div style="font-size: 0.9rem; font-family: Arial; text-align: right; padding-top: 0.4rem;">
+      {% if s1f_rank %}
+        {% if s1f_rank >= 7 %}
+        <span style="font-size: 0.9rem; padding:2.4px 1.2px; font-family: Arial; color:var(--color-light-gray); ">{{s1f_rank}}</span>
+        {% elif s1f_rank >= 3 and s1f_rank < 7 %}
+        <span style="font-size: 0.9rem; padding:2.4px 1.2px; font-family: Arial; color:var(--color-r2);">{{s1f_rank}}</span>
+        {% else %}
+        <span style="font-size: 0.9rem; padding:2.4px 1.2px; font-family: Arial; color:var(--color-r1); border-radius: 50%; background-color: var(--color-light);">{{s1f_rank}}</span>
+        {% endif %}
+      {% else %}
+        <span style="font-size: 0.9rem; padding:2.4px 1.2px; font-family: Arial; color:var(--color-light-gray);">&nbsp;</span>
+      {% endif %}
+      </div>
     {% endif %}
-    </div>
+
+    
 
     {# jt_per #}
     <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
@@ -307,8 +321,11 @@
       {% endif %}
       </a>
     </div>
-
+    
   </td>
+
+
+  
 
   {% endif %}
   {% endfor %}

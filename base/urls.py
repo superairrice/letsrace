@@ -50,7 +50,7 @@ urlpatterns = [
         name="race_related_info",
     ),
     path(
-        "training_awardee/<str:rdate>/<str:awardee>/<str:name>/<str:hname>", 
+        "training_awardee/<str:rdate>/<str:awardee>/<str:name>/<str:hname>",
         views.trainingAwardee,
         name="training_awardee",
     ),
@@ -58,6 +58,11 @@ urlpatterns = [
         "training_horse/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>",
         views.trainingHorse,
         name="training_horse",
+    ),
+    path(
+        "jt_collaboration/<str:rcity>/<str:rdate>/<int:rno>/<str:jockey>/<str:trainer>", 
+        views.jtCollaboration,
+        name="jt_collaboration",
     ),
     # path(
     #     "prediction_race/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",

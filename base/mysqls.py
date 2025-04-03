@@ -97,6 +97,39 @@ def get_paternal(rcity, rdate, rno, distance):
         return None
 
 
+def get_jt_collaboration(rcity, rdate, rno, jockey, trainer):
+    try:
+        cursor = connection.cursor()
+
+        strSql = """ 
+            select a.jockey, a.trainer, b.trainer, race, r_1st, r_2nd, r_3rd, r_4th, r_5th, r_etc
+            from exp011 a
+            right OUTER JOIN (
+                select jockey, trainer, count(*) race, sum( if( rank = 1, 1, 0 )) r_1st, sum( if( rank = 2, 1, 0 )) r_2nd, sum( if( rank = 3, 1, 0 )) r_3rd,  sum( if( rank = 4, 1, 0 )) r_4th,  sum( if( rank = 5, 1, 0 )) r_5th,  sum( if( rank > 5, 1, 0 )) r_etc
+                from rec011
+                where rdate between date_format(DATE_ADD(%s, INTERVAL - 365 DAY), '%%Y%%m%%d') and %s
+                and record is not null
+                and alloc3r > 0 
+                and jockey = %s
+                and trainer in ( select trainer from The1.exp011 where rcity = %s and rdate = %s and rno = %s )
+                group by jockey, trainer
+                ) b
+            ON a.jockey = b.jockey
+            where a.rcity = %s and a.rdate = %s and a.rno = %s
+            ; """
+
+        params = (rdate, rdate, jockey, rcity, rdate, rno, rcity, rdate, rno)
+        cursor.execute(strSql, params)
+        result = cursor.fetchall()
+
+    except:
+        print("Failed selecting in BookListView")
+    finally:
+        cursor.close()
+
+    return result
+
+
 def get_judged_jockey(rcity, rdate, rno):
     try:
         cursor = connection.cursor()
@@ -2919,7 +2952,7 @@ def get_race_related(i_rcity, i_rdate, i_rno):
                 jt_cnt,
                 remark,
                 s1f_rank,
-                corners,
+                replace( corners, ' ', '') corners,
                 g3f_rank,
                 g1f_rank,
                 alloc3r,
@@ -2927,7 +2960,7 @@ def get_race_related(i_rcity, i_rdate, i_rno):
                 reason
             from The1.exp010 a, The1.exp011 b 
             where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
-            and a.rdate between date_format(DATE_ADD(%s, INTERVAL - 10 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
+            and a.rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
             and a.rno < 80
             order by a.rdate, a.rtime, gate
             ; """
@@ -3541,7 +3574,7 @@ def get_prediction(i_rdate):
             select a.rcity, a.rdate, a.rday, a.rno, b.gate, b.rank, b.r_rank, b.horse, b.remark, b.jockey, b.trainer, b.host, b.r_pop, a.distance, b.handycap, b.i_prehandy, b.complex,
                 b.complex5, b.gap_back, 
                 b.jt_per, b.jt_cnt, b.jt_3rd,
-                b.s1f_rank, b.i_cycle, a.rcount, recent3, recent5, convert_r, jockey_old, reason
+                b.s1f_rank, b.i_cycle, a.rcount, recent3, recent5, convert_r, jockey_old, reason, b.alloc3r*1
             
             from exp010 a, exp011 b
             where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
