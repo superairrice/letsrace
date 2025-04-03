@@ -97,35 +97,67 @@ def get_paternal(rcity, rdate, rno, distance):
         return None
 
 
-def get_jt_collaboration(rcity, rdate, rno, jockey, trainer):
-    try:
-        cursor = connection.cursor()
+def get_jt_collaboration(rcity, rdate, rno, awardee, flag):
+    # flag : jockey or trainer
+    if flag == 'jockey':
+        try:
+            cursor = connection.cursor()
 
-        strSql = """ 
-            select a.jockey, a.trainer, b.trainer, race, r_1st, r_2nd, r_3rd, r_4th, r_5th, r_etc
-            from exp011 a
-            right OUTER JOIN (
-                select jockey, trainer, count(*) race, sum( if( rank = 1, 1, 0 )) r_1st, sum( if( rank = 2, 1, 0 )) r_2nd, sum( if( rank = 3, 1, 0 )) r_3rd,  sum( if( rank = 4, 1, 0 )) r_4th,  sum( if( rank = 5, 1, 0 )) r_5th,  sum( if( rank > 5, 1, 0 )) r_etc
-                from rec011
-                where rdate between date_format(DATE_ADD(%s, INTERVAL - 365 DAY), '%%Y%%m%%d') and %s
-                and record is not null
-                and alloc3r > 0 
-                and jockey = %s
-                and trainer in ( select trainer from The1.exp011 where rcity = %s and rdate = %s and rno = %s )
-                group by jockey, trainer
-                ) b
-            ON a.jockey = b.jockey
-            where a.rcity = %s and a.rdate = %s and a.rno = %s
-            ; """
+            strSql = """ 
+                select a.jockey, a.trainer, b.trainer, race, r_1st, r_2nd, r_3rd, r_4th, r_5th, r_etc, rcity, rdate, rno , 'trainer'
+                from exp011 a
+                right OUTER JOIN (
+                    select jockey, trainer, count(*) race, sum( if( rank = 1, 1, 0 )) r_1st, sum( if( rank = 2, 1, 0 )) r_2nd, sum( if( rank = 3, 1, 0 )) r_3rd,  sum( if( rank = 4, 1, 0 )) r_4th,  sum( if( rank = 5, 1, 0 )) r_5th,  sum( if( rank > 5, 1, 0 )) r_etc
+                    from rec011
+                    where rdate between date_format(DATE_ADD(%s, INTERVAL - 365 DAY), '%%Y%%m%%d') and %s
+                    and record is not null
+                    and alloc3r > 0 
+                    and jockey = %s
+                    and trainer in ( select trainer from The1.exp011 where rcity = %s and rdate = %s and rno = %s )
+                    group by jockey, trainer
+                    ) b
+                ON a.jockey = b.jockey
+                where a.rcity = %s and a.rdate = %s and a.rno = %s
+                ; """
 
-        params = (rdate, rdate, jockey, rcity, rdate, rno, rcity, rdate, rno)
-        cursor.execute(strSql, params)
-        result = cursor.fetchall()
+            params = (rdate, rdate, awardee, rcity, rdate, rno, rcity, rdate, rno)
+            cursor.execute(strSql, params)
+            result = cursor.fetchall()
 
-    except:
-        print("Failed selecting in BookListView")
-    finally:
-        cursor.close()
+        except:
+            print("Failed selecting in BookListView")
+        finally:
+            cursor.close()
+    else:
+        try:
+            cursor = connection.cursor()
+
+            strSql = """ 
+                select a.trainer, a.jockey, b.jockey, race, r_1st, r_2nd, r_3rd, r_4th, r_5th, r_etc, rcity, rdate, rno , 'jockey'
+                from exp011 a
+                right OUTER JOIN (
+                    select jockey, trainer, count(*) race, sum( if( rank = 1, 1, 0 )) r_1st, sum( if( rank = 2, 1, 0 )) r_2nd, sum( if( rank = 3, 1, 0 )) r_3rd,  sum( if( rank = 4, 1, 0 )) r_4th,  sum( if( rank = 5, 1, 0 )) r_5th,  sum( if( rank > 5, 1, 0 )) r_etc
+                    from rec011
+                    where rdate between date_format(DATE_ADD(%s, INTERVAL - 365 DAY), '%%Y%%m%%d') and %s
+                    and record is not null
+                    and alloc3r > 0 
+                    and trainer = %s
+                    and jockey in ( select jockey from The1.exp011 where rcity = %s and rdate = %s and rno = %s )
+                    group by jockey, trainer
+                    ) b
+                ON a.trainer = b.trainer
+                where a.rcity = %s and a.rdate = %s and a.rno = %s
+                ; """
+
+        
+            params = (rdate, rdate, awardee, rcity, rdate, rno, rcity, rdate, rno)
+            cursor.execute(strSql, params)
+            result = cursor.fetchall()
+
+        except:
+            print("Failed selecting in BookListView")
+        finally:
+            cursor.close()
 
     return result
 

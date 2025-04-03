@@ -54,16 +54,20 @@
     </thead>
   
     <tbody>
-      {% for jockey, trainer, b_trainer, race, r_1st, r_2nd, r_3rd, r_4th, r_5th, r_etc in collaboration %}
+      {% for jockey, trainer, b_trainer, race, r_1st, r_2nd, r_3rd, r_4th, r_5th, r_etc, rcity, rdate, rno, flag in collaboration %}
       <tr {% if trainer == b_trainer  %} style="background-color: var(--color-light-gray); border-radius: 10px; border: 0.5px solid gray;" {% endif %}>
         
         {# 조교사 #}
         <td align="center">
-          {% if trainer == b_trainer %}
-          <span style="font-size:1.4rem; color:var(--color-bg); background-color: var(--color-main-medium); padding:2px 4px; border-radius: 5px;">{{b_trainer}}</span>
-          {% else %}
-          <span style="font-size:1.4rem; color:var(--color-bg);">{{b_trainer}}</span>
-          {% endif %}
+          <a href="{% url 'jt_collaboration' rcity rdate rno b_trainer flag %}" 
+                    onclick="window.open(this.href, 'w_jt_collaboration', 'top=' + (window.screen.availHeight / 2 ) + ', left=' + window.screenX + ', width=550, height=300, toolbars=no, scrollbars=yes'); return false;">
+              
+            {% if trainer == b_trainer %}
+            <span style="font-size:1.4rem; color:var(--color-bg); background-color: var(--color-main-medium); padding:2px 4px; border-radius: 5px;">{{b_trainer}}</span>
+            {% else %}
+            <span style="font-size:1.4rem; color:var(--color-bg);">{{b_trainer}}</span>
+            {% endif %}
+          </a>
         </td>
 
 
@@ -71,22 +75,22 @@
 
           {% if r_1st|add:r_2nd|add:r_3rd > 0 %}
             {% if r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 == 100.0 %} 
-            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r1);">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span> 
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); background-color: var(--color-main-light); padding:2px 4px; border-radius: 5px;">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span> 
             {% elif r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 >= 50 %} 
-            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r1);">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); background-color: var(--color-main-light); padding:2px 4px; border-radius: 5px;">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
             {% elif r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 >= 40 and r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 < 50 %} 
-            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r2);">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r2); background-color: var(--color-main-light); padding:2px 4px; border-radius: 5px;">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
             {% elif r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 >= 30 and r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 < 40 %} 
-            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r3);">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r3); background-color: var(--color-main-light); padding:2px 4px; border-radius: 5px;">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
             {% elif r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 >= 20 and r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 < 30 %} 
-            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r4);">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r4); background-color: var(--color-main-light); padding:2px 4px; border-radius: 5px;">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
             {% elif r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 >= 10 and r_1st|add:r_2nd|add:r_3rd|div:race|mul:100 < 20 %} 
-            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r5);">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-r5); background-color: var(--color-main-light); padding:2px 4px; border-radius: 5px;">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
             {% else %}
-            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-gray);">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-light-gray); background-color: var(--color-main-light); padding:2px 4px; border-radius: 5px;">{{r_1st|add:r_2nd|add:r_3rd|div:race|mul:100|floatformat:1}}%</span>
             {% endif %}
           {% else %}
-            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif;">0.0%</span>
+            <span style="font-size:1.4rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-light-gray); background-color: var(--color-main-light); padding:2px 4px; border-radius: 5px;">0.0%</span>
           {% endif %}
 
         </td>
