@@ -2778,10 +2778,10 @@ def get_race_related(i_rcity, i_rdate, i_rno):
     try:
         cursor = connection.cursor()
 
-        strSql = (
-            """
+        strSql = """
             select b.rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
                 ,c.wrace, c.w1st, c.w2nd, c.w3rd, c.tot_1st, c.year_1st, c.year_per, c.year_3per
+                ,d.wrace, d.w1st, d.w2nd, d.w3rd
             from
             (
             select jockey, count(*) rcnt, 
@@ -2818,16 +2818,16 @@ def get_race_related(i_rcity, i_rdate, i_rno):
             
             ) a right outer join  exp011 b  on a.jockey = b.jockey
                 right outer join  ( select jockey, wdate, wrace, w1st, w2nd, w3rd, tot_1st, year_1st, year_per, year_3per from jockey_w where wdate = ( select max(wdate) from jockey_w where wdate < %s ) ) c  on c.jockey = b.jockey 
+                right outer join  ( select jockey, wdate, wrace, w1st, w2nd, w3rd, tot_1st, year_1st, year_per, year_3per from jockey_w where wdate = ( select max(wdate) from jockey_w where wdate < date_format(DATE_ADD(%s, INTERVAL - 7 DAY), '%%Y%%m%%d') ) ) d  on d.jockey = b.jockey 
             where b.rcity =  %s
                 and b.rdate = %s
                 and b.rno =  %s
                 order by b.rank, b.gate
             ; """
-        )
 
         # print(strSql % (i_rdate, i_rdate, i_rdate, i_rcity, i_rdate, i_rno))  # SQL문 출력
         cursor.execute(
-            strSql, (i_rdate, i_rdate, i_rdate, i_rcity, i_rdate, i_rno)
+            strSql, (i_rdate, i_rdate, i_rdate,i_rdate, i_rcity, i_rdate, i_rno)
         )  # SQL문 실행
         award_j = cursor.fetchall()
 
@@ -2842,6 +2842,7 @@ def get_race_related(i_rcity, i_rdate, i_rno):
         strSql = """
             select b.rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
                 ,c.wrace, c.w1st, c.w2nd, c.w3rd, c.tot_1st, c.year_1st, c.year_per, c.year_3per
+                ,d.wrace, d.w1st, d.w2nd, d.w3rd
             from
             (
             select trainer, count(*) rcnt, 
@@ -2878,12 +2879,13 @@ def get_race_related(i_rcity, i_rdate, i_rno):
             
             ) a right outer join  exp011 b  on a.trainer = b.trainer
                 right outer join  ( select trainer, wdate, wrace, w1st, w2nd, w3rd, tot_1st, year_1st, year_per, year_3per from trainer_w where wdate = ( select max(wdate) from trainer_w where wdate < %s ) ) c  on c.trainer = b.trainer 
+                right outer join  ( select trainer, wdate, wrace, w1st, w2nd, w3rd, tot_1st, year_1st, year_per, year_3per from trainer_w where wdate = ( select max(wdate) from trainer_w where wdate < date_format(DATE_ADD(%s, INTERVAL - 7 DAY), '%%Y%%m%%d') ) ) d  on d.trainer = b.trainer 
             where b.rcity = %s
                 and b.rdate = %s
                 and b.rno = %s
                 order by b.rank, b.gate
-            ; """
-        cursor.execute(strSql, (i_rdate, i_rdate, i_rdate, i_rcity, i_rdate, i_rno))
+            ; """ 
+        cursor.execute(strSql, (i_rdate, i_rdate, i_rdate, i_rdate, i_rcity, i_rdate, i_rno))
         award_t = cursor.fetchall()
 
     except:
@@ -2894,10 +2896,13 @@ def get_race_related(i_rcity, i_rdate, i_rno):
     try:
         cursor = connection.cursor()
 
-        strSql = (
-            """
+        strSql = """
             select b.rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
-                ,c.h_total, c.h_cancel, c.h_current, c.debut, c.year_race, c.year_prize/1000000, c.tot_race, c.tot_prize/1000000
+                ,c.h_total, c.h_cancel, c.h_current, c.debut, 
+                replace ( replace ( replace( c.year_race, '(', ' " '), '/', ' ` ' ), ')', '' ),
+                c.year_prize/1000000, 
+                replace ( replace ( replace( c.tot_race, '(', ' " '), '/', ' ` ' ), ')', '' ), 
+                c.tot_prize/1000000
             from
             (
             select host, count(*) rcnt, 
@@ -2949,7 +2954,6 @@ def get_race_related(i_rcity, i_rdate, i_rno):
                 and b.rno =  %s
                 order by b.rank, b.gate
             ; """
-        )
         # print(strSql % (i_rdate, i_rdate, i_rcity, i_rdate, i_rno))  # SQL문 출력
         cursor.execute(strSql, (i_rdate, i_rdate, i_rcity, i_rdate, i_rno))
         award_h = cursor.fetchall()
@@ -4463,11 +4467,15 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
             select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, CONCAT( RPAD(b.jockey, 5),RPAD( b.trainer, 5), b.host), a.wdate, a.year_per, CONCAT(debut, ' ', age, '_', wcnt) debut, weeks
             from
             (
-                SELECT wdate, jockey, cast( year_3per as DECIMAL(4,1))*10 year_per, tot_1st, debut, CONCAT(wrace, '`', w1st, '`', w2nd, '`', w3rd) weeks, 
+                SELECT wdate, jockey, 
+                cast( year_3per as DECIMAL(4,1))*10 year_per, 
+                -- round( if ( tot_race = 0, 0, ((tot_1st + tot_2nd + tot_3rd)/ tot_race)*1000 ) , 0) year_per,
+                tot_1st, debut, CONCAT(wrace, '`', w1st, '`', w2nd, '`', w3rd) weeks, 
                         ( select concat( max(age) , ' ', max(tot_1st) ) from jockey_w c where c.jockey = d.jockey and c.wdate < '"""
             + i_rdate
             + """' ) age,
-                        ( select concat( sum(if( r_rank = 1, 1, 0)),'`', sum(if( r_rank = 2, 1, 0)), '`', sum(if( r_rank = 3, 1, 0))) from exp011 
+                        ( select concat( sum(if (r_rank = 0, 0, 1)), '`', sum(if( r_rank = 1, 1, 0)),'`', sum(if( r_rank = 2, 1, 0)), '`', sum(if( r_rank = 3, 1, 0))) from exp011 
+                        
                             where jockey = d.jockey -- and r_rank <= 3 
                             and rdate between date_format(DATE_ADD('"""
             + i_rdate
@@ -4494,7 +4502,7 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
             order by b.rank, a.wdate desc
             ; """
         )
-
+        # print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
@@ -4583,7 +4591,7 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
                         ( select concat( max(age) , ' ', max(tot_1st) ) from trainer_w c where c.trainer = d.trainer and c.wdate < '"""
             + i_rdate
             + """' ) age,
-                        ( select concat( sum(if( r_rank = 1, 1, 0)),'`', sum(if( r_rank = 2, 1, 0)), '`', sum(if( r_rank = 3, 1, 0))) from exp011 
+                        ( select concat( sum(if (r_rank = 0, 0, 1)), '`',  sum(if( r_rank = 1, 1, 0)),'`', sum(if( r_rank = 2, 1, 0)), '`', sum(if( r_rank = 3, 1, 0))) from exp011 
                             where trainer = d.trainer -- and r_rank <= 3 
                             and rdate between date_format(DATE_ADD('"""
             + i_rdate

@@ -1665,9 +1665,9 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
 
     else:
         trend_data, trend_title = get_trainer_trend(rcity, rdate, rno)
-        # solidarity = get_solidarity(
-        #     rcity, rdate, rno, "trainer", i_filter
-        # )  # 기수, 조교사, 마주 연대현황 최근1년
+        solidarity = get_solidarity(
+            rcity, rdate, rno, "trainer", i_filter
+        )  # 기수, 조교사, 마주 연대현황 최근1년
 
     # print(solidarity)
     # print(trend_title)
@@ -1676,6 +1676,51 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
     trend_j_title = trend_data.columns.tolist()
 
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+    
+    try:
+        cursor = connection.cursor()
+
+        strSql = """  
+            select b.rcity,
+                b.jockey awardee,
+                b.rdate,
+                a.rday,
+                b.rno,
+                a.grade,
+                dividing,
+                b.gate,
+                b.rank,
+                b.r_rank,
+                b.horse,
+                b.remark,
+                b.jockey j_name,
+                b.trainer t_name, b.host h_name,
+                r_pop,
+                a.distance,
+                handycap,
+                jt_per,
+                jt_cnt,
+                remark,
+                s1f_rank,
+                replace( corners, ' ', '') corners,
+                g3f_rank,
+                g1f_rank,
+                alloc3r,
+                jockey_old,
+                reason
+            from The1.exp010 a, The1.exp011 b 
+            where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
+            and a.rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
+            and a.rno < 80
+            order by a.rdate, a.rtime, gate
+            ; """
+        cursor.execute(strSql, (rdate, rdate))
+        race_detail = cursor.fetchall()
+
+    except:
+        print("Failed selecting in expect : 경주별 Detail(약식)) ")
+    finally:
+        cursor.close()
 
     context = {
         "trend_j": trend_j,
@@ -1683,6 +1728,7 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
         "trend_title": trend_title,
         "r_condition": r_condition,
         "awardee": awardee,
+        "race_detail": race_detail,
         # "solidarity": solidarity,
     }
 
