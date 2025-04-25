@@ -40,7 +40,7 @@ def get_paternal(rcity, rdate, rno, distance):
     try:
         with connection.cursor() as cursor:  # 자동으로 cursor 닫기
             strSql = """ 
-                SELECT 
+                SELECT max(a.host),
                     a.gate, a.rank, a.horse, a.r_rank, a.rating, a.birthplace, a.h_sex, a.h_age, a.i_cycle, a.complex5, 
                     b.paternal,
                     SUM(IF(c.distance = %s, c.r1, 0)) AS rd1,
@@ -59,7 +59,14 @@ def get_paternal(rcity, rdate, rno, distance):
                         AND wdate = (SELECT MIN(wdate) 
                                     FROM horse_w 
                                     WHERE horse = a.horse AND price > 0)
-                    ) AS first_price
+                    ) AS first_price,
+                    
+                        d.h_total, d.h_cancel, d.h_current, d.debut, 
+                        replace ( replace ( replace(d.year_race, '(', ' " '), '/', ' ` ' ), ')', '' ),
+                        d.year_prize/1000000, 
+                        replace ( replace ( replace(d.tot_race, '(', ' " '), '/', ' ` ' ), ')', '' ), 
+                        d.tot_prize/1000000
+                        
                 FROM exp011 a
                 JOIN (
                     SELECT horse, paternal, price, tot_prize 
@@ -67,6 +74,21 @@ def get_paternal(rcity, rdate, rno, distance):
                     WHERE wdate = (SELECT MAX(wdate) FROM horse_w WHERE wdate < %s)
                 ) b ON a.horse = b.horse
                 LEFT JOIN paternal c ON b.paternal = c.paternal 
+                LEFT JOIN 
+                ( select distinct bb.rcity, aa.host, 
+                        aa.h_total, 
+                        aa.h_cancel, 
+                        aa.h_current, 
+                        aa.debut, 
+                        aa.year_race, 
+                        aa.tot_race, 
+                        aa.year_prize, 
+                        aa.tot_prize 
+                    from host aa, horse bb
+                    where aa.rcity = bb.rcity and aa.host = bb.host
+                    and bb.horse in ( select horse from exp011 where rcity =  %s and rdate = %s and rno =  %s )
+                    
+                ) d  on d.host = a.host
                 WHERE  
                     a.rcity = %s
                     AND a.rdate = %s
@@ -82,6 +104,9 @@ def get_paternal(rcity, rdate, rno, distance):
                 distance,
                 distance,
                 rdate,
+                rcity,
+                rdate,
+                rno,
                 rcity,
                 rdate,
                 rno,
@@ -1065,8 +1090,7 @@ def get_train_horse1(i_rdate, i_hname):
                                             max(r12), max(d12), max(c12), max(s12) , 
                                             max(r13), max(d13), max(c13), max(s13) , 
                                             max(r14), max(d14), max(c14), max(s14) ,
-                    -- ( select count(*) from train aa where aa.horse = a.horse and aa.tdate between date_format(DATE_ADD(a.rdate, INTERVAL - 14 DAY), '%Y%m%d') and a.rdate and aa.rider = jockey ) laps
-                    ( select sum(laps) from swim aa where aa.horse = a.horse and aa.tdate between date_format(DATE_ADD(a.rdate, INTERVAL - 14 DAY), '%Y%m%d') and a.rdate ) swims
+                        ( select sum(laps) from swim aa where aa.horse = a.horse and aa.tdate between date_format(DATE_ADD(a.rdate, INTERVAL - 14 DAY), '%Y%m%d') and a.rdate ) swims
                     from
                     (
                         select rdate, gate, b.rank, r_rank, r_pop, a.horse, b.jockey, b.trainer, b.rcity, rno, j_per, t_per, jt_per,h_weight, distance, b.grade, rating, dividing, i_cycle,
@@ -2754,7 +2778,7 @@ def get_training_awardee(i_rdate, i_awardee, i_name):
             + """'
                 ) a
                 group by rcity, rdate, rday, rno, gate, rank, horse
-                order by rdate, rtime
+                order by rdate, rtime, rno
             ;"""
         )
 
@@ -2825,7 +2849,7 @@ def get_race_related(i_rcity, i_rdate, i_rno):
                 order by b.rank, b.gate
             ; """
 
-        # print(strSql % (i_rdate, i_rdate, i_rdate, i_rcity, i_rdate, i_rno))  # SQL문 출력
+        # print(strSql % (i_rdate, i_rdate, i_rdate, i_rdate, i_rcity, i_rdate, i_rno))  # SQL문 출력
         cursor.execute(
             strSql, (i_rdate, i_rdate, i_rdate,i_rdate, i_rcity, i_rdate, i_rno)
         )  # SQL문 실행
@@ -2937,25 +2961,34 @@ def get_race_related(i_rcity, i_rdate, i_rno):
             and rno < 80
             group by host
             
-            ) a right outer join  exp011 b  on a.host = b.host
+            ) a right outer join  exp011 b  on a.host = b.host 
                 left outer join  
-                ( select host, sum(h_total) h_total, 
-                                sum(h_cancel) h_cancel, 
-                                sum(h_current) h_current, 
-                                max(debut) debut, 
-                                max(year_race) year_race, 
-                                max(tot_race) tot_race, 
-                                sum(year_prize) year_prize, 
-                                sum(tot_prize) tot_prize 
-                                from host 
-                                group by host ) c  on c.host = b.host
+                ( select distinct bb.rcity, aa.host, 
+                        aa.h_total, 
+                        aa.h_cancel, 
+                        aa.h_current, 
+                        aa.debut, 
+                        aa.year_race, 
+                        aa.tot_race, 
+                        aa.year_prize, 
+                        aa.tot_prize 
+                    from host aa, horse bb
+                    where aa.rcity = bb.rcity and aa.host = bb.host
+                    and bb.horse in ( select horse from exp011 where rcity =  %s and rdate = %s and rno =  %s )
+                    
+                ) c  on c.host = b.host and c.rcity = b.rcity
             where b.rcity =  %s
                 and b.rdate = %s
                 and b.rno =  %s
                 order by b.rank, b.gate
             ; """
-        # print(strSql % (i_rdate, i_rdate, i_rcity, i_rdate, i_rno))  # SQL문 출력
-        cursor.execute(strSql, (i_rdate, i_rdate, i_rcity, i_rdate, i_rno))
+        # print(
+        #     strSql
+        #     % (i_rdate, i_rdate, i_rcity, i_rdate, i_rno, i_rcity, i_rdate, i_rno)
+        # )  # SQL문 출력
+        cursor.execute(
+            strSql, (i_rdate, i_rdate, i_rcity, i_rdate, i_rno, i_rcity, i_rdate, i_rno)
+        )
         award_h = cursor.fetchall()
 
     except:
@@ -6067,10 +6100,13 @@ def insert_race_simulation(rcity, rcount, r_content):
                     # sql 튜플값 가져올때 [0][0]
                     jockey = get_jockey(horse)[0][0]
 
-                    rating = items[2]
+                    if items[2]:
+                        rating = items[2]
+                    else:
+                        rating = "0"
                     birthplace = items[4]
                     sex = items[5]
-                    age = items[6]
+                    age = items[6] 
                     trainer = items[7]
                     host = items[8]
                     # print(gate, horse, trainer, host)

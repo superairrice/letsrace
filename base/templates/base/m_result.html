@@ -5,7 +5,7 @@
 
 
 <div class="fold-content">
-  <table>
+  <table class="tt9light-table" style="width: 100%; border-radius: 10px; border: 0.5px solid gray;">
     <thead style="font-size:1.2rem; background-color: var(--color-light);">
       <tr>
         <th colspan="1" rowspan="2" style="vertical-align:middle">
@@ -72,7 +72,7 @@
         <th><span style="font-size:1.2rem;">G3F</span></th>
         <th><span style="font-size:1.2rem;">G2F</span></th>
         <th><span style="font-size:1.2rem;">G1F</span></th>
-        <th style="vertical-align: middle; font-size:1.1rem; border:1px solid orange; border-radius: 10px; "><span style="font-size:1.1rem;">기록</span></th>
+        <th><span style="font-size:1.1rem;">경주기록</span></th>
         <th rowspan="2" style="vertical-align:middle"><span style="font-size:1.2rem;">마<br>번</span></th>
         <th rowspan="2" style="vertical-align:middle"><span style="font-size:1.2rem;">코너 전개</span></th>
         <th rowspan="1" style="vertical-align:middle"><span style="font-size:1.2rem;">순위</span></th>
@@ -147,14 +147,14 @@
 
         <th colspan="3"><span style="text-transform:lowercase; font-style: italic; font-size:1.15rem; padding:1px 4px; border-radius: 7px;">경주편성강도</span></th>
 
-        <th style="vertical-align: middle; font-size:1.1rem; border:1px solid orange; border-radius: 10px;">
+        <th>
           <span style="text-transform:lowercase; font-style: italic; font-size:1.0rem; padding:1px 4px; border-radius: 7px;">thethe9</span>
         </th>
 
         <th rowspan="1" style="vertical-align:middle"><span style="font-size:0.8rem;">인기/예상</span></th>
 
         <th rowspan="1" style="vertical-align:middle">
-          <span class="tooltip" style="font-size:1.0rem; color:var(--color-r4);">(암)
+          <span class="tooltip" style="font-size:1.0rem; color:var(--color-r1);">(암)
             <span class="tooltip-text" style="font-size:1.1rem;">🐎 암말 수</span>
           </span>
         </th>
@@ -169,7 +169,7 @@
       {% for rcity, rdate, rno, rday, rseq, distance, grade, dividing, rname, rcon1, rcon2, weather, rstate, rmoisture, race_speed, r_judge, r2alloc1, rwalloc2, gate, rank, horse, birthplace, h_sex, h_age, handycap, jockey, joc_adv, trainer, host, rating, h_weight, w_change, record, gap, corners, rs1f, r1c, r2c, r3c, r4c, rg3f, rg2f, rg1f, alloc1r, alloc3r, judge, judge_reason, audit_reason, i_s1f, i_g3f, i_g2f, i_g1f, i_record, jockey_w, burden_w, adv_jockey, adv_track, i_convert, r_start, r_corners, r_finish, r_wrapup, r_etc, r_flag, p_rank, p_record, pop_rank, s1f_rank, g3f_rank, g2f_rank, g1f_rank, recent3, recent5, fast_r, slow_r, avg_r, convert_r, i_cycle, gap_b, jockey_old, reason, r_pop, jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd, h_cnt, h_mare in hr_records %}
       {% if r.horse == horse %}
 
-      <tr align="center">
+      <tr align="center" {% if grade|slice:"0:2" == '주행' %} style="background: var(--color-light-gray);" {% endif %}>
         {# rating #}
         <td>
           {% if rating %}
@@ -702,24 +702,24 @@
         </td>
 
         {# 경주기록/예상기록 #}
-        <td align="right" style="border:1px solid orange; border-radius: 10px; font-size: 1.1rem;">
+        <td align="right" style="font-size: 1.1rem;">
           {% if record %}
           {% if rank == 1 %}
-          <div style="text-align: center; font-style: italic; color:var(--color-r1); font-size: 1.1rem; font-family: Arial;">
-            {% if rank > 20 %}﹆{% else %} {{record|slice:"0:1"}}&nbsp;{{record|slice:"1:6"}} {% endif %}
+          <div style="text-align: center; font-style: italic; color:var(--color-r1); font-size: 1.1rem;">
+            <span style="font-family: Arial, Helvetica, sans-serif; border-bottom: solid 1px var(--color-r1); border-radius: 4px; padding: 2px 4px;"> {% if rank > 20 %}﹆{% else %} {{record|slice:"0:1"}}&nbsp;{{record|slice:"1:6"}} {% endif %}</span>
           </div>
           {% elif rank == 2 %}
-          <div style="text-align: center; font-style: italic; color:var(--color-r2); font-size: 1.1rem; font-family: Arial;">
-            {% if rank > 20 %}﹆{% else %} {{record|slice:"0:1"}}&nbsp;{{record|slice:"1:6"}} {% endif %}
+          <div style="text-align: center; font-style: italic; color:var(--color-r2); font-size: 1.1rem;">
+            <span style="font-family: Arial, Helvetica, sans-serif; border-bottom: solid 1px var(--color-r2); border-radius: 4px; padding: 2px 4px;"> {% if rank > 20 %}﹆{% else %} {{record|slice:"0:1"}}&nbsp;{{record|slice:"1:6"}} {% endif %}</span>
           </div>
           {% elif rank == 3 %}
-          <div style="text-align: center; font-style: italic; color:var(--color-r3); font-size: 1.1rem; font-family: Arial;">
-            {% if rank > 20 %}﹆{% else %} {{record|slice:"0:1"}}&nbsp;{{record|slice:"1:6"}} {% endif %}
+          <div style="text-align: center; font-style: italic; color:var(--color-r3); font-size: 1.1rem;">
+            <span style="font-family: Arial, Helvetica, sans-serif; border-bottom: solid 1px var(--color-r3); border-radius: 4px; padding: 2px 4px;"> {% if rank > 20 %}﹆{% else %} {{record|slice:"0:1"}}&nbsp;{{record|slice:"1:6"}} {% endif %}</span>
           </div>
           
           {% else %}
-          <div style="text-align: center; font-style: italic; font-size: 1.1rem; font-family: Arial;">
-            {% if rank > 20 %}﹆{% else %} {{record|slice:"0:1"}}&nbsp;{{record|slice:"1:6"}} {% endif %}
+          <div style="text-align: center; font-style: italic; font-size: 1.1rem;">
+            <span style="font-family: Arial, Helvetica, sans-serif; border-bottom: solid 1px var(--color-gray); border-radius: 4px; padding: 2px 4px;"> {% if rank > 20 %}﹆{% else %} {{record|slice:"0:1"}}&nbsp;{{record|slice:"1:6"}} {% endif %}</span>
           </div>
           {% endif %}
 

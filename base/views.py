@@ -740,6 +740,31 @@ def raceRelatedInfo(request, rcity, rdate, rno):
     loadin = get_loadin(rcity, rdate, rno)
     disease = get_disease(rcity, rdate, rno)
 
+    try:
+        cursor = connection.cursor()
+        strSql = """ 
+            select host, horse, trainer, birthplace, sex, age, grade, tot_race, tot_1st, tot_2nd, tot_3rd, year_race, year_1st, year_2nd, year_3rd, tot_prize/1000, rating, price/1000
+            from horse_w
+            where wdate = ( select max(wdate) from The1.horse_w where wdate < %s )  
+            and host in  ( select host from exp011 where rcity =  %s and rdate = %s and rno =  %s )
+            order by host, trainer, horse
+        """
+        # 안전한 SQL 파라미터 바인딩
+        params = (
+            rdate,
+            rcity,
+            rdate,
+            rno,
+        )
+
+        cursor.execute(strSql, params)
+        horses = cursor.fetchall()
+
+    except:
+        print(f"❌ Failed selecting in horses:")  # 오류 메시지 출력
+    finally:
+        cursor.close()
+
     context = {
         "r_condition": r_condition,  # 기수 기승가능 부딤중량
         "train": train,  # 기수 기승가능 부딤중량
@@ -758,6 +783,7 @@ def raceRelatedInfo(request, rcity, rdate, rno):
         "paternal_dist": paternal_dist,  
         "loadin": loadin,  # 기수 기승가능 부딤중량
         "disease": disease,  # 경주마 중대 질병 진료 회수
+        "horses": horses,  
     }
 
     return render(request, "base/race_related_info.html", context)
