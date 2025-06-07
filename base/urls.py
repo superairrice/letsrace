@@ -60,9 +60,19 @@ urlpatterns = [
         name="training_horse",
     ),
     path(
-        "jt_collaboration/<str:rcity>/<str:rdate>/<int:rno>/<str:jockey>/<str:trainer>", 
+        "race_result_horse/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>",
+        views.raceResultHorse,
+        name="race_result_horse",
+    ),
+    path(
+        "jt_collaboration/<str:rcity>/<str:rdate>/<int:rno>/<str:jockey>/<str:trainer>",
         views.jtCollaboration,
         name="jt_collaboration",
+    ),
+    path(
+        "jockey_2week_train/<str:rcity>/<str:rdate>/<int:rno>/<str:jockey>/<str:trainer>",
+        views.jockey2weekTrain,
+        name="jockey_2week_train",
     ),
     # path(
     #     "prediction_race/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",
@@ -74,6 +84,11 @@ urlpatterns = [
     #     views.predictionList,
     #     name="prediction_list",
     # ),  # 로그인 전
+    path(
+        "race_axis/<str:rcity>/<str:rdate>/<int:rno>/<int:rank>",
+        views.raceAxis,
+        name="race_axis",
+    ),
     path(
         "race_result/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:rcity1>/<str:rdate1>/<int:rno1>",
         views.raceResult,

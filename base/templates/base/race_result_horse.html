@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+{% load static %}
+
+{% load mathfilters %}
+{% load humanize %}
+<main class="create-room layout">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
+    <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
+
+    <script src="{% static 'js/script.js' %}"></script>
+
+    <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
+
+    <title>{{hname}} 경주성적</title>
+
+    <form class="header__search" method="GET" action="{% url 'race_result_horse' r_condition.rcity r_condition.rdate r_condition.rno hname %}"> 
+      {% csrf_token %} 
+
+      <label style="font-size: 1.2rem;">
+
+        <span style="font-family: Arial; font-size:1.4rem; color: var(--color-main); border-radius: 7px; padding: 4px 4px; background-color: var(--color-dark);">
+          &nbsp;{{r_condition.rdate|slice:"0:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}})&nbsp;
+        </span>
+        <span style="font-family: Arial; font-size:1.4rem; color: var(--color-main); border-radius: 7px; padding: 4px 4px; background-color: var(--color-dark);">
+          &nbsp;{{r_condition.rcity}}&nbsp;&nbsp;{{r_condition.rno}}<sup style="font-size:0.9rem">R</sup>&nbsp;
+        </span>
+
+        <span style="font-size:1.3rem; color: var(--color-main-light); padding: 4px 4px;">{{r_condition.grade|slice:"0:2"}}</span>
+        <span style="font-size:1.3rem; color: var(--color-main-light); padding: 4px 4px;">{{r_condition.dividing}}</span>
+        
+        <span style="font-family: Arial; font-size:1.2rem; color: var(--color-main); border-radius: 7px; padding: 4px 4px; background-color: var(--color-dark);">
+          &nbsp;🏇&nbsp;&nbsp;{{exp011s.jockey}}&nbsp;
+        </span>
+        <span style="font-family: Arial; font-size:1.2rem; color: var(--color-main); border-radius: 7px; padding: 4px 4px; background-color: var(--color-dark);">
+          &nbsp;🛖&nbsp;&nbsp;{{exp011s.trainer}}&nbsp;
+        </span>
+
+        <select name="hname" style="font-size:1.2rem; padding: 0.2rem; text-align: left; border-radius: 7px;">
+          {% for j_gate, j_horse in h_names %}
+          <option value={{j_horse}} {% if hname == j_horse %} selected {% endif %}>{{j_gate}}&nbsp;&nbsp;{{j_horse}}</option>
+          {% endfor%}
+        </select>
+
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        <button class="btn" style="background: var(--color-main);">Go</button>
+    
+      </label>
+    </form>
+
+  </head>
+
+  <!-- <hr style="border: solid 1px black;">  -->
+
+  <div class="container">
+
+    {% include 'base/m_result_horse.html' %}
+    
+  </div>
+
+</main>
+
+
+
+{% include 'footer.html' %}

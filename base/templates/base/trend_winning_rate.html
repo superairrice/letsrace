@@ -65,14 +65,13 @@
       
         <table class="fold-table">
           <thead>
-
             <tr>
-              <th rowspan="2" width="4%" valign="center"><span class="visible-big" style="padding-bottom: 0.95rem;">예상<br>순위</span></th>
               {% if trend_j.0.2 %}
-              <th rowspan="1" width="4%"><span class="visible-big">마번</span></th>
+              <th rowspan="1" width="5.0%"><span>예상</span></th>
               {% else %}
-              <th rowspan="2" width="4%"><span class="visible-big">&nbsp;<br>마번<br>&nbsp;</span></th>
+              <th rowspan="2" width="5.0%" style="vertical-align: middle;"><div>예상<br>순위</div></th>
               {% endif %}
+              <th rowspan="2" width="4%" style="vertical-align: middle;"><span class="visible-big">마번</span></th>
               <th colspan="1"  width="13%">
                 <a href="{% url 'status_stable' r_condition.rcity r_condition.rdate r_condition.rno %}"
                   onclick="window.open(this.href, 'w_status_stable', 'width=900, height=880, toolbars=no, scrollbars=yes'); return false;">
@@ -81,7 +80,7 @@
                 </a>
               </th>
               <th rowspan="1" width="8%"><span class="visible-big">이름(나이)</span></th>
-              <th colspan="12">
+              <th colspan="10">
                 <span class="visible-big">
                   🏇&nbsp;&nbsp;최근 99일 경주성적 필터링: &nbsp;
                   {% if awardee == 'jockey' %}
@@ -102,14 +101,15 @@
 
                 </span>
               </th>
-      
+              <th colspan="2" style="background-color: var(--color-bg); color:var(--color-main); border-radius: 4px;"><span>1년전</span></th>
               
       
             </tr>
             <tr>
               {% if trend_j.0.2 %} {# 경주결과가 입력되었으면 #}
-              <th rowspan="1"><span class="visible-big" style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">실순</span></th>
+              <th rowspan="1"><span style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 2px;">실순</span></th>
               {% endif %}
+
               <th rowspan="1">
                 <span class="visible-big" style="font-size:1.2rem;">총 승 [데뷔년도]</span>
               </th>
@@ -125,8 +125,8 @@
               <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.4.0}}</span></th>
               <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.3.0}}</span></th>
               <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.2.0}}</span></th>
-              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.1.0}}</span></th>
-              <th rowspan="1" width="5.5%"><span class="visible-big">{{trend_title.0.0}}</span></th>
+              <th rowspan="1" width="5.5%" style="background-color: var(--color-bg); color:var(--color-main); border-radius: 4px;"><span class="visible-big">{{trend_title.1.0}}</span></th>
+              <th rowspan="1" width="5.5%" style="background-color: var(--color-bg); color:var(--color-main); border-radius: 4px;"><span class="visible-big">{{trend_title.0.0}}</span></th>
             </tr>
       
           </thead>
@@ -139,10 +139,32 @@
                 <div style="font-family: Arial; font-size:1.3rem; color:var(--color-main-light);">
                   {% if rank > 20 %}<span style="font-size: 1.1rem;">🐣</span>{% else %} {{rank}} {% endif %}
                 </div>
+                
+                <div style="font-family: Arial; font-size:1.0rem; font-style: italic; color:var(--color-r1); text-align: right;">
+                {% if r_rank %}
+                  
+                  {% if r_rank == 1 %}
+                  <span style="font-family: Arial; font-size:1.0rem; color:var(--color-main-light); text-align: right; padding:2px 4px; border-radius: 7px; background-color: var(--color-r1);">{{r_rank}}</span>
+                  {% elif r_rank == 2 %}
+                  <span style="font-family: Arial; font-size:1.0rem; color:var(--color-light); text-align: right; padding:2px 4px; border-radius: 7px; background-color: var(--color-r2);">{{r_rank}}</span>
+                  {% elif r_rank == 3 %}
+                  <span style="font-family: Arial; font-size:1.0rem; color:var(--color-bg); text-align: right; padding:2px 4px; border-radius: 7px; background-color: var(--color-r3);">{{r_rank}}</span>
+                  {% elif r_rank == 4 %}
+                  <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r4); text-align: right; padding:2px 4px; border-radius: 7px; border: 1px solid var(--color-r4);">{{r_rank}}</span>
+                  {% elif r_rank == 5 %}
+                  <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r5); text-align: right; padding:2px 4px; border-radius: 7px; border: 1px solid var(--color-r5);">{{r_rank}}</span>
+                  {% elif r_rank == 99 %}
+                  <span style="font-family: Arial; font-size:.9rem; color:var(--color-gray); text-align: right; padding:2px 4px; border-radius: 7px;">🚫</span>
+                  {% else %}
+                  <span style="font-family: Arial; font-size:1.0rem; color:var(--color-gray); text-align: right; padding:2px 4px; border-radius: 7px;">{{r_rank}}</span>
+                  {% endif %}
+                {% endif %}
+                </div>
+
               </td>
               
               {# gate(마번) 착순 #}
-              <td align="center" style="font-size: 1.4rem ">
+              <td align="center" style="font-size: 1.4rem; border-radius: 10px; border: 0.5px solid gray;">
                 {% if r_rank == 99 %}
                 <span style="font-style: italic; text-decoration:line-through; color:gray;">{{gate}}</span>
                 {% else %}
@@ -167,28 +189,7 @@
                     {{gate}}
                   </span>
                   {% else %}
-                    
-                    <span style="font-family: Arial; font-style: normal; ">{{gate}}</span>
-                  {% endif %}
-                {% endif %}
-
-
-                {% if r_rank %}
-                  
-                  {% if r_rank == 1 %}
-                  <div style="font-family: Arial; font-size:1.1rem; font-weight: 700; font-style: italic; color:var(--color-r1); text-align: right;">{{r_rank}}</div>
-                  {% elif r_rank == 2 %}
-                  <div style="font-family: Arial; font-size:1.1rem; font-weight: 700; font-style: italic; color:var(--color-r2); text-align: right;">{{r_rank}}</div>
-                  {% elif r_rank == 3 %}
-                  <div style="font-family: Arial; font-size:1.1rem; font-weight: 700; font-style: italic; color:var(--color-r3); text-align: right;">{{r_rank}}</div>
-                  {% elif r_rank == 4 %}
-                  <div style="font-family: Arial; font-size:1.1rem; font-weight: 700; font-style: italic; color:var(--color-r4); text-align: right;">{{r_rank}}</div>
-                  {% elif r_rank == 5 %}
-                  <div style="font-family: Arial; font-size:1.1rem; font-weight: 700; font-style: italic; color:var(--color-r5); text-align: right;">{{r_rank}}</div>
-                  {% elif r_rank == 99 %}
-                  <div style="font-family: Arial; font-size:.9rem; font-weight: 700; color:var(--color-gray); text-align: right;">🚫</div>
-                  {% else %}
-                  <div style="font-family: Arial; font-size:1.1rem; font-style: italic; color:var(--color-gray); text-align: right;">{{r_rank}}</div>
+                  <span style="font-family: Arial; font-style: normal; ">{{gate}}</span>
                   {% endif %}
                 {% endif %}
               </td>
@@ -241,15 +242,15 @@
                   {% else %}
                   <a href="{% url 'jt_analysis_multi' r_condition.rcity r_condition.rdate|mul:1|sub:10000 r_condition.rdate '%' man '%' '%' '1' '99' '1' '99' '0' '0' '0' r_condition.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
                   {% endif %}
-                    <span style="color:var(--color-light_gray);">{{t_awardee|slice:"0:3"}}</span>
-                    <span style="font-size: 1.0rem; color:var(--color-gray);">({{debut|slice:"11:13"}})</span>
+                    <span style="color:var(--color-light); border-bottom: 1px solid var(--color-gray);">{{t_awardee|slice:"0:3"}}</span>
+                    <span style="font-size: 1.0rem; color:var(--color-light-gray);">({{debut|slice:"11:13"}})</span>
                   </a>
                   {% endwith %}
                   
                 </div>
                 <div style="font-size: 1.05rem; text-align: right;">
                   {% if debut|slice:"-5:" == '0`0`0' %}
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r5);">{% if debut|slice:"-8:"|slice:"0:1" == '_' %}{{debut|slice:"-7:"}}{% else %}{{debut|slice:"-8:"}}{% endif %}</span>
+                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-gray);">{% if debut|slice:"-8:"|slice:"0:1" == '_' %}{{debut|slice:"-7:"}}{% else %}{{debut|slice:"-8:"}}{% endif %}</span>
                   {% else %}
                   <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r2);">{% if debut|slice:"-8:"|slice:"0:1" == '_' %}{{debut|slice:"-7:"}}{% else %}{{debut|slice:"-8:"}}{% endif %}</span>
                   {% endif %}
@@ -261,11 +262,11 @@
               <td align="right" style="border-radius: 10px; border: 0.5px solid gray;">
                 <div style="font-size: 1.25rem; text-align: right;">
                   {% if w11 == w12 %}
-                  <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w12|div:10}}</div>
+                  <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w12}}</div>
                   {% elif w11 > w12 %}
-                  <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w12|div:10}}</div>
+                  <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r5);">{{w12}}</div>
                   {% else %}
-                  <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w12|div:10}}</div>
+                  <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w12}}</div>
                   {% endif %}
               
                   {% if k12|slice:"-5:" == '0`0`0' %}
@@ -283,11 +284,11 @@
               {# w11 #}
               <td align="right">
                 {% if w10 == w11 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w11|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w11}}</div>
                 {% elif w10 > w11 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w11|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r5);">{{w11}}</div>
                 {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w11|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w11}}</div>
                 {% endif %}
               
                 {% if k11|slice:"-5:" == '0`0`0' %}
@@ -303,11 +304,11 @@
               {# w10 #}
               <td align="right">
                 {% if w09 == w10 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w10|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w10}}</div>
                 {% elif w09 > w10 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w10|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r5);">{{w10}}</div>
                 {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w10|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w10}}</div>
                 {% endif %}
               
                 {% if k10|slice:"-5:" == '0`0`0' %}
@@ -323,11 +324,11 @@
               {# w09 #}
               <td align="right">
                 {% if w08 == w09 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w09|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w09}}</div>
                 {% elif w08 > w09 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w09|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r5);">{{w09}}</div>
                 {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w09|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w09}}</div>
                 {% endif %}
               
                 {% if k09|slice:"-5:" == '0`0`0' %}
@@ -343,11 +344,11 @@
               {# w08 #}
               <td align="right">
                 {% if w07 == w08 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w08|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w08}}</div>
                 {% elif w07 > w08 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w08|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r5);">{{w08}}</div>
                 {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w08|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w08}}</div>
                 {% endif %}
               
                 {% if k08|slice:"-5:" == '0`0`0' %}
@@ -363,11 +364,11 @@
               {# w07 #}
               <td align="right">
                 {% if w06 == w07 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w07|div:10}}</div>
-                {% elif w01|add:w02|add:w03|add:w04|add:w05|add:w06|add:w07|add:w08|add:w09|add:w10|add:w11|add:w12|div:12 > w07 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w07|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w07}}</div>
+                {% elif w06 > w07 %}
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r5);">{{w07}}</div>
                 {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w07|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w07}}</div>
                 {% endif %}
               
                 {% if k07|slice:"-5:" == '0`0`0' %}
@@ -383,11 +384,11 @@
               {# w06 #}
               <td align="right">
                 {% if w05 == w06 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w06|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w06}}</div>
                 {% elif w05 > w06 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w06|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r5);">{{w06}}</div>
                 {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w06|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w06}}</div>
                 {% endif %}
               
                 {% if k06|slice:"-5:" == '0`0`0' %}
@@ -403,11 +404,11 @@
               {# w05 #}
               <td align="right">
                 {% if w04 == w05 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w05|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w05}}</div>
                 {% elif w04 > w05 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w05|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r5);">{{w05}}</div>
                 {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w05|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w05}}</div>
                 {% endif %}
               
                 {% if k05|slice:"-5:" == '0`0`0' %}
@@ -423,11 +424,11 @@
               {# w04 #}
               <td align="right">
                 {% if w03 == w04 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w04|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w04}}</div>
                 {% elif w03 > w04 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w04|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r5);">{{w04}}</div>
                 {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w04|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w04}}</div>
                 {% endif %}
               
                 {% if k04|slice:"-5:" == '0`0`0' %}
@@ -443,11 +444,11 @@
               {# w03 #}
               <td align="right">
                 {% if w02 == w03 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w03|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w03}}</div>
                 {% elif w02 > w03 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w03|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r5);">{{w03}}</div>
                 {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w03|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w03}}</div>
                 {% endif %}
               
                 {% if k03|slice:"-5:" == '0`0`0' %}
@@ -461,13 +462,13 @@
                 {% endif %}
               </td>
               {# w02 #}
-              <td align="right">
+              <td align="right" style="border-radius: 10px; border: 0.5px solid gray;">
                 {% if w01 == w02 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w02|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w02}}</div>
                 {% elif w01 > w02 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w02|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r5);">{{w02}}</div>
                 {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w02|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w02}}</div>
                 {% endif %}
                 {% if k02|slice:"-5:" == '0`0`0' %}
                 {% if k02 == '0`0`0`0' %}
@@ -482,11 +483,11 @@
               {# w01 #}
               <td align="right">
                 {% if w12 == w01 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-light_gray);">{{w01|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w01}}</div>
                 {% elif w12 > w01 %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-gray);">{{w01|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r5);">{{w01}}</div>
                 {% else %}
-                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w01|div:10}}</div>
+                <div style="font-family: Arial, Helvetica, sans-serif; font-size: 1.25rem; color:var(--color-r3);">{{w01}}</div>
                 {% endif %}
               
                 {% if k01|slice:"-5:" == '0`0`0' %}

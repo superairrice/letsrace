@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+{% load static %}
+
+{% load mathfilters %}
+{% load humanize %}
+
+<html lang="en">
+
+<head>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-BFZZL101LZ"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-BFZZL101LZ');
+  </script>
+  <!-- End Google tag -->
+  
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="shortcut icon" type="image/x-icon" href="{% static '/images/number-9.png' %}" />
+
+  <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
+  <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
+
+  <script src="{% static 'js/script.js' %}"></script>
+
+  <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
+
+  <title>조교현황&nbsp;'{{r_condition.rdate|slice:"2:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;{{r_condition.rcity}}&nbsp;{{r_condition.rno}}경주</title>
+
+</head>
+
+{% block content %}
+
+<script>
+  $(function () {
+    $(".fold-table tr.view").on("click", function () {
+      if ($(this).hasClass("open")) {
+        $(this).removeClass("open").next(".fold").removeClass("open");
+      } else {
+        $(".fold-table tr.view").removeClass("open").next(".fold").removeClass("open");
+        $(this).addClass("open").next(".fold").addClass("open");
+      }
+    });
+  });
+
+</script>
+
+<main class="create-room layout">
+  {# Header #}
+  <div class="container">
+
+    <div class="roomList" style="height: auto;">
+
+      <table>
+        <thead>
+          <tr>
+            <th colspan="4" style="text-align: left; font-size: 1.25rem;">
+
+                <div style="font-size: 1.2rem; padding-bottom: 10px;">📌&nbsp;{{exp011s.0.jockey}}</div>
+      
+              <div style="font-size: 1.1rem; font-family: Arial;">thethe9 위 기준 Gate별 연승률</div>
+              <div style="font-size: 1.1rem; font-family: Arial; color:var(--color-r3)">단승식 배당 4.4 이하</div>
+              <div style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5)">조교사 기수 복승율 >= 기수 복승율</div>
+            </th>
+          </tr>
+          <tr>
+            <th style="font-family: Arial; font-size: 1.2rem;">Gate</th>
+            <th style="font-family: Arial; font-size: 1.2rem;">cnt</th>
+            <th style="font-family: Arial; font-size: 1.2rem;">3위권</th>
+            <th style="font-family: Arial; font-size: 1.2rem;">3위%</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for gate, cnt, w3rd, w3per, i_cnt, i_w3rd, i_w3per, i2_cnt, i2_w3rd, i2_w3per in axis %}
+          <tr style="font-weight: 300; content:none">
+            {% if gate|mul:1 == exp011s.0.gate or gate == 'TOT' %}
+            <td style="font-family: Arial; background-color: var(--color-dark); font-size: 1.2rem; text-align: right;">{{gate}}</td>
+            <td style="font-family: Arial; background-color: var(--color-dark); font-size: 1.2rem; text-align: right;">{{cnt}}<br>{{i_cnt}}<br>{{i2_cnt}}</td>
+            <td style="font-family: Arial; background-color: var(--color-dark); font-size: 1.2rem; text-align: right;">{{w3rd}}<br>{{i_w3rd}}<br>{{i2_w3rd}}</td>
+            <td style="font-family: Arial; background-color: var(--color-dark); font-size: 1.2rem; text-align: right;">{{w3per|floatformat:1}}<br>{{i_w3per|floatformat:1}}<br>{{i2_w3per|floatformat:1}}
+            </td>
+            {% else %}
+            <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{gate}}</td>
+            <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{cnt}}</td>
+            <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{w3rd}}</td>
+            <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{w3per|floatformat:1}}</td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+      
+        </tbody>
+      </table>
+
+    </div>
+
+  </div>
+
+</main>
+{% endblock %}
+
+{% include 'footer.html' %}
+
+</html>

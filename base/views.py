@@ -35,6 +35,7 @@ from base.mysqls import (
     get_disease,
     get_expects,
     get_jockey_trend,
+    get_jockeys_train,
     get_jt_collaboration,
     get_judged,
     get_judged_horse,
@@ -132,7 +133,7 @@ from django.utils import timezone
 def loginPage(request):
     page = "login"
 
-    print(page)
+    # print(page)
 
     if request.user.is_authenticated:
         return redirect("home")
@@ -174,14 +175,14 @@ def registerPage(request):
         else:
             messages.warning(request, form.errors)
 
-        print(form.errors)
-        print(form.non_field_errors())
+        # print(form.errors)
+        # print(form.non_field_errors())
 
         agree1 = request.POST.get("agree1")
         agree2 = request.POST.get("agree2")
         agree3 = request.POST.get("agree3")
 
-        print("aaa", agree1, agree2, agree3)
+        # print("aaa", agree1, agree2, agree3)
 
     return render(request, "base/login_register.html", {"form": form})
 
@@ -338,7 +339,7 @@ def updateUser(request):
     user = request.user
     form = UserForm(instance=user)
 
-    print(user)
+    # print(user)
 
     if request.method == "POST":
         form = UserForm(request.POST, request.FILES, instance=user)
@@ -467,7 +468,7 @@ def home(request):
                     FROM The1.exp010
                     WHERE rdate >= ( SELECT MAX(DATE_FORMAT(CAST(rdate AS DATE) - INTERVAL 4 DAY, '%Y%m%d')) FROM The1.exp010 WHERE rno < 80)
                 ; """
-            
+
             cursor.execute(strSql)
             rdate = cursor.fetchall()
 
@@ -505,7 +506,7 @@ def home(request):
             break
 
     check_visit(request)
-
+    
     context = {
         "racings": racings,
         "expects": expects,
@@ -542,7 +543,8 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
 
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
-    hr_records = recordsByHorse(rcity, rdate, rno)
+    hr_records = recordsByHorse(rcity, rdate, rno, 'None')
+    # print(hr_records)
 
     compare_r = exp011s.aggregate(
         Min("i_s1f"),
@@ -638,6 +640,99 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
     }
 
     return render(request, "base/race_prediction.html", context)
+
+
+# 출주마 경주결과
+def raceResultHorse(request, rcity, rdate, rno, hname):
+
+    hname = (
+        request.GET.get("hname") if request.GET.get("hname") != None else hname.strip()
+    )
+
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+    exp011s = Exp011.objects.filter(
+        rcity=rcity, rdate=rdate, rno=rno, horse=hname
+    ).get()
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """ 
+            select gate, horse
+            from exp011 
+            where rcity = '"""
+            + rcity
+            + """'
+            and rdate = '"""
+            + rdate
+            + """' 
+            and rno = """
+            + str(rno)
+            + """
+            order by rank, gate
+                ; """
+        )
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        h_names = cursor.fetchall()
+
+        # connection.commit()
+        # connection.close()
+
+    except:
+        # connection.rollback()
+        print("Failed selecting in 게이트별 출주마")
+
+    # 경주 메모 Query
+    try:
+        with connection.cursor() as cursor:
+            query = """
+                SELECT replace( replace( horse, '[서]', ''), '[부]', ''), r_etc, r_flag
+                FROM rec011 
+                WHERE rcity = %s
+                AND rdate = %s
+                AND rno = %s;
+            """
+            cursor.execute(query, (rcity, rdate, rno))
+            r_memo = cursor.fetchall()
+
+    except Exception as e:
+        print(f"❌ Failed selecting in 경주 메모: {e}")
+
+    # train = get_train_horse1(rdate, hname)
+    hr_records = recordsByHorse(rcity, rdate, rno, hname)
+
+    check_visit(request)
+
+    # print(hr_records)
+    # print(hname in h_names)
+
+    context = {
+        "r_condition": r_condition,
+        "hr_records": hr_records,
+        "rdate": rdate,
+        "exp011s": exp011s,
+        "hname": hname,
+        "h_names": h_names,
+        "r_memo": r_memo,
+    }
+
+    return render(request, "base/race_result_horse.html", context)
+
+# 축마 선정
+def raceAxis(request, rcity, rdate, rno, rank):
+
+    axis = get_axis(rcity, rdate, rno)
+
+    print(axis)
+    # print(hname in h_names)
+
+    context = {
+        "axis": axis,
+    }
+
+    return render(request, "base/race_axis.html", context)
 
 
 def raceTraining(request, rcity, rdate, rno):
@@ -1264,7 +1359,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     #     rdate__lt=rdate, horse__in=records.values("horse")
     # ).order_by("horse", "-rdate")
 
-    hr_records = recordsByHorse(rcity, rdate, rno)
+    hr_records = recordsByHorse(rcity, rdate, rno, 'None')
 
     compare_r = records.aggregate(
         Min("i_s1f"),
@@ -1567,7 +1662,9 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
     else:
         return render(request, "base/home.html")
 
-    hr_records = recordsByHorse(rcity, rdate, rno)
+    hr_records = recordsByHorse(rcity, rdate, rno, 'None')
+    
+    # print(hr_records)
     compare_r = exp011s.aggregate(
         Min("i_s1f"),
         Min("i_g1f"),
@@ -1599,9 +1696,9 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
     trainer_double_check = get_trainer_double_check(rcity, rdate, rno)
 
     # axis = get_axis(rcity, rdate, rno)
-    axis1 = get_axis_rank(rcity, rdate, rno, 1)
-    axis2 = get_axis_rank(rcity, rdate, rno, 2)
-    axis3 = get_axis_rank(rcity, rdate, rno, 3)
+    # axis1 = get_axis_rank(rcity, rdate, rno, 1)
+    # axis2 = get_axis_rank(rcity, rdate, rno, 2)
+    # axis3 = get_axis_rank(rcity, rdate, rno, 3)
 
     context = {
         "exp011s": exp011s,
@@ -1614,9 +1711,9 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
         #    'swim': swim,
         # "h_audit": h_audit,
         "trainer_double_check": str(trainer_double_check),
-        "axis1": axis1,
-        "axis2": axis2,
-        "axis3": axis3,
+        # "axis1": axis1,
+        # "axis2": axis2,
+        # "axis3": axis3,
         "weight": weight,
         "w_avg": w_avg,
         "w_fast": w_fast,
@@ -1691,9 +1788,9 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
 
     else:
         trend_data, trend_title = get_trainer_trend(rcity, rdate, rno)
-        solidarity = get_solidarity(
-            rcity, rdate, rno, "trainer", i_filter
-        )  # 기수, 조교사, 마주 연대현황 최근1년
+        # solidarity = get_solidarity(
+        #     rcity, rdate, rno, "trainer", i_filter
+        # )  # 기수, 조교사, 마주 연대현황 최근1년
 
     # print(solidarity)
     # print(trend_title)
@@ -2467,6 +2564,19 @@ def jtCollaboration(request, rcity, rdate, rno, jockey, trainer):
     return render(request, "base/jt_collaboration.html", context)
 
 
+# 기수 최근 2주간 훈련현황
+def jockey2weekTrain(request, rcity, rdate, rno):
+
+    j2week = get_jockeys_train(rcity, rdate, rno)
+
+    context = {
+        "j2week": j2week,
+        "rdate": rdate,
+    }
+
+    return render(request, "base/jockey_2week_train.html", context)
+
+
 def awardStatusTrainer(request):
     q = request.GET.get("q") if request.GET.get("q") != None else ""
     jname1 = request.GET.get("j1") if request.GET.get("j1") != None else ""
@@ -3015,9 +3125,9 @@ def writeSignificant(request, rdate, horse):
                     where rdate =  '"""
                 + rdate
                 + """'
-                    and horse like '%"""
+                    and horse = '"""
                 + horse
-                + """%'
+                + """'
                     ; """
             )
 
@@ -3039,9 +3149,9 @@ def writeSignificant(request, rdate, horse):
                         where rdate = '"""
                 + rdate
                 + """'
-                        and horse like '%"""
+                        and horse = '"""
                 + horse
-                + """%'
+                + """'
                         ;"""
             )
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
