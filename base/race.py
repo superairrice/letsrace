@@ -26,7 +26,7 @@ def recordsByHorse(rcity, rdate, rno, hname):
                         b.g2f_rank, b.g1f_rank, b.recent3, b.recent5, b.fast_r, 
                         b.slow_r, b.avg_r, b.convert_r, b.i_cycle, b.gap_b, 
                         b.jockey_old, b.reason, b.r_pop, b.jt_per, b.jt_cnt, 
-                        b.jt_1st, b.jt_2nd, b.jt_3rd, b.h_cnt, b.h_mare
+                        b.jt_1st, b.jt_2nd, b.jt_3rd, b.h_cnt, b.h_mare, if( isnull(i_prehandy), 0, handycap - i_prehandy ) AS prehandy
                     FROM rec010 a
                     JOIN rec011 b ON a.rcity = b.rcity 
                                 AND a.rdate = b.rdate 
@@ -70,7 +70,7 @@ def recordsByHorse(rcity, rdate, rno, hname):
                         b.g2f_rank, b.g1f_rank, b.recent3, b.recent5, b.fast_r, 
                         b.slow_r, b.avg_r, b.convert_r, b.i_cycle, b.gap_b, 
                         b.jockey_old, b.reason, b.r_pop, b.jt_per, b.jt_cnt, 
-                        b.jt_1st, b.jt_2nd, b.jt_3rd, b.h_cnt, b.h_mare
+                        b.jt_1st, b.jt_2nd, b.jt_3rd, b.h_cnt, b.h_mare, if( isnull(i_prehandy), 0, handycap - i_prehandy ) AS prehandy
                     FROM rec010 a
                     JOIN rec011 b ON a.rcity = b.rcity 
                                 AND a.rdate = b.rdate 
@@ -90,3 +90,108 @@ def recordsByHorse(rcity, rdate, rno, hname):
         except Exception as e:
             print(f"❌ Failed executing recordsByHorse: {e}")
             return None
+
+def countOfRace(rcity, rdate, rno):
+    try:
+        cursor = connection.cursor()
+        strSql = """ 
+            
+            SELECT horse, count(*) AS cnt
+            FROM treat
+            WHERE horse IN (
+                SELECT horse
+                FROM exp011
+                WHERE rcity = %s
+                AND rdate = %s
+                AND rno = %s
+            )
+            AND tdate BETWEEN DATE_FORMAT(DATE_ADD(%s, INTERVAL -30 DAY), '%%Y%%m%%d') AND %s
+            AND (disease LIKE '%%피로회복%%' )
+            GROUP BY horse ;
+        """
+        # 안전한 SQL 파라미터 바인딩
+        params = (
+            rcity,
+            rdate,
+            rno,
+            rdate,
+            rdate,
+        )
+
+        cursor.execute(strSql, params)
+        recovery_cnt = cursor.fetchall()
+
+    except:
+        print(f"❌ Failed selecting in horses:")  # 오류 메시지 출력
+    finally:
+        cursor.close()
+
+    # print(recovery_cnt)
+
+    try:
+        cursor = connection.cursor()
+        strSql = """ 
+            
+                    SELECT horse, count(*) AS cnt
+                    FROM start_train
+                    WHERE horse IN (
+                        SELECT horse
+                        FROM exp011
+                        WHERE rcity = %s
+                        AND rdate = %s
+                        AND rno = %s
+                    )
+                    AND tdate BETWEEN DATE_FORMAT(DATE_ADD(%s, INTERVAL -30 DAY), '%%Y%%m%%d') AND %s
+                    GROUP BY horse ;
+        """
+        # 안전한 SQL 파라미터 바인딩
+        params = (
+            rcity,
+            rdate,
+            rno,
+            rdate,
+            rdate,
+        )
+
+        cursor.execute(strSql, params)
+        start_cnt = cursor.fetchall()
+
+    except:
+        print(f"❌ Failed selecting in horses:")  # 오류 메시지 출력
+    finally:
+        cursor.close()
+
+    try:
+        cursor = connection.cursor()
+        strSql = """ 
+            
+                    SELECT horse, count(*) AS cnt
+                    FROM start_audit
+                    WHERE horse IN (
+                        SELECT horse
+                        FROM exp011
+                        WHERE rcity = %s
+                        AND rdate = %s
+                        AND rno = %s
+                    )
+                    AND rdate BETWEEN DATE_FORMAT(DATE_ADD(%s, INTERVAL -30 DAY), '%%Y%%m%%d') AND %s
+                    GROUP BY horse ;
+        """
+        # 안전한 SQL 파라미터 바인딩
+        params = (
+            rcity,
+            rdate,
+            rno,
+            rdate,
+            rdate,
+        )
+
+        cursor.execute(strSql, params)
+        audit_cnt = cursor.fetchall()
+
+    except:
+        print(f"❌ Failed selecting in horses:")  # 오류 메시지 출력
+    finally:
+        cursor.close()
+
+    return recovery_cnt, start_cnt, audit_cnt

@@ -3696,7 +3696,7 @@ def get_prediction(i_rdate):
             and rno < 80
             -- and 1 <> 1
             group by a.rcity, a.jockey
-            order by max(w1st) desc, max(w2nd) desc, max(w3rd) desc, b.year_1st desc
+            order by b.year_1st desc, max(w1st) desc, max(w2nd) desc, max(w3rd) desc
             
             ; """
         )
@@ -4055,7 +4055,7 @@ def get_trainer_double_check(i_rcity, i_rdate, i_rno):
                         from exp011 
                         where rdate = %s and rcity = %s and rno = %s)
                     group by rider 
-                    having count(*) >= 7
+                    having count(*) >= 1
                     ;"""
             )
             r_cnt = cursor.execute(strSql, (i_rdate, i_rdate, i_rdate, i_rcity, i_rno))
@@ -4498,7 +4498,7 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
 
         strSql = (
             """ 
-            select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, CONCAT( RPAD(b.jockey, 5),RPAD( b.trainer, 5), b.host), a.wdate, a.year_per, CONCAT(debut, ' ', age, '_', wcnt) debut, weeks
+            select b.rank, b.gate, b.r_rank, b.r_pop, b.horse, CONCAT( RPAD(b.jockey, 5), RPAD( b.trainer, 5), b.host), a.wdate, a.year_per, CONCAT(debut, ' ', age, '_', wcnt) debut, weeks
             from
             (
                 SELECT wdate, jockey, 
@@ -5115,76 +5115,71 @@ def get_axis(i_rcity, i_rdate, i_rno):
 
 
 # thethe9 rank 기준 축마 가능성 Query
-def get_axis_rank(i_rcity, i_rdate, i_rno, i_rank):
+def get_axis_rank(i_rdate, i_jockey, i_distance, i_s1f):
+    
+    if i_s1f == None:
+        i_s1f = -2
+        
     try:
         cursor = connection.cursor()
 
         strSql = (
             """ 
                     select gate, count(*), 
-					sum( if ( a.r_rank <= 3, 1, 0)), 
-                    sum( if ( a.r_rank <= 3     , 1, 0))/count(*)*100,        
-                    sum( if ( a.alloc1r <= 4.4, 1, 0)),  
-                    sum( if ( a.r_rank <= 3 and a.alloc1r <= 4.4, 1, 0)), 
-                    sum( if ( a.r_rank <= 3 and a.alloc1r <= 4.4, 1, 0)) / sum( if(a.alloc1r <= 4.4, 1, 0))*100,
+					sum( if ( a.rank <= 3, 1, 0)), 
+                    sum( if ( a.rank <= 3     , 1, 0))/count(*)*100,        
+
+                    sum( if ( a.s1f_rank <= 3, 1, 0)),  
+                    sum( if ( a.rank <= 3 and a.s1f_rank <= 3, 1, 0)), 
+                    sum( if ( a.rank <= 3 and a.s1f_rank <= 3, 1, 0)) / sum( if(a.s1f_rank <= 3, 1, 0))*100,
                     
-                    sum( if ( a.jt_per >= a.j_per, 1, 0)),  
-                    sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0)), 
-                    sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0)) / sum( if(a.jt_per >= a.j_per, 1, 0))*100
-                    from expect a
+                    sum( if ( a.s1f_rank >= """ + str(i_s1f - 1) + """ and a.s1f_rank <= """ + str(i_s1f + 1) + """, 1, 0)),  
+                    sum( if ( a.rank <= 3 and a.s1f_rank >= """ + str(i_s1f - 1) + """ and a.s1f_rank <= """ + str(i_s1f + 1) + """, 1, 0)), 
+                    sum( if ( a.rank <= 3 and a.s1f_rank >= """ + str(i_s1f - 1) + """ and a.s1f_rank <= """ + str(i_s1f + 1) + """, 1, 0)) / sum( if(a.s1f_rank >= """ + str(i_s1f - 1) + """ and a.s1f_rank <= """ + str(i_s1f + 1) + """, 1, 0))*100,
+                    
+                    sum( if ( a.distance_w = """ + str(i_distance) + """, 1, 0)),  
+                    sum( if ( a.rank <= 3 and a.distance_w = """ + str(i_distance) + """, 1, 0)), 
+                    sum( if ( a.rank <= 3 and a.distance_w = """ + str(i_distance) + """, 1, 0)) / sum( if(a.distance_w = """ + str(i_distance) + """, 1, 0))*100
+                    
+                    from rec011 a
                     where rdate between date_format(DATE_ADD('"""
             + i_rdate
-            + """', INTERVAL - 365 DAY), '%Y%m%d') and '"""
+            + """', INTERVAL - 999 DAY), '%Y%m%d') and '"""
             + i_rdate
             + """'
-                    and ( rcity, rdate, rno ) not in ( select rcity, rdate, rno from expect where rank = 98  group by rcity, rdate, rno having count(*) >= 2 ) 
-                    and rank <= """
-            + str(i_rank)
-            + """
-                    and jockey = ( select jockey from exp011 where rcity = '"""
-            + i_rcity
-            + """' and rdate = '"""
-            + i_rdate
-            + """' and rno =  """
-            + str(i_rno)
-            + """ and rank = """
-            + str(i_rank)
-            + """ ) 
-
+                    and ( rcity, rdate, rno ) in ( select rcity, rdate, rno from exp011 where rank < 90  group by rcity, rdate, rno having count(*) >= 8 ) 
+                    and jockey = '"""
+            + i_jockey
+            + """'
                     group by gate
-                    
+                
                     union all
                     
                     select 'TOT', count(*), 
-					sum( if ( a.r_rank <= 3, 1, 0)), 
-                    sum( if ( a.r_rank <= 3     , 1, 0))/count(*)*100,        
-                    -- sum( if(a.alloc3r <= 1.9, 1, 0)),  sum( if ( a.r_rank <= 3 and a.alloc3r <= 1.9, 1, 0)), sum( if ( a.r_rank <= 3 and a.alloc3r <= 1.9, 1, 0))/ sum( if(a.alloc3r <= 1.9, 1, 0))*100
-                    sum( if ( a.alloc1r <= 4.4, 1, 0)),  
-                    sum( if ( a.r_rank <= 3 and a.alloc1r <= 4.4, 1, 0)), 
-                    sum( if ( a.r_rank <= 3 and a.alloc1r <= 4.4, 1, 0)) / sum( if(a.alloc1r <= 4.4, 1, 0))*100,
+					sum( if ( a.rank <= 3, 1, 0)), 
+                    sum( if ( a.rank <= 3     , 1, 0))/count(*)*100,        
                     
-                    sum( if ( a.jt_per >= a.j_per, 1, 0)),  
-                    sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0)), 
-                    sum( if ( a.r_rank <= 3 and a.jt_per >= a.j_per, 1, 0)) / sum( if(a.jt_per >= a.j_per, 1, 0))*100
-                    from expect a
+                    sum( if ( a.s1f_rank <= 3, 1, 0)),  
+                    sum( if ( a.rank <= 3 and a.s1f_rank <= 3, 1, 0)), 
+                    sum( if ( a.rank <= 3 and a.s1f_rank <= 3, 1, 0)) / sum( if(a.s1f_rank <= 3, 1, 0))*100,
+                    
+                    sum( if ( a.s1f_rank >= """ + str(i_s1f - 1) + """ and a.s1f_rank <= """ + str(i_s1f + 1) + """, 1, 0)),  
+                    sum( if ( a.rank <= 3 and a.s1f_rank >= """ + str(i_s1f - 1) + """ and a.s1f_rank <= """ + str(i_s1f + 1) + """, 1, 0)), 
+                    sum( if ( a.rank <= 3 and a.s1f_rank >= """ + str(i_s1f - 1) + """ and a.s1f_rank <= """ + str(i_s1f + 1) + """, 1, 0)) / sum( if(a.s1f_rank >= """ + str(i_s1f - 1) + """ and a.s1f_rank <= """ + str(i_s1f + 1) + """, 1, 0))*100,
+                    
+                    sum( if ( a.distance_w = """ + str(i_distance) + """, 1, 0)),  
+                    sum( if ( a.rank <= 3 and a.distance_w = """ + str(i_distance) + """, 1, 0)), 
+                    sum( if ( a.rank <= 3 and a.distance_w = """ + str(i_distance) + """, 1, 0)) / sum( if(a.distance_w = """ + str(i_distance) + """, 1, 0))*100
+                    from rec011 a
                     where rdate between date_format(DATE_ADD('"""
             + i_rdate
-            + """', INTERVAL - 365 DAY), '%Y%m%d') and '"""
+            + """', INTERVAL - 999 DAY), '%Y%m%d') and '"""
             + i_rdate
             + """'
-                    and ( rcity, rdate, rno ) not in ( select rcity, rdate, rno from expect where rank = 98  group by rcity, rdate, rno having count(*) >= 2 ) 
-                    and rank <= """
-            + str(i_rank)
-            + """
-                    and jockey = ( select jockey from exp011 where rcity = '"""
-            + i_rcity
-            + """' and rdate = '"""
-            + i_rdate
-            + """' and rno =  """
-            + str(i_rno)
-            + """ and rank = """
-            + str(i_rank)
-            + """) 
+                    and ( rcity, rdate, rno ) in ( select rcity, rdate, rno from exp011 where rank < 90  group by rcity, rdate, rno having count(*) >= 8 ) 
+                    and jockey = '"""
+            + i_jockey
+            + """'
                 ; """
         )
 

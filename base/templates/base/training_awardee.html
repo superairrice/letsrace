@@ -152,32 +152,16 @@
           </td>
 
           {# gate(마번) 레이팅 #}
-          <td align="center" style="font-size: 1.4rem; border-radius: 10px;">
-            {% if r_rank == 99 %}
+          <td align="center" style="font-size: 1.3rem; border-radius: 10px;">
+            {% if r_rank >= 90 %}
             <span style="text-decoration:line-through; color:gray;">{{gate}}</span>
             {% else %}
-              {% if r_rank == 1 %}
-              <span style="font-family: Arial, Helvetica, sans-serif; border:0.5px solid var(--color-bg); border-radius: 50%; padding: 2px 4px; font-weight: bold; background-color: white; color:var(--color-r1);">
-                {{gate}}
-              </span>
-              {% elif r_rank == 2 %}
-              <span style="font-family: Arial, Helvetica, sans-serif; border:0.5px solid var(--color-bg); border-radius: 50%; padding: 2px 4px; font-weight: bold; background-color: white; color:var(--color-r2);">
-                {{gate}}
-              </span>
-              {% elif r_rank == 3 %}
-              <span style="font-family: Arial, Helvetica, sans-serif; border:0.5px solid var(--color-bg); border-radius: 50%; padding: 2px 4px; font-weight: bold; background-color: white; color:var(--color-r3);">
-                {{gate}}
-              </span>
-              {% elif r_rank == 4 %}
-              <span style="font-family: Arial, Helvetica, sans-serif; border:0.5px solid var(--color-bg); border-radius: 50%; padding: 2px 4px; font-weight: bold; background-color: white; color:var(--color-r4);">
-                {{gate}}
-              </span>
-              {% elif r_rank == 5 %}
-              <span style="font-family: Arial, Helvetica, sans-serif; border:0.5px solid var(--color-bg); border-radius: 50%; padding: 2px 4px; font-weight: bold; background-color: white; color:var(--color-r5);">
+              {% if gate < 10 %}
+              <span style="font-family: Arial, Helvetica, sans-serif; border:1px solid var(--color-bg); border-radius: 50%; padding: 2px 5px; font-weight: bold; color:var(--color-bg);">
                 {{gate}}
               </span>
               {% else %}
-              <span style="font-family: Arial, Helvetica, sans-serif; border:0.5px solid var(--color-bg); border-radius: 50%; padding: 2px 4px; font-weight: bold; background-color: white;">{{gate}}</span>
+              <span style="font-family: Arial, Helvetica, sans-serif; border:1px solid var(--color-bg); border-radius: 50%; padding: 2px 3px; font-weight: bold; color:var(--color-bg);">{{gate}}</span>
               {% endif %}
             {% endif %}
             
@@ -190,7 +174,7 @@
           {# 인기순위 / 프로그램 예상순위 #}
           <td align="center" style="font-size: 1.2rem;">
 
-            <div style="text-align: left; font-weight: bold;">
+            <div style="text-align: left;">
               {% if rank == 1 %}
               <span style="font-size: 1.1rem; padding: 2px 4px; font-family: Arial; border-radius: 50%; background-color:var(--color-r1); color:var(--color-light);">
                 {{rank}}
@@ -337,7 +321,7 @@
           {# 마체중 #}
           <td style="font-size: 1.2rem;">
             {% if h_weight %}
-            <div style="text-align:right; font-family: Arial; text-align: left; color:var(--color-bg); font-weight: bold;">{{h_weight|slice:"0:3"}}</div>
+            <div style="text-align:right; font-family: Arial; text-align: left; color:var(--color-bg);">{{h_weight|slice:"0:3"}}</div>
             <div style="text-align:right; font-family: Arial; font-size: 1.1rem;">
               {% if h_weight|slice:"4:5" == '-' %}
               <span style="font-family: Arial; font-style: italic; color:var(--color-r1); padding:2px 4px; border-radius: 15px; background-color:var(--color-main-light); ">{{h_weight|slice:"4:"}}</span>
@@ -362,7 +346,7 @@
                   </span>
                   
                 {% else %}
-                  <span style="color:var(--color-bg); border-bottom: 1px solid gray;">{{jockey}}</span>
+                  <span style="color:var(--color-r5); border-bottom: 1px solid var(--color-r5);">{{jockey}}</span>
                 {% endif %}
               </a>
                 
@@ -372,7 +356,7 @@
             <div style="font-size: 1.2rem; text-align: left;"> 
               <a href="{% url 'training_awardee' rdate 'trainer' trainer horse %}" onclick="window.open(this.href, 'w_training_awardee', 'width=900, height=800, toolbars=no, scrollbars=yes'); return false;">
                 {% if awardee == 'jockey' %}
-                <span style="font-size: 1.15rem; border-bottom: 1px solid gray; color:var(--color-bg);">{{trainer}}</span>
+                <span style="font-size: 1.15rem; border-bottom: 1px solid var(--color-r5); color:var(--color-r5);">{{trainer}}</span>
                 {% endif %}
               </a>
             </div>
@@ -410,9 +394,9 @@
                   {% elif jt_per >= 40 and jt_per < 50 %} 
                   <span style="font-family: Arial; border-bottom: 1px solid gray; color:var(--color-r2);">{{jt_per|floatformat:1}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                   {% elif jt_per >= 30 and jt_per < 40 %} 
-                  <span style="font-family: Arial; border-bottom: 1px solid gray; color:var(--color-r3);">{{jt_per|floatformat:1}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                  <span style="font-family: Arial; border-bottom: 1px solid gray; color:var(--color-r5);">{{jt_per|floatformat:1}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                   {% elif jt_per >= 20 and jt_per < 30 %} 
-                  <span style="font-family: Arial; border-bottom: 1px solid gray; color:var(--color-r4);">{{jt_per|floatformat:1}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                  <span style="font-family: Arial; border-bottom: 1px solid gray; color:var(--color-r5);">{{jt_per|floatformat:1}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                   {% elif jt_per >= 10 and jt_per < 20 %} 
                   <span style="font-family: Arial; border-bottom: 1px solid gray; color:var(--color-r5);">{{jt_per|floatformat:1}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                   {% else %}

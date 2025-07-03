@@ -90,7 +90,7 @@ from base.mysqls import (
     trend_title,
 )
 from base.simulation import mock_insert, mock_traval, get_weight
-from base.templatetags.race import recordsByHorse
+from base.race import countOfRace, recordsByHorse
 from letsrace.settings import KRAFILE_ROOT
 
 # import base.mysqls
@@ -575,6 +575,7 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
     disease = get_disease(rcity, rdate, rno)
 
     trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
+    judged_list, judged = get_judged(rcity, rdate, rno)
 
     # # # axis = get_axis(rcity, rdate, rno)
     # axis1 = get_axis_rank(rcity, rdate, rno, 1)
@@ -617,6 +618,8 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
     except Exception as e:
         print(f"❌ Failed selecting in exp010 : 주별 경주현황 - {e}")
 
+    recovery_cnt, start_cnt, audit_cnt = countOfRace(rcity, rdate, rno)
+
     check_visit(request)
 
     context = {
@@ -627,8 +630,8 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         "hr_records": hr_records,
         "compare_r": compare_r,
         "alloc": alloc,
-        # "paternal": paternal,
-        # "paternal_dist": paternal_dist,
+        "judged_list": judged_list,
+        "judged": " ".join(str(item) for sublist in judged for item in sublist),
         "trainer_double_check": str(trainer_double_check),
         "training_cnt": training_cnt,
         # "axis1": axis1,
@@ -637,9 +640,103 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         "r_memo": r_memo,
         "track": track,
         "weeksrace": weeksrace,
+        "recovery_cnt": recovery_cnt,
+        "start_cnt": start_cnt,
+        "audit_cnt": audit_cnt,
     }
 
     return render(request, "base/race_prediction.html", context)
+
+
+def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
+    records = RecordS.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
+        "rank", "gate"
+    )
+    if not records:
+        return render(request, "base/home.html")
+
+    # r_condition = Rec010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+    r_condition = Rec010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).first()
+
+    # rdate_1year = (
+    #     str(int(rdate[0:4]) - 1) + rdate[4:8]
+    # )  # 최근 1년 경주성적 조회조건 추가
+
+    # hr_records = RecordS.objects.filter(
+    #     rdate__lt=rdate, horse__in=records.values("horse")
+    # ).order_by("horse", "-rdate")
+
+    hr_records = recordsByHorse(rcity, rdate, rno, "None")
+
+    compare_r = records.aggregate(
+        Min("i_s1f"),
+        Min("i_g1f"),
+        Min("i_g2f"),
+        Min("i_g3f"),
+        Min("s1f_rank"),
+        Min("recent3"),
+        Min("recent5"),
+        Min("convert_r"),
+        Min("p_record"),
+        Max("handycap"),
+        Max("rating"),
+    )
+
+    judged_list, judged = get_judged(rcity, rdate, rno)
+    track = get_track_record(rcity, rdate, rno)  # 경주 등급 평균
+
+    trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
+
+    disease = get_disease(rcity, rdate, rno)
+
+    # if len(judged) > 0:
+    #     judged = judged[0][0]
+
+    horses = Exp011.objects.values("horse").filter(rcity=rcity1, rdate=rdate1, rno=rno1)
+
+    try:
+        alloc = Rec010.objects.get(rcity=rcity, rdate=rdate, rno=rno)
+    except Rec010.DoesNotExist:
+        alloc = None
+
+    try:
+        with connection.cursor() as cursor:
+            query = """
+                SELECT rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime
+                FROM exp010 
+                WHERE rdate = %s
+                ORDER BY rtime;
+            """
+            cursor.execute(query, (rdate,))
+            weeksrace = cursor.fetchall()
+
+    except Exception as e:
+        print(f"❌ Failed selecting in exp010 : 주별 경주현황 - {e}")
+
+    recovery_cnt, start_cnt, audit_cnt = countOfRace(rcity, rdate, rno)
+    check_visit(request)
+
+    context = {
+        "records": records,
+        "r_condition": r_condition,
+        "hr_records": hr_records,
+        "compare_r": compare_r,
+        "hname": hname,
+        "judged_list": judged_list,
+        "judged": " ".join(str(item) for sublist in judged for item in sublist),
+        "horses": horses,
+        "alloc": alloc,
+        "weeksrace": weeksrace,
+        "track": track,
+        "trainer_double_check": str(trainer_double_check),
+        "training_cnt": training_cnt,
+        "disease": disease,
+        "recovery_cnt": recovery_cnt,
+        "start_cnt": start_cnt,
+        "audit_cnt": audit_cnt,
+    }
+
+    return render(request, "base/race_result.html", context)
 
 
 # 출주마 경주결과
@@ -721,15 +818,26 @@ def raceResultHorse(request, rcity, rdate, rno, hname):
     return render(request, "base/race_result_horse.html", context)
 
 # 축마 선정
-def raceAxis(request, rcity, rdate, rno, rank):
+def raceAxis(request, rcity, rdate, rno, jockey):
 
-    axis = get_axis(rcity, rdate, rno)
+    exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno, jockey=jockey).get()
+    if exp011s:
+        pass
+    else:
+        return render(request, "base/home.html")
 
-    print(axis)
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+
+    # axis = get_axis(rcity, rdate, rno)
+    axis = get_axis_rank(rdate, jockey, r_condition.distance, exp011s.s1f_rank)
+
+    # print(axis)
     # print(hname in h_names)
 
     context = {
         "axis": axis,
+        "exp011s": exp011s,
+        "r_condition": r_condition,
     }
 
     return render(request, "base/race_axis.html", context)
@@ -860,6 +968,10 @@ def raceRelatedInfo(request, rcity, rdate, rno):
     finally:
         cursor.close()
 
+    recovery_cnt, start_cnt, audit_cnt = countOfRace(rcity, rdate, rno)
+
+    # print(start_cnt)
+
     context = {
         "r_condition": r_condition,  # 기수 기승가능 부딤중량
         "train": train,  # 기수 기승가능 부딤중량
@@ -870,8 +982,9 @@ def raceRelatedInfo(request, rcity, rdate, rno):
         "treat": treat,  # 기수 기승가능 부딤중량
         "judged_horse": judged_horse,  # 기수 기승가능 부딤중량
         "judged_jockey": judged_jockey,
-        # "award_j": award_j,
-        # "award_t": award_t,
+        "start_cnt": start_cnt,
+        "recovery_cnt": recovery_cnt,
+        "audit_cnt": audit_cnt,
         # "award_h": award_h,
         # "race_detail": race_detail,
         "paternal": paternal,  
@@ -1339,93 +1452,6 @@ def updateChangedRace(request, rcity, rdate, rno):
 
     context = {"rcity": rcity, "exp011s": exp011s, "fdata": fdata}
     return render(request, "base/update_changed_race.html", context)
-
-
-def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
-    records = RecordS.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
-        "rank", "gate"
-    )
-    if not records:
-        return render(request, "base/home.html")
-
-    # r_condition = Rec010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
-    r_condition = Rec010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).first()
-
-    # rdate_1year = (
-    #     str(int(rdate[0:4]) - 1) + rdate[4:8]
-    # )  # 최근 1년 경주성적 조회조건 추가
-
-    # hr_records = RecordS.objects.filter(
-    #     rdate__lt=rdate, horse__in=records.values("horse")
-    # ).order_by("horse", "-rdate")
-
-    hr_records = recordsByHorse(rcity, rdate, rno, 'None')
-
-    compare_r = records.aggregate(
-        Min("i_s1f"),
-        Min("i_g1f"),
-        Min("i_g2f"),
-        Min("i_g3f"),
-        Min("s1f_rank"),
-        Min("recent3"),
-        Min("recent5"),
-        Min("convert_r"),
-        Min("p_record"),
-        Max("handycap"),
-        Max("rating"),
-    )
-
-    judged_list, judged = get_judged(rcity, rdate, rno)
-    track = get_track_record(rcity, rdate, rno)  # 경주 등급 평균
-
-    trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
-
-    disease = get_disease(rcity, rdate, rno)
-
-    # if len(judged) > 0:
-    #     judged = judged[0][0]
-
-    horses = Exp011.objects.values("horse").filter(rcity=rcity1, rdate=rdate1, rno=rno1)
-
-    try:
-        alloc = Rec010.objects.get(rcity=rcity, rdate=rdate, rno=rno)
-    except Rec010.DoesNotExist:
-        alloc = None
-
-    try:
-        with connection.cursor() as cursor:
-            query = """
-                SELECT rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime
-                FROM exp010 
-                WHERE rdate = %s
-                ORDER BY rtime;
-            """
-            cursor.execute(query, (rdate,))
-            weeksrace = cursor.fetchall()
-
-    except Exception as e:
-        print(f"❌ Failed selecting in exp010 : 주별 경주현황 - {e}")
-
-    check_visit(request)
-
-    context = {
-        "records": records,
-        "r_condition": r_condition,
-        "hr_records": hr_records,
-        "compare_r": compare_r,
-        "hname": hname,
-        "judged_list": judged_list,
-        "judged": " ".join(str(item) for sublist in judged for item in sublist),
-        "horses": horses,
-        "alloc": alloc,
-        "weeksrace": weeksrace,
-        "track": track,
-        "trainer_double_check": str(trainer_double_check),
-        "training_cnt": training_cnt,
-        "disease": disease,
-    }
-
-    return render(request, "base/race_result.html", context)
 
 
 # def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):

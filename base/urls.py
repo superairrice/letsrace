@@ -85,7 +85,7 @@ urlpatterns = [
     #     name="prediction_list",
     # ),  # 로그인 전
     path(
-        "race_axis/<str:rcity>/<str:rdate>/<int:rno>/<int:rank>",
+        "race_axis/<str:rcity>/<str:rdate>/<int:rno>/<str:jockey>",
         views.raceAxis,
         name="race_axis",
     ),

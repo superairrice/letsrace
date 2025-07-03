@@ -424,7 +424,7 @@ class RecordS(models.Model):
     h_sex = models.CharField(
         max_length=2, db_collation="euckr_korean_ci", blank=True, null=True
     )
-    h_age = models.IntegerField(blank=True, null=True)
+    h_age = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
     handycap = models.DecimalField(
         max_digits=4, decimal_places=1, blank=True, null=True
     )
@@ -587,7 +587,7 @@ class RecordS(models.Model):
         max_length=45, db_collation="euckr_korean_ci", blank=True, null=True
     )
     r_pop = models.IntegerField(blank=True, null=True)
-    
+
     jt_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
     jt_cnt = models.IntegerField(blank=True, null=True)
     jt_1st = models.IntegerField(blank=True, null=True)
@@ -595,6 +595,9 @@ class RecordS(models.Model):
     jt_3rd = models.IntegerField(blank=True, null=True)
     h_cnt = models.IntegerField(blank=True, null=True)
     h_mare = models.IntegerField(blank=True, null=True)
+    i_prehandy = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
 
     # flag = models.CharField(max_length=1, blank=True, null=True)
 
