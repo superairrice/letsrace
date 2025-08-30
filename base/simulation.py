@@ -734,7 +734,7 @@ def set_rank(rcity, rdate, rno):
             WHERE rcity = '"""
             + rcity
             + """'
-              AND rdate = '"""
+            AND rdate = '"""
             + rdate
             + """'
             AND rno  = """
@@ -899,7 +899,7 @@ def set_rank(rcity, rdate, rno):
             ; """
         )
 
-        print(strSql)
+        # print(strSql)
 
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()

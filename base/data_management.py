@@ -7,21 +7,59 @@ def get_krafile(rcity, rdate1, rdate2, fcode, fstatus):
     try:
         cursor = connection.cursor()
 
-        strSql = """ 
-              SELECT a.fname,   
-                      @row:=@row+1 as No,
-                  " " as rcheck,
-                      a.fpath,
-                      a.rdate,   
-                      a.fcode,   
-                      a.fstatus,   
-                      a.in_date  
-              FROM krafile a,(select @row :=0 from dual) b
-              WHERE Left( Right( fname , 6), 2) like '""" + rcity + """%'
-              AND rdate between '""" + rdate1 + """' and '""" + rdate2 + """'
-              AND fcode like  '""" + fcode + """%'
-              AND fstatus like  '""" + fstatus + """%'
+        strSql = (
+            """ 
+            SELECT a.fname,   
+                    @row:=@row+1 as No,
+                " " as rcheck,
+                    a.fpath,
+                    a.rdate,   
+                    a.fcode,   
+                    a.fstatus,   
+                    a.in_date  
+            FROM krafile a,(select @row :=0 from dual) b
+            WHERE Left( Right( fname , 6), 2) like '"""
+            + rcity
+            + """%'
+            AND rdate between '"""
+            + rdate1
+            + """' and '"""
+            + rdate2
+            + """'
+            AND fcode like  '"""
+            + fcode
+            + """%'
+            AND fstatus like  '"""
+            + fstatus
+            + """%'
+            
+            union all
+            
+            SELECT a.fname,   
+                    @row:=@row+1 as No,
+                " " as rcheck,
+                "DB" as fpath,
+                    a.rdate,   
+                    a.fcode,   
+                    a.fstatus,   
+                    a.in_date  
+            FROM kradata a,(select @row :=0 from dual) b
+            WHERE Left( Right( fname , 6), 2) like '"""
+            + rcity
+            + """%'
+            AND rdate between '"""
+            + rdate1
+            + """' and '"""
+            + rdate2
+            + """'
+            AND fcode like  '"""
+            + fcode
+            + """%'
+            AND fstatus like  '"""
+            + fstatus
+            + """%'
             ; """
+        )
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
         result = cursor.fetchall()
@@ -35,6 +73,9 @@ def get_krafile(rcity, rdate1, rdate2, fcode, fstatus):
     except:
         # connection.rollback()
         print("Failed selecting in krafile")
+    finally:
+        if cursor:
+            cursor.close()
 
     return result
 
@@ -45,18 +86,19 @@ def get_kradata(rcity, rdate1, rdate2, fcode, fstatus):
         cursor = connection.cursor()
 
         strSql = """ 
-              SELECT a.fname,   
-                      @row:=@row+1 as No,
-                  " " as rcheck,
-                      a.rdate,   
-                      a.fcode,   
-                      a.fstatus,   
-                      a.in_date  
-              FROM kradata a,(select @row :=0 from dual) b
-              WHERE Left( Right( fname , 6), 2) like '""" + rcity + """%'
-              AND rdate between '""" + rdate1 + """' and '""" + rdate2 + """'
-              AND fcode like  '""" + fcode + """%'
-              AND fstatus like  '""" + fstatus + """%'
+            SELECT a.fname,   
+                    @row:=@row+1 as No,
+                " " as rcheck,
+                "" as fpath,
+                    a.rdate,   
+                    a.fcode,   
+                    a.fstatus,   
+                    a.in_date  
+            FROM kradata a,(select @row :=0 from dual) b
+            WHERE Left( Right( fname , 6), 2) like '""" + rcity + """%'
+            AND rdate between '""" + rdate1 + """' and '""" + rdate2 + """'
+            AND fcode like  '""" + fcode + """%'
+            AND fstatus like  '""" + fstatus + """%'
             ; """
 
         r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
@@ -71,6 +113,9 @@ def get_kradata(rcity, rdate1, rdate2, fcode, fstatus):
     except:
         # connection.rollback()
         print("Failed selecting in krafile")
+    finally:
+        if cursor:
+            cursor.close()
 
     return result
 
@@ -254,4 +299,3 @@ def convert_c1(fname):
     #     for cell in row_rng:  # 각 행에 대한 1차원 배열 for문
     #         print(cell.value)
     return (cnt)
-

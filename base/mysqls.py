@@ -5207,8 +5207,8 @@ def set_changed_race(i_rcity, i_rdate, i_rno, r_content):
     lines = r_content.split("\n")
 
     for index, line in enumerate(lines):
+
         items = line.split("\t")
-        # print(index, items[0], len(items))
 
         if len(items) == 8:  # 말취소 아이템수 == 8
             if items[0] == "서울" or items[0] == "부경":
@@ -5246,17 +5246,14 @@ def set_changed_race(i_rcity, i_rdate, i_rno, r_content):
                     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                     awards = cursor.fetchall()
 
-                    # connection.commit()
-                    # connection.close()
-
-                    # return render(request, 'base/update_popularity.html', context)
-                    # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
-
                 except:
                     # connection.rollback()
                     print("Failed updating in exp011 : 경주마 취소")
+                finally:
+                    cursor.close()
 
         elif len(items) == 9:  # 기수변경 아이템수 == 9
+
             if items[0] == "서울" or items[0] == "부경":
                 # print(index, items)
 
@@ -5310,15 +5307,11 @@ def set_changed_race(i_rcity, i_rdate, i_rno, r_content):
                     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                     awards = cursor.fetchall()
 
-                    # connection.commit()
-                    # connection.close()
-
-                    # return render(request, 'base/update_popularity.html', context)
-                    # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
-
                 except:
                     # connection.rollback()
                     print("Failed updating in exp011 : 기수변경")
+                finally:
+                    cursor.close()
 
     return len(lines)
 
@@ -5467,13 +5460,14 @@ def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
     for index, line in enumerate(lines):
         items = line.split("\t")
 
-        # print(index, items, len(items))
+        # print(index, items[0][0:3]) 
 
-        if items[0] and index == 0:
+        if items[0] and items[0][0:3] == "202":
             rdate = items[0][0:4] + items[0][5:7] + items[0][8:10]
+            # print(rdate)
         elif items[0] and len(items) == 10:
             horse = items[1]
-            if horse[0:1] == "[":
+            if horse[0:1] == "[": 
                 horse = horse[3:]
 
             if int(items[3]) >= 0:
@@ -5489,7 +5483,7 @@ def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
                     cursor = connection.cursor()
 
                     strSql = (
-                        """ 
+                        """
                                 update exp011
                                 set h_weight = '"""
                         + weight
@@ -5506,23 +5500,17 @@ def set_changed_race_weight(i_rcity, i_rdate, i_rno, r_content):
                     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                     awards = cursor.fetchall()
 
-                    # connection.commit()
-                    # connection.close()
-
-                    # return render(request, 'base/update_popularity.html', context)
-                    # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
-
                 except:
                     # connection.rollback()
                     print("Failed updating in exp011 : 경주마 체중")
+                finally:
+                    cursor.close()
 
     return len(lines)
 
 
 # 경주 변경 내용 update - 경주순위
-
-
-def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
+def set_changed_race_rank_20250814(i_rcity, i_rdate, i_rno, r_content):
     lines = r_content.split("\n")
 
     for index, line in enumerate(lines):
@@ -5717,6 +5705,308 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
 
     return len(lines)
 
+# 경주 변경 내용 update - 경주순위
+def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
+    lines = r_content.split("\n")
+
+    for index, line in enumerate(lines):
+        items = line.split("\t")
+
+        # print(index, items, len(items))
+        if index >= 34:  # 34번째 줄부터 경주순위 정보 시작
+
+            if items[0] and index >= 34 and items[0][0:2] == '20' and items[0][0:4] != '200M': # 200M 경주 제외
+                rdate = items[0][0:4] + items[0][6:8] + items[0][10:12]
+                rno = items[0][19:21]
+                if rno[1:2] == "경":
+                    rno = rno[0:1]
+                    rcity = items[0][23:25]
+                else:
+                    rcity = items[0][24:26]
+
+                if rcity == "부경":
+                    rcity = "부산"
+
+                # print(index, items, len(items), items[0][0:4])
+
+            elif items[0] != "순위" and len(items) == 16:
+                r_rank = items[0]
+                horse = items[2]
+                if horse[0:1] == "[":
+                    horse = horse[3:]
+
+                if items[12][3:].replace('(', '').replace(')', '')[0:1] == '-' :
+                    h_weight = items[12][0:3] + " " + items[12][3:].replace('(', '').replace(')', '')
+                else:
+                    h_weight = items[12][0:3] + " +" + items[12][3:].replace('(', '').replace(')', '')                
+
+                # print(h_weight)
+                alloc1r = items[13]
+                alloc3r = items[14]
+
+                # print(index, items, len(items), items[0][0:4])
+
+                # print(horse,  alloc1r, alloc3r)
+
+                try:
+                    cursor = connection.cursor()
+
+                    strSql = (
+                        """ update exp011
+                            set r_rank = """
+                        + r_rank
+                        + """,
+                                h_weight = '"""
+                        + h_weight
+                        + """',
+                                alloc1r = '"""
+                        + alloc1r
+                        + """',
+                                alloc3r = '"""
+                        + alloc3r
+                        + """'
+                            where rdate = '"""
+                        + rdate
+                        + """' and horse = '"""
+                        + horse
+                        + """'
+                    ; """
+                    )
+
+                    r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+                    awards = cursor.fetchall()
+
+                except:
+                    # connection.rollback()
+                    print("Failed updating in exp011 : 경주마 순위")
+                finally:
+                    cursor.close()
+
+            elif len(items) == 13:  # 서울 경주기록
+                gate = items[1]
+                corners = items[2]
+                s1f = items[3][2:]
+                g3f = items[10][2:]
+                g1f = items[11][2:]
+                record = items[12][0:6]
+
+                # print(index, items, len(items), items[0][0:4])
+
+                try:
+                    cursor = connection.cursor()
+
+                    strSql = (
+                        """ update exp011
+                            set corners = '"""
+                        + corners
+                        + """',
+                            r_record = '"""
+                        + record
+                        + """',
+                            r_s1f = '"""
+                        + s1f
+                        + """',
+                            r_g3f = '"""
+                        + g3f
+                        + """',
+                            r_g1f = '"""
+                        + g1f
+                        + """'
+                            where rcity = '"""
+                        + rcity
+                        + """'
+                        and rdate = '"""
+                        + rdate
+                        + """'
+                        and rno = """
+                        + rno
+                        + """
+                        and gate = """
+                        + gate
+                        + """
+                    ; """
+                    )
+
+                    # print(strSql)
+                    r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+                    awards = cursor.fetchall()
+
+                except:
+                    # connection.rollback()
+                    print("Failed updating in exp011 : 경주마 순위")
+                finally:
+                    cursor.close()
+
+            elif len(items) == 12:  # 부산 경주기록
+                gate = items[1]
+                corners = items[2]
+                s1f = items[3][2:]
+                g3f = items[9][2:]
+                g1f = items[10][2:]
+                record = items[11][0:6]
+
+                # print(index, items, len(items), items[0][0:4])
+
+                try:
+                    cursor = connection.cursor()
+
+                    strSql = (
+                        """ update exp011
+                            set corners = '"""
+                        + corners
+                        + """',
+                            r_record = '"""
+                        + record
+                        + """',
+                            r_s1f = '"""
+                        + s1f
+                        + """',
+                            r_g3f = '"""
+                        + g3f
+                        + """',
+                            r_g1f = '"""
+                        + g1f
+                        + """'
+                            where rcity = '"""
+                        + rcity
+                        + """'
+                        and rdate = '"""
+                        + rdate
+                        + """'
+                        and rno = """
+                        + rno
+                        + """
+                        and gate = """
+                        + gate
+                        + """
+                    ; """
+                    )
+
+                    # print(strSql)
+                    r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+                    awards = cursor.fetchall()
+
+                except:
+                    # connection.rollback()
+                    print("Failed updating in exp011 : 경주마 순위")
+                finally:
+                    cursor.close()
+
+            elif items[0][0:3] == '복승식' and items[0][-2:] != '00':
+                # print(index, items, items[0][5:])
+                # 배당율 정보는 무시
+                try:
+                    cursor = connection.cursor()
+
+                    strSql = (
+                        """ update rec010
+                            set r2alloc = '"""
+                        + items[0][5:]
+                        + """'
+                            where rcity = '"""
+                        + rcity
+                        + """'
+                        and rdate = '"""
+                        + rdate
+                        + """'
+                        and rno = """
+                        + rno
+                        + """
+                        
+                    ; """
+                    )
+
+                    # print(strSql)
+                    r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+                    awards = cursor.fetchall()
+
+                except:
+                    # connection.rollback()
+                    print("Failed updating in rec010 : 복승식 배당율")
+                finally:
+                    cursor.close()
+
+            elif items[0][0:3] == "복연승" and items[0][-2:] != "00":
+                # print(index, items, items[1][6:])
+                try:
+                    cursor = connection.cursor()
+
+                    strSql = (
+                        """ update rec010
+                            set r333alloc = '"""
+                        + items[1][6:]
+                        + """'
+                            where rcity = '"""
+                        + rcity
+                        + """'
+                        and rdate = '"""
+                        + rdate
+                        + """'
+                        and rno = """
+                        + rno
+                        + """
+                        
+                    ; """
+                    )
+
+                    # print(strSql)
+                    r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+                    awards = cursor.fetchall()
+
+                    # connection.commit()
+                    # connection.close()
+
+                    # return render(request, 'base/update_popularity.html', context)
+                    # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+
+                except:
+                    # connection.rollback()
+                    print("Failed updating in rec010 : 복승식 배당율")
+                finally:
+                    cursor.close()
+
+            elif items[0][0:3] == "삼쌍승" and items[0][-2:] != "00":
+                # print(index, items, items[0][6:])
+                try:
+                    cursor = connection.cursor()
+
+                    strSql = (
+                        """ update rec010
+                            set r123alloc = '"""
+                        + items[0][6:]
+                        + """'
+                            where rcity = '"""
+                        + rcity
+                        + """'
+                        and rdate = '"""
+                        + rdate
+                        + """'
+                        and rno = """
+                        + rno
+                        + """
+                        
+                    ; """
+                    )
+
+                    # print(strSql)
+                    r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+                    awards = cursor.fetchall()
+
+                    # connection.commit()
+                    # connection.close()
+
+                    # return render(request, 'base/update_popularity.html', context)
+                    # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+
+                except:
+                    # connection.rollback()
+                    print("Failed updating in rec010 : 복승식 배당율")
+                finally:
+                    cursor.close()
+
+    # print(lines)
+    return len(lines)
+
 
 # 수영조교 데이터 입력
 
@@ -5729,12 +6019,12 @@ def insert_train_swim(r_content):
     for index, line in enumerate(lines):
         items = line.split("\t")
 
-        # print(index, items)
+        # print(index, items, len(items))
 
-        if items[0] and index == 0:
-            tdate = items[0][0:4] + items[0][5:7] + items[0][8:10]
-            print(tdate)
-        elif items[0] and index >= 2:  # 제목(title) 라인 스킵
+        if items[0] == '조교일자':
+            tdate = items[1][0:4] + items[1][5:7] + items[1][8:10] 
+            # print(tdate)
+        elif len(items) == 5 and items[0][0:1] != '순':  # 제목(title) 라인 스킵
             team = items[1][0:2]
             trainer = items[1][3:-1]
 
@@ -5745,43 +6035,33 @@ def insert_train_swim(r_content):
 
             horse = items[3]
             laps = items[4][0:1]
-            print(trainer, horse, laps)
 
-            # print(tdate, horse, team)
+            # print(tdate, trainer, horse, laps)
 
             try:
                 cursor = connection.cursor()
 
                 strSql = (
                     """ insert swim 
-                                ( horse, tdate, team, trainer, laps ) 
-                                values ( '"""
-                    + horse
-                    + """', '"""
-                    + tdate
-                    + """', '"""
-                    + team
-                    + """', '"""
-                    + trainer
-                    + """', """
-                    + laps
-                    + """ )
-                      ; """
+                        ( horse, tdate, team, trainer, laps ) 
+                    VALUES
+                        (%s, %s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE
+                        team    = VALUES(team),
+                        trainer = VALUES(trainer),
+                        laps    = VALUES(laps) ;
+                    ; """
                 )
 
-                # print(strSql)
-                r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-                awards = cursor.fetchall()
+                values = (horse, tdate, team, trainer, laps)
+                cursor.execute(strSql, values)
+                connection.commit()   # 👈 INSERT/UPDATE 후 반드시 commit
 
-                # connection.commit()
-                # connection.close()
-
-                # return render(request, 'base/update_popularity.html', context)
-                # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
-
-            except:
-                # connection.rollback()
-                print("Failed inserting in swim : 수영조교")
+            except Exception as e:
+                connection.rollback()
+                print("Failed inserting in swim : 수영조교", e)
+            finally:
+                cursor.close()
 
     return len(lines)
 
@@ -6281,14 +6561,11 @@ def insert_race_judged_sql(rcity, rdate, rno, judged, judged_add, committee):
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         ret = cursor.fetchall()
 
-        # print((ret[0][0]))      # 재결사항 입력 여부
-
-        # connection.commit()
-        # connection.close()
-
     except:
         # connection.rollback()
         print("Failed select error in rec013")
+    finally:
+        cursor.close()
 
     if ret[0][0] == 0:
         try:
@@ -6319,6 +6596,8 @@ def insert_race_judged_sql(rcity, rdate, rno, judged, judged_add, committee):
         except:
             # connection.rollback()
             print("Failed inserting in rec013 ")
+        finally:
+            cursor.close()
     else:
         try:
             cursor = connection.cursor()
@@ -6347,8 +6626,140 @@ def insert_race_judged_sql(rcity, rdate, rno, judged, judged_add, committee):
         except:
             # connection.rollback()
             print("Failed updating in rec013")
+        finally:
+            cursor.close()
 
     return ret
+
+
+# 출발심사(b4)
+def insert_start_audit(r_content):
+    lines = r_content.split("\n")
+
+    for index, line in enumerate(lines):
+        items = line.split("\t")
+
+        # print(index, items,'----', len(items))
+
+        if items[0] and items[0][0:3] == '홈 >':
+            rcity = items[0][4:6]
+            # print(items, rcity)
+        elif items[0] and items[0][0:3] == '202':
+            rdate = items[0][0:4] + items[0][5:7] + items[0][9:11]
+            rno = items[0][-4:][0:1]
+            # print(items, items[0][3:5], rdate, rno)
+        elif len(items) == 11 and items[0][0:2] != '마번':
+
+            gate = items[0]
+            horse = items[1]
+            audit_reason = items[2]
+
+            s = items[6].find('(') + 1
+            e = items[6].find(')')
+            rider_k = items[6][s:e]
+            rider = items[6][0:s-1] 
+
+            judge = items[9] 
+            judge_reason = items[10]  
+
+            # print(index, rcity, rdate, rno, horse)
+            # print(audit_reason, rider, rider_k, judge, judge_reason)
+
+            try:
+                with connection.cursor() as cur:
+                    sql = """
+                    INSERT INTO start_audit
+                        (rcity, rdate, rno, gate, horse, rider, rider_k, audit_reason, judge, judge_reason)
+                    VALUES
+                        (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE
+                        horse        = VALUES(horse),
+                        rider        = VALUES(rider),
+                        rider_k      = VALUES(rider_k),
+                        audit_reason = VALUES(audit_reason),
+                        judge        = VALUES(judge),
+                        judge_reason = VALUES(judge_reason)
+                    """
+
+                    values = (
+                        rcity,
+                        rdate,
+                        rno,
+                        gate,
+                        horse,
+                        rider,
+                        rider_k,
+                        audit_reason,
+                        judge,
+                        judge_reason
+                    )
+                    cur.execute(sql, values)
+                    # connection.commit()
+                    # print("성공적으로 INSERT 또는 UPDATE 완료")
+
+            except Exception as e:
+                print("DB 처리 중 오류 발생:", e)
+                # connection.rollback()
+
+            finally:
+                connection.close()
+
+    return len(lines)
+
+# 출발조교(b5)
+def insert_start_train(r_content):
+    lines = r_content.split("\n")
+
+    for index, line in enumerate(lines):
+        items = line.split("\t")
+
+        # print(index, items,'----', len(items))
+
+        if items[0] and items[0][0:3] == '홈 >':
+            rcity = items[0][4:6]
+            # print(items, rcity)
+        elif items[0] and items[0][0:4] == '조교일자':
+            tdate = items[0][7:11] + items[0][12:14] + items[0][15:17]
+            # print(items, rdate)
+        elif len(items) == 5 and items[0][0:2] != '소속':
+
+            team = items[0][:-1]
+            team_num = items[1]
+            horse = items[2]
+            rider = items[3]
+
+            judge = items[4] 
+
+            # print(index, rcity, tdate, horse)    
+            # print(rcity, tdate, horse, team, team_num, rider, judge)
+
+            try:
+                with connection.cursor() as cur:
+                    sql = """
+                    INSERT INTO start_train
+                        (rcity, tdate, horse, team, team_num, rider, judge)
+                    VALUES
+                        (%s, %s, %s, %s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE
+                        rider        = VALUES(rider),
+                        team      = VALUES(team),
+                        team_num = VALUES(team_num),
+                        judge        = VALUES(judge)
+                    """
+
+                    values = (rcity, tdate, horse, team, team_num, rider, judge)
+                    cur.execute(sql, values)
+                    # connection.commit()
+                    # print("성공적으로 INSERT 또는 UPDATE 완료")
+
+            except Exception as e:
+                print("DB 처리 중 오류 발생:", e)
+                # connection.rollback()
+
+            finally:
+                connection.close()
+
+    return len(lines)
 
 
 def get_jockey(horse):  # 출전등록 시뮬레이션 - 기수 select

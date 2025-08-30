@@ -129,6 +129,11 @@ urlpatterns = [
         name="update_popularity",
     ),
     path(
+        "race_review/<str:rcity>/<str:rdate>/<int:rno>",
+        views.raceReview,
+        name="race_review",
+    ),
+    path(
         "update_changed_race/<str:rcity>/<str:rdate>/<int:rno>",
         views.updateChangedRace,
         name="update_changed_race",

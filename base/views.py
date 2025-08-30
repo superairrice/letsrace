@@ -1,11 +1,7 @@
-from collections import Counter
-from datetime import datetime, timedelta
-from typing import Dict
+from datetime import datetime
 from datetime import date, datetime
 from email.message import EmailMessage
 import os
-import shutil
-import pandas as pd
 
 from django.contrib import messages
 
@@ -15,25 +11,18 @@ from django.contrib.auth.decorators import login_required
 from django.db import connection
 from django.db.models import Count, Max, Min, Q
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
 
 from base.data_management import (
-    get_breakingnews,
-    get_file_contents,
-    get_kradata,
     get_krafile,
     krafile_convert,
 )
 
 from base.mysqls import (
     get_award,
-    get_award_race,
-    get_axis,
     get_axis_rank,
-    get_board_list,
     get_cycle_winning_rate,
     get_disease,
-    get_expects,
     get_jockey_trend,
     get_jockeys_train,
     get_jt_collaboration,
@@ -45,42 +34,30 @@ from base.mysqls import (
     get_paternal,
     get_paternal_dist,
     get_pedigree,
-    get_popularity_rate_h,
-    get_popularity_rate_j,
-    get_popularity_rate_t,
     get_prediction,
     get_print_prediction,
     get_race,
-    get_race_center_detail_view,
     get_race_related,
-    get_recent_awardee,
-    get_recent_horse,
     get_report_code,
-    get_solidarity,
     get_status_stable,
-    get_status_train,
     get_status_week,
-    get_swim_horse,
     get_thethe9_ranks,
     get_thethe9_ranks_jockey,
     get_thethe9_ranks_multi,
     get_track_record,
-    get_train,
-    get_train_audit,
     get_train_horse,
     get_train_horse1,
     get_trainer_double_check,
     get_trainer_trend,
-    get_training,
-    get_status_training,
     get_training_awardee,
     get_treat_horse,
-    get_weeks,
     get_last2weeks,
     get_weeks_status,
     insert_horse_disease,
     insert_race_judged,
     insert_race_simulation,
+    insert_start_audit,
+    insert_start_train,
     insert_train_swim,
     set_changed_race,
     set_changed_race_horse,
@@ -99,24 +76,19 @@ from .forms import MyUserCreationForm, RoomForm, UserForm
 
 # from django.contrib.auth.forms import UserCreationForm
 from .models import (
-    Award,
     Exp010,
     Exp011,
     Exp011s1,
-    Exp012,
-    JockeyW,
-    JtRate,
     Message,
-    PRecord,
     RaceResult,
     Racing,
     Rec010,
+    Rec011,
     RecordS,
     Room,
     Topic,
     User,
     Visitor,
-    VisitorCount,
     VisitorLog,
 )
 
@@ -496,6 +468,33 @@ def home(request):
     race, expects, rdays, judged_jockey, changed_race, award_j = get_prediction(i_rdate)
     # print(racings)
 
+    # expects Query
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """
+            select a.rcity, a.rdate, a.rday, a.rno, b.gate, b.rank, b.r_rank, b.horse, b.remark, b.jockey, b.trainer, b.host, b.r_pop, a.distance, b.handycap, b.i_prehandy, b.complex,
+                b.complex5, b.gap_back, 
+                b.jt_per, b.jt_cnt, b.jt_3rd,
+                b.s1f_rank, b.i_cycle, a.rcount, recent3, recent5, convert_r, jockey_old, reason, b.alloc3r*1
+            
+            from exp010 a, exp011 b
+            where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
+            and b.rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 4 DAY), '%%Y%%m%%d')
+            and b.rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98 )
+            order by b.rcity, b.rdate, b.rno, b.rank, b.gate 
+            ; """
+        )
+        cursor.execute(strSql, (i_rdate, i_rdate))
+        results = cursor.fetchall()
+
+    except:
+        # connection.rollback()
+        print("Failed selecting in expect ")
+    finally:
+        cursor.close()
+        
     # loadin = get_last2weeks_loadin(i_rdate)
 
     rflag = False  # 경마일, 비경마일 구분
@@ -510,6 +509,7 @@ def home(request):
     context = {
         "racings": racings,
         "expects": expects,
+        "results": results,
         "fdate": fdate,
         # "loadin": loadin,
         # "race_detail": race_detail,
@@ -1453,90 +1453,157 @@ def updateChangedRace(request, rcity, rdate, rno):
     context = {"rcity": rcity, "exp011s": exp011s, "fdata": fdata}
     return render(request, "base/update_changed_race.html", context)
 
+@login_required(login_url="login")
+def raceReview(request, rcity, rdate, rno):
 
-# def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
-#     records = RecordS.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
-#         "rank", "gate"
-#     )
-#     if records:
-#         pass
-#     else:
-#         return render(request, "base/home.html")
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
-#     r_condition = Rec010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+    # print(r_condition.rcount)
 
-#     rdate_1year = (
-#         str(int(rdate[0:4]) - 1) + rdate[4:8]
-#     )  # 최근 1년 경주성적 조회조건 추가
+    loadin = get_loadin(rcity, rdate, rno)
+    disease = get_disease(rcity, rdate, rno)
 
-#     hr_records = RecordS.objects.filter(
-#         rdate__lt=rdate, rdate__gt=rdate_1year, horse__in=records.values("horse")
-#     ).order_by("horse", "-rdate")
+    trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
 
-#     compare_r = records.aggregate(
-#         Min("i_s1f"),
-#         Min("i_g1f"),
-#         Min("i_g2f"),
-#         Min("i_g3f"),
-#         Min("s1f_rank"),
-#         Min("recent3"),
-#         Min("recent5"),
-#         Min("convert_r"),
-#         Min("p_record"),
-#         Max("handycap"),
-#         Max("rating"),
-#     )
+    judged_list, judged = get_judged(rcity, rdate, rno)
 
-#     judged_horse = get_judged_horse(rcity, rdate, rno)
-#     judged_jockey = get_judged_jockey(rcity, rdate, rno)
+    recovery_cnt, start_cnt, audit_cnt = countOfRace(rcity, rdate, rno)
 
-#     pedigree = get_pedigree(rcity, rdate, rno)
-#     # training = get_training(rcity, rdate, rno)
-#     train = get_train_horse(rcity, rdate, rno)
-#     train = sorted(train, key=lambda x: x[5] or 99)
+    # exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno)
 
-#     treat = get_treat_horse(rcity, rdate, rno)
-#     track = get_track_record(rcity, rdate, rno)  # 경주거리별 등급별 평균기록,
+    # user = request.user
+    # form = UserForm(instance=user)
 
-#     # h_audit = get_train_audit(rcity, rdate, rno)
+    if request.method == "POST":
 
-#     pedigree = sorted(pedigree, key=lambda x: x[2] or 99)
+        myDict = dict(request.POST)
+        # print(myDict)
+        # print(myDict['judge'][0])
+        # print(exp011_cnt)
 
-#     judged_list, judged = get_judged(rcity, rdate, rno)
+        for i in range(1, int(r_condition.rcount) +1 ):
 
-#     # print(len(judged))
-#     if len(judged) > 0:
-#         judged = judged[0][0]
+            # print(i, myDict["r_etc"][i - 1])
+            try:
+                cursor = connection.cursor()
 
-#     # lst = judged).split('●')
+                strSql = (
+                    """ update exp011
+                                set r_rank = """
+                    + myDict['r_rank'][i - 1]
+                    + """
+                            where rcity = '"""
+                    + rcity
+                    + """' and rdate = '"""
+                    + rdate
+                    + """' and rno = """
+                    + str(rno)
+                    + """ and gate = """
+                    + str(i)
+                    + """
+                        ; """
+                )
 
-#     # for i in range(1,len(lst)):             # 첫번째 라인 스킵
-#     #     str1 = lst[i].replace(' ', '')
-#     #     print(str1)
+                # print(strSql)
+                r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+                awards = cursor.fetchall()
 
-#     horses = Exp011.objects.values("horse").filter(rcity=rcity1, rdate=rdate1, rno=rno1)
+            except:
+                # connection.rollback()
+                print("Failed updating in exp011")
 
-#     context = {
-#         "records": records,
-#         "r_condition": r_condition,
-#         #    'training': training,
-#         "train": train,
-#         # "training_cnt": training_cnt,
-#         "treat": treat,
-#         "track": track,
-#         "hr_records": hr_records,
-#         "compare_r": compare_r,
-#         "hname": hname,
-#         "pedigree": pedigree,
-#         # "h_audit": h_audit,
-#         "judged_horse": judged_horse,
-#         "judged_jockey": judged_jockey,
-#         "judged_list": judged_list,
-#         "judged": judged,
-#         "horses": horses,
-#     }
+            try:
 
-#     return render(request, "base/race_result.html", context)
+                cursor = connection.cursor()
+
+                strSql = (
+                    """ update rec011
+                                set judge = '""" + myDict['judge'][0] + """' 
+                                , r_start = '""" + myDict['start'][i - 1] + """'
+                                , r_flag = '""" + myDict['flag'][i - 1] + """'
+                                , r_etc = '""" + myDict['r_etc'][i - 1] + """' 
+                            where rcity = '"""
+                    + rcity
+                    + """' and rdate = '"""
+                    + rdate
+                    + """' and rno = """
+                    + str(rno)
+                    + """ and gate = """
+                    + str(i)
+                    + """
+                        ; """
+                )
+
+                r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+                awards = cursor.fetchall()
+
+            except:
+                # connection.rollback()
+                print("Failed updating in rec011")
+
+    try:
+        cursor = connection.cursor()
+        strSql = """ select cd_type, r_code, r_name from race_cd order by r_code; """
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        race_cd = cursor.fetchall()
+
+    except:
+        print("Failed selecting r_start")
+    finally:
+        cursor.close()
+
+    try:
+        cursor = connection.cursor()
+        strSql = (
+            """ select a.rcity, a.rdate, a.rno, a.gate, a.horse, a.jockey, a.trainer, a.rank, a.r_rank, a.h_sex, a.h_age, a.birthplace, a.i_cycle, a.h_weight, a.handycap, a.i_prehandy, a.reason, a.alloc1r, a.alloc3r,
+                    b.r_start, b.r_flag, b.r_etc, TRIM(b.judge)
+            from exp011 a, rec011 b
+            where a.rcity = b.rcity
+            and a.rdate = b.rdate
+            and a.rno = b.rno
+            and a.gate = b.gate
+            and a.rcity = '"""
+            + rcity
+            + """'
+            and a.rdate = '"""
+            + rdate
+            + """' 
+            and a.rno = """
+            + str(rno)
+            + """
+            order by a.gate 
+            ; """
+        )
+
+        # print(strSql)
+
+        exp011_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        exp011s = cursor.fetchall()
+
+        # print(r_cnt)
+
+    except:
+        print("Failed selecting expext record")
+    finally:
+        cursor.close()
+
+    context = {
+        "rcity": rcity,
+        "exp011s": exp011s,
+        "r_condition": r_condition,
+        "race_cd": race_cd,
+        "judged": " ".join(str(item) for sublist in judged for item in sublist),
+        "loadin": loadin,  # 기수 기승가능 부딤중량
+        "disease": disease,  # 기수 기승가능 부딤중량
+        "judged_list": judged_list,
+        "judged": " ".join(str(item) for sublist in judged for item in sublist),
+        "trainer_double_check": str(trainer_double_check),
+        "training_cnt": training_cnt,
+        "recovery_cnt": recovery_cnt,
+        "start_cnt": start_cnt,
+        "audit_cnt": audit_cnt,
+    }
+    return render(request, "base/race_review.html", context)
 
 
 def raceSimulation(request, rcity, rdate, rno, hname, awardee):
@@ -2806,7 +2873,7 @@ def dataManagement(request):
         messages.warning(request, "총 " + str(len(krafile)) + "건.")
     else:
         messages.warning(request, "결과 0.")
-    # kradata = get_kradata(rcity, rdate1, rdate2, fcode, fstatus)
+    
 
     # print(krafile)
     # print(kradata)
@@ -2833,10 +2900,11 @@ def dataManagement(request):
     context = {
         "q1": q1,
         "q2": q2,
+        "rcity": rcity,
         "fcode": fcode,
         "fstatus": fstatus,
         "krafile": krafile,
-        #    'kradata': kradata,
+        # 'kradata': kradata,
         "fdate1": fdate1,
         "fdate2": fdate2,
     }
@@ -2885,6 +2953,10 @@ def raceBreakingNews(request):
         result_cnt = insert_race_simulation(rcity, rcount, r_content)
     elif fdata == "심판위원 Report":
         result_cnt = insert_race_judged(rcity, r_content)
+    elif fdata == "출발심사(b4)":
+        result_cnt = insert_start_audit(r_content)
+    elif fdata == "출발조교(b5)":
+        result_cnt = insert_start_train(r_content)
 
     exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=86)
 
@@ -3368,7 +3440,7 @@ def update_visitor_count(name):
     timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
 
     try:
-      
+    
         # Connect to the MySQL database
         cursor = connection.cursor()
 

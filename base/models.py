@@ -787,6 +787,85 @@ class Rec010(models.Model):
         unique_together = (("rcity", "rdate", "rno"),)
 
 
+class Rec011(models.Model):
+    rcity = models.CharField(primary_key=True, max_length=4)
+    rdate = models.CharField(max_length=8)
+    rno = models.IntegerField()
+    gate = models.IntegerField()
+    rank = models.IntegerField(blank=True, null=True)
+    horse = models.CharField(max_length=20, blank=True, null=True)
+    birthplace = models.CharField(max_length=6, blank=True, null=True)
+    h_sex = models.CharField(max_length=2, blank=True, null=True)
+    h_age = models.IntegerField(blank=True, null=True)
+    handycap = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    jockey = models.CharField(max_length=10, blank=True, null=True)
+    joc_adv = models.CharField(max_length=4, blank=True, null=True)
+    trainer = models.CharField(max_length=10, blank=True, null=True)
+    host = models.CharField(max_length=20, blank=True, null=True)
+    rating = models.IntegerField(blank=True, null=True)
+    h_weight = models.IntegerField(blank=True, null=True)
+    w_change = models.CharField(max_length=4, blank=True, null=True)
+    record = models.CharField(max_length=6, blank=True, null=True)
+    gap = models.CharField(max_length=10, blank=True, null=True)
+    corners = models.CharField(max_length=20, blank=True, null=True)
+    rs1f = models.CharField(max_length=6, blank=True, null=True)
+    r1c = models.CharField(max_length=6, blank=True, null=True)
+    r2c = models.CharField(max_length=6, blank=True, null=True)
+    r3c = models.CharField(max_length=6, blank=True, null=True)
+    r4c = models.CharField(max_length=6, blank=True, null=True)
+    rg3f = models.CharField(max_length=6, blank=True, null=True)
+    rg2f = models.CharField(max_length=6, blank=True, null=True)
+    rg1f = models.CharField(max_length=6, blank=True, null=True)
+    alloc1r = models.CharField(max_length=10, blank=True, null=True)
+    alloc3r = models.CharField(max_length=10, blank=True, null=True)
+    judge = models.CharField(max_length=4, blank=True, null=True)
+    judge_reason = models.CharField(max_length=30, blank=True, null=True)
+    audit_reason = models.CharField(max_length=30, blank=True, null=True)
+    i_s1f = models.IntegerField(blank=True, null=True)
+    i_r1c = models.IntegerField(blank=True, null=True)
+    i_r2c = models.IntegerField(blank=True, null=True)
+    i_r3c = models.IntegerField(blank=True, null=True)
+    i_r4c = models.IntegerField(blank=True, null=True)
+    i_g3f = models.IntegerField(blank=True, null=True)
+    i_g2f = models.IntegerField(blank=True, null=True)
+    i_g1f = models.IntegerField(blank=True, null=True)
+    i_record = models.IntegerField(blank=True, null=True)
+    jockey_w = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True
+    )
+    distance_w = models.IntegerField(blank=True, null=True)
+    burden_w = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True
+    )
+    adv_jockey = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True
+    )
+    adv_track = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True
+    )
+    i_convert = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True
+    )
+    r_start = models.CharField(max_length=5, blank=True, null=True)
+    r_corners = models.CharField(max_length=5, blank=True, null=True)
+    r_finish = models.CharField(max_length=5, blank=True, null=True)
+    r_wrapup = models.CharField(max_length=5, blank=True, null=True)
+    r_etc = models.CharField(max_length=400, blank=True, null=True)
+    r_flag = models.CharField(max_length=1, blank=True, null=True)
+    p_rank = models.IntegerField(blank=True, null=True)
+
+    i_prehandy = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    
+    class Meta:
+        managed = False
+        db_table = "rec011"
+        unique_together = (("rcity", "rdate", "rno", "gate"),)
+
+
 class Krafile(models.Model):
     fname = models.CharField(primary_key=True, max_length=40)
     fcontents = models.TextField(blank=True, null=True)
