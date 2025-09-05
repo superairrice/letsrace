@@ -2873,18 +2873,23 @@ def dataManagement(request):
         messages.warning(request, "총 " + str(len(krafile)) + "건.")
     else:
         messages.warning(request, "결과 0.")
-    
 
     # print(krafile)
     # print(kradata)
 
     if request.method == "POST":
-        myDict = dict(request.POST)
 
-        krafile_convert(myDict["rcheck"])
+        # print(krafile, "POST")
+        myDict = dict(request.POST) 
+        # print(myDict['fpath'])
 
-        # for fname in myDict['rcheck']:
-        #     print(fname)
+        for index, rcheck in enumerate(myDict["rcheck"]):
+            # print(rcheck)
+
+            fpath = myDict['fpath'][index].strip()
+
+            if rcheck == "0":
+                krafile_convert(fpath)
 
         #     if fname[-12:-10] == '11':
         #         print(fname[-12:-10])

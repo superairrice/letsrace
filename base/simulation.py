@@ -138,7 +138,9 @@ def mock_insert(rcity, rdate, rno):
                 UPDATE exp011s1 a set r_pop = ( SELECT r_pop FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
                 r_record = ( SELECT r_record FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
                 h_weight = ( SELECT h_weight FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
-                r_rank = ( SELECT r_rank FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate )
+                r_rank = ( SELECT r_rank FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
+                alloc1r = ( SELECT alloc1r FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
+                alloc3r = ( SELECT alloc3r FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate )
                 WHERE rcity =  '"""
                 + rcity
                 + """'

@@ -11,8 +11,8 @@ def get_krafile(rcity, rdate1, rdate2, fcode, fstatus):
             """ 
             SELECT a.fname,   
                     @row:=@row+1 as No,
-                " " as rcheck,
-                    a.fpath,
+                "0" as rcheck,
+                    a.fpath, 
                     a.rdate,   
                     a.fcode,   
                     a.fstatus,   
@@ -57,7 +57,8 @@ def get_krafile(rcity, rdate1, rdate2, fcode, fstatus):
             + """%'
             AND fstatus like  '"""
             + fstatus
-            + """%'
+            + """%' 
+            and 1<> 1
             ; """
         )
 
@@ -182,32 +183,32 @@ def get_file_contents(fname):
     return str(result[0], 'cp949')
 
 
-def krafile_convert(fnames):
+def krafile_convert(fpath):
 
-    for fname in fnames:
 
-        if fname[-4:] == 'xlsx':
+    if fpath[-4:] == 'xlsx':
 
-            convert_c1(fname)
+        # print(fpath)
+        convert_c1(fpath)
 
-        else:
-            if fname[-12:-10] == '11':
-                print(fname[-12:-10])
+    else:
+        if fpath[-12:-10] == '11':
+            print(fpath[-12:-10])
 
-                file = open(fname, "r")
-                while True:
-                    line = file.readline()
-                    if not line:
-                        break
-                    print(line.strip())
-                file.close()
+            file = open(fpath, "r")
+            while True:
+                line = file.readline()
+                if not line:
+                    break
+                print(line.strip())
+            file.close()
 
-    return (fnames)
+    return (fpath)
 
 
 def convert_c1(fname):
 
-    print(fname)
+    # print(fname)
     # df = pd.read_excel(fname,  index_col=None, engine='openpyxl')
     wb = op.load_workbook(fname)
     ws = wb.active
@@ -218,7 +219,7 @@ def convert_c1(fname):
 
     tdate = fname[-19:-11]
 
-    # print(tdate)
+    # print(rcity, tdate)
 
     try:
         cursor = connection.cursor()
@@ -259,42 +260,43 @@ def convert_c1(fname):
 
         remark = row_rng[10].value
 
-        try:
-            cursor = connection.cursor()
+        if team != "소속조":
+            try:
+                cursor = connection.cursor()
 
-            strSql = """
-                    INSERT INTO train
-                    ( rcity, tdate, horse, team, team_num, grade, rider, in_time, out_time, t_time, canter, strong, remark )
-                    VALUES
-                    ( '""" + rcity + """',
-                        '""" + tdate + """',
-                        '""" + horse + """',
-                        '""" + team + """',
-                        '""" + team_num + """',
-                        '""" + grade + """',
-                        '""" + rider + """',
-                        '""" + in_time + """',
-                        '""" + out_time + """',
-                        """ + t_time + """,
-                        """ + canter + """,
-                        """ + strong + """,
-                        '""" + remark + """'
-                    ) ; """
+                strSql = """
+                        INSERT INTO train
+                        ( rcity, tdate, horse, team, team_num, grade, rider, in_time, out_time, t_time, canter, strong, remark )
+                        VALUES
+                        ( '""" + rcity + """',
+                            '""" + tdate + """',
+                            '""" + horse + """',
+                            '""" + team + """',
+                            '""" + team_num + """',
+                            '""" + grade + """',
+                            '""" + rider + """',
+                            '""" + in_time + """',
+                            '""" + out_time + """',
+                            """ + t_time + """,
+                            """ + canter + """,
+                            """ + strong + """,
+                            '""" + remark + """'
+                        ) ; """
 
-            # print(strSql)
+                # print(strSql)
 
-            r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
-            result = cursor.fetchone()
-            # result = cursor.fetchall()
+                r_cnt = cursor.execute(strSql)         # 결과값 개수 반환
+                result = cursor.fetchone()
+                # result = cursor.fetchall()
 
-            # connection.commit()
-            # connection.close()
+                # connection.commit()
+                # connection.close()
 
-            cnt += 1
+                cnt += 1
 
-        except:
-            # connection.rollback()
-            print("Failed inserting in train Table")
+            except:
+                # connection.rollback()
+                print("Failed inserting in train Table", team)
 
     #     for cell in row_rng:  # 각 행에 대한 1차원 배열 for문
     #         print(cell.value)

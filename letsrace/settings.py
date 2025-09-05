@@ -224,7 +224,7 @@ WSGI_APPLICATION = "letsrace.wsgi.application"
 #         "PORT": "3307",  # [6]
 #     }
 # }
-# DEBUG = True
+# DEBUG = True 
 
 DEBUG = False
 DATABASES = {
