@@ -318,34 +318,8 @@
                   {% for hname, r_etc, r_flag in r_memo %}
                     {% if hname == r.horse %}
 
-                      {% if r_etc %}
-                        {% if r_flag %}
-                          {% if r_flag == '0'  %}
-                          <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1); padding: 0px 0px;">📙
-                            <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📙&nbsp;&nbsp;{{r_etc}}</span>
-                          </span>
-                          {% elif r_flag == 'P'  %}
-                          <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1); padding: 0px 0px;">📘
-                            <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📘&nbsp;&nbsp;{{r_etc}}</span>
-                          </span>
-                          {% elif r_flag == 'S'  %}
-                          <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1); padding: 0px 0px;">📗
-                            <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📗&nbsp;&nbsp;{{r_etc}}</span>
-                          </span>
-                          {% else %}
-                          <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1); padding: 0px 0px;">📕
-                            <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📕&nbsp;&nbsp;{{r_etc}}</span>
-                          </span>
-                          {% endif %}
-                        {% else %}
-                          <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1); padding: 0px 0px;">📙
-                            <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📙&nbsp;&nbsp;{{r_etc}}</span>
-                          </span>
-                        {% endif %}
-                      {% else %}
-                        <span style="font-family: Arial; font-size:1.05rem; color:var(--color-gray); padding: 0px 0px;">📓</span>
-                      {% endif %}
-
+                      {% include 'base/m_memo.html' with size='1.3rem' color='var(--color-r4)' %}
+  
                     {% endif %}
                   {% endfor %}
                 </a>
@@ -518,40 +492,40 @@
             <td align="center">
               <div style="font-size: 1.2rem; text-align: left; ">
                 <a href="{% url 'jt_analysis_multi' r.rcity r.rdate|mul:1|sub:10000 r.rdate r.jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
-                <span style="color:var(--color-r2); font-size:0.9rem">
-                </span>
-                {% if r.jockey_old %}   {# 기수변경 #}
-                  <span class="tooltip" style="font-style: italic; color:var(--color-r2); border-bottom:1px solid var(--color-gray);">{{r.jockey|slice:"0:3"}}
-                    <span class="tooltip-text" style="z-index: 9;">
-                      🐴 변경사유 : {{r.reason}}{% if r.jockey_old %}
-                      <br>
-                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;변경전 기수 : <span style="color:var(--color-r2); background-color:var(--color-light); border-radius: 7px; padding: 2px 4px;">{{r.jockey_old}}</span>{% endif %}
-                      
-                    </span>
+                  <span style="color:var(--color-r2); font-size:0.9rem">
                   </span>
-                  
-                {% else %}
-                  <span style="color:var(--color-light-gray); border-bottom:1px solid var(--color-gray);">{{r.jockey|slice:"0:3"}}</span>
-                {%endif %}
+                  {% if r.jockey_old %}   {# 기수변경 #}
+                    <span class="tooltip" style="font-style: italic; color:var(--color-r2); border-bottom:1px solid var(--color-gray);">{{r.jockey|slice:"0:3"}}
+                      <span class="tooltip-text" style="z-index: 9;">
+                        🐴 변경사유 : {{r.reason}}{% if r.jockey_old %}
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;변경전 기수 : <span style="color:var(--color-r2); background-color:var(--color-light); border-radius: 7px; padding: 2px 4px;">{{r.jockey_old}}</span>{% endif %}
+                        
+                      </span>
+                    </span>
+                    
+                  {% else %}
+                    <span style="color:var(--color-light-gray); border-bottom:1px solid var(--color-gray);">{{r.jockey|slice:"0:3"}}</span>
+                  {%endif %}
 
-                {% for jockey, cnt in training_cnt %}
-                  {% if r.jockey == jockey %}
-                    {% if cnt|mul:1 <= 4 %}
-                    <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-bg);">{{cnt}}</span>
-                    {% elif cnt|mul:1 == 5 %}
-                    <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r5);">{{cnt}}</span>
-                    {% elif cnt|mul:1 == 6 %}
-                    <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r4);">{{cnt}}</span>
-                    {% elif cnt|mul:1 == 7 %}
-                    <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r3);">{{cnt}}</span>
-                    {% elif cnt|mul:1 == 8 %}
-                    <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r2);">{{cnt}}</span>
-                    {% else %}
-                    <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r1);">{{cnt}}</span>
+                  {% for jockey, cnt in training_cnt %}
+                    {% if r.jockey == jockey %}
+                      {% if cnt|mul:1 <= 4 %}
+                      <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-bg);">{{cnt}}</span>
+                      {% elif cnt|mul:1 == 5 %}
+                      <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r5);">{{cnt}}</span>
+                      {% elif cnt|mul:1 == 6 %}
+                      <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r4);">{{cnt}}</span>
+                      {% elif cnt|mul:1 == 7 %}
+                      <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r3);">{{cnt}}</span>
+                      {% elif cnt|mul:1 == 8 %}
+                      <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r2);">{{cnt}}</span>
+                      {% else %}
+                      <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r1);">{{cnt}}</span>
+                      {% endif %}
                     {% endif %}
-                  {% endif %}
-                {% endfor %}
-              </a>
+                  {% endfor %}
+                </a>
                 
               </div>
               

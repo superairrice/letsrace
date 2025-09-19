@@ -12,10 +12,17 @@
           <span style="background-color:var(--color-bg); border-radius: 10px; font-size: 1.15rem; color:var(--color-r3); padding: 6px 4px; writing-mode: vertical-lr;">레이팅</span>
         </th>
         <th colspan="3" rowspan="1">
-          <a href="{% url 'jt_analysis' '%' r.rdate|mul:1|sub:50000 r.rdate '%' '%' '%' r.horse '1' '99' '1' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'w_jt_analysis', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
-            <span style="color:var(--color-r5); font-size:1.2rem;">🐴&nbsp;{{r.horse|slice:"0:6"}}</span>
+          <a href="{% url 'jt_analysis' '%' r.rdate|mul:1|sub:50000 r.rdate '%' '%' '%' r.horse '1' '99' '0' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'w_jt_analysis', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+            <span style="color:var(--color-r3); font-size:1.2rem;">🐴&nbsp;{{r.horse|slice:"0:6"}}</span>
             
           </a>
+          {% if request.user.username == 'admin' %} 
+          &nbsp;&nbsp;
+          <a href="{% url 'jt_analysis' '%' r.rdate|mul:1|sub:50000 '99991231' '%' '%' '%' r.horse '1' '99' '0' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'w_jt_analysis', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+            <span style="color:yellow; background-color: var(--color-bg); font-size:1.0rem; border-style: outset; padding: 0px 4px; border-radius: 7px;">A</span>
+            
+          </a>
+          {% endif %}
         </th>
         
         
@@ -95,27 +102,7 @@
         <th colspan="3" rowspan="1">
           <span style="font-size:1.2rem; text-transform: capitalize;">Race Info.</span>
           &nbsp;&nbsp;
-          <a href="{% url 'write_significant' r.rdate r.horse %}" 
-                  onclick="window.open(this.href, 'write_significant', 'top=' + window.screenTop + ', left=' + window.screen.width + ', width=500, height=550, toolbars=no, scrollbars=yes'); return false;">
-            {% for hname, r_etc, r_flag in r_memo %}
-              {% if hname == r.horse %}
-                {% if r_flag %}
-                  {% if r_flag != '0'  %}
-                  <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1); padding: 0px 0px;">📕
-                    <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📕&nbsp;&nbsp;{{r_etc}}</span>
-                  </span>
-                  {% else %}
-                  <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1); padding: 0px 0px;">📘
-                    <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📘&nbsp;&nbsp;{{r_etc}}</span>
-                  </span>
-                  {% endif %}
-                {% else %}
-                  <span style="font-family: Arial; font-size:1.05rem; color:var(--color-gray); padding: 0px 0px;">📃</span>
-                {% endif %}
-              {% endif %}
-            {% endfor %}
-          </a>
-          &nbsp;&nbsp;
+          
           <a href="{% url 'jt_collaboration' r.rcity r.rdate r.rno r.jockey 'jockey' %}" 
                     onclick="window.open(this.href, 'w_jt_collaboration', 'top=' + (window.screen.availHeight / 2 ) + ', left=' + window.screenX + ', width=550, height=300, toolbars=no, scrollbars=yes'); return false;">
                     🎵
@@ -151,7 +138,7 @@
           <span style="text-transform:lowercase; font-style: italic; font-size:1.0rem; padding:1px 4px; border-radius: 7px;">thethe9</span>
         </th>
 
-        <th rowspan="1" style="vertical-align:middle"><span style="font-size:0.8rem;">예상/인기</span></th>
+        <th rowspan="1" style="vertical-align:middle"><span style="font-size:0.8rem;">인기/예상</span></th>
 
         <th rowspan="1" style="vertical-align:middle">
           <span class="tooltip" style="font-size:1.0rem; color:var(--color-r1);">(암)
@@ -180,33 +167,7 @@
           <div style="text-align: right; padding-top: 2px;">
             <a href="{% url 'write_significant' rdate horse %}" 
                               onclick="window.open(this.href, 'write_significant', 'top=' + window.screenTop + ', left=' + window.screen.width + ', width=500, height=550, toolbars=no, scrollbars=yes'); return false;">
-              {% if r_etc %}
-                {% if r_flag %}
-                  {% if r_flag == '0'  %}
-                  <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1); padding: 0px 0px;">📙
-                    <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📙&nbsp;&nbsp;{{r_etc}}</span>
-                  </span>
-                  {% elif r_flag == 'P'  %}
-                  <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1); padding: 0px 0px;">📘
-                    <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📘&nbsp;&nbsp;{{r_etc}}</span>
-                  </span>
-                  {% elif r_flag == 'S'  %}
-                  <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1); padding: 0px 0px;">📗
-                    <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📗&nbsp;&nbsp;{{r_etc}}</span>
-                  </span>
-                  {% else %}
-                  <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1); padding: 0px 0px;">📕
-                    <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📕&nbsp;&nbsp;{{r_etc}}</span>
-                  </span>
-                  {% endif %}
-                {% else %}
-                  <span class="tooltip" style="font-family: Arial; font-size:1.05rem; color:var(--color-r1); padding: 0px 0px;">📙
-                    <span class="tooltip-text" style="text-align: left; font-size: 1.2rem; color:var(--color-bg); background-color: var(--color-light); width:30rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;📙&nbsp;&nbsp;{{r_etc}}</span>
-                  </span>
-                {% endif %}
-              {% else %}
-                <span style="font-family: Arial; font-size:1.05rem; color:var(--color-gray); padding: 0px 0px;">📃</span>
-              {% endif %}
+              {% include 'base/m_memo.html' with size='1.3rem' color='var(--color-r4)' %}
             </a>
           </div>
           {% endif %}
@@ -302,27 +263,37 @@
 
           {% if distance %}
           {% if distance == r_condition.distance %}
-          <div style="font-size: 1.2rem; font-family: Arial; color:var(--color-r1); text-align: center; font-style: italic; font-weight: bold;">{{distance}}</div>
+          <div style="font-size: 1.2rem; font-family: Arial; text-decoration: underline; color:var(--color-r1); text-align: center; font-style: italic; font-weight: bold;">{{distance}}</div>
+          {% elif distance > r_condition.distance %}
+          <div style="font-size: 1.2rem; font-family: Arial; text-decoration: underline; color:var(--color-bg); text-align: center; font-style: italic; font-weight: bold;">{{distance}}</div>
           {% else %}
-          <div style="font-size: 1.2rem; font-family: Arial; color:var(--color-bg); text-align: center; font-style: italic; font-weight: bold;">{{distance}}</div>
+          <div style="font-size: 1.2rem; font-family: Arial; text-decoration: underline; color:var(--color-light-gray); text-align: center; font-style: italic; font-weight: bold;">{{distance}}</div>
           {% endif %}
           {% endif %}
           
           {% if grade %}
-          {% if '주행' in grade %}
-            <div style="font-size: 1.1rem; color:var(--color-light-gray);">주행</div>
-          {% else %}
-            {% if 'O' in grade %}
-            <div class="tooltip" style="font-size: 1.1rem; color:var(--color-light); background-color: var(--color-r1); border-radius: 5px; font-weight: normal;">
-              {{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}
-              <span class="tooltip-text" style="font-size: 1.15rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;🏇&nbsp;{{rname}}&nbsp;&nbsp;{{rcon1}}&nbsp;&nbsp;{{rcon2}}&nbsp;&nbsp;💰 1위 상금 : {{r1award|intcomma}}</span>
-            </div>
+            {% if '주행' in grade %}
+              <div style="font-size: 1.1rem; color:var(--color-light-gray);">주행</div>
             {% else %}
-            <div class="tooltip" style="font-size: 1.1rem; color:var(--color-gray); font-weight: normal;">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}
-              <span class="tooltip-text" style="font-size: 1.15rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;🏇&nbsp;{{rname}}&nbsp;&nbsp;{{rcon1}}&nbsp;&nbsp;{{rcon2}}&nbsp;&nbsp;💰 1위 상금 : {{r1award|intcomma}}</span>
-            </div>
+              {% if 'O' in grade %}
+              <div class="tooltip" style="font-size: 1.1rem; color:var(--color-light); background-color: var(--color-r1); border-radius: 5px; font-weight: normal;">
+                {{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}
+                <span class="tooltip-text" style="font-size: 1.15rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;🏇&nbsp;{{rname}}&nbsp;&nbsp;{{rcon1}}&nbsp;&nbsp;{{rcon2}}&nbsp;&nbsp;💰 1위 상금 : {{r1award|intcomma}}</span>
+              </div>
+              {% else %}
+              
+                {% if grade|slice:"0:2" == r_condition.grade|slice:"0:2" %}
+                  <div class="tooltip" style="font-size: 1.1rem; color:var(--color-bg); font-weight: normal;">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}
+                    <span class="tooltip-text" style="font-size: 1.15rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;🏇&nbsp;{{rname}}&nbsp;&nbsp;{{rcon1}}&nbsp;&nbsp;{{rcon2}}&nbsp;&nbsp;💰 1위 상금 : {{r1award|intcomma}}</span>
+                  </div>
+                {% else %}
+                  <div class="tooltip" style="font-size: 1.1rem; color:var(--color-r5); font-weight: normal;">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}
+                    <span class="tooltip-text" style="font-size: 1.15rem; z-index: 9;">&nbsp;&nbsp;&nbsp;&nbsp;🏇&nbsp;{{rname}}&nbsp;&nbsp;{{rcon1}}&nbsp;&nbsp;{{rcon2}}&nbsp;&nbsp;💰 1위 상금 : {{r1award|intcomma}}</span>
+                  </div>
+                {% endif %}
+
+              {% endif %}
             {% endif %}
-          {% endif %}
           {% endif %}
         </td>
         
@@ -375,21 +346,21 @@
               {%endif%}
             {% else %}
               {% if r.jockey == jockey %}
-              <span style="text-align: left; color:var(--color-r5); border-bottom: 1px solid var(--color-r5); font-size: 1.15rem;">{{jockey|slice:"0:3"}}</span>
+              <span style="text-align: left; color:var(--color-bg); font-size: 1.15rem;">{{jockey|slice:"0:3"}}</span>
               {%else%}
-              <span style="text-align: left; color:var(--color-r1); font-size: 1.15rem;">{{jockey|slice:"0:3"}}</span>
+              <span style="text-align: left; color:var(--color-r1); border-bottom: 1px solid var(--color-r1); font-size: 1.15rem;">{{jockey|slice:"0:3"}}</span>
               {%endif%}
             {%endif%}
           
           {%endif%}
 
           {% if r.trainer == trainer %}
-            <div style="color:var(--color-r1);  text-align: right; font-size: 1.15rem;">
-                <span style="color:var(--color-r5); border-bottom: 1px solid var(--color-r5); font-size: 1.15rem;">{{trainer}}</span>
+            <div style="text-align: right; font-size: 1.15rem;">
+                <span style="color:var(--color-bg); font-size: 1.15rem;">{{trainer}}</span>
             </div>
             {%else%}
-            <div style="color:var(--color-r1);  text-align: right; font-size: 1.15rem;">
-                <span style="color:var(--color-r1); font-size: 1.15rem;">{{trainer}}</span>
+            <div style="text-align: right; font-size: 1.15rem;">
+                <span style="color:var(--color-r1); border-bottom: 1px solid var(--color-r1); font-size: 1.15rem;">{{trainer}}</span>
             </div>
           {%endif%}
           
@@ -400,12 +371,12 @@
 
           {% if r.host == host %}
           <div style="text-align: left; font-size: 1.15rem;">
-              <span style="color:var(--color-r5); border-bottom: 1px solid var(--color-r5); text-align: left; font-size: 1.15rem;">{{host|slice:"0:3"}}</span>
+              <span style="color:var(--color-bg); text-align: left; font-size: 1.15rem;">{{host|slice:"0:3"}}</span>
           </div>
           {%else%}
           <div style="text-align: left; font-size: 1.15rem;">
             {% if host %}
-              <span style="color:var(--color-r1); text-align: left; font-size: 1.15rem">{{host|slice:"0:3"}}</span>
+              <span style="color:var(--color-r1); border-bottom: 1px solid var(--color-r1); text-align: left; font-size: 1.15rem">{{host|slice:"0:3"}}</span>
             {% endif %}
           </div>
           {% endif %}
@@ -591,23 +562,23 @@
           {%endif%}
 
           {% if adv_track >= 40 %}
-          <span style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:1px 2px; border-radius: 15px; background-color:var(--color-r1); color:var(--color-light);">
+          <span style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:2px 4px; border-radius: 15px; background-color:var(--color-r1); color:var(--color-light);">
             {{adv_track|floatformat:1}}
           </span>
           {% elif adv_track >= 20 and adv_track < 40 %}
-          <span style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:1px 2px; border-radius: 15px; background-color:var(--color-main-medium); color:var(--color-r2);">
+          <span style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:2px 4px; border-radius: 15px; background-color:var(--color-r3); color:var(--color-bg);">
             {{adv_track|floatformat:1}}
           </span>
           {% elif adv_track > -20 and adv_track < 20 %}
-          <span style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:1px 2px; border-radius: 15px; background-color:var(--color-light); color:var(--color-r2);">
+          <span style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:2px 4px; border-radius: 15px; background-color:var(--color-main-light); color:var(--color-bg);">
             {{adv_track|floatformat:1}}
           </span>
           {% elif adv_track > -40 and adv_track < -20 %}
-          <span style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:1px 2px; border-radius: 15px; background-color:var(--color-dark-light); color:var(--color-r2);">
+          <span style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:2px 4px; border-radius: 15px; background-color:var(--color-main); color:var(--color-bg);">
             {{adv_track|floatformat:1}}
           </span>
           {% else %}
-          <span style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:1px 2px; border-radius: 15px; background-color:var(--color-r5); color:var(--color-light);">
+          <span style="text-align: right; font-size: 0.99rem; font-family: Arial; font-style: italic; padding:2px 4px; border-radius: 15px; background-color:var(--color-r5); color:var(--color-light);">
             {{adv_track|floatformat:1}}
           </span>
           
@@ -757,7 +728,13 @@
 
           <div class="tooltip" style="text-align: right; color:var(--color-light-gray); font-size: 1.1rem; font-family: Arial; font-style: italic; font-weight: normal;">
             {% if i_convert %}
-            {% if rank > 20 or grade|slice:"0:2" == '주행' %}{% else %}{{i_convert|t2s}}{% endif %}
+            <!-- {% if rank > 20 or grade|slice:"0:2" == '주행' %}{% else %}{{i_convert|t2s}}{% endif %} -->
+
+            {% if r_flag == None or r_flag == '0' %}
+              <span style="font-family: Arial; color:var(--color-light-gray);">{% if rank > 20 or grade|slice:"0:2" == '주행' %}{% else %}{{i_convert|t2s}}{% endif %} </span>
+            {% else %}
+              <span style="text-decoration:line-through ; font-family: Arial; background-color:var(--color-gray); border-radius: 7px; padding: 2px 4px;">{% if rank > 20 or grade|slice:"0:2" == '주행' %}{% else %}{{i_convert|t2s}}{% endif %} </span>
+            {% endif %}
             
             <span class="tooltip-text" style="color:var(--color-bg); background-color:var(--color-main-light) ; text-align: center; font-size: 1.1rem; border:1px solid orange; border-radius: 10px; padding: 4px 20px; ">
               <span style="font-style: normal;">🎲&nbsp;thethe9&nbsp;예상기록&nbsp;&nbsp;:&nbsp;&nbsp;</span>
@@ -797,7 +774,6 @@
                 <span style="font-family: Arial, Helvetica, sans-serif; border:1px solid var(--color-bg); border-radius: 50%; padding: 2px 3px; font-weight: bold; color:var(--color-bg);">{{gate}}</span>
             {% endif %}
           {% endif %}
-          
           
         </td>
 
@@ -860,39 +836,41 @@
 
           {# 인기순위 / 프로그램 예상순위 #}
           {% if pop_rank %}
-          {% if judge == NONE %}
-
-          {% if p_rank %}
-          <a href="{% url 'race_axis' rcity rdate rno p_rank %}"
-                    onclick="window.open(this.href, 'w_race_axis', 'top=100, left=900, width=500, height=600, toolbars=no, scrollbars=yes'); return false;">
-            {% if p_rank == 1 %}
-              <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-r1); border: 1px solid var(--color-r1); padding: 1px 3px; border-radius: 50%;">{{p_rank}}</span>
-            {% elif p_rank == 2 %}
-              <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-r2); border: 1px solid var(--color-r2); padding: 1px 3px; border-radius: 50%;">{{p_rank}}</span>
-            {% elif p_rank == 3 %}
-              <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-r3); border: 1px solid var(--color-r3); padding: 1px 3px; border-radius: 50%;">{{p_rank}}</span>
+            
+            {% if pop_rank == 1 %}
+              <span style="color:var(--color-light); font-size: 1.0rem; font-family: Arial; background-color: var(--color-r1); border: 1px solid var(--color-r1); padding: 1px 3px; border-radius: 10px;">{{pop_rank}}</span>
+            {% elif pop_rank == 2 %}
+              <span style="color:var(--color-bg); font-size: 1.0rem; font-family: Arial; background-color: var(--color-r2); border: 1px solid var(--color-r2); padding: 1px 3px; border-radius: 10px;">{{pop_rank}}</span>
+            {% elif pop_rank == 3 %}
+              <span style="color:var(--color-bg); font-size: 1.0rem; font-family: Arial; background-color: var(--color-r3); border: 1px solid var(--color-r3); padding: 1px 3px; border-radius: 10px;">{{pop_rank}}</span>
+            {% elif pop_rank == 4 %}
+              <span style="color:var(--color-r4); font-size: 1.0rem; font-family: Arial; padding: 1px 3px; border-radius: 10px; border: 1px solid var(--color-r4);">{{pop_rank}}</span>
+            {% elif pop_rank == 5 %}
+              <span style="color:var(--color-r5); font-size: 1.0rem; font-family: Arial; padding: 1px 3px; border-radius: 10px; border: 1px solid var(--color-r5);">{{pop_rank}}</span>
+            {% elif pop_rank > 5 and pop_rank <= 9 %}
+              <span style="color:var(--color-gray); font-size: 1.0rem; font-family: Arial; padding: 1px 3px;">{{pop_rank}}</span>
             {% else %}
-              <span style="font-family: Arial; font-size: 1.0rem; padding: 1px 1px; ">
-                {% if p_rank > 20 %}﹆{% else %} {{p_rank}} {% endif %}
-              </span>
+              <span style="color:var(--color-gray); font-size: 1.0rem; font-family: Arial;">{% if pop_rank > 20 %}﹆{% else %}{{pop_rank}}{% endif %}</span>
             {% endif %}
-          {% endif %}
-          </a>
 
-          {% if pop_rank == 1 %}
-            <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-r1); border: 1px solid var(--color-r1); padding: 1px 3px; border-radius: 50%;">{{pop_rank}}</span>
-          {% elif pop_rank == 2 %}
-            <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-r2); border: 1px solid var(--color-r2); padding: 1px 3px; border-radius: 50%;">{{pop_rank}}</span>
-          {% elif pop_rank == 3 %}
-            <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-r3); border: 1px solid var(--color-r3); padding: 1px 3px; border-radius: 50%;">{{pop_rank}}</span>
-          {% else %}
-            <span style="font-family: Arial; font-size: 1.0rem; padding: 1px 1px; ">
-              {% if pop_rank > 20 %}﹆{% else %} {{pop_rank}} {% endif %}
-            </span>
-          {% endif %}
-            
-            
-          {% endif %}
+            {% if p_rank %}
+              {% if p_rank == 1 %}
+                <span style="color:var(--color-light); text-align: right; font-size: 1.0rem; font-family: Arial; background-color: var(--color-r1); border: 1px solid var(--color-r1); padding: 1px 3px; border-radius: 10px;">{{p_rank}}</span>
+              {% elif p_rank == 2 %}
+                <span style="color:var(--color-bg); text-align: right; font-size: 1.0rem; font-family: Arial; background-color: var(--color-r2); border: 1px solid var(--color-r2); padding: 1px 3px; border-radius: 10px;">{{p_rank}}</span>
+              {% elif p_rank == 3 %}
+                <span style="color:var(--color-bg); text-align: right; font-size: 1.0rem; font-family: Arial; background-color: var(--color-r3); border: 1px solid var(--color-r3); padding: 1px 3px; border-radius: 10px;">{{p_rank}}</span>
+              {% elif p_rank == 4 %}
+                <span style="color:var(--color-r4); text-align: right; font-size: 1.0rem; font-family: Arial; padding: 1px 3px; border-radius: 10px; border: 1px solid var(--color-r4);">{{p_rank}}</span>
+              {% elif p_rank == 5 %}
+                <span style="color:var(--color-r5); text-align: right; font-size: 1.0rem; font-family: Arial; padding: 1px 3px; border-radius: 10px; border: 1px solid var(--color-r5);">{{p_rank}}</span>
+              {% elif p_rank > 5 and p_rank <= 9 %}
+              <span style="color:var(--color-gray); font-size: 1.0rem; font-family: Arial; padding: 1px 3px;">{{p_rank}}</span>
+              {% else %}
+                <span style="color:var(--color-gray); text-align: right; font-size: 1.0rem; font-family: Arial;">{% if p_rank > 20 %}﹆{% else %}{{p_rank}}{% endif %}</span>
+              {% endif %}
+            {% endif %}
+              
           {% endif %}
         </td>
 

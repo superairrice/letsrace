@@ -601,6 +601,8 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
 
     except Exception as e:
         print(f"❌ Failed selecting in 경주 메모: {e}")
+    finally:
+        cursor.close()
 
     # 경주일 - 출주정보
     try:
@@ -1609,7 +1611,8 @@ def raceReview(request, rcity, rdate, rno):
 def raceSimulation(request, rcity, rdate, rno, hname, awardee):
 
     weight = get_weight(rcity, rdate, rno)
-    # print(weight) 
+    # print(weight[0][7])
+    wdate = weight[0][7].strftime("%Y-%m-%d %H:%M:%S")
     mock_insert(rcity, rdate, rno)
 
     w_avg = (
@@ -1724,7 +1727,6 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
             except:
                 print("Failed inserting in weight_s1")
             finally:
-                connection.commit()
                 connection.close()
 
             mock = mock_traval(r_condition, weight_mock)
@@ -1756,7 +1758,7 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
         return render(request, "base/home.html")
 
     hr_records = recordsByHorse(rcity, rdate, rno, 'None')
-    
+
     # print(hr_records)
     compare_r = exp011s.aggregate(
         Min("i_s1f"),
@@ -1784,7 +1786,28 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
         rcity, rdate, rno
     )  # 경주거리별 등급별 평균기록, 최고기록, 최저기록
 
+    # 경주 메모 Query
+    try:
+        with connection.cursor() as cursor:
+            query = """
+                SELECT replace( replace( horse, '[서]', ''), '[부]', ''), r_etc, r_flag
+                FROM rec011 
+                WHERE rcity = %s
+                AND rdate = %s
+                AND rno = %s;
+            """
+            cursor.execute(query, (rcity, rdate, rno))
+            r_memo = cursor.fetchall()
+
+    except Exception as e:
+        print(f"❌ Failed selecting in 경주 메모: {e}")
+    finally:
+        cursor.close()
+
     loadin = get_loadin(rcity, rdate, rno)
+    disease = get_disease(rcity, rdate, rno)
+
+    trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
 
     trainer_double_check = get_trainer_double_check(rcity, rdate, rno)
 
@@ -1793,10 +1816,13 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
     # axis2 = get_axis_rank(rcity, rdate, rno, 2)
     # axis3 = get_axis_rank(rcity, rdate, rno, 3)
 
+    recovery_cnt, start_cnt, audit_cnt = countOfRace(rcity, rdate, rno)
+
     context = {
         "exp011s": exp011s,
         "r_condition": r_condition,
         "loadin": loadin,  # 기수 기승가능 부딤중량
+        "disease": disease,  # 기수 기승가능 부딤중량
         "hr_records": hr_records,
         "compare_r": compare_r,
         "alloc": alloc,
@@ -1804,16 +1830,22 @@ def raceSimulation(request, rcity, rdate, rno, hname, awardee):
         #    'swim': swim,
         # "h_audit": h_audit,
         "trainer_double_check": str(trainer_double_check),
+        "training_cnt": training_cnt,
         # "axis1": axis1,
         # "axis2": axis2,
         # "axis3": axis3,
         "weight": weight,
+        "wdate": wdate,
         "w_avg": w_avg,
         "w_fast": w_fast,
         "w_slow": w_slow,
         "w_recent3": w_recent3,
         "w_recent5": w_recent5,
         "w_convert": w_convert,
+        "r_memo": r_memo,
+        "recovery_cnt": recovery_cnt,
+        "start_cnt": start_cnt,
+        "audit_cnt": audit_cnt,
     }
     return render(request, "base/race_simulation.html", context)
 
@@ -1995,51 +2027,6 @@ def cycleWinningRate(request, rcity, rdate, rno, awardee, i_filter):
     return render(request, "base/cycle_winning_rate.html", context)
 
 
-# 주별 입상마 경주전개 현황
-def weeksStatus(request, rcity, rdate):
-    status = get_weeks_status(rcity, rdate)
-
-    rank1 = [item for item in status if item[15] == 1]  # item[15] : 예상착순(rank)
-    rank2 = [item for item in status if item[15] == 2]  # item[15] : 예상착순(rank)
-    rank3 = [item for item in status if item[15] == 3]  # item[15] : 예상착순(rank)
-    r_rank1 = [item for item in status if item[16] == 1]  # item[16] : 실제착순(r_rank)
-    r_rank2 = [item for item in status if item[16] == 2]  # item[16] : 실제착순(r_rank)
-    r_rank3 = [item for item in status if item[16] == 3]  # item[16] : 실제착순(r_rank)
-
-    try:
-        cursor = connection.cursor()
-
-        strSql = """
-            SELECT jockey, CAST(load_in AS DECIMAL)
-            FROM jockey_w
-            WHERE wdate = (SELECT MAX(wdate) FROM jockey_w WHERE wdate < %s);
-        """
-        cursor.execute(strSql, (rdate,))
-        loadin = cursor.fetchall()
-
-    except:
-        print("Failed selecting in 기승가능중량")
-    finally:
-        cursor.close()
-
-    # print(status)
-
-    context = {
-        "status": status,
-        "loadin": loadin,
-        "rank1": len(rank1),
-        "rank2": len(rank2),
-        "rank3": len(rank3),
-        "r_rank1": len(r_rank1),
-        "r_rank2": len(r_rank2),
-        "r_rank3": len(r_rank3),
-        "rcount": len(status),
-        "winname": "weeksStatus",
-    }
-
-    return render(request, "base/weeks_status.html", context)
-
-
 # thethe9 rank1 실경주 입상현황
 def jtAnalysis(
     request,
@@ -2135,7 +2122,7 @@ def jtAnalysis(
         print(f"Failed selecting in 기승가능중량: {e}")
 
     
-    check_visit(request)
+    # check_visit(request)
 
     context = {
         "status": status,
@@ -3201,6 +3188,9 @@ def writeSignificant(request, rdate, horse):
         wrapup = request.POST.get("wrapup")
         r_etc = request.POST.get("r_etc")
         r_flag = request.POST.get("r_flag")
+        
+        h_memo = request.POST.get("h_memo")
+        print('---', h_memo)
 
         try:
             cursor = connection.cursor()
@@ -3243,6 +3233,31 @@ def writeSignificant(request, rdate, horse):
         finally:
             cursor.close()
 
+        try:
+            
+            with connection.cursor() as cur:
+                sql = """
+                INSERT INTO horse_memo
+                    ( horse, rdate, memo )
+                VALUES
+                    (%s, %s, %s)
+                ON DUPLICATE KEY UPDATE
+                    memo      = VALUES(memo) 
+                    
+                """
+
+                values = ( horse, rdate, h_memo.strip() )
+                cur.execute(sql, values)
+                # connection.commit()
+                print("성공적으로 INSERT 또는 UPDATE 완료")
+
+        except Exception as e:
+            print("DB 처리 중 오류 발생:", e)
+            # connection.rollback()
+
+        finally:
+            connection.close()
+            
         try:
             cursor = connection.cursor()
             strSql = (
@@ -3289,6 +3304,27 @@ def writeSignificant(request, rdate, horse):
 
     try:
         cursor = connection.cursor()
+        strSql = (
+            """ select memo
+                    from horse_memo 
+                    where rdate = '"""
+            + rdate
+            + """'
+                    and horse = '"""
+            + horse
+            + """'
+                    ;"""
+        )
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        h_memo = cursor.fetchall()
+
+    except:
+        print("Failed selecting Horse Memo")
+    finally:
+        cursor.close()
+
+    try:
+        cursor = connection.cursor()
         strSql = """ select cd_type, r_code, r_name from race_cd order by r_code; """
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         race_cd = cursor.fetchall()
@@ -3309,7 +3345,7 @@ def writeSignificant(request, rdate, horse):
         # "r_corners": r_corners,
         # "r_finish": r_finish,
         # "r_wrapup": r_wrapup,
-        # "r_flag": r_flag,
+        "h_memo": h_memo,
     }
     return render(request, "base/write_significant.html", context)
 
@@ -3445,7 +3481,7 @@ def update_visitor_count(name):
     timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
 
     try:
-    
+
         # Connect to the MySQL database
         cursor = connection.cursor()
 
@@ -3483,3 +3519,48 @@ def update_visitor_count(name):
         # 연결 종료
         cursor.close()
         connection.close()
+
+
+# 주별 입상마 경주전개 현황
+def weeksStatus(request, rcity, rdate):
+    status = get_weeks_status(rcity, rdate)
+
+    rank1 = [item for item in status if item[15] == 1]  # item[15] : 예상착순(rank)
+    rank2 = [item for item in status if item[15] == 2]  # item[15] : 예상착순(rank)
+    rank3 = [item for item in status if item[15] == 3]  # item[15] : 예상착순(rank)
+    r_rank1 = [item for item in status if item[16] == 1]  # item[16] : 실제착순(r_rank)
+    r_rank2 = [item for item in status if item[16] == 2]  # item[16] : 실제착순(r_rank)
+    r_rank3 = [item for item in status if item[16] == 3]  # item[16] : 실제착순(r_rank)
+
+    try:
+        cursor = connection.cursor()
+
+        strSql = """
+            SELECT jockey, CAST(load_in AS DECIMAL)
+            FROM jockey_w
+            WHERE wdate = (SELECT MAX(wdate) FROM jockey_w WHERE wdate < %s);
+        """
+        cursor.execute(strSql, (rdate,))
+        loadin = cursor.fetchall()
+
+    except:
+        print("Failed selecting in 기승가능중량")
+    finally:
+        cursor.close()
+
+    # print(status)
+
+    context = {
+        "status": status,
+        "loadin": loadin,
+        "rank1": len(rank1),
+        "rank2": len(rank2),
+        "rank3": len(rank3),
+        "r_rank1": len(r_rank1),
+        "r_rank2": len(r_rank2),
+        "r_rank3": len(r_rank3),
+        "rcount": len(status),
+        "winname": "weeksStatus",
+    }
+
+    return render(request, "base/weeks_status.html", context)

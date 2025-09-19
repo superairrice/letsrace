@@ -16,7 +16,7 @@ def get_weight(rcity, rdate, rno):
 
         strSql = (
             """ 
-            select w_avg, w_fast, w_slow, w_recent3, w_recent5, w_convert, 0 w_flag
+            select w_avg, w_fast, w_slow, w_recent3, w_recent5, w_convert, 0 w_flag, wdate
             from weight_s1
             where rcity =  '"""
             + rcity
@@ -58,7 +58,7 @@ def get_weight(rcity, rdate, rno):
             cursor = connection.cursor()
 
             strSql = """ 
-                select w_avg, w_fast, w_slow, w_recent3, w_recent5, w_convert, 1 w_flag
+                select w_avg, w_fast, w_slow, w_recent3, w_recent5, w_convert, 1 w_flag, now() wdate
                 from weight
                 where wdate = ( select max(wdate) from weight )
                 
@@ -577,6 +577,9 @@ def set_record(rcity, rdate, distance, horse, i_jockey, weight, i_avg, i_fast, i
         print(
             "Failed setting 경주마 최근 7경주 query ", horse, strSql
         )
+        
+    finally:
+        cursor.close()
 
     # print(recent_race)
     i_cnt = 0
@@ -717,6 +720,8 @@ def set_record(rcity, rdate, distance, horse, i_jockey, weight, i_avg, i_fast, i
     except:
         connection.rollback()
         print("Failed uptating 경주마 평균.최고.최저기록. 코너링 평균 --- set record", horse, strSql)
+    finally:
+        cursor.close()
 
     return r_cnt
 
@@ -742,10 +747,10 @@ def set_rank(rcity, rdate, rno):
             AND rno  = """
             + str(rno)
             + """
-            AND rank < 90 ORDER BY i_complex    ASC, gate      ASC
+            AND rank < 99 ORDER BY if( i_complex = 0, 100000, i_complex) ASC, gate      ASC
             ; """
         )
-
+        # print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         race = cursor.fetchall()
 
