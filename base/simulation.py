@@ -135,7 +135,12 @@ def mock_insert(rcity, rdate, rno):
 
             strSql = (
                 """ 
-                UPDATE exp011s1 a set r_pop = ( SELECT r_pop FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
+                UPDATE exp011s1 a set jockey = ( SELECT jockey FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
+                jockey_old = ( SELECT jockey_old FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
+                handycap = ( SELECT handycap FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
+                handycap_old = ( SELECT handycap_old FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
+                reason = ( SELECT reason FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
+                r_pop = ( SELECT r_pop FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
                 r_record = ( SELECT r_record FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
                 h_weight = ( SELECT h_weight FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
                 r_rank = ( SELECT r_rank FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
@@ -172,7 +177,7 @@ def mock_traval(r_condition, weight):
         try:
             cursor = connection.cursor()
 
-            # 기수의 거리별 게이트별 역량 + 부담중량까지 감안된 adv_jpckey
+            # 기수의 거리별 게이트별 역량 + 부담중량까지 감안된 adv_jockey
             strSql = (
                 """ 
                 SELECT grade,	distance,	horse, handycap, jockey, trainer,
@@ -223,9 +228,8 @@ def mock_traval(r_condition, weight):
 
         # print(common)
         # print(furlong)
-        
+
     set_rank(r_condition.rcity, r_condition.rdate, r_condition.rno)   # 경마장, 경주일, 경주번호 => race rank set
-    
 
     return furlong_cnt
 
@@ -388,16 +392,19 @@ def set_common(rcity, rdate, distance, horse, i_jockey):
 
         # print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+
         common = cursor.fetchall()
 
         # connection.commit()
         # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print(
             "Failed selecting 거리별 경주마 평균.최고.최저기록. 코너링 평균 - set_common()", horse
         )
+    finally:
+        cursor.close()
 
     # print("common" , common[0][0])
     i_s1f = common[0][0]
@@ -453,79 +460,83 @@ def set_common(rcity, rdate, distance, horse, i_jockey):
         # connection.close()
 
     except:
-        connection.rollback()
+        # connection.rollback()
         print(
             "Failed selecting 거리별 경주마 평균.최고.최저기록. 코너링 평균 set_common - furlong 환산", horse
         )
+    finally:
+        cursor.close()
 
     i_cs1f = furlong[0][0]	
     i_cg1f = furlong[0][1]	
     i_cg2f = furlong[0][2]	
     i_cg3f = furlong[0][3]
 
-    # print("furlong", i_cs1f, i_cg1f, i_cg2f, i_cg3f)
+    if i_cs1f:                                      # Query 결과가 있을때만 update    
+        # 경주마 furlong 기록 환산
+        # print("furlong", i_cs1f, i_cg1f, i_cg2f, i_cg3f, r_cnt)
+        try:
+            cursor = connection.cursor()
 
-    # 경주마 furlong 기록 환산
-    try:
-        cursor = connection.cursor()
+            # 기수의 거리별 게이트별 역량 + 부담중량까지 감안된 adv_jockey
+            strSql = (
+                """ 
+                UPDATE exp011s1  
+                SET rs1f = substr(The1.f_t2s(""" + str(i_s1f) + """), -4),	
+                    r1c = The1.f_t2s(""" + str(i_r1c) + """),	
+                    r2c = The1.f_t2s(""" + str(i_r2c) + """),	
+                    r3c = The1.f_t2s(""" + str(i_r3c) + """),	
+                    r4c = The1.f_t2s(""" + str(i_r4c) + """),
+                    rg3f = substr(The1.f_t2s(""" + str(i_g3f) + """), -4),	
+                    rg2f = substr(The1.f_t2s(""" + str(i_g2f) + """), -4),	
+                    rg1f = substr(The1.f_t2s(""" + str(i_g1f) + """), -4),
+                    fast_r = The1.f_t2s(""" + str(i_fast) + """),	
+                    slow_r = The1.f_t2s(""" + str(i_slow) + """),
+                    avg_r = The1.f_t2s(""" + str(i_avg) + """),
+                    cs1f = substr(The1.f_t2s(""" + str(i_cs1f) + """), -4),	
+                    cg3f = substr(The1.f_t2s(""" + str(i_cg3f) + """), -4),	
+                    cg2f = substr(The1.f_t2s(""" + str(i_cg2f) + """), -4),	
+                    cg1f = substr(The1.f_t2s(""" + str(i_cg1f) + """), -4),
+                    i_s1f = """ + str(i_cs1f) + """,			
+                    i_g3f = """ + str(i_cg3f) + """,			
+                    i_g2f = """ + str(i_cg2f) + """,			
+                    i_g1f = """ + str(i_cg1f) + """,
+                    i_jockey = """ + str(i_jockey) + """
+                    
+                    -- recent3 = :ls_recent3,	recent5 = :ls_recent5, 	complex = :ls_complex,	convert_r = :ls_convert,                
+                    -- i_complex = :i_complex,		i_jockey = :i_jockey,
+                    -- i_cycle = f_rcycle( :as_rcity, :as_rdate, :ls_horse ),
+                    -- i_prehandy = f_prehandy( :as_rcity, :as_rdate, :ls_horse ),
+                    -- remark = :ls_remark,
+                    -- h_weight = :ll_weight,
+                    -- j_per = :ld_jockey_per,
+                    -- t_per = :ld_trainer_per,
+                    -- jt_per = :ld_per,
+                    -- jt_cnt = :li_rcnt,
+                    -- jt_1st = :li_1st,
+                    -- jt_2nd = :li_2nd,
+                    -- jt_3rd = :li_3rd
+                WHERE rdate = '"""
+                + rdate
+                + """'
+                AND horse  = '"""
+                + horse
+                + """'
+            ; """
+            )
 
-        # 기수의 거리별 게이트별 역량 + 부담중량까지 감안된 adv_jockey
-        strSql = (
-            """ 
-            UPDATE exp011s1  
-            SET rs1f = substr(The1.f_t2s(""" + str(i_s1f) + """), -4),	
-                r1c = The1.f_t2s(""" + str(i_r1c) + """),	
-                r2c = The1.f_t2s(""" + str(i_r2c) + """),	
-                r3c = The1.f_t2s(""" + str(i_r3c) + """),	
-                r4c = The1.f_t2s(""" + str(i_r4c) + """),
-                rg3f = substr(The1.f_t2s(""" + str(i_g3f) + """), -4),	
-                rg2f = substr(The1.f_t2s(""" + str(i_g2f) + """), -4),	
-                rg1f = substr(The1.f_t2s(""" + str(i_g1f) + """), -4),
-                fast_r = The1.f_t2s(""" + str(i_fast) + """),	
-                slow_r = The1.f_t2s(""" + str(i_slow) + """),
-                avg_r = The1.f_t2s(""" + str(i_avg) + """),
-                cs1f = substr(The1.f_t2s(""" + str(i_cs1f) + """), -4),	
-                cg3f = substr(The1.f_t2s(""" + str(i_cg3f) + """), -4),	
-                cg2f = substr(The1.f_t2s(""" + str(i_cg2f) + """), -4),	
-                cg1f = substr(The1.f_t2s(""" + str(i_cg1f) + """), -4),
-                i_s1f = """ + str(i_cs1f) + """,			
-                i_g3f = """ + str(i_cg3f) + """,			
-                i_g2f = """ + str(i_cg2f) + """,			
-                i_g1f = """ + str(i_cg1f) + """,
-                i_jockey = """ + str(i_jockey) + """
-                
-                -- recent3 = :ls_recent3,	recent5 = :ls_recent5, 	complex = :ls_complex,	convert_r = :ls_convert,                
-                -- i_complex = :i_complex,		i_jockey = :i_jockey,
-                -- i_cycle = f_rcycle( :as_rcity, :as_rdate, :ls_horse ),
-                -- i_prehandy = f_prehandy( :as_rcity, :as_rdate, :ls_horse ),
-                -- remark = :ls_remark,
-                -- h_weight = :ll_weight,
-                -- j_per = :ld_jockey_per,
-                -- t_per = :ld_trainer_per,
-                -- jt_per = :ld_per,
-                -- jt_cnt = :li_rcnt,
-                -- jt_1st = :li_1st,
-                -- jt_2nd = :li_2nd,
-                -- jt_3rd = :li_3rd
-            WHERE rdate = '"""
-            + rdate
-            + """'
-            AND horse  = '"""
-            + horse
-            + """'
-        ; """
-        )
+            # print(strSql)
+            r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+            furlong = cursor.fetchall()
 
-        # print(strSql)
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        furlong = cursor.fetchall()
+            # connection.commit()
+            # connection.close()
 
-        # connection.commit()
-        # connection.close()
-
-    except:
-        connection.rollback()
-        print("Failed uptating 경주마 평균.최고.최저기록. 코너링 평균 set_common update", horse)
+        except:
+            # connection.rollback()
+            print("Failed uptating 경주마 평균.최고.최저기록. 코너링 평균 set_common update", horse)
+        finally:
+            cursor.close()
 
     return i_avg, i_fast, i_slow  # 거리별 평균, 최고, 최저기록
 
@@ -676,6 +687,10 @@ def set_record(rcity, rdate, distance, horse, i_jockey, weight, i_avg, i_fast, i
 
     # 경주마 furlong 기록 환산
     # print(horse, i_convert, i_complex)
+    
+    
+    ls_remark = get_remark(rdate, horse)    # 경주마 최근 7경주 코멘트
+    
 
     try:
         cursor = connection.cursor()
@@ -688,7 +703,9 @@ def set_record(rcity, rdate, distance, horse, i_jockey, weight, i_avg, i_fast, i
                 recent5 = The1.f_t2s(""" + str(i_recent5) + """),
                 complex = The1.f_t2s(""" + str(i_complex) + """),
                 convert_r = The1.f_t2s(""" + str(i_convert) + """),
-                i_complex = """ + str(i_complex) + """
+                i_complex = """ + str(i_complex) + """,
+                
+                remark = '""" + ls_remark + """'
                 
                 -- i_cycle = f_rcycle( :as_rcity, :as_rdate, :ls_horse ),
                 -- i_prehandy = f_prehandy( :as_rcity, :as_rdate, :ls_horse ),
@@ -750,7 +767,7 @@ def set_rank(rcity, rdate, rno):
             AND rank < 99 ORDER BY if( i_complex = 0, 100000, i_complex) ASC, gate      ASC
             ; """
         )
-        # print(strSql)
+
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         race = cursor.fetchall()
 
@@ -812,7 +829,7 @@ def set_rank(rcity, rdate, rno):
                 strSql = (
                     """ 
                     UPDATE exp011s1  															
-                    SET rank = """ + str(index) + """
+                    SET rank = if(r_rank = 99, 99,  """ + str(index) + """ ) 
                     WHERE rcity = '"""
                     + rcity
                     + """'
@@ -828,6 +845,7 @@ def set_rank(rcity, rdate, rno):
                     ; """
                 )
 
+                # print(strSql)
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                 rank = cursor.fetchall()
 
@@ -891,6 +909,7 @@ def set_rank(rcity, rdate, rno):
                 i_g3f = ( select i_g3f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
                 i_g2f = ( select i_g2f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
                 i_g1f = ( select i_g1f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+                remark = ( select remark from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
                 complex5 = ( select complex5 from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
                 gap = ( select gap from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
                 gap_back = ( select gap_back from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate )
@@ -917,3 +936,61 @@ def set_rank(rcity, rdate, rno):
         cursor.close()
 
     return 
+
+
+def get_remark(rdate, horse):
+
+    # 경주마 기수역량 감안된 평균기록
+    try:
+        cursor = connection.cursor()
+
+        # 기수의 거리별 게이트별 역량 + 부담중량까지 감안된 adv_jpckey
+        strSql = (
+            """ 
+            SELECT rank
+            FROM rec011 	a  
+            WHERE a.rdate between '20180722' and '""" + rdate + """' and a.rdate < '""" + rdate + """'
+            AND a.horse  = '""" + horse + """'
+            and i_convert >= 1000
+            
+            ORDER BY a.rdate DESC 
+            ; """
+        )
+
+        # print(strSql)
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        races = cursor.fetchall()
+
+        # connection.commit()
+        # connection.close()
+
+    except:
+        connection.rollback()
+        print(
+            "Failed setting 경주마 최근 7경주 query ", horse, strSql
+        )
+
+    finally:
+        cursor.close()
+
+    # print(races)
+    ls_remark = ''
+    i_cnt = 0  
+
+    for index, r in enumerate(races):
+        i_rank = r[0]
+
+        # print(index, i_rank, horse)
+
+        if i_cnt <= 6:
+            ls_remark = ls_remark + str(i_rank) + "-"
+
+        i_cnt = i_cnt + 1
+
+
+        if i_cnt == 7:
+            break
+
+    # print(ls_remark[0:-1])
+
+    return ls_remark[0:-1]

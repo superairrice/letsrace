@@ -100,6 +100,11 @@ urlpatterns = [
         name="race_simulation",
     ),
     path(
+        "mock_audit/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",
+        views.mockAudit,
+        name="mock_audit",
+    ),
+    path(
         "status_stable/<str:rcity>/<str:rdate>/<int:rno>",
         views.statusStable,
         name="status_stable",
@@ -119,6 +124,9 @@ urlpatterns = [
     path("award_status_week/", views.awardStatusWeek, name="award_status_week"),
     path("data_management/", views.dataManagement, name="data_management"),
     path("race_breakingnews/", views.raceBreakingNews, name="race_breakingnews"),
+    path(
+        "race_calculation", views.raceCalculation, name="race_calculation" 
+    ),
     path("krafile_input/", views.krafileInput, name="krafile_input"),
     path("breakingnews_input/", views.BreakingNewsInput, name="breakingnews_input"),
     path("pyscript_test/", views.pyscriptTest, name="pyscript_test"),

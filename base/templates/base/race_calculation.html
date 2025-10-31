@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+{% load static %}
+{% load my_custom_tags %}
+{% load mathfilters %}
+{% load humanize %}
+
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
+  <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
+  <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
+
+  <title>Let's Enjoy! - 프로그램 경마! 더더구나?!</title>
+
+  <script>
+    $(function () {
+      // 테이블 행 접기 기능
+      $(".fold-table tr.view").on("click", function () {
+        if ($(this).hasClass("open")) {
+          $(this).removeClass("open").next(".fold").removeClass("open");
+        } else {
+          $(".fold-table tr.view").removeClass("open").next(".fold").removeClass("open");
+          $(this).addClass("open").next(".fold").addClass("open");
+        }
+      });
+    });
+  </script>
+</head>
+
+<body>
+  <!-- ✅ 검색용 GET 폼 -->
+  <header>
+    <form class="header__search" method="GET" action="{% url 'race_calculation' %}">
+      <label>
+        <a href="{% url 'home' %}" class="header__logo">
+          <img src="{% static 'images/number-9.png' %}" />
+        </a>
+
+        <input style="width: 12rem;" type="date" value={{fdate1}} name="q1" >
+        <input style="width: 12rem;" type="date" value={{fdate2}} name="q2" >
+
+        <button class="btn" style="background: var(--color-main);">Search</button>
+
+        {% for message in messages %}
+          <div class="message {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </label>
+    </form>
+  </header>
+
+  <main>
+    <div style="width:800px; margin-top:20px;">
+
+      <!-- ✅ POST 실행용 폼 -->
+      <form method="POST" enctype="multipart/form-data" action="{% url 'race_calculation' %}">
+        {% csrf_token %}
+
+        <!-- ✅ GET으로 검색한 q1, q2 값을 hidden input으로 넘김 -->
+        <input type="hidden" name="rdate1" value="{{ rdate1 }}" name="rdate1">
+        <input type="hidden" name="rdate2" value="{{ rdate2 }}" name="rdate2">
+
+        <input type="hidden" name="q1" value={{fdate1}} name="q1" >
+        <input type="hidden" name="q2" value={{fdate2}} name="q2" >
+
+        <style>
+          .btn {
+            background-color: #87CEEB;
+            padding: 5px 10px;
+            margin: 5px;
+            border: none;
+            color: black;
+            text-align: center;
+            text-decoration: none;
+            font-size: 1.4rem;
+            display: inline-block;
+            cursor: pointer;
+            transition-duration: 0.4s;
+          }
+          .btn1, .btn2:hover {
+            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2),
+                        0 6px 20px 0 rgba(0,0,0,0.19);
+          }
+        </style>
+
+        <button class="btn btn1" type="submit">기준정보 집계</button>
+
+        <table class="fold-table">
+          <thead>
+            <tr>
+              <th>선택</th>
+              <th>No</th>
+              <th>파일이름</th>
+              <th>날짜</th>
+              <th colspan="2">구분</th>
+              <th>상태</th>
+              <th>입력일시</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for fname, num, rcheck, fpath, rdate, fcode, fstatus, in_date in krafile %}
+            <tr class="view">
+              <td align="center"><input type="checkbox" name="rcheck" value="{{ rcheck }}" checked /></td>
+              <td align="right">{{ num|floatformat:0 }}</td>
+              <td align="left">{{ fname }}</td>
+              <td align="center">{{ rdate }}</td>
+              <td align="center">{{ fcode }}</td>
+              <td align="center">
+                {% if fcode == '01' %}출마표
+                {% elif fcode == '11' %}경주결과
+                {% elif fcode == '13' %}출마표변경
+                {% elif fcode == '23' %}능력검사
+                {% elif fcode == '55' %}주로조교
+                {% elif fcode == '71' %}출주장구
+                {% elif fcode == '72' %}마필병력
+                {% elif fcode == 'b1' %}경주마정보
+                {% elif fcode == 'b2' %}기수정보
+                {% elif fcode == 'b3' %}조교사정보
+                {% elif fcode == 'b6' %}마주정보
+                {% elif fcode == 'b4' %}출발심사
+                {% elif fcode == 'b5' %}출발조교
+                {% elif fcode == 'b7' %}- 
+                {% elif fcode == 'c1' %}주로조교(별)
+                {% elif fcode == 'c2' %}수영조교(별)
+                {% else %}{{ fcode }}
+                {% endif %}
+              </td>
+              <td align="center">
+                {% if fstatus == 'E' %}Error
+                {% elif fstatus == 'F' %}Finish
+                {% elif fstatus == 'I' %}Input
+                {% elif fstatus == 'S' %}Start
+                {% else %}{{ fstatus }}
+                {% endif %}
+              </td>
+              <td align="center">{{ in_date }}</td>
+            </tr>
+
+            <tr class="fold">
+              <td colspan="8">
+                <textarea name="fpath" rows="1" cols="80" style="font-size: 1.3rem; width: 80rem; border-radius: 5px;">{{ fpath }}</textarea>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+
+      </form>
+
+    </div>
+  </main>
+</body>
+</html>

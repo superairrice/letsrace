@@ -18,6 +18,8 @@ from base.data_management import (
     krafile_convert,
 )
 
+from base.race_compute import baseline_compute, renewal_record_s
+from base.simulation2 import get_weight2, mock_insert2, mock_traval2
 from base.mysqls import (
     get_award,
     get_axis_rank,
@@ -67,10 +69,10 @@ from base.mysqls import (
     trend_title,
 )
 from base.simulation import mock_insert, mock_traval, get_weight
+
 from base.race import countOfRace, recordsByHorse
 from letsrace.settings import KRAFILE_ROOT
 
-# import base.mysqls
 
 from .forms import MyUserCreationForm, RoomForm, UserForm
 
@@ -79,6 +81,7 @@ from .models import (
     Exp010,
     Exp011,
     Exp011s1,
+    Exp011s2,
     Message,
     RaceResult,
     Racing,
@@ -481,8 +484,8 @@ def home(request):
             
             from exp010 a, exp011 b
             where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
-            and b.rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 4 DAY), '%%Y%%m%%d')
-            and b.rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98 )
+            and a.rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 4 DAY), '%%Y%%m%%d')
+            and b.rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98, 99 ) 
             order by b.rcity, b.rdate, b.rno, b.rank, b.gate 
             ; """
         )
@@ -590,7 +593,7 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
     try:
         with connection.cursor() as cursor:
             query = """
-                SELECT replace( replace( horse, '[서]', ''), '[부]', ''), r_etc, r_flag
+                SELECT replace( replace( horse, '[서]', ''), '[부]', ''), r_etc, r_flag, judge
                 FROM rec011 
                 WHERE rcity = %s
                 AND rdate = %s
@@ -1607,6 +1610,336 @@ def raceReview(request, rcity, rdate, rno):
     }
     return render(request, "base/race_review.html", context)
 
+def raceCalculation(request):
+
+    if request.method == "GET":
+
+        q1 = request.GET.get("q1") if request.GET.get("q1") != None else ""
+        q2 = request.GET.get("q2") if request.GET.get("q2") != None else ""
+
+        if q1 == "":
+            rday1 = Racing.objects.values("rdate").distinct()[0]["rdate"]  # weeks 기준일
+
+            rday3 = Racing.objects.values("rdate").distinct()[2]["rdate"]  # weeks 기준일
+
+            rdate1 = rday1[0:4] + rday1[4:6] + rday1[6:8]
+            rdate2 = rday3[0:4] + rday3[4:6] + rday3[6:8]
+
+            fdate1 = rday1[0:4] + "-" + rday1[4:6] + "-" + rday1[6:8]
+            fdate2 = rday3[0:4] + "-" + rday3[4:6] + "-" + rday3[6:8]
+
+        else:
+            rdate1 = q1[0:4] + q1[5:7] + q1[8:10]
+            rdate2 = q2[0:4] + q2[5:7] + q2[8:10]
+
+            fdate1 = q1[0:4] + "-" + q1[5:7] + "-" + q1[8:10]
+            fdate2 = q2[0:4] + "-" + q2[5:7] + "-" + q2[8:10]
+
+        print(rdate1, rdate2)
+
+    # krafile = get_krafile(rcity, rdate1, rdate2, fcode, fstatus)
+    # if krafile:
+    #     messages.warning(request, "총 " + str(len(krafile)) + "건.")
+    # else:
+    #     messages.warning(request, "결과 0.")
+
+    # print(krafile)
+    # print(kradata)
+
+    elif request.method == "POST":
+
+        rdate1 = request.POST.get("rdate1") 
+        rdate2 = request.POST.get("rdate2")
+
+        q1 = request.POST.get("q1")
+        q2 = request.POST.get("q2")
+        
+        fdate1 = q1[0:4] + "-" + q1[5:7] + "-" + q1[8:10]
+        fdate2 = q2[0:4] + "-" + q2[5:7] + "-" + q2[8:10]
+
+        print(rdate1, rdate2, q1, q2)
+
+        print("POST", rdate1, rdate2)
+        print("경주 기준정보 계산 시작", rdate1)
+        ret = baseline_compute(connection, rdate1)
+        if ret == 1:
+            messages.success(request, "경주 기준정보 계산 완료.")
+        else:
+            messages.error(request, "경주 기준정보 계산 오류 발생.")
+
+        renewal_record_s(connection, rdate1)
+
+    context = {
+        "q1": q1,
+        "q2": q2,
+        # 'kradata': kradata,
+        "rdate1": rdate1,
+        "rdate2": rdate2,
+        
+        "fdate1": fdate1,
+        "fdate2": fdate2,
+    }
+
+    return render(request, "base/race_calculation.html", context)
+
+
+def mockAudit(request, rcity, rdate, rno, hname, awardee):
+
+    weight = get_weight2(rcity, rdate, rno)
+    # print(weight[0][7])
+    wdate = weight[0][7].strftime("%Y-%m-%d %H:%M:%S")
+
+    # i_mock clear
+    try:
+        with connection.cursor() as cursor:
+
+            strSql = """
+                UPDATE rec011
+                SET i_mock = null
+                WHERE horse in (select horse from exp011 where rcity = %s and rdate = %s and rno = %s)
+            """
+            r_cnt = cursor.execute(strSql, (rcity, rdate, rno))
+            # connection.commit()
+
+    except Exception as e:
+        print("❌ Failed updating rec011 i_mock:", rcity, rdate, rno, "| Error:", e)
+        connection.rollback()
+
+    mock_insert2(rcity, rdate, rno)
+
+    w_avg = (
+        request.GET.get("w_avg") if request.GET.get("w_avg") != None else weight[0][0]
+    )
+    w_fast = (
+        request.GET.get("w_fast") if request.GET.get("w_fast") != None else weight[0][1]
+    )
+    w_slow = (
+        request.GET.get("w_slow") if request.GET.get("w_slow") != None else weight[0][2]
+    )
+    w_recent3 = (
+        request.GET.get("w_recent3")
+        if request.GET.get("w_recent3") != None
+        else weight[0][3]
+    )
+    w_recent5 = (
+        request.GET.get("w_recent5")
+        if request.GET.get("w_recent5") != None
+        else weight[0][4]
+    )
+    w_convert = (
+        request.GET.get("w_convert")
+        if request.GET.get("w_convert") != None
+        else weight[0][5]
+    )
+    w_flag = (
+        request.GET.get("w_flag") if request.GET.get("w_flag") != None else weight[0][6]
+    )
+
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+
+    weight_mock = (
+        (
+            int(w_avg),
+            int(w_fast),
+            int(w_slow),
+            int(w_recent3),
+            int(w_recent5),
+            int(w_convert),
+            w_flag,
+        ),
+    )  # tuple로 정의
+
+    if weight == weight_mock:  # query 가중치와 입력된 가중치가 동일하면
+        # print("같음")
+        pass
+
+    if (
+        int(w_avg) + int(w_fast) + int(w_slow) == 100
+        and int(w_recent3) + int(w_recent5) + int(w_convert) == 100  # 가중치 오류 check
+    ):
+
+        if weight != weight_mock:  # 가중치가 뱐경되었으면
+            try:
+                cursor = connection.cursor()
+
+                strSql = (
+                    """ 
+                    insert into weight_s2 
+                    (
+                        rcity,
+                        rdate,
+                        rno,
+                        wdate,
+                        w_avg,
+                        w_fast,
+                        w_slow,
+                        w_recent3,
+                        w_recent5,
+                        w_convert
+                    )
+                    VALUES
+                    (
+                        '"""
+                    + rcity
+                    + """',
+                        '"""
+                    + rdate
+                    + """',
+                        """
+                    + str(rno)
+                    + """,
+                        """
+                    " now() "
+                    """,
+                        """
+                    + str(w_avg)
+                    + """,
+                        """
+                    + str(w_fast)
+                    + """,
+                        """
+                    + str(w_slow)
+                    + """,
+                        """
+                    + str(w_recent3)
+                    + """,
+                        """
+                    + str(w_recent5)
+                    + """,
+                        """
+                    + str(w_convert)
+                    + """
+                    )
+                ; """
+                )
+
+                r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+                weight = cursor.fetchall()
+
+            except:
+                print("Failed inserting in weight_s1")
+            finally:
+                connection.close()
+
+            mock = mock_traval2(r_condition, weight_mock)
+
+        if w_flag == 0:
+            messages.warning(request, "weight_s1")
+
+        else:
+            messages.warning(request, "weight only")
+
+    else:
+        messages.warning(request, "오류")
+        # weight = get_weight(rcity, rdate, rno)
+
+    # print(
+    #     "aaaa",
+    #     int(w_avg) + int(w_fast) + int(w_slow),
+    #     int(w_recent3) + int(w_recent5) + int(w_convert),
+    # )
+    # print(weight)
+
+    exp011s = Exp011s2.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
+        "rank", "gate"
+    )
+
+    if exp011s:
+        pass
+    else:
+        return render(request, "base/home.html")
+
+    hr_records = recordsByHorse(rcity, rdate, rno, 'None')
+
+    # print(hr_records)
+    compare_r = exp011s.aggregate(
+        Min("i_s1f"),
+        Min("i_g1f"),
+        Min("i_g2f"),
+        Min("i_g3f"),
+        Max("handycap"),
+        Max("rating"),
+        Max("r_pop"),
+        Max("j_per"),
+        Max("t_per"),
+        Max("jt_per"),
+        Min("recent5"),
+        Min("recent3"),
+        Min("convert_r"),
+        Min("s1f_rank"),
+    )
+
+    try:
+        alloc = Rec010.objects.get(rcity=rcity, rdate=rdate, rno=rno)
+    except:
+        alloc = None
+
+    track = get_track_record(
+        rcity, rdate, rno
+    )  # 경주거리별 등급별 평균기록, 최고기록, 최저기록
+
+    # 경주 메모 Query
+    try:
+        with connection.cursor() as cursor:
+            query = """
+                SELECT replace( replace( horse, '[서]', ''), '[부]', ''), r_etc, r_flag, judge
+                FROM rec011 
+                WHERE rcity = %s
+                AND rdate = %s
+                AND rno = %s;
+            """
+            cursor.execute(query, (rcity, rdate, rno))
+            r_memo = cursor.fetchall()
+
+    except Exception as e:
+        print(f"❌ Failed selecting in 경주 메모: {e}")
+    finally:
+        cursor.close()
+
+    loadin = get_loadin(rcity, rdate, rno)
+    disease = get_disease(rcity, rdate, rno)
+
+    trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
+
+    trainer_double_check = get_trainer_double_check(rcity, rdate, rno)
+
+    # axis = get_axis(rcity, rdate, rno)
+    # axis1 = get_axis_rank(rcity, rdate, rno, 1)
+    # axis2 = get_axis_rank(rcity, rdate, rno, 2)
+    # axis3 = get_axis_rank(rcity, rdate, rno, 3)
+
+    recovery_cnt, start_cnt, audit_cnt = countOfRace(rcity, rdate, rno)
+
+    context = {
+        "exp011s": exp011s,
+        "r_condition": r_condition,
+        "loadin": loadin,  # 기수 기승가능 부딤중량
+        "disease": disease,  # 기수 기승가능 부딤중량
+        "hr_records": hr_records,
+        "compare_r": compare_r,
+        "alloc": alloc,
+        "track": track,
+        #    'swim': swim,
+        # "h_audit": h_audit,
+        "trainer_double_check": str(trainer_double_check),
+        "training_cnt": training_cnt,
+        # "axis1": axis1,
+        # "axis2": axis2,
+        # "axis3": axis3,
+        "weight": weight,
+        "wdate": wdate,
+        "w_avg": w_avg,
+        "w_fast": w_fast,
+        "w_slow": w_slow,
+        "w_recent3": w_recent3,
+        "w_recent5": w_recent5,
+        "w_convert": w_convert,
+        "r_memo": r_memo,
+        "recovery_cnt": recovery_cnt,
+        "start_cnt": start_cnt,
+        "audit_cnt": audit_cnt,
+    }
+    return render(request, "base/mock_audit.html", context)
 
 def raceSimulation(request, rcity, rdate, rno, hname, awardee):
 
@@ -1958,7 +2291,7 @@ def trendWinningRate(request, rcity, rdate, rno, awardee, i_filter):
                 reason
             from The1.exp010 a, The1.exp011 b 
             where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
-            and a.rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
+            and a.rdate between date_format(DATE_ADD(%s, INTERVAL - 4 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
             and a.rno < 80
             order by a.rdate, a.rtime, gate
             ; """

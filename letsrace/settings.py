@@ -236,12 +236,14 @@ DATABASES = {
         "PASSWORD": "Ruddksp!23",  # [4]
         "HOST": "database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com",
         "PORT": "3306",  # [6]
-        "OPTIONS": {"init_command": "SET sql_mode='STRICT_TRANS_TABLES'"},
+        "OPTIONS": {
+            "init_command": "SET sql_mode='STRICT_TRANS_TABLES', autocommit=1;"
+        },
     },
     # 'ATOMIC_REQUESTS': False,  # 중복 실행 방지
-} 
+}
 
-# SECRET_KEY = get_secret("SECRET_KEY") 
+# SECRET_KEY = get_secret("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 

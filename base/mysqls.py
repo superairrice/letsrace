@@ -3648,8 +3648,8 @@ def get_prediction(i_rdate):
             
             from exp010 a, exp011 b
             where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
-            and b.rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 4 DAY), '%%Y%%m%%d')
-            and b.rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98 )
+            and a.rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 4 DAY), '%%Y%%m%%d')
+            and b.rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98, 99 )
             order by b.rcity, b.rdate, b.rno, b.rank, b.gate
             ; """
         )
@@ -4629,7 +4629,7 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
                             where trainer = d.trainer -- and r_rank <= 3 
                             and rdate between date_format(DATE_ADD('"""
             + i_rdate
-            + """', INTERVAL - 3 DAY), '%Y%m%d') and '"""
+            + """', INTERVAL - 4 DAY), '%Y%m%d') and '"""
             + i_rdate
             + """' ) wcnt
                 FROM trainer_w d
@@ -6108,7 +6108,7 @@ def insert_horse_disease(r_content):
                 )
 
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-                awards = cursor.fetchall()
+                # awards = cursor.fetchall()
 
                 # connection.commit()
                 # connection.close()
@@ -6141,7 +6141,7 @@ def insert_horse_disease(r_content):
 
                 # print(strSql)
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-                awards = cursor.fetchall()
+                # awards = cursor.fetchall()
 
                 # connection.commit()
                 # connection.close()
@@ -6192,9 +6192,9 @@ def set_race_review(i_rcity, i_rdate, i_rno, r_content):
                       ; """
                 )
 
-                print(strSql)
+                # print(strSql)
                 r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-                awards = cursor.fetchall()
+                # awards = cursor.fetchall()
 
                 # connection.commit()
                 # connection.close()
@@ -6261,7 +6261,7 @@ def insert_race_simulation(rcity, rcount, r_content):
                     # print(strSql)
 
                     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-                    awards = cursor.fetchall()
+                    # awards = cursor.fetchall()
 
                     # connection.commit()
                     # connection.close()
@@ -6296,7 +6296,7 @@ def insert_race_simulation(rcity, rcount, r_content):
                     # print(strSql)
 
                     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-                    awards = cursor.fetchall()
+                    # awards = cursor.fetchall()
 
                     # connection.commit()
                     # connection.close()
@@ -6324,7 +6324,7 @@ def insert_race_simulation(rcity, rcount, r_content):
 
                     # print(strSql)
                     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-                    awards = cursor.fetchall()
+                    # awards = cursor.fetchall()
 
                     # connection.commit()
                     # connection.close()
@@ -6352,7 +6352,7 @@ def insert_race_simulation(rcity, rcount, r_content):
 
                     # print(strSql)
                     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-                    awards = cursor.fetchall()
+                    # awards = cursor.fetchall()
 
                     # connection.commit()
                     # connection.close()
@@ -6423,7 +6423,7 @@ def insert_race_simulation(rcity, rcount, r_content):
                         # print(strSql)
 
                         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-                        awards = cursor.fetchall()
+                        # awards = cursor.fetchall()
 
                         # connection.commit()
                         # connection.close()
@@ -6455,7 +6455,7 @@ def insert_race_simulation(rcity, rcount, r_content):
                         # print(strSql)
 
                         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-                        awards = cursor.fetchall()
+                        # awards = cursor.fetchall()
 
                         # connection.commit()
                         # connection.close()
@@ -6588,7 +6588,7 @@ def insert_race_judged_sql(rcity, rdate, rno, judged, judged_add, committee):
             # print(strSql)
 
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-            ret = cursor.fetchall()
+            # ret = cursor.fetchall()
 
             # connection.commit()
             # connection.close()
@@ -6618,7 +6618,7 @@ def insert_race_judged_sql(rcity, rdate, rno, judged, judged_add, committee):
             )
             # print(strSql)
             r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-            ret = cursor.fetchall()
+            # ret = cursor.fetchall()
 
             # connection.commit()
             # connection.close()
