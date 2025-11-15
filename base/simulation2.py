@@ -79,29 +79,29 @@ def get_weight2(rcity, rdate, rno):
 
 # 경주 시뮬레이션 Data 입력
 def mock_insert2(rcity, rdate, rno):
+
     try:
         cursor = connection.cursor()
 
         strSql = """ 
-            SELECT count(*) FROM exp011s2
+            select count(*) FROM exp011s2
             WHERE rcity = %s
             AND rdate = %s
             AND rno = %s
             ; """
         params = (rcity, rdate, rno)
-        cursor.execute(strSql, params)  # 결과값 개수 반환
-
+        r_cnt = cursor.execute(strSql, params)  # 결과값 개수 반환
         result = cursor.fetchall()
 
     except:
-        connection.rollback()
         print("Failed selecting in exp011s2")
     finally:
         cursor.close()
 
-    # print(result)
+    # print("exp011s2 count:", r_cnt, result[0][0])
 
     if result[0][0] == 0:
+
         try:
             cursor = connection.cursor()
 
@@ -129,39 +129,43 @@ def mock_insert2(rcity, rdate, rno):
         finally:
             cursor.close()
     else:
+
         try:
             cursor = connection.cursor()
 
-            strSql = (
-                """ 
-                UPDATE exp011s2 a set jockey = ( SELECT jockey FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
-                jockey_old = ( SELECT jockey_old FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
-                handycap = ( SELECT handycap FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
-                handycap_old = ( SELECT handycap_old FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
-                reason = ( SELECT reason FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
-                r_pop = ( SELECT r_pop FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
-                r_record = ( SELECT r_record FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
-                h_weight = ( SELECT h_weight FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
-                r_rank = ( SELECT r_rank FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
-                alloc1r = ( SELECT alloc1r FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate ),
-                alloc3r = ( SELECT alloc3r FROM exp011 where a.rcity = rcity and a.rdate = rdate and a.rno = rno and a.gate = gate )
-                WHERE rcity =  '"""
-                + rcity
-                + """'
-                and rdate = '"""
-                + rdate
-                + """'
-                and rno =  """
-                + str(rno)
-                + """
-                ; """
-            )
+            strSql = """
+                UPDATE exp011s2 s
+                JOIN exp011 e
+                ON  s.rcity = e.rcity
+                AND s.rdate = e.rdate
+                AND s.rno   = e.rno
+                AND s.gate  = e.gate
+                SET 
+                    s.r_rank     = e.r_rank,
+                    s.jockey     = e.jockey,
+                    s.h_weight     = e.h_weight,
+                    s.handycap     = e.handycap,
+                    s.r_record   = e.r_record,
+                    s.jockey_old = e.jockey_old,
+                    s.reason     = e.reason,
+                    s.alloc1r    = e.alloc1r,
+                    s.alloc3r    = e.alloc3r
+                WHERE 
+                    s.rcity = %s
+                AND s.rdate = %s
+                AND s.rno   = %s
+            """
 
-            r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-            result = cursor.fetchall()
+            params = (rcity, rdate, rno)
 
-        except:
-            print("Failed inserting in exp011s2")
+            affected_rows = cursor.execute(strSql, params)
+            connection.commit()
+
+            print("업데이트된 행:", affected_rows)
+
+        except Exception as e:
+            print("Failed updating exp011s2:", e)
+
         finally:
             cursor.close()
 
@@ -806,7 +810,7 @@ def set_record2(rcity, rdate, distance, horse, i_jockey, weight, i_avg, i_fast, 
 
     for i in range(0, i_cnt):
 
-        print(i, 'array', horse, i_array[i], f_t2s(int(i_array[i])))
+        # print(i, 'array', horse, i_array[i], f_t2s(int(i_array[i])))
 
         tval = i_array[i]
         if max < tval:  # 최대값 비교
@@ -824,7 +828,7 @@ def set_record2(rcity, rdate, distance, horse, i_jockey, weight, i_avg, i_fast, 
             i_recent5 = i_recent5 - max
             i_cnt = i_cnt - 1
 
-            print("max", horse, max, f_t2s(int(i_recent)),'---', i_cnt, f_t2s(int(max)))
+            # print("max", horse, max, f_t2s(int(i_recent)),'---', i_cnt, f_t2s(int(max)))
             # print(i_recent5, i_cnt)
 
         if i_cnt >= 3:               # 최소 3건 이상일때만 min 체크    - 나머지 2경주 중 특정 경주를 제외할 수 없을때
@@ -832,10 +836,10 @@ def set_record2(rcity, rdate, distance, horse, i_jockey, weight, i_avg, i_fast, 
                 i_recent5 = i_recent5 - min
                 i_cnt = i_cnt - 1
 
-                print("min", horse, min, f_t2s(int(i_recent)),'---', i_cnt, f_t2s(int(min)))
+                # print("min", horse, min, f_t2s(int(i_recent)),'---', i_cnt, f_t2s(int(min)))
 
         # print(i_recent5, i_cnt)
-        print("  ")
+        # print("  ")
 
         if i_cnt > 0:
             i_recent5 = i_recent5 / i_cnt
@@ -1051,58 +1055,58 @@ def set_rank2(rcity, rdate, rno):
         if cursor:
             cursor.close()
 
-    try:
-        cursor = connection.cursor()
+    # try:
+    #     cursor = connection.cursor()
 
-        # complex5 update
-        strSql = (
-            """ 
-            UPDATE exp011  a
-            SET rank = ( select rank from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                complex = ( select complex from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                recent3 = ( select recent3 from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                recent5 = ( select recent5 from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                convert_r = ( select convert_r from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                rs1f = ( select rs1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                rg3f = ( select rg3f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                rg2f = ( select rg2f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                rg1f = ( select rg1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                cs1f = ( select cs1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                cg3f = ( select cg3f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                cg2f = ( select cg2f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                cg1f = ( select cg1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                i_s1f = ( select i_s1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                i_g3f = ( select i_g3f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                i_g2f = ( select i_g2f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                i_g1f = ( select i_g1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                remark = ( select remark from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                bet = ( select bet from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                complex5 = ( select complex5 from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                gap = ( select gap from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                gap_back = ( select gap_back from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate )
-            WHERE rcity = '"""
-            + rcity
-            + """'
-            AND rdate = '"""
-            + rdate
-            + """'
-            AND rno  = """
-            + str(rno)
-            + """
-            ; """
-        )
+    #     # complex5 update
+    #     strSql = (
+    #         """ 
+    #         UPDATE exp011  a
+    #         SET rank = ( select rank from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             complex = ( select complex from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             recent3 = ( select recent3 from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             recent5 = ( select recent5 from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             convert_r = ( select convert_r from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             rs1f = ( select rs1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             rg3f = ( select rg3f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             rg2f = ( select rg2f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             rg1f = ( select rg1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             cs1f = ( select cs1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             cg3f = ( select cg3f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             cg2f = ( select cg2f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             cg1f = ( select cg1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             i_s1f = ( select i_s1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             i_g3f = ( select i_g3f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             i_g2f = ( select i_g2f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             i_g1f = ( select i_g1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             remark = ( select remark from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             bet = ( select bet from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             complex5 = ( select complex5 from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             gap = ( select gap from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             gap_back = ( select gap_back from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate )
+    #         WHERE rcity = '"""
+    #         + rcity
+    #         + """'
+    #         AND rdate = '"""
+    #         + rdate
+    #         + """'
+    #         AND rno  = """
+    #         + str(rno)
+    #         + """
+    #         ; """
+    #     )
 
-        # print(strSql)
+    #     # print(strSql)
 
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        # connection.commit()
+    #     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+    #     # connection.commit()
 
-    except Exception as e:
-        connection.rollback()
-        print("Failed Update exp011 all :", e, strSql)
-    finally:
-        if cursor:
-            cursor.close()
+    # except Exception as e:
+    #     connection.rollback()
+    #     print("Failed Update exp011 all :", e, strSql)
+    # finally:
+    #     if cursor:
+    #         cursor.close()
 
     return
 

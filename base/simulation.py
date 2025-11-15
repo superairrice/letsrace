@@ -885,55 +885,55 @@ def set_rank(rcity, rdate, rno):
     finally:
         cursor.close()
 
-    try:
-        cursor = connection.cursor()
+    # try:
+    #     cursor = connection.cursor()
 
-        # complex5 update
-        strSql = (
-            """ 
-            UPDATE exp011  a
-            SET rank = ( select rank from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                complex = ( select complex from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                recent3 = ( select recent3 from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                recent5 = ( select recent5 from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                convert_r = ( select convert_r from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                rs1f = ( select rs1f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                rg3f = ( select rg3f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                rg2f = ( select rg2f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                rg1f = ( select rg1f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                cs1f = ( select cs1f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                cg3f = ( select cg3f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                cg2f = ( select cg2f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                cg1f = ( select cg1f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                i_s1f = ( select i_s1f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                i_g3f = ( select i_g3f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                i_g2f = ( select i_g2f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                i_g1f = ( select i_g1f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                remark = ( select remark from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                complex5 = ( select complex5 from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                gap = ( select gap from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                gap_back = ( select gap_back from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate )
-            WHERE rcity = '"""
-            + rcity
-            + """'
-            AND rdate = '"""
-            + rdate
-            + """'
-            AND rno  = """
-            + str(rno)
-            + """
-            ; """
-        )
+    #     # complex5 update
+    #     strSql = (
+    #         """ 
+    #         UPDATE exp011  a
+    #         SET rank = ( select rank from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             complex = ( select complex from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             recent3 = ( select recent3 from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             recent5 = ( select recent5 from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             convert_r = ( select convert_r from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             rs1f = ( select rs1f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             rg3f = ( select rg3f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             rg2f = ( select rg2f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             rg1f = ( select rg1f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             cs1f = ( select cs1f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             cg3f = ( select cg3f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             cg2f = ( select cg2f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             cg1f = ( select cg1f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             i_s1f = ( select i_s1f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             i_g3f = ( select i_g3f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             i_g2f = ( select i_g2f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             i_g1f = ( select i_g1f from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             remark = ( select remark from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             complex5 = ( select complex5 from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             gap = ( select gap from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
+    #             gap_back = ( select gap_back from The1.exp011s1 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate )
+    #         WHERE rcity = '"""
+    #         + rcity
+    #         + """'
+    #         AND rdate = '"""
+    #         + rdate
+    #         + """'
+    #         AND rno  = """
+    #         + str(rno)
+    #         + """
+    #         ; """
+    #     )
 
-        # print(strSql)
+    #     # print(strSql)
 
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        result = cursor.fetchall()
+    #     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+    #     result = cursor.fetchall()
 
-    except:
-        print("Failed uptating exp011 update --- set rank")
-    finally:
-        cursor.close()
+    # except:
+    #     print("Failed uptating exp011 update --- set rank")
+    # finally:
+    #     cursor.close()
 
     return 
 

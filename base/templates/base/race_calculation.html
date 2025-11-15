@@ -52,10 +52,12 @@
   </header>
 
   <main>
-    <div style="width:800px; margin-top:20px;">
+    <div style="width:800px; margin-top: 2px;">
 
       <!-- ✅ POST 실행용 폼 -->
       <form method="POST" enctype="multipart/form-data" action="{% url 'race_calculation' %}">
+
+        <input type="checkbox" name="rcheck1" value="ON" checked />&nbsp;&nbsp;기준정보 집계여부&nbsp;&nbsp;&nbsp;&nbsp;
         {% csrf_token %}
 
         <!-- ✅ GET으로 검색한 q1, q2 값을 hidden input으로 넘김 -->
@@ -85,65 +87,62 @@
           }
         </style>
 
-        <button class="btn btn1" type="submit">기준정보 집계</button>
+        <button class="btn btn1" type="submit">경주 집계</button>
 
-        <table class="fold-table">
+        <table class="tt9dark-table">
           <thead>
             <tr>
               <th>선택</th>
-              <th>No</th>
-              <th>파일이름</th>
-              <th>날짜</th>
-              <th colspan="2">구분</th>
-              <th>상태</th>
-              <th>입력일시</th>
+              <th>경주일</th>
+              <th>경마장</th>
+              <th>경주번호</th>
+              <th>경주등급</th>
+              <th>경주거리</th>
+              <th>출주마수</th>
             </tr>
           </thead>
 
           <tbody>
-            {% for fname, num, rcheck, fpath, rdate, fcode, fstatus, in_date in krafile %}
+            {% for rcity, rdate, rno, grade, rname, distance, dividing, rcount in exp010s %}
             <tr class="view">
-              <td align="center"><input type="checkbox" name="rcheck" value="{{ rcheck }}" checked /></td>
-              <td align="right">{{ num|floatformat:0 }}</td>
-              <td align="left">{{ fname }}</td>
-              <td align="center">{{ rdate }}</td>
-              <td align="center">{{ fcode }}</td>
               <td align="center">
-                {% if fcode == '01' %}출마표
-                {% elif fcode == '11' %}경주결과
-                {% elif fcode == '13' %}출마표변경
-                {% elif fcode == '23' %}능력검사
-                {% elif fcode == '55' %}주로조교
-                {% elif fcode == '71' %}출주장구
-                {% elif fcode == '72' %}마필병력
-                {% elif fcode == 'b1' %}경주마정보
-                {% elif fcode == 'b2' %}기수정보
-                {% elif fcode == 'b3' %}조교사정보
-                {% elif fcode == 'b6' %}마주정보
-                {% elif fcode == 'b4' %}출발심사
-                {% elif fcode == 'b5' %}출발조교
-                {% elif fcode == 'b7' %}- 
-                {% elif fcode == 'c1' %}주로조교(별)
-                {% elif fcode == 'c2' %}수영조교(별)
-                {% else %}{{ fcode }}
-                {% endif %}
+                                  <input type="checkbox" name="rcheck" value="1" checked />
               </td>
-              <td align="center">
-                {% if fstatus == 'E' %}Error
-                {% elif fstatus == 'F' %}Finish
-                {% elif fstatus == 'I' %}Input
-                {% elif fstatus == 'S' %}Start
-                {% else %}{{ fstatus }}
-                {% endif %}
+              <td>
+              <div style="font-style: italic;">
+                <a href="{% url 'race_prediction' rcity rdate rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
+                  <span class="tooltip">
+                    {% if today <= rdate %}
+                    <span style="font-size: 1.2rem; font-weight:normal; font-family: Arial; color: var(--color-r4); border-radius: 7px; background-color: var(--color-bg); padding: 2px 4px;">'{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
+                    {% else %}
+                    <span style="font-size: 1.2rem; font-weight:normal; font-family: Arial;">'{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
+                    {% endif %}
+
+                    <span style="font-size: 1.2rem; font-weight:normal; font-family: Arial; color:var(--color-light);">{{distance}}</span>
+
+                    {% if 'OPEN' in grade %}
+                    <span style="font-size: 1.2rem; font-family: Arial; color:var(--color-r1);">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}</span>
+                    {% else %}
+                    <span style="font-size: 1.2rem; font-family: Arial;">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}</span>
+                    {% endif %}
+
+                    <span class="tooltip-text" style="font-size: 1.2rem; font-weight:normal; text-align: left; z-index: 9;">
+                      <span style="font-size: 1.2rem; font-weight:normal; padding-bottom: 0.5rem;">🐴&nbsp;Race Info.</span>
+                      &nbsp;&nbsp;
+                      <span style="font-size: 1.2rem; font-weight:normal; font-family: Arial;">{{rdate|slice:"0:4"}}.{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
+                      
+                      <br>
+                      &nbsp;&nbsp;&nbsp;&nbsp;
+                      <span style="font-size: 1.2rem; font-weight:normal;">{{dividing}}</span>
+                    </span>
+                  </span>
+                </a>
+              </div>
               </td>
-              <td align="center">{{ in_date }}</td>
+              <td align="center">{{ distance }}</td>
+              <td align="center">{{ rcount }}</td>
             </tr>
 
-            <tr class="fold">
-              <td colspan="8">
-                <textarea name="fpath" rows="1" cols="80" style="font-size: 1.3rem; width: 80rem; border-radius: 5px;">{{ fpath }}</textarea>
-              </td>
-            </tr>
             {% endfor %}
           </tbody>
         </table>

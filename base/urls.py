@@ -100,10 +100,15 @@ urlpatterns = [
         name="race_simulation",
     ),
     path(
-        "mock_audit/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",
+        "mock_audit/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>/",
         views.mockAudit,
         name="mock_audit",
     ),
+    
+    path('mock_accept/<str:rcity>/<str:rdate>/<int:rno>/', 
+            views.mockAccept, 
+            name='mock_accept'),
+    
     path(
         "status_stable/<str:rcity>/<str:rdate>/<int:rno>",
         views.statusStable,

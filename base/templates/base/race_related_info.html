@@ -74,18 +74,18 @@
         
             <tr>
               {% if  train.0.5 > 0 %}
-              <th rowspan="1" width="5.0%"><span>예상</span></th>
+              <th rowspan="1" width="5.0%"><span style="color:var(--color-main); font-weight: bold;">예상</span></th>
               {% else %}
-              <th rowspan="2" width="5.0%" style="vertical-align: middle;"><div>예상<br>순위</div></th>
+              <th rowspan="2" style="vertical-align: middle;"><div style="font-size: 2.0rem; color: var(--color-r3);">𝐑</div></th>
               {% endif %}
 
-              <th rowspan="1" valign="center" width="5.0%"><span>마번</span></th>
+              <th rowspan="1" valign="center" width="5.0%"><span style="color:var(--color-main); font-weight: bold;">마번</span></th>
 
 
               <th colspan="1">
                 <a href="{% url 'status_stable' r_condition.rcity r_condition.rdate r_condition.rno %}"
                   onclick="window.open(this.href, 'w_status_stable', 'width=900, height=880, toolbars=no, scrollbars=yes'); return false;">
-                  <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">🐴&nbsp;Horse
+                  <span class="tooltip" style="font-size: 1.2rem; font-weight: bold;">🐴&nbsp;Horse
                     <span class="tooltip-text">마방 경주마 보유현황 🔑</span>
                   </span>
                 </a>
@@ -118,15 +118,15 @@
             </tr>
             <tr>
               {% if  train.0.5 > 0 %} {# 경주결과가 입력되었으면 #}
-              <th rowspan="1" width="5.0%"><span style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 2px;">실순</span></th>
+              <th rowspan="1"><span style="color:var(--color-main); font-weight: bold;">결과</span></th>
               {% endif %}
 
-              <th rowspan="1" width="5.0%"><span style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">레이팅</span></th>
+              <th rowspan="1" width="5.0%"><span style="font-size: 0.9rem; color:var(--color-light); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">레이팅</span></th>
 
               <th rowspan="1">
                 <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '99' %}"
                   onclick="window.open(this.href, 'w_cycle_winning_rate', 'width=900, height=880, toolbars=no, scrollbars=yes'); return false;">
-                  <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">Info.
+                  <span class="tooltip" style="font-size: 1.2rem; font-weight: bold;">Info.
                     <span class="tooltip-text">출주주기별 연승률 🔑</span>
                 </a>
               </th>
@@ -280,11 +280,12 @@
                     <span style="font-size: 1.15rem;">&nbsp;</span>
                     {% else %}
                       {% if i_cycle <= 16 %}
-                      <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-bg); border-radius: 10px; background-color:var(--color-r2); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      
                       {% elif i_cycle >= 68 %}
-                      <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r2); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light); border-radius: 10px; background-color:var(--color-r1); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                       {% else %}
-                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-dark); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light-gray); border-radius: 10px; background-color:var(--color-dark); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                       {% endif %}
                     {% endif %}
 
@@ -332,14 +333,14 @@
               
                   {# 경주마 체중 증감 #}
                   {% if h_weight|length > 3 %}
-                  <span style="font-family: Arial; color:var(--color-gray);">{{h_weight|slice:"0:3"}}</span>
+                  <span style="font-family: Arial; color:var(--color-gray);">{{h_weight|slice:"0:3"}}<sup style="font-size: 0.7rem; font-style: italic;">㎏</sup></span>
                   {% else %}
                     {% if h_weight|slice:"0:3" <= '440' %} 
-                    <span style="font-family: Arial; color:var(--color-r5);">{{h_weight|slice:"0:3"}}</span>
+                    <span style="font-family: Arial; color:var(--color-r5);">{{h_weight|slice:"0:3"}}<sup style="font-size: 0.7rem; font-style: italic;">㎏</sup></span>
                     {% elif h_weight|slice:"0:3" >= '500' %}
-                    <span style="font-family: Arial; color:var(--color-r2);">{{h_weight|slice:"0:3"}}</span>
+                    <span style="font-family: Arial; color:var(--color-r2);">{{h_weight|slice:"0:3"}}<sup style="font-size: 0.7rem; font-style: italic;">㎏</sup></span>
                     {% else %}
-                    <span style="font-family: Arial; color:var(--color-gray);">{{h_weight|slice:"0:3"}}</span>
+                    <span style="font-family: Arial; color:var(--color-gray);">{{h_weight|slice:"0:3"}}<sup style="font-size: 0.7rem; font-style: italic;">㎏</sup></span>
                     {% endif %}
                   {% endif %}
             
@@ -927,17 +928,17 @@
       
             <tr>
               {% if  pedigree.0.2 > 0 %}
-              <th rowspan="1"><span>예상</span></th>
+              <th rowspan="1" width="5.0%"><span style="color:var(--color-main); font-weight: bold;">예상</span></th>
               {% else %}
-              <th rowspan="2" style="vertical-align: middle;"><div>예상<br>순위</div></th>
+              <th rowspan="2" style="vertical-align: middle;"><div style="font-size: 2.0rem; color: var(--color-r3);">𝐑</div></th>
               {% endif %}
 
-              <th rowspan="1" valign="center" width="5.0%"><span>마번</span></th>
+              <th rowspan="1" valign="center" width="5.0%"><span style="color:var(--color-main); font-weight: bold;">마번</span></th>
 
               <th colspan="1" width="12%">
                 <a href="{% url 'status_stable' r_condition.rcity r_condition.rdate r_condition.rno %}"
                   onclick="window.open(this.href, 'w_status_stable', 'width=900, height=880, toolbars=no, scrollbars=yes'); return false;">
-                  <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">🐴&nbsp;Horse
+                  <span class="tooltip" style="font-size: 1.2rem; font-weight: bold;">🐴&nbsp;Horse
                     <span class="tooltip-text">🐴&nbsp;마방 경주마 보유현황 🔑</span>
                 </a>
               </th>
@@ -968,15 +969,15 @@
             </tr>
             <tr>
               {% if  pedigree.0.2 > 0 %} {# 경주결과가 입력되었으면 #}
-              <th rowspan="1"><span style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 2px;">실순</span></th>
+              <th rowspan="1"><span style="color:var(--color-main); font-weight: bold;">결과</span></th>
               {% endif %}
 
-              <th rowspan="1"><span style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">레이팅</span></th>
+              <th rowspan="1"><span style="font-size: 0.9rem; color:var(--color-light); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">레이팅</span></th>
 
               <th rowspan="1">
                 <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '99' %}"
                   onclick="window.open(this.href, 'w_cycle_winning_rate', 'width=900, height=880, toolbars=no, scrollbars=yes'); return false;">
-                  <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">Info.
+                  <span class="tooltip" style="font-size: 1.2rem; font-weight: bold;">Info.
                     <span class="tooltip-text">출주주기별 연승률 🔑</span>
                 </a>
               </th>
@@ -1118,11 +1119,12 @@
                     <span style="font-size: 1.15rem;">&nbsp;</span>
                     {% else %}
                       {% if i_cycle <= 16 %}
-                      <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-bg); border-radius: 10px; background-color:var(--color-r2); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      
                       {% elif i_cycle >= 68 %}
-                      <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r2); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light); border-radius: 10px; background-color:var(--color-r1); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                       {% else %}
-                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-dark); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light-gray); border-radius: 10px; background-color:var(--color-dark); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                       {% endif %}
                     {% endif %}
                     {# 출생지 #}
@@ -1693,18 +1695,18 @@
           <thead>
           
             <tr>
-              {% if  paternal.0.3 > 0 %}
-              <th rowspan="1" width="5.0%"><span>예상</span></th>
+              {% if pedigree.0.2 > 0 %} {# 경주결과가 입력되었으면 #}
+              <th rowspan="1" width="5.0%"><span style="color:var(--color-main); font-weight: bold;">예상</span></th>
               {% else %}
-              <th rowspan="2" width="5.0%" style="vertical-align: middle;"><div>예상<br>순위</div></th>
+              <th rowspan="2" style="vertical-align: middle;"><div style="font-size: 2.0rem; color: var(--color-r3);">𝐑</div></th>
               {% endif %}
 
-              <th rowspan="1" valign="center" width="5.0%"><span>마번</span></th>
+              <th rowspan="1" valign="center" width="5.0%"><span style="color:var(--color-main); font-weight: bold;">마번</span></th>
 
               <th colspan="1">
                 <a href="{% url 'status_stable' r_condition.rcity r_condition.rdate r_condition.rno %}"
                   onclick="window.open(this.href, 'w_status_stable', 'width=900, height=880, toolbars=no, scrollbars=yes'); return false;">
-                  <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">🐴&nbsp;Horse
+                  <span class="tooltip" style="font-size: 1.2rem; font-weight: bold;">🐴&nbsp;Horse
                     <span class="tooltip-text">마방 경주마 보유현황 🔑</span>
                   </span>
                 </a>
@@ -1723,16 +1725,16 @@
             </tr>
           
             <tr>
-              {% if paternal.0.3 > 0 %} {# 경주결과가 입력되었으면 #}
-              <th rowspan="1" width="5.0%"><span style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 2px;">실순</span></th>
+              {% if  pedigree.0.2 > 0 %} {# 경주결과가 입력되었으면 #}
+              <th rowspan="1"><span style="color:var(--color-main); font-weight: bold;">결과</span></th>
               {% endif %}
 
-              <th rowspan="1" width="5.0%"><span style="font-size: 0.9rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">레이팅</span></th>
+              <th rowspan="1" width="5.0%"><span style="font-size: 0.9rem; color:var(--color-light); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">레이팅</span></th>
 
               <th rowspan="1">
                 <a href="{% url 'cycle_winning_rate' r_condition.rcity r_condition.rdate r_condition.rno 'trainer' '99' %}"
                   onclick="window.open(this.href, 'w_cycle_winning_rate', 'width=900, height=880, toolbars=no, scrollbars=yes'); return false;">
-                  <span class="tooltip" style="font-size: 1.2rem; font-weight: 400;">Info.
+                  <span class="tooltip" style="font-size: 1.2rem; font-weight: bold;">Info.
                     <span class="tooltip-text">출주주기별 연승률 🔑</span>
                 </a>
               </th>
@@ -1880,11 +1882,12 @@
                     <span style="font-size: 1.15rem;">&nbsp;</span>
                     {% else %}
                       {% if i_cycle <= 16 %}
-                      <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-bg); border-radius: 10px; background-color:var(--color-r2); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      
                       {% elif i_cycle >= 68 %}
-                      <span class="blink" style="font-family: Arial; font-size:1.15rem; color:var(--color-r2); border-radius: 10px; background-color:var(--color-bg); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light); border-radius: 10px; background-color:var(--color-r1); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                       {% else %}
-                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-gray); border-radius: 10px; background-color:var(--color-dark); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light-gray); border-radius: 10px; background-color:var(--color-dark); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                       {% endif %}
                     {% endif %}
                     {# 출생지 #}
