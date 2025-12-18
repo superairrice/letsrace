@@ -3639,20 +3639,18 @@ def get_prediction(i_rdate):
     try:
         cursor = connection.cursor()
 
-        strSql = (
-            """
+        strSql = """
             select a.rcity, a.rdate, a.rday, a.rno, b.gate, b.rank, b.r_rank, b.horse, b.remark, b.jockey, b.trainer, b.host, b.r_pop, a.distance, b.handycap, b.i_prehandy, b.complex,
                 b.complex5, b.gap_back, 
                 b.jt_per, b.jt_cnt, b.jt_3rd,
-                b.s1f_rank, b.i_cycle, a.rcount, recent3, recent5, convert_r, jockey_old, reason, b.alloc3r*1
+                b.s1f_rank, b.i_cycle, a.rcount, recent3, recent5, convert_r, jockey_old, reason, b.alloc3r*1, b.m_rank, b.m_score, b.s1f_per, b.g1f_per, b.start_score, b.comment_one, b.g2f_rank
             
             from exp010 a, exp011 b
             where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
             and a.rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 4 DAY), '%%Y%%m%%d')
             and b.rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98, 99 )
-            order by b.rcity, b.rdate, b.rno, b.rank, b.gate
+            order by b.rcity, b.rdate, b.rno, b.m_rank, b.gate
             ; """
-        )
         cursor.execute(strSql, (i_rdate, i_rdate))
         expects = cursor.fetchall()
 
@@ -3707,7 +3705,7 @@ def get_prediction(i_rdate):
         print("Failed selecting in BookListView")
     finally:
         cursor.close()
-        
+
     # rdays Query
     try:
         cursor = connection.cursor()
@@ -5642,7 +5640,7 @@ def set_changed_race_rank_20250814(i_rcity, i_rdate, i_rno, r_content):
 
             except:
                 # connection.rollback()
-                print("Failed updating in exp011 : 경주마 순위")
+                print("Failed updating in exp011 : Corners 1")
 
         elif len(items) == 12:  # 부산 경주기록
             gate = items[1]
@@ -5701,7 +5699,7 @@ def set_changed_race_rank_20250814(i_rcity, i_rdate, i_rno, r_content):
 
             except:
                 # connection.rollback()
-                print("Failed updating in exp011 : 경주마 순위")
+                print("Failed updating in exp011 : Corners 2")
 
     return len(lines)
 
@@ -5778,7 +5776,7 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
 
                 except:
                     # connection.rollback()
-                    print("Failed updating in exp011 : 경주마 순위")
+                    print("Failed updating in exp011 : r_rank")
                 finally:
                     cursor.close()
 
@@ -5790,54 +5788,35 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
                 g1f = items[11][2:]
                 record = items[12][0:6]
 
-                # print(index, items, len(items), items[0][0:4])
+                # print(index, items, len(items), items[0][0:4], gate, corners, s1f, g3f, g1f, record)
 
                 try:
                     cursor = connection.cursor()
 
                     strSql = (
                         """ update exp011
-                            set corners = '"""
-                        + corners
-                        + """',
-                            r_record = '"""
-                        + record
-                        + """',
-                            r_s1f = '"""
-                        + s1f
-                        + """',
-                            r_g3f = '"""
-                        + g3f
-                        + """',
-                            r_g1f = '"""
-                        + g1f
-                        + """'
-                            where rcity = '"""
-                        + rcity
-                        + """'
-                        and rdate = '"""
-                        + rdate
-                        + """'
-                        and rno = """
-                        + rno
-                        + """
-                        and gate = """
-                        + gate
-                        + """
-                    ; """
+                            set corners = %s,
+                                r_record = %s,
+                                r_s1f = %s,
+                                r_g3f = %s,
+                                r_g1f = %s
+                            where rcity = %s
+                                and rdate = %s
+                                and rno = %s
+                                and gate = %s
+                        ; """
                     )
-
-                    # print(strSql)
-                    r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+                    params = (corners, record, s1f, g3f, g1f, rcity, rdate, rno, gate)
+                    r_cnt = cursor.execute(strSql, params)
                     awards = cursor.fetchall()
 
-                except:
-                    # connection.rollback()
-                    print("Failed updating in exp011 : 경주마 순위")
+                except Exception as e:
+                    print("Failed updating in exp011 : Corners 3", e)
                 finally:
                     cursor.close()
 
-            elif len(items) == 12:  # 부산 경주기록
+            elif len(items) == 12 and items[1][0:1] != ' ':  # 부산 경주기록
+
                 gate = items[1]
                 corners = items[2]
                 s1f = items[3][2:]
@@ -5886,11 +5865,12 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
                     r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
                     awards = cursor.fetchall()
 
-                except:
-                    # connection.rollback()
-                    print("Failed updating in exp011 : 경주마 순위")
+                except Exception as e:
+                    connection.rollback()
+                    print("Failed Update exp011 Corners 4:", e, strSql)
                 finally:
-                    cursor.close()
+                    if cursor:
+                        cursor.close()
 
             elif items[0][0:3] == '복승식' and items[0][-2:] != '00':
                 # print(index, items, items[0][5:])
@@ -6003,6 +5983,131 @@ def set_changed_race_rank(i_rcity, i_rdate, i_rno, r_content):
                     print("Failed updating in rec010 : 복승식 배당율")
                 finally:
                     cursor.close()
+
+    # 예시: DB 처리 로직
+    try:
+        cursor = connection.cursor()
+
+        strSql = (
+            """
+            UPDATE rec010 a
+            JOIN The1.exp010 b
+            ON a.rcity = b.rcity
+            AND a.rdate = b.rdate
+            AND a.rno   = b.rno
+            SET 
+                a.rday      = b.rday,
+                a.distance = b.distance,
+                a.grade     = b.grade,
+                a.dividing      = b.dividing,
+                
+                a.rcon1 = b.rcon1,
+                a.rcon2 = b.rcon2,
+                a.r1award = b.r1award,
+                a.r2award = b.r2award,
+                a.r3award = b.r3award,
+                a.r4award = b.r4award,
+                a.r5award = b.r5award
+            WHERE a.rcity = '"""
+            + rcity
+            + """'
+            AND a.rdate = '"""
+            + rdate
+            + """'
+            AND a.rno  = """
+            + str(rno)
+            + """
+            ; """
+        )
+
+        # print(strSql)
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        # connection.commit()
+
+    except Exception as e:
+        connection.rollback()
+        print("Failed Update exp010 all :", e, strSql)
+    finally:
+        if cursor:
+            cursor.close()
+
+    # 예시: DB 처리 로직
+    try:
+        cursor = connection.cursor()
+
+        # complex5 update
+        strSql = (
+            """
+            UPDATE rec011 a
+            JOIN The1.exp011 b
+            ON a.rcity = b.rcity
+            AND a.rdate = b.rdate
+            AND a.rno   = b.rno
+            AND a.gate  = b.gate
+            SET 
+                a.rank      = b.r_rank,
+                a.birthplace = b.birthplace,
+                a.h_sex     = b.h_sex,
+                a.h_age      = b.h_age,
+                a.h_weight  = substr(b.h_weight, 1, 3),
+                a.w_change  = Trim(substr(b.h_weight, 4)),
+                
+                a.jt_per = b.jt_per,
+                a.jt_cnt = b.jt_cnt,
+                a.jt_1st = b.jt_1st,
+                a.jt_2nd = b.jt_2nd,
+                a.jt_3rd = b.jt_3rd,
+                
+                a.alloc1r   = b.alloc1r,
+                a.alloc3r   = b.alloc3r,
+                
+                a.i_cycle  = b.i_cycle,
+                a.reason    = b.reason,
+                a.jockey    = b.jockey,
+                a.trainer   = b.trainer,
+                a.host     = b.host,
+                a.rating    = b.rating,
+                a.handycap  = b.handycap,
+                -- a.i_prehandy  = f_prehandy( a.handycap, a.rdate, a.horse ),
+                a.jockey_old = b.jockey_old,
+                a.corners   = replace( b.corners,' ', ''),
+                a.record  = b.r_record,
+                a.recent3  = b.recent3,
+                a.recent5  = b.recent5,
+                a.convert_r = b.convert_r,
+                a.p_record = b.complex,
+                a.p_rank   = b.rank,
+                a.rs1f    = b.r_s1f,
+                a.rg3f    = b.r_g3f,
+                a.rg1f    = b.r_g1f,
+                a.i_s1f = f_s2t(b.r_s1f),
+                a.i_g3f = f_s2t(b.r_g3f),
+                a.i_g1f = f_s2t(b.r_g1f)
+                
+            WHERE a.rcity = '"""
+            + rcity
+            + """'
+            AND a.rdate = '"""
+            + rdate
+            + """'
+            AND a.rno  = """
+            + str(rno)
+            + """
+            ; """
+        )
+
+        # print(strSql)
+
+        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
+        # connection.commit()
+
+    except Exception as e:
+        connection.rollback()
+        print("Failed Update exp011 all :", e, strSql)
+    finally:
+        if cursor:
+            cursor.close()
 
     # print(lines)
     return len(lines)

@@ -1,7 +1,35 @@
 {% load humanize %}
 {% load mathfilters %}
 
+<style>
+  /* 원래 내장된 tooltip 텍스트는 숨기고, 포탈로만 표시 */
+  .tooltip .tooltip-text { display: none !important; }
+  /* 포탈 기본 스타일 (JS에서 position과 좌표만 제어) */
+  .tooltip-portal {
+    position: fixed;
+    z-index: 99999;
+    max-width: 40rem;
+    background: rgba(18, 18, 18, 0.96);
+    color: var(--color-light-gray);
+    padding: 8px 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    pointer-events: none;
+    font-size: 1.1rem;
+    line-height: 1.35;
+  }
+</style>
+
 <div class="roomListRoom" style="height:max-content; border-radius: 7px; padding: 0px; margin: 0px;">
+  <style>
+    /* home_left_sub2와 동일한 은은한 교차 배경 + 일관된 호버 */
+    tr.alt-row-odd td { background-color: rgba(255,255,255,0.03); transition: background-color .18s ease; }
+    tr.alt-row-even td { background-color: rgba(0,0,0,0.06);  transition: background-color .18s ease; }
+    tr.alt-row-odd:hover td { background-color: rgba(255,255,255,0.06); }
+    tr.alt-row-even:hover td { background-color: rgba(0,0,0,0.12); }
+    tr.alt-row-odd:hover, tr.alt-row-even:hover { filter: brightness(1.06); }
+  </style>
 
   <ul class="tabs">
     {% if rdays.0.0 %}<li class="tab-link {% if rdays.0.0  == rdays.0.2 or rflag == False %}current{% endif %}" data-tab="tab-1" style="padding: 6px 25px; border-radius: 4px;">

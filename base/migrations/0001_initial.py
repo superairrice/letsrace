@@ -291,7 +291,7 @@ class Migration(migrations.Migration):
                 ('adv_jockey', models.DecimalField(blank=True, decimal_places=4, max_digits=10, null=True)),
                 ('adv_track', models.DecimalField(blank=True, decimal_places=4, max_digits=10, null=True)),
                 ('i_convert', models.DecimalField(blank=True, decimal_places=4, max_digits=10, null=True)),
-                ('alloc1r', models.DecimalField(blank=True, decimal_places=4, max_digits=10, null=True)),
+                # ('alloc1r', models.DecimalField(blank=True, decimal_places=4, max_digits=10, null=True)),
                 ('alloc3r', models.DecimalField(blank=True, decimal_places=4, max_digits=10, null=True)),
                 ('p_rank', models.IntegerField(blank=True, null=True)),
                 ('p_record', models.CharField(blank=True, db_collation='euckr_korean_ci', max_length=6, null=True)),

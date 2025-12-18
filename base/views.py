@@ -13,12 +13,14 @@ from django.db.models import Count, Max, Min, Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
+from base.compute_gpt import process_race
 from base.data_management import (
     get_krafile,
     krafile_convert,
 )
 
 from base.race_compute import baseline_compute, create_record, renewal_record_s
+from base.race_finalscore import update_exp010_overview_for_race, update_exp011_for_period, update_exp011_for_race
 from base.simulation2 import get_weight2, mock_insert2, mock_traval2
 from base.mysqls import (
     get_award,
@@ -71,6 +73,7 @@ from base.mysqls import (
 from base.simulation import mock_insert, mock_traval, get_weight
 
 from base.race import countOfRace, recordsByHorse
+from base.train_LightGBM import update_m_rank_score_for_period, update_m_rank_score_for_race
 from letsrace.settings import KRAFILE_ROOT
 
 
@@ -430,6 +433,8 @@ def home(request):
 
     q = request.GET.get("q") if request.GET.get("q") != None else ""  # 경마일
 
+    view_type = request.GET.get("view_type") if request.GET.get("view_type") != None else ""  # 정렬방식
+
     if q == "":
         # rdate = Racing.objects.values("rdate").distinct()[0]["rdate"]  # 초기값은 금요일
 
@@ -471,6 +476,19 @@ def home(request):
     race, expects, rdays, judged_jockey, changed_race, award_j = get_prediction(i_rdate)
     # print(racings)
 
+    if view_type == "1":
+        # expects는 raw SQL fetchall 결과(튜플)일 수 있음. 안전하게 정렬 키를 구성.
+        def _exp_key(row):
+            # 객체(Attr) 또는 튜플(Idx) 모두 지원
+            if hasattr(row, "rcity"):
+                return (row.rcity, row.rdate, row.rno, row.rank, row.gate)
+            # 튜플 인덱스: a.rcity(0), a.rdate(1), a.rno(3), b.gate(4), b.rank(5)
+            try:
+                return (row[0], row[1], row[3], row[5], row[4])
+            except Exception:
+                return row
+        expects = sorted(expects, key=_exp_key)
+        
     # expects Query
     try:
         cursor = connection.cursor()
@@ -527,8 +545,8 @@ def home(request):
         "judged_jockey": judged_jockey,
         "changed_race": changed_race,               #출마표 젼경
         "rflag": rflag,  # 경마일, 비경마일 구분
-        # "topics": topics,  
-        
+        "view_type": view_type,
+
     }
 
     return render(request, "base/home.html", context)
@@ -536,19 +554,19 @@ def home(request):
 # @login_required(login_url="home")
 def racePrediction(request, rcity, rdate, rno, hname, awardee):
 
-    exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
-        "rank", "gate"
-    )
-    if exp011s:
-        pass
+    view_type = (
+        request.GET.get("view_type") if request.GET.get("view_type") != None else ""
+    )  # 정렬방식
+
+    if view_type == "1":
+        exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
+            "rank", "gate"
+        )
     else:
-        return render(request, "base/home.html")
-
-    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
-
-    hr_records = recordsByHorse(rcity, rdate, rno, 'None')
-    # print(hr_records)
-
+        exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
+            "m_rank", "gate"
+        )
+        
     compare_r = exp011s.aggregate(
         Min("i_s1f"),
         Min("i_g1f"),
@@ -565,6 +583,11 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         Min("convert_r"),
         Min("s1f_rank"),
     )
+
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+
+    hr_records = recordsByHorse(rcity, rdate, rno, 'None')
+    # print(hr_records)
 
     try:
         alloc = Rec010.objects.get(rcity=rcity, rdate=rdate, rno=rno)
@@ -648,6 +671,7 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         "recovery_cnt": recovery_cnt,
         "start_cnt": start_cnt,
         "audit_cnt": audit_cnt,
+        "view_type": view_type,
     }
 
     return render(request, "base/race_prediction.html", context)
@@ -1610,6 +1634,74 @@ def raceReview(request, rcity, rdate, rno):
     }
     return render(request, "base/race_review.html", context)
 
+
+def raceBreakingNews(request):
+    r_content = (
+        request.POST.get("r_content") if request.POST.get("r_content") != None else ""
+    )
+
+    rcity = request.POST.get("rcity") if request.POST.get("rcity") != None else ""
+
+    fdate = (
+        request.POST.get("fdate") if request.POST.get("fdate") != None else "0000-00-00"
+    )
+
+    rno = request.POST.get("rno") if request.POST.get("rno") != None else 99
+
+    rcount = request.POST.get("rcount") if request.POST.get("rcount") != None else 30
+
+    fdata = request.POST.get("fdata") if request.POST.get("fdata") != None else "-"
+
+    # fdate = rdate[0:4] + '-' + rdate[4:6] + '-' + rdate[6:8]
+    rdate = fdate[0:4] + fdate[5:7] + fdate[8:10]
+
+    if fdata == "-":
+        result_cnt = 0
+        pass
+    elif fdata == "출전표변경":
+        result_cnt = set_changed_race(rcity, rdate, rno, r_content)
+    elif fdata == "마체중":
+        result_cnt = set_changed_race_weight(rcity, rdate, rno, r_content)
+    elif fdata == "경주순위":
+        result_cnt = set_changed_race_rank(rcity, rdate, rno, r_content)
+    elif fdata == "경주마취소":
+        result_cnt = set_changed_race_horse(rcity, rdate, rno, r_content)
+    elif fdata == "기수변경":
+        result_cnt = set_changed_race_jockey(rcity, rdate, rno, r_content)
+    elif fdata == "수영조교":
+        result_cnt = insert_train_swim(r_content)
+    elif fdata == "말진료현황":
+        result_cnt = insert_horse_disease(r_content)
+    elif fdata == "출전등록 시뮬레이션":
+        result_cnt = insert_race_simulation(rcity, rcount, r_content)
+    elif fdata == "심판위원 Report":
+        result_cnt = insert_race_judged(rcity, r_content)
+    elif fdata == "출발심사(b4)":
+        result_cnt = insert_start_audit(r_content)
+    elif fdata == "출발조교(b5)":
+        result_cnt = insert_start_train(r_content)
+
+    exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=86)
+
+    context = {
+        "rcity": rcity,
+        "rdate": rdate,
+        "rno": rno,
+        "rcount": rcount,
+        "exp011s": exp011s,
+        "r_content": r_content,
+        "fdata": fdata,
+        "fdate": fdate,
+        "result_cnt": result_cnt,
+    }
+
+    # user = request.user
+    # form = UserForm(instance=user)
+
+    # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
+    return render(request, "base/race_breakingnews.html", context)
+
+
 # record calculation 기준정보 Setup
 def raceCalculation(request):
 
@@ -1675,13 +1767,13 @@ def raceCalculation(request):
             # print("POST", rdate1, rdate2)
             # print("경주 기준정보 계산 시작", rdate1)
 
-            renewal_record_s(connection, rdate1)
-
             ret = baseline_compute(connection, rdate1)
             if ret == 1:
                 messages.success(request, "경주 기준정보 계산 완료.")
             else:
                 messages.error(request, "경주 기준정보 계산 오류 발생.")
+
+            renewal_record_s(connection, rdate1)
 
         else:
 
@@ -1733,10 +1825,21 @@ def raceCalculation(request):
             r_condition = Exp010.objects.filter(rcity=exp010[0], rdate=exp010[1], rno=exp010[2]).get()
 
             create_record(connection, r_condition, weight)
-            print(exp010, "경주 Mock Audit 완료")
 
-            if exp010[2] == 1:
-                break
+            execChatGPT(request, rcity=exp010[0], rdate=exp010[1], rno=exp010[2])
+
+            print(exp010, "경주 집계 완료")
+
+            # if exp010[2] == 1:
+            #     break
+
+        update_m_rank_score_for_period(
+            rdate1,
+            rdate2,
+            model_name="sb_top3_20241129_20251130",
+        )
+
+        update_exp011_for_period(rdate1, rdate2)
 
     context = {
         "q1": q1,
@@ -1770,7 +1873,7 @@ def mockAudit(request, rcity, rdate, rno, hname, awardee):
     weight = get_weight2(rcity, rdate, rno)  # 예상: list/tuple 형태
     # print("first weight:", weight)
     wdate = weight[0][7].strftime("%Y-%m-%d %H:%M:%S")
-    
+
     w_avg = weight[0][0]
     w_fast = weight[0][1]
     w_slow = weight[0][2]
@@ -1778,19 +1881,20 @@ def mockAudit(request, rcity, rdate, rno, hname, awardee):
     w_recent5 = weight[0][4]
     w_convert = weight[0][5]
     w_flag = weight[0][6]
-    
+
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+    # print("r_condition:", r_condition)
 
     mock_insert2(rcity, rdate, rno)
 
     # 5) do_calc 체크: ?calc=1 이면 집계 실행 (fetch로 호출되는 경우)
     do_calc = request.GET.get("calc", "0")
     if do_calc == "1":
-        
+
         # weight = get_weight2(rcity, rdate, rno)  # 예상: list/tuple 형태
         # print("weight:", weight[0][0])
         # wdate = weight[0][7].strftime("%Y-%m-%d %H:%M:%S")
-        
+
         w_avg = request.GET.get("w_avg") 
         w_fast = request.GET.get("w_fast") 
         w_slow = request.GET.get("w_slow") 
@@ -1819,11 +1923,11 @@ def mockAudit(request, rcity, rdate, rno, hname, awardee):
             weight_sum_ok = True
         else:
             weight_sum_ok = False
-        
+
         if weight_sum_ok:
-            
+
             messages.warning(request, "weight ok")
-            
+
             try:
                 with connection.cursor() as cursor:
                     update_sql = """
@@ -1842,7 +1946,7 @@ def mockAudit(request, rcity, rdate, rno, hname, awardee):
                 except Exception:
                     pass
                 return JsonResponse({"status": "error", "msg": "Broken pipe"})
-            
+
             # INSERT weight_s2 (파라미터 바인딩으로 안전하게)
             try:
                 with connection.cursor() as cursor:
@@ -1878,6 +1982,12 @@ def mockAudit(request, rcity, rdate, rno, hname, awardee):
             except Exception as e:
                 print("❌ mock_traval2 에러:", e)
                 return JsonResponse({"status": "error", "msg": "Broken pipe"})
+
+            update_m_rank_score_for_race(
+                rcity, rdate, rno, model_name="sb_top3_20241129_20251130"
+            )  # 저장해둔 모델 이름
+            
+            
             
         else:
             messages.error(request, "weight error")
@@ -1891,6 +2001,9 @@ def mockAudit(request, rcity, rdate, rno, hname, awardee):
     exp011s = Exp011s2.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
         "rank", "gate"
     )
+    # for r in exp011s:
+    #     print(r.s1f_rank, r.g1f_rank, r.g2f_rank, r.g3f_rank)
+
     if not exp011s.exists():
         return render(request, "base/home.html")
 
@@ -2398,36 +2511,46 @@ def mockAccept(request, rcity, rdate, rno):
             # complex5 update
             strSql = (
                 """
-                UPDATE exp011  a
-                SET rank = ( select rank from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    complex = ( select complex from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    recent3 = ( select recent3 from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    recent5 = ( select recent5 from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    convert_r = ( select convert_r from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    rs1f = ( select rs1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    rg3f = ( select rg3f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    rg2f = ( select rg2f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    rg1f = ( select rg1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    cs1f = ( select cs1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    cg3f = ( select cg3f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    cg2f = ( select cg2f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    cg1f = ( select cg1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    i_s1f = ( select i_s1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    i_g3f = ( select i_g3f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    i_g2f = ( select i_g2f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    i_g1f = ( select i_g1f from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    remark = ( select remark from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    bet = ( select bet from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    complex5 = ( select complex5 from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    gap = ( select gap from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate ),
-                    gap_back = ( select gap_back from The1.exp011s2 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and gate = a.gate )
-                WHERE rcity = '"""
+                UPDATE exp011 a
+                JOIN The1.exp011s2 b
+                ON a.rcity = b.rcity
+                AND a.rdate = b.rdate
+                AND a.rno   = b.rno
+                AND a.gate  = b.gate
+                SET 
+                    a.rank      = b.rank,
+                    a.complex   = b.complex,
+                    a.recent3   = b.recent3,
+                    a.recent5   = b.recent5,
+                    a.convert_r = b.convert_r,
+                    a.rs1f      = b.rs1f,
+                    a.rg3f      = b.rg3f,
+                    a.rg2f      = b.rg2f,
+                    a.rg1f      = b.rg1f,
+                    a.cs1f      = b.cs1f,
+                    a.cg3f      = b.cg3f,
+                    a.cg2f      = b.cg2f,
+                    a.cg1f      = b.cg1f,
+                    a.i_s1f     = b.i_s1f,
+                    a.i_g3f     = b.i_g3f,
+                    a.i_g2f     = b.i_g2f,
+                    a.i_g1f     = b.i_g1f,
+                    a.s1f_rank  = b.s1f_rank,
+                    a.g3f_rank  = b.g3f_rank,
+                    a.g2f_rank  = b.g2f_rank,
+                    a.g1f_rank  = b.g1f_rank,
+                    a.remark    = b.remark,
+                    a.bet       = b.bet,
+                    a.complex5  = b.complex5,
+                    a.gap       = b.gap,
+                    a.gap_back  = b.gap_back
+                WHERE a.rcity = '"""
                 + rcity
                 + """'
-                AND rdate = '"""
+                AND a.rdate = '"""
                 + rdate
                 + """'
-                AND rno  = """
+                AND a.rno  = """
                 + str(rno)
                 + """
                 ; """
@@ -2456,6 +2579,210 @@ def mockAccept(request, rcity, rdate, rno):
     # 잘못된 요청일 경우
     return JsonResponse({"status": "error", "message": "Invalid request"}, status=400)
 
+from django.http import JsonResponse
+from django.db import connection
+
+# from compute_gpt import process_race  # 우리가 만든 모듈
+
+def execChatGPT(request, rcity, rdate, rno):
+    """
+    ChatGPT 기반 예측을 수행하는 함수
+    - exp011에서 해당 경주마들 조회
+    - compute_gpt.process_race 로 예측
+    - 결과를 JSON으로 반환
+    """
+
+    cursor = None
+    try:
+        cursor = connection.cursor()
+
+        # ✅ 안전한 파라미터 바인딩 사용
+        strSql = """
+            SELECT
+                rcity,
+                rdate,
+                rno,
+                gate,
+                horse,
+                birthplace,
+                h_sex,
+                h_age,
+                handycap,
+                joc_adv,
+                jockey,
+                trainer,
+                host,
+                rating,
+                prize_tot,
+                prize_year,
+                prize_half,
+                tot_1st,
+                tot_2nd,
+                tot_3rd,
+                tot_race,
+                year_1st,
+                year_2nd,
+                year_3rd,
+                year_race,
+                
+                if(f_s2t(recent3) = 0,f_s2t(recent5),f_s2t(recent3)) AS recent3,
+                f_s2t(recent5) AS recent5,
+                if(f_s2t(fast_r) = 0,f_s2t(recent5),f_s2t(fast_r)) AS fast_r,
+                if(f_s2t(slow_r) = 0,f_s2t(recent5),f_s2t(slow_r)) AS slow_r,
+                if(f_s2t(avg_r) = 0,f_s2t(recent5),f_s2t(avg_r)) AS avg_r,
+
+                rs1f,
+                r1c,
+                r2c,
+                r3c,
+                r4c,
+                rg3f,
+                rg2f,
+                rg1f,
+
+                cs1f,
+                cg3f,
+                cg2f,
+                cg1f,
+                rank,
+                i_s1f,
+                i_g3f,
+                i_g2f,
+                i_g1f,
+
+                i_jockey,
+                i_cycle,
+                i_prehandy,
+
+                remark,
+                s1f_rank,
+                g2f_rank,
+
+                h_weight,
+                j_per,
+                t_per,
+                jt_per,
+                jt_cnt,
+                jt_1st,
+                jt_2nd,
+                jt_3rd,
+                ( select distance from exp010 where rcity = The1.exp011.rcity and rdate = The1.exp011.rdate and rno = The1.exp011.rno ) as distance
+            FROM The1.exp011
+            WHERE rcity = %s
+            AND rdate = %s
+            AND rno   = %s
+        ORDER BY gate ASC
+        """
+
+        cursor.execute(strSql, [rcity, rdate, rno])
+        exp011s = cursor.fetchall()   # 튜플 리스트
+
+        # print(f"✅ exp011 데이터 조회 완료: {(exp011s)}")
+
+        # ✅ compute_gpt.py 에서 만든 메인 함수 호출
+        predictions = process_race(exp011s)
+
+        print("✅ ChatGPT 예측 완료:")
+        # 도표 형태로 출력 (콘솔)
+        print(
+            f"{'순위':^3} | {'마번':^3} | {'종합':^3} | "
+            f"{'s1f':^5} | {'g3f':^5} | {'g1f':^5} | {'기록':^5} | {'최근8r':^5} | {'연대':^3} | {'선행%':^3} | {'마명':^10} | {'트렌드':^6} | {'코멘트':^6}"
+        )
+        print("-" * 100)
+
+        if predictions:
+            for p in predictions:
+
+                r_pop = p["expected_rank"]
+                tot_score = p["score"]
+                s1f_per = p["early_score"]
+                g3f_per = p["late_score"]
+                g1f_per = p["late200_score"]
+                rec_per = p["speed_score"]    
+                rec8_trend = p["form_score"]
+                jt_score = p["conn_score"]
+                start_score = p["front_run_place_prob"]
+                comment_one = p["one_line_comment"]
+                comment_all = p["reason"]
+
+                try:
+                    cursor = connection.cursor()
+                    update_sql = """
+                        UPDATE exp011
+                        SET r_pop = %s,
+                            tot_score = %s,
+                            s1f_per = %s,
+                            g3f_per = %s,
+                            g1f_per = %s,
+                            rec_per = %s,
+                            rec8_trend = %s,
+                            jt_score = %s,
+                            start_score = %s,
+                            comment_one = %s,
+                            comment_all = %s
+                        WHERE rcity = %s AND rdate = %s AND rno = %s AND gate = %s
+                    """
+                    cursor.execute(
+                        update_sql,
+                        (
+                            r_pop,
+                            tot_score,
+                            s1f_per,
+                            g3f_per,
+                            g1f_per,
+                            rec_per,
+                            rec8_trend,
+                            jt_score,
+                            start_score,
+                            comment_one,
+                            comment_all,
+                            rcity,
+                            rdate,
+                            rno,
+                            p["gate"],
+                        ),
+                    )
+                    connection.commit()
+                except Exception as e:
+                    print(f"Failed to update exp011: {e}")
+                finally:
+                    if cursor:
+                        cursor.close()
+
+                print(
+                    f"{p['expected_rank']:^4} | {p['gate']:^6} | "
+                    f"{p['score']:^6.2f} | {p['early_score']:^5.1f} | {p['late_score']:^5.1f} | {p['late200_score']:^5.1f} | "
+                    f"{p['speed_score']:^6.1f} | {p['form_score']:^6.1f} | {p['conn_score']:^6.1f} | {p['front_run_place_prob']:^6.1f} | {p['horse']:10} | {p['one_line_comment']:^60} | {p['reason']:^1000}"
+                )
+
+    except Exception as e:
+        # 에러 내용도 같이 내려주면 디버깅 편함
+        return JsonResponse(
+            {
+                "status": "error",
+                "message": f"Failed Select exp011 / process_race: {e}",
+            },
+            status=500,
+        )
+    finally:
+        if cursor:
+            cursor.close()
+
+    update_m_rank_score_for_race(
+                rcity, rdate, rno, model_name="sb_top3_20241129_20251130"
+            )  # 저장해둔 모델 이름
+    
+    update_exp011_for_race(rcity, rdate, rno)
+    print("---")
+
+    # ✅ 예측 결과를 그대로 반환
+    return JsonResponse(
+        {
+            "status": "success",
+            "message": f"Exec chatGPT 실행 완료 ({rcity}, {rdate}, {rno})",
+            "predictions": predictions,   # gate, horse, expected_rank, reason 등
+        }
+    )
 
 def raceSimulation(request, rcity, rdate, rno, hname, awardee):
 
@@ -3751,73 +4078,6 @@ def dataManagement(request):
     }
 
     return render(request, "base/data_management.html", context)
-
-
-def raceBreakingNews(request):
-    r_content = (
-        request.POST.get("r_content") if request.POST.get("r_content") != None else ""
-    )
-
-    rcity = request.POST.get("rcity") if request.POST.get("rcity") != None else ""
-
-    fdate = (
-        request.POST.get("fdate") if request.POST.get("fdate") != None else "0000-00-00"
-    )
-
-    rno = request.POST.get("rno") if request.POST.get("rno") != None else 99
-
-    rcount = request.POST.get("rcount") if request.POST.get("rcount") != None else 30
-
-    fdata = request.POST.get("fdata") if request.POST.get("fdata") != None else "-"
-
-    # fdate = rdate[0:4] + '-' + rdate[4:6] + '-' + rdate[6:8]
-    rdate = fdate[0:4] + fdate[5:7] + fdate[8:10]
-
-    if fdata == "-":
-        result_cnt = 0
-        pass
-    elif fdata == "출전표변경":
-        result_cnt = set_changed_race(rcity, rdate, rno, r_content)
-    elif fdata == "마체중":
-        result_cnt = set_changed_race_weight(rcity, rdate, rno, r_content)
-    elif fdata == "경주순위":
-        result_cnt = set_changed_race_rank(rcity, rdate, rno, r_content)
-    elif fdata == "경주마취소":
-        result_cnt = set_changed_race_horse(rcity, rdate, rno, r_content)
-    elif fdata == "기수변경":
-        result_cnt = set_changed_race_jockey(rcity, rdate, rno, r_content)
-    elif fdata == "수영조교":
-        result_cnt = insert_train_swim(r_content)
-    elif fdata == "말진료현황":
-        result_cnt = insert_horse_disease(r_content)
-    elif fdata == "출전등록 시뮬레이션":
-        result_cnt = insert_race_simulation(rcity, rcount, r_content)
-    elif fdata == "심판위원 Report":
-        result_cnt = insert_race_judged(rcity, r_content)
-    elif fdata == "출발심사(b4)":
-        result_cnt = insert_start_audit(r_content)
-    elif fdata == "출발조교(b5)":
-        result_cnt = insert_start_train(r_content)
-
-    exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=86)
-
-    context = {
-        "rcity": rcity,
-        "rdate": rdate,
-        "rno": rno,
-        "rcount": rcount,
-        "exp011s": exp011s,
-        "r_content": r_content,
-        "fdata": fdata,
-        "fdate": fdate,
-        "result_cnt": result_cnt,
-    }
-
-    # user = request.user
-    # form = UserForm(instance=user)
-
-    # return redirect('update_popularity', rcity=rcity, rdate=rdate, rno=rno)
-    return render(request, "base/race_breakingnews.html", context)
 
 
 @csrf_exempt

@@ -27,6 +27,7 @@ def recordsByHorse(rcity, rdate, rno, hname):
                         b.slow_r, b.avg_r, b.convert_r, b.i_cycle, b.gap_b, 
                         b.jockey_old, b.reason, b.r_pop, b.jt_per, b.jt_cnt, 
                         b.jt_1st, b.jt_2nd, b.jt_3rd, b.h_cnt, b.h_mare, if( isnull(i_prehandy), 0, handycap - i_prehandy ) AS prehandy, b.i_mock
+                        
                     FROM rec010 a
                     JOIN rec011 b ON a.rcity = b.rcity 
                                 AND a.rdate = b.rdate 

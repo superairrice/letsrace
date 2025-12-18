@@ -3,6 +3,42 @@
 {% load humanize %}
 
 <div class="room__top" style="z-index:1; border-radius: 5px;">
+  <style>
+    /* 이 헤더에서는 포탈 미사용(no-portal). 툴팁을 고정 위치로 띄우되, 내용 선택 가능하도록. */
+    .tooltip.no-portal { position: relative; }
+    .tooltip.no-portal .tooltip-text {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      top: 100%;
+      margin-top: 8px;
+      max-width: 48rem;
+      background: rgba(18,18,18,0.96);
+      color: var(--color-light-gray);
+      padding: 8px 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+      z-index: 9999;
+      /* 기본은 숨김 */
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .15s ease, visibility .15s ease;
+      /* 내용 선택 허용 */
+      user-select: text;
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      /* 줄바꿈 허용 */
+      white-space: normal;
+    }
+    .tooltip.no-portal:hover .tooltip-text,
+    .tooltip.no-portal .tooltip-text:hover {
+      visibility: visible;
+      opacity: 1;
+      pointer-events: auto; /* 내부 드래그/스크롤/복사 가능 */
+    }
+  </style>
         
   <div class="room__topLeft">
     <a href="#" class="header__logo" style="height:3.3rem; width: 3.3rem; padding-top: 0.9rem;">
@@ -22,75 +58,95 @@
         </span>
       </span>
     </a>
-    <span class="tooltip" style="font-family: Arial; font-size:1.4rem; color: var(--color-main); border-radius: 7px; padding: 4px 4px; background-color: var(--color-dark);">
+    <span class="tooltip" id="raceListTrigger" style="font-family: Arial; font-size:1.4rem; color: var(--color-main); border-radius: 7px; padding: 4px 4px; background-color: var(--color-dark); cursor:pointer;">
       &nbsp;{{r_condition.rcity}}&nbsp;&nbsp;{{r_condition.rno}}<sup style="font-size:0.9rem">R</sup>&nbsp;
-      <span class="tooltip-text" style="font-size: 1.2rem;">
-        <table class="fold-table" style="color:var(--color-main);" >
-          <thead>
-            <th style="font-family: Arial; vertical-align: middle;">
-              <span style=" font-size: 1.25rem;">⏰</span>
-            </th>
-            <th colspan="6" style="font-family: Arial; font-size: 1.3rem; text-transform: capitalize; vertical-align: middle; text-align: left;">
-              {{r_condition.rdate|slice:"0:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}})&nbsp;Race
-            </th>
-          </thead>
-          <tbody>
-            {% for rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime in weeksrace %}
-
-            {% url "race_prediction" rcity rdate rno 0 0 as url_path %}
-            <tr class="view" onclick="window.location.href='{{ url_path }}';" style="cursor:pointer; font-weight: 400;">
-              <td>
-                <span style="font-family: Arial; text-align: right; font-size: 1.25rem;">{{rtime}}</span>
-              </td>
-              <td>
-                {% if rcity == '서울' %}
-                <span style="font-size: 1.15rem; ">{{rcity}}</span>
-                {% else %}
-                <span style="font-size: 1.15rem; color:var(--color-r3);">{{rcity}}</span>
-                {% endif %}
-              </td>
-              <td align="right">
-                <span style="font-family: Arial; text-align: right; font-size: 1.25rem;">{{rno}}<sup style="font-size: 1.0rem;">R</sup>
-                </span>
-              </td>
-              <td>
-                <span style="font-family: Arial; text-align: right; font-size: 1.25rem;">{{distance}}<sup style="font-size:0.9rem">m</sup></span>
-              </td>
-              <td>
-                {% if 'OPEN' in grade %}
-                <span style="font-family: Arial; text-align: right; font-size: 1.15rem; color:var(--color-r3); background-color: var(--color-bg); border-radius: 7px;">{{grade|slice:"0:2"}}</span>
-                {% else %}
-                <span style="font-family: Arial; text-align: right; font-size: 1.2rem;">{{grade|slice:"0:2"}}</span>
-                {% endif %}
-              </td>
-              <td>
-                {% if dividing|slice:"0:1" == '핸' %}
-                <span style="font-family: Arial; text-align: right; font-size: 1.2rem; color: var(--color-r5);">{{dividing|slice:"0:2"}}</span>
-                {% elif dividing|slice:"0:1" == '마' %}
-                <span style="font-family: Arial; text-align: right; font-size: 1.2rem; color: var(--color-r3);">{{dividing|slice:"0:2"}}</span>
-                {%  else %}
-                <span style="font-family: Arial; text-align: right; font-size: 1.2rem;">{{dividing|slice:"0:2"}}</span>
-                {% endif %}
-              </td>
-              <td align="center">
-                <span style="font-family: Arial; font-size: 1.2rem;">{{rcount}}</span>
-              </td>
-              
-            </tr>
-
-            <tr class="fold">
-
-            </tr>
-            {% endfor %}
-            
-          </tbody>
-        
-        </table>
-      </span>
     </span>
-
+    <div id="raceListPopup" style="display:none; position:absolute; left:0; top:calc(100% + 12px); z-index:10000; background:rgba(18,18,18,0.98); color:var(--color-main); border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.35); padding:18px 22px; max-width:95vw; max-height:80vh; overflow:auto;">
+      <table class="fold-table" style="color:var(--color-main); width:100%;" >
+      <thead>
+        <tr>
+        <th style="font-family: Arial; vertical-align: middle;">
+          <span style=" font-size: 1.25rem;">⏰</span>
+        </th>
+        <th colspan="6" style="font-family: Arial; font-size: 1.3rem; text-transform: capitalize; vertical-align: middle; text-align: left; position:relative;">
+          {{r_condition.rdate|slice:"0:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}})&nbsp;Race
+          <button onclick="document.getElementById('raceListPopup').style.display='none';" style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer; position:absolute; right:0.5rem; top:50%; transform:translateY(-50%);">✖</button>
+        </th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime in weeksrace %}
+        {% url "race_prediction" rcity rdate rno 0 0 as url_path %}
+        <tr class="view" onclick="window.location.href='{{ url_path }}';" style="cursor:pointer; font-weight: 400;">
+        <td>
+          <span style="font-family: Arial; text-align: right; font-size: 1.25rem;">{{rtime}}</span>
+        </td>
+        <td>
+          {% if rcity == '서울' %}
+          <span style="font-size: 1.15rem; ">{{rcity}}</span>
+          {% else %}
+          <span style="font-size: 1.15rem; color:var(--color-r3);">{{rcity}}</span>
+          {% endif %}
+        </td>
+        <td align="right">
+          <span style="font-family: Arial; text-align: right; font-size: 1.25rem;">{{rno}}<sup style="font-size: 1.0rem;">R</sup>
+          </span>
+        </td>
+        <td>
+          <span style="font-family: Arial; text-align: right; font-size: 1.25rem;">{{distance}}<sup style="font-size:0.9rem">m</sup></span>
+        </td>
+        <td>
+          {% if 'OPEN' in grade %}
+          <span style="font-family: Arial; text-align: right; font-size: 1.15rem; color:var(--color-r3); background-color: var(--color-bg); border-radius: 7px;">{{grade|slice:"0:2"}}</span>
+          {% else %}
+          <span style="font-family: Arial; text-align: right; font-size: 1.2rem;">{{grade|slice:"0:2"}}</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if dividing|slice:"0:1" == '핸' %}
+          <span style="font-family: Arial; text-align: right; font-size: 1.2rem; color: var(--color-r5);">{{dividing|slice:"0:2"}}</span>
+          {% elif dividing|slice:"0:1" == '마' %}
+          <span style="font-family: Arial; text-align: right; font-size: 1.2rem; color: var(--color-r3);">{{dividing|slice:"0:2"}}</span>
+          {%  else %}
+          <span style="font-family: Arial; text-align: right; font-size: 1.2rem;">{{dividing|slice:"0:2"}}</span>
+          {% endif %}
+        </td>
+        <td align="center">
+          <span style="font-family: Arial; font-size: 1.2rem;">{{rcount}}</span>
+        </td>
+        </tr>
+        <tr class="fold"></tr>
+        {% endfor %}
+      </tbody>
+      </table>
+    </div>
+    <script>
+      (function() {
+        var trigger = document.getElementById('raceListTrigger');
+        var popup = document.getElementById('raceListPopup');
+        if(trigger && popup) {
+          trigger.onclick = function(e) {
+            e.stopPropagation();
+            // 위치를 트리거 바로 아래, 좌측정렬
+            var rect = trigger.getBoundingClientRect();
+            popup.style.display = 'block';
+            popup.style.position = 'fixed';
+            popup.style.left = rect.left + 'px';
+            popup.style.top = (rect.bottom + 10) + 'px';
+            popup.style.transform = 'none';
+          };
+          document.addEventListener('click', function(e) {
+            if(popup.style.display === 'block' && !popup.contains(e.target) && e.target !== trigger) {
+              popup.style.display = 'none';
+            }
+          });
+        }
+      })();
+    </script>
+    
+    <span style="font-size:1.4rem; color: var(--color-r3); padding: 4px 4px; font-weight: bold; background-color: var(--color-bg); border-radius: 7px; padding: 4px 8px;">{{r_condition.grade|slice:"0:2"}}</span>
     <span class="tooltip"
-      style="font-size:1.4rem; color: var(--color-main); padding: 4px 4px;">&nbsp;&nbsp;{{r_condition.grade|slice:"0:2"}}&nbsp;&nbsp;{{r_condition.rcon1}}&nbsp;&nbsp;
+      style="font-size:1.4rem; color: var(--color-main); padding: 4px 4px;">{{r_condition.rcon1}}
       <span class="tooltip-text" style="font-size:1.2rem; color: var(--color-main);">
         {{r_condition.rname}} <br>
         {{r_condition.rcon2}} 
@@ -98,7 +154,7 @@
     </span>
 
     <span style="font-size:1.4rem; color: var(--color-main-light); padding: 4px 4px;">{{r_condition.dividing}}</span>
-    <span class="tooltip" style="color:var(--color-light); font-size: 1.4rem; font-family: Arial; padding: 4px 4px;">&nbsp;&nbsp;💵&nbsp;{{r_condition.r1award|div:1000|intcomma}}
+    <span class="tooltip" style="color:var(--color-light); font-size: 1.4rem; font-family: Arial; padding: 4px 4px;">&nbsp;{{r_condition.r1award|div:1000|intcomma}}
       <span class="tooltip-text" style="text-align: right; font-family: Arial;">
         <table>
           <thead>
@@ -136,45 +192,42 @@
     <!-- <a href="http://kra.fiveplayer.co.kr/player.php?f={{r_condition.rdate}}/{% if r_condition.rcity == '서울' %}s{%else%}b{%endif%}{{r_condition.rno}}r" -->
     <a href="https://kraplayer.starplayer.net/kra/vod/starplayer.php?meet={% if r_condition.rcity == '서울' %}1{%else%}3{%endif%}&rcdate={{r_condition.rdate}}&rcno={{r_condition.rno}}&vod_type=r"
       onclick="window.open(this.href, '_blank', 'width=1400, height=700, toolbars=no, scrollbars=yes'); return false;">
-      <span class="tooltip" style="padding: 4px 4px;">&nbsp;&nbsp;🖥️&nbsp;&nbsp;
+      <span class="tooltip" style="padding: 4px 4px;">&nbsp;🖥️&nbsp;
         <span class="tooltip-text" style="font-size:1.2rem;">🖥️&nbsp;&nbsp;경주결과 영상</span></span>
     </a>
-    
-  </div>
 
-  <div class="room__topRight">
-    {%if alloc.r2alloc %}
-    <span class="tooltip" style="font-family: Arial; color:var(--color-r5); font-size: 1.4rem; background-color: var(--color-bg); padding: 2px 6px; border-radius: 7px;">💰&nbsp;{{alloc.r2alloc|slice:"2:10"|rjust:10}}
-      <span class="tooltip-text" style="text-align: left; font-family: Arial;">
-        <table>
-          <thead>
-            <tr>
-              <th style="font-family: Arial; font-size: 1.2rem;">승식</th>
-              <th style="font-family: Arial; font-size: 1.2rem;">배당율</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style="font-family: Arial; font-size: 1.2rem;">복승</td>
-              <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{alloc.r2alloc|slice:"2:"}}</td>
-            </tr>
-            <tr>
-              <td style="font-family: Arial; font-size: 1.2rem;">삼복승</td>
-              <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{alloc.r333alloc|slice:"3:"}}</td>
-            </tr>
-            <tr>
-              <td style="font-family: Arial; font-size: 1.2rem;">삼쌍승</td>
-              <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{alloc.r123alloc|slice:"3:"}}</td>
-            </tr>
+    <div class="room__topRight">
+      {%if alloc.r2alloc %}
+      <span class="tooltip" style="font-family: Arial; color:var(--color-r5); font-size: 1.4rem; background-color: var(--color-bg); padding: 2px 6px; border-radius: 7px; width:5.5rem; text-align: right; padding:0.4rem;">{{alloc.r2alloc|slice:"2:10"|rjust:10}}
+        <span class="tooltip-text" style="text-align: left; font-family: Arial;">
+          <table>
+            <thead>
+              <tr>
+                <th style="font-family: Arial; font-size: 1.2rem;">승식</th>
+                <th style="font-family: Arial; font-size: 1.2rem;">배당율</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-family: Arial; font-size: 1.2rem;">복승</td>
+                <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{alloc.r2alloc|slice:"2:"}}</td>
+              </tr>
+              <tr>
+                <td style="font-family: Arial; font-size: 1.2rem;">삼복승</td>
+                <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{alloc.r333alloc|slice:"3:"}}</td>
+              </tr>
+              <tr>
+                <td style="font-family: Arial; font-size: 1.2rem;">삼쌍승</td>
+                <td style="font-family: Arial; font-size: 1.2rem; text-align: right;">{{alloc.r123alloc|slice:"3:"}}</td>
+              </tr>
 
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </span>
       </span>
-    </span>
-    {%endif%}
-  </div>
-
-  <div class="room__topRight">
+      {%endif%}
+    </div>
+    
     <span style="font-size:1.4rem; color: var(--color-main-light); font-family: Arial; padding:0.4rem; ">{{r_condition.distance}}𝓂</span>
 
     <span style="color: var(--color-main); padding:0.4rem;">
@@ -191,42 +244,28 @@
       {% endif %}
     </span>
 
-    {% if alloc.r2alloc %} {# 경주결과가 입력되었으면 #}
-    <span style="color: var(--color-main); padding-top: 0.6rem;">
-      <a href="{% url 'race_result' r_condition.rcity r_condition.rdate r_condition.rno 0 0 0 0 %}"
-        onclick="window.open(this.href, 'w_result', 'width=900, height=1000, toolbars=no, scrollbars=yes'); return false;">
-        <span class="tooltip" style="font-size: 1.35rem;">📃
-          <span class="tooltip-text" style="width:11rem; text-align: center;">📃&nbsp;Race Result</span>
-        </span>
-      </a>
-    </span>
-    {% endif %}
+    
+  </div>
 
-    {% if request.user.username == 'admin' %}
-    <span style="color: var(--color-main); padding-top: 0.6rem;">
-      <a href="{% url 'race_review' r_condition.rcity r_condition.rdate r_condition.rno %}" 
-                onclick="
-                monitorWidth = 1920; // 특정 모니터의 너비 (예: 1920px)
-                 monitorHeight = 1080; // 특정 모니터의 높이 (예: 1080px)
-                 monitorOffset = 1920; // 첫 번째 모니터 끝에서 두 번째 모니터가 시작하는 위치
-                
-                 winWidth = 900; // 새 창의 너비
-                 winHeight = 1000; // 새 창의 높이
-                
-                // winLeft =  monitorOffset + (monitorWidth - winWidth); // 두 번째 모니터 우측 정렬
-                 winLeft = 1246; // 좌측 정렬: 모니터 시작 위치
-                 winTop = 0; // 상단 고정
-                window.open(
-                  this.href,
-                  'w_race_review',
-                  `width=${winWidth},height=${winHeight},toolbars=no,scrollbars=yes,left=${winLeft},top=${winTop}`
-                );
-                return false;">🔧
-          <span style="font-size: 1.35rem;">
-        </span>
-      </a>
-    </span>
-    {% endif %}
+  
+
+  <div class="room__topRight">
+
+    <form class="header__search" style="padding-top: 2px;" method="GET" action="{% url 'race_prediction' r_condition.rcity r_condition.rdate r_condition.rno 0 0 %}">
+      <span class="tooltip" style="font-size:1.1rem; color:#ffe082; font-weight:500; display: inline-flex; align-items: center; height: 100%; border: 1.5px solid orange; border-radius: 6px; padding: 0.2em 0.8em; background: #23272f;">
+      <label style="display:inline-flex; align-items:center; font-weight:400;">
+        <input type="radio" name="view_type" value="1" {% if view_type == "1" %}checked{% endif %} style="accent-color:orange; width:2.5rem; height:1.2em;" onchange="this.form.submit();">
+        v1
+      </label>
+      <label style="display:inline-flex; align-items:center; font-weight:400;">
+        <input type="radio" name="view_type" value="2" {% if view_type == "2" or not view_type %}checked{% endif %} style="accent-color:orange; width:2.5rem; height:1.2em;" onchange="this.form.submit();">
+        v2
+      </label>
+      <span class="tooltip-text" style="z-index: 9; font-size: 1.3rem;">v1:   기존 예상순위 기준 / v2:  LGBM rank 기준
+      </span>
+      </span>
+    </form>
+    
   </div>
 
 </div>

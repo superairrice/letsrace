@@ -89,6 +89,7 @@ class Exp010(models.Model):
         max_digits=10, decimal_places=0, blank=True, null=True
     )
     cflag = models.CharField(max_length=1, blank=True, null=True)
+    r_overview = models.CharField(max_length=1000, blank=True, null=True)
 
     class Meta:
         managed = True
@@ -161,7 +162,7 @@ class Exp011(models.Model):
     r_rank = models.IntegerField(blank=True, null=True)
     r_record = models.CharField(max_length=10, blank=True, null=True)
     ir_record = models.IntegerField(blank=True, null=True)
-    remark = models.CharField(max_length=1000, blank=True, null=True)
+    remark = models.CharField(max_length=30, blank=True, null=True)
     h_weight = models.CharField(max_length=10, blank=True, null=True)
     j_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
     t_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
@@ -198,6 +199,54 @@ class Exp011(models.Model):
     r_s1f = models.CharField(max_length=4, blank=True, null=True)
     r_g3f = models.CharField(max_length=4, blank=True, null=True)
     r_g1f = models.CharField(max_length=4, blank=True, null=True)
+
+    s1f_rank = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    g3f_rank = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    g2f_rank = models.CharField(max_length=1200, blank=True, null=True)
+    g1f_rank = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    bet = models.CharField(max_length=1, blank=True, null=True)
+
+    tot_score = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    s1f_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    g3f_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    g1f_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    rec_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    rec8_trend = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    jt_score = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    start_score = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    comment_one = models.CharField(max_length=100, blank=True, null=True)
+    comment_all = models.CharField(max_length=500, blank=True, null=True)
+
+    m_rank = models.IntegerField(blank=True, null=True)
+    m_score = models.DecimalField(
+        max_digits=8, decimal_places=4, blank=True, null=True
+    )
+    f_rank = models.IntegerField(blank=True, null=True)
+    f_score = models.DecimalField(
+        max_digits=8, decimal_places=4, blank=True, null=True
+    )
+    trust_score = models.DecimalField(
+        max_digits=8, decimal_places=4, blank=True, null=True
+    )
+    trust_label = models.CharField(max_length=10, blank=True, null=True)
+    dh_score = models.DecimalField(
+        max_digits=8, decimal_places=4, blank=True, null=True
+    )
+    comment_dh = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         managed = True
@@ -275,7 +324,7 @@ class Exp011s1(models.Model):
     r_rank = models.IntegerField(blank=True, null=True)
     r_record = models.CharField(max_length=10, blank=True, null=True)
     ir_record = models.IntegerField(blank=True, null=True)
-    remark = models.CharField(max_length=1000, blank=True, null=True)
+    remark = models.CharField(max_length=30, blank=True, null=True)
     h_weight = models.CharField(max_length=10, blank=True, null=True)
     j_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
     t_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
@@ -301,13 +350,55 @@ class Exp011s1(models.Model):
     g3f_rank = models.DecimalField(
         max_digits=4, decimal_places=1, blank=True, null=True
     )
-    g2f_rank = models.DecimalField(
-        max_digits=4, decimal_places=1, blank=True, null=True
-    )
+    g2f_rank = models.CharField(max_length=1200, blank=True, null=True)
     g1f_rank = models.DecimalField(
         max_digits=4, decimal_places=1, blank=True, null=True
     )
     bet = models.CharField(max_length=1, blank=True, null=True)
+    corners = models.CharField(max_length=30, blank=True, null=True)
+    r_s1f = models.CharField(max_length=4, blank=True, null=True)
+    r_g3f = models.CharField(max_length=4, blank=True, null=True)
+    r_g1f = models.CharField(max_length=4, blank=True, null=True)
+
+    tot_score = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    s1f_per = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    g3f_per = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    g1f_per = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    rec_per = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    rec8_trend = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    jt_score = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    start_score = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    comment_one = models.CharField(max_length=100, blank=True, null=True)
+    comment_all = models.CharField(max_length=500, blank=True, null=True)
+
+    m_rank = models.IntegerField(blank=True, null=True)
+    m_score = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    f_rank = models.IntegerField(blank=True, null=True)
+    f_score = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    trust_score = models.DecimalField(
+        max_digits=8, decimal_places=4, blank=True, null=True
+    )
+    trust_label = models.CharField(max_length=10, blank=True, null=True)
+    dh_score = models.DecimalField(
+        max_digits=8, decimal_places=4, blank=True, null=True
+    )
+    comment_dh = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         managed = True
@@ -319,7 +410,7 @@ class Exp011s1(models.Model):
             return len(self._result_cache)
 
         return self.query.get_count(using=self.db)
-    
+
 class Exp011s2(models.Model):
     rcity = models.CharField(primary_key=True, max_length=4)
     rdate = models.CharField(max_length=8)
@@ -385,7 +476,7 @@ class Exp011s2(models.Model):
     r_rank = models.IntegerField(blank=True, null=True)
     r_record = models.CharField(max_length=10, blank=True, null=True)
     ir_record = models.IntegerField(blank=True, null=True)
-    remark = models.CharField(max_length=1000, blank=True, null=True)
+    remark = models.CharField(max_length=30, blank=True, null=True)
     h_weight = models.CharField(max_length=10, blank=True, null=True)
     j_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
     t_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
@@ -411,13 +502,59 @@ class Exp011s2(models.Model):
     g3f_rank = models.DecimalField(
         max_digits=4, decimal_places=1, blank=True, null=True
     )
-    g2f_rank = models.DecimalField(
-        max_digits=4, decimal_places=1, blank=True, null=True
-    )
+    g2f_rank =models.CharField(max_length=1200, blank=True, null=True)
+
     g1f_rank = models.DecimalField(
         max_digits=4, decimal_places=1, blank=True, null=True
     )
     bet = models.CharField(max_length=1, blank=True, null=True)
+
+    s1f_rank = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    g3f_rank = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    g2f_rank = models.CharField(max_length=1200, blank=True, null=True)
+    g1f_rank = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    bet = models.CharField(max_length=1, blank=True, null=True)
+    corners = models.CharField(max_length=30, blank=True, null=True)
+    r_s1f = models.CharField(max_length=4, blank=True, null=True)
+    r_g3f = models.CharField(max_length=4, blank=True, null=True)
+    r_g1f = models.CharField(max_length=4, blank=True, null=True)
+
+    tot_score = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    s1f_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    g3f_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    g1f_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    rec_per = models.DecimalField(max_digits=4, decimal_places=1, blank=True, null=True)
+    rec8_trend = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    jt_score = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    start_score = models.DecimalField(
+        max_digits=4, decimal_places=1, blank=True, null=True
+    )
+    comment_one = models.CharField(max_length=100, blank=True, null=True)
+    comment_all = models.CharField(max_length=500, blank=True, null=True)
+    m_rank = models.IntegerField(blank=True, null=True)
+    m_score = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    f_rank = models.IntegerField(blank=True, null=True)
+    f_score = models.DecimalField(max_digits=8, decimal_places=4, blank=True, null=True)
+    trust_score = models.DecimalField(
+        max_digits=8, decimal_places=4, blank=True, null=True
+    )
+    trust_label = models.CharField(max_length=10, blank=True, null=True)
+    dh_score = models.DecimalField(
+        max_digits=8, decimal_places=4, blank=True, null=True
+    )
+    comment_dh = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
         managed = True

@@ -13,3 +13,12 @@ def t2s(value):      # 숫자기록을 타임으로 변환
     # print(ret, ret1, ret2, value)
 
     return ret + ' :' + ret1 + '.' + ret2
+
+
+import re
+
+@register.filter
+def digits_only(value):
+    if not value:
+        return ""
+    return "".join(re.findall(r"\d+", value))

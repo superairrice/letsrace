@@ -280,12 +280,14 @@
                     <span style="font-size: 1.15rem;">&nbsp;</span>
                     {% else %}
                       {% if i_cycle <= 16 %}
-                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-bg); border-radius: 10px; background-color:var(--color-r2); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; border: solid 1px var(--color-r1); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                       
-                      {% elif i_cycle >= 68 %}
-                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light); border-radius: 10px; background-color:var(--color-r1); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      {% elif i_cycle >= 26 and i_cycle < 80 %}
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-main); border-radius: 10px; border-bottom: solid 1px var(--color-main); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      {% elif i_cycle >= 80 %}
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; border-bottom: solid 1px var(--color-r1); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                       {% else %}
-                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light-gray); border-radius: 10px; background-color:var(--color-dark); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light-gray); border-radius: 10px; border-bottom: 1px solid var(--color-gray); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                       {% endif %}
                     {% endif %}
 
@@ -387,6 +389,8 @@
                           <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r3);">{{cnt}}</span>
                           {% elif cnt|mul:1 == 8 %}
                           <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r2);">{{cnt}}</span>
+                          {% elif cnt|mul:1 > 10 %}
+                          <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-r1); padding:2px 2px; background-color: var(--color-r1);">{{cnt}}</span>
                           {% else %}
                           <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r1);">{{cnt}}</span>
                           {% endif %}
@@ -409,6 +413,8 @@
                           <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r3);">{{cnt}}</span>
                           {% elif cnt|mul:1 == 8 %}
                           <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r2);">{{cnt}}</span>
+                          {% elif cnt|mul:1 > 10 %}
+                          <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-r1); padding:2px 2px; background-color: var(--color-r1);">{{cnt}}</span>
                           {% else %}
                           <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r1);">{{cnt}}</span>
                           {% endif %}
@@ -432,11 +438,15 @@
                 </div>
                 {% else %}
                 <div style="color: var(--color-gray); font-size: 1.2rem; text-align: right;">
-                  {% for hname, tdate, cnt in disease %}
-                    {% if horse == hname %}
-                    <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-r5); border-radius: 7px; background-color: var(--color-bg); padding:2px 4px; border: 1px solid var(--color-r5);">{{cnt}}</span>
+                  {% for hname, max_date, cnt in disease %}
+                  {% if horse == hname %}
+                    {% if cnt >= 10 %}
+                    <span style="font-family: Arial; font-size: 0.9rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 2px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{cnt}}</span>
+                    {% else %}
+                    <span style="font-family: Arial; font-size: 1.1rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 4px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{cnt}}</span>
                     {% endif %}
-                  {% endfor %}
+                  {% endif %}
+                {% endfor %}  
                   <a href="{% url 'training_awardee' rdate 'trainer' trainer horse %}" 
                     onclick="window.open(this.href, 'w_training_awardee', 'top=' + (window.screen.availHeight / 2 ) + ', left=' + window.screenX + ', width=900, height=700, toolbars=no, scrollbars=yes'); return false;">
                     <span style="border-bottom:1px solid var(--color-gray); border-radius: 2px; color:var(--color-gray);">{{trainer}}</span>
@@ -1119,12 +1129,14 @@
                     <span style="font-size: 1.15rem;">&nbsp;</span>
                     {% else %}
                       {% if i_cycle <= 16 %}
-                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-bg); border-radius: 10px; background-color:var(--color-r2); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; border: solid 1px var(--color-r1); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                       
-                      {% elif i_cycle >= 68 %}
-                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light); border-radius: 10px; background-color:var(--color-r1); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      {% elif i_cycle >= 26 and i_cycle < 80 %}
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-main); border-radius: 10px; border-bottom: solid 1px var(--color-main); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      {% elif i_cycle >= 80 %}
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; border-bottom: solid 1px var(--color-r1); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                       {% else %}
-                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light-gray); border-radius: 10px; background-color:var(--color-dark); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light-gray); border-radius: 10px; border-bottom: 1px solid var(--color-gray); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                       {% endif %}
                     {% endif %}
                     {# 출생지 #}
@@ -1196,21 +1208,30 @@
                       <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r3);">{{cnt}}</span>
                       {% elif cnt|mul:1 == 8 %}
                       <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r2);">{{cnt}}</span>
+                      {% elif cnt|mul:1 > 10 %}
+                      <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-r1); padding:2px 2px; background-color: var(--color-r1);">{{cnt}}</span>
                       {% else %}
                       <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r1);">{{cnt}}</span>
                       {% endif %}
                     {% endif %}
                   {% endfor %}
+
+                  
                   
                 </div>
                 {% if trainer in trainer_double_check %}
                 <div style="font-size: 1.2rem; text-align: right; color:var(--color-r3)"> 
                   
-                  {% for hname, tdate, cnt in disease %}
-                    {% if horse == hname %}
-                    <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-r5); border-radius: 7px; background-color: var(--color-bg); padding:2px 4px; border: 1px solid var(--color-r5);">{{cnt}}</span>
+                  {% for hname, max_date, cnt in disease %}
+                  {% if horse == hname %}
+                    {% if cnt >= 10 %}
+                    <span style="font-family: Arial; font-size: 0.9rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 2px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{cnt}}</span>
+                    {% else %}
+                    <span style="font-family: Arial; font-size: 1.1rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 4px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{cnt}}</span>
                     {% endif %}
-                  {% endfor %}
+                  {% endif %}
+                {% endfor %}  
+
                   {{trainer}}
                 </div>
                 {% else %}
@@ -1882,12 +1903,14 @@
                     <span style="font-size: 1.15rem;">&nbsp;</span>
                     {% else %}
                       {% if i_cycle <= 16 %}
-                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-bg); border-radius: 10px; background-color:var(--color-r2); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; border: solid 1px var(--color-r1); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                       
-                      {% elif i_cycle >= 68 %}
-                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light); border-radius: 10px; background-color:var(--color-r1); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      {% elif i_cycle >= 26 and i_cycle < 80 %}
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-main); border-radius: 10px; border-bottom: solid 1px var(--color-main); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      {% elif i_cycle >= 80 %}
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; border-bottom: solid 1px var(--color-r1); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                       {% else %}
-                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light-gray); border-radius: 10px; background-color:var(--color-dark); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                      <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light-gray); border-radius: 10px; border-bottom: 1px solid var(--color-gray); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                       {% endif %}
                     {% endif %}
                     {# 출생지 #}
