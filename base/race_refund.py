@@ -105,6 +105,9 @@ def calc_rpop_anchor_26_trifecta(
         ~df["등급"].str.contains(r"(?:국OPEN|혼OPEN)", case=False, na=False, regex=True)
     ]
     df["경주일"] = df["경주일"].astype(str)
+    df["경주번호"] = pd.to_numeric(df["경주번호"], errors="coerce")
+    df["마번"] = pd.to_numeric(df["마번"], errors="coerce")
+    df = df.dropna(subset=["경주번호", "마번"]).copy()
     df["경주번호"] = df["경주번호"].astype(int)
     df["마번"] = df["마번"].astype(int)
     df["연월"] = df["경주일"].str.slice(0, 6)
