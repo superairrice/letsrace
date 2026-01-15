@@ -24,7 +24,8 @@ django.setup()
 import pymysql
 import pandas as pd
 import lightgbm as lgb
-from typing import List, Tuple
+from typing import List, Tuple, Optional
+from datetime import date, datetime, timedelta
 
 
 def _get_db_conf_from_django():
@@ -344,6 +345,7 @@ def train_model_for_period_and_update_exp011(
     from_date: str,
     to_date: str,
     model_name: str = "sb_top3_period",
+    update_exp011: bool = True,
 ) -> lgb.Booster:
     """
     기간(from_date ~ to_date) 데이터로 새 LGBM 모델을 학습하고,
@@ -389,18 +391,18 @@ def train_model_for_period_and_update_exp011(
             comment=f"{from_date}~{to_date} 데이터로 학습",
         )
 
-    # 2) 같은 기간 exp011에 대해 m_score/m_rank 업데이트
-    with closing(get_conn()) as conn:
-        df_new = load_new_races_from_db(conn, from_date=from_date, to_date=to_date)
+        # 2) 같은 기간 exp011에 대해 m_score/m_rank 업데이트 (선택)
+    if update_exp011:
+        with closing(get_conn()) as conn:
+            df_new = load_new_races_from_db(conn, from_date=from_date, to_date=to_date)
 
-        if df_new.empty:
-            print(
-                f"▶ [{from_date} ~ {to_date}] 기간 exp011 데이터가 없습니다. UPDATE 생략."
-            )
-            return model
+            if df_new.empty:
+                print(
+                    f"▶ [{from_date} ~ {to_date}] 기간 exp011 데이터가 없습니다. UPDATE 생략."
+                )
+                return model
 
-        predict_full_rank_for_new_races_and_update_db(conn, model, df_new)
-
+            predict_full_rank_for_new_races_and_update_db(conn, model, df_new)
     print(
         f"▶ [{from_date} ~ {to_date}] 기간 모델 학습 및 exp011(m_score, m_rank) 업데이트 완료."
     )
@@ -632,10 +634,11 @@ def retrain_model_and_update_period(
     update_from: str,
     update_to: str,
     model_name: str = "sb_top3_period",
+    update_exp011_train: bool = False,
 ):
     """
     1) train_from ~ train_to 기간으로 LightGBM 모델을 재학습해서
-      lgb_models 테이블에 저장하고(exp011도 그 기간은 업데이트됨),
+      lgb_models 테이블에 저장하고(학습구간 exp011 업데이트는 옵션),
     2) 같은 model_name의 '최신 버전'을 다시 불러와서
       update_from ~ update_to 기간의 exp011.m_score, m_rank를 업데이트.
 
@@ -647,6 +650,7 @@ def retrain_model_and_update_period(
         from_date=train_from,
         to_date=train_to,
         model_name=model_name,
+        update_exp011=update_exp011_train,
     )
 
     # 2) 방금 저장한 최신 모델을 다시 읽어서,
@@ -659,48 +663,65 @@ def retrain_model_and_update_period(
     return d
 
 
-if __name__ == "__main__":
 
-    # if __name__ == "__main__":
-    #   # 예: 2023-12-01 ~ 2025-11-30 데이터로 학습해서 DB에 저장
-    #   train_model_for_period_and_update_exp011(
-    #       from_date="20231201",
-    #       to_date="20251130",
-    #       model_name="sb_top3_20231201_20251130",
-    #   )
 
-    if __name__ == "__main__":
-        # 1) 학습 기간(과거 전체)
-        train_from = "20241129"
-        train_to   = "20251130"
+from typing import Optional
+from datetime import datetime, timedelta
+import calendar
 
-        # 2) 업데이트 대상 기간(예: 최근 며칠)
-        update_from = "20241129"
-        update_to   = "20251207"
+def run_monthly_roll12(run_yyyymm01: Optional[str] = None, update_to_today: bool = True):
+    """매월 1일 기준: 직전 12개월로 재학습하고, 해당 월 exp011만 업데이트한다."""
 
-        model_name = "sb_top3_20241129_20251130"
-        
-        # # 1) 학습 기간(과거 전체)
-        # train_from = "20231201"
-        # train_to   = "20251130"
+    # 1) 실행 기준일 결정
+    if run_yyyymm01:
+        run_date = datetime.strptime(run_yyyymm01, "%Y%m%d")
+    else:
+        run_date = datetime.today().replace(day=1)
 
-        # # 2) 업데이트 대상 기간(예: 최근 며칠)
-        # update_from = "20231201"
-        # update_to   = "20251207"
+    # 2) 학습 기간: 직전 12개월(누수 방지)
+    train_to_dt = run_date - timedelta(days=1)
+    train_from_dt = train_to_dt - timedelta(days=365) + timedelta(days=1)
 
-        # model_name = "sb_top3_20231201_20251130_20251207"
+    train_from = train_from_dt.strftime("%Y%m%d")
+    train_to = train_to_dt.strftime("%Y%m%d")
 
-        retrain_model_and_update_period(
-          train_from=train_from,
-          train_to=train_to,
-          update_from=update_from,
-          update_to=update_to,
-          model_name=model_name,
+    # 3) 업데이트 기간: 해당 월(옵션으로 오늘까지 제한)
+    y, m = run_date.year, run_date.month
+    last_day = calendar.monthrange(y, m)[1]
+    update_from = run_date.strftime("%Y%m%d")
+    update_to_dt = run_date.replace(day=last_day)
+
+    if update_to_today:
+        today = datetime.today()
+        if today < update_to_dt:
+            update_to_dt = today
+
+    update_to = update_to_dt.strftime("%Y%m%d")
+
+    # 4) 모델 이름(월 고정)
+    model_name = f"sb_top3_roll12_{run_date.strftime('%Y%m')}"
+
+    print("========================================")
+    print("▶ 월별 롤링 12개월 학습 실행")
+    print(f"  - 실행 기준일 : {run_date.strftime('%Y-%m-%d')}")
+    print(f"  - 학습 기간   : {train_from} ~ {train_to}")
+    print(f"  - 업데이트    : {update_from} ~ {update_to}")
+    print(f"  - 모델명      : {model_name}")
+    print("========================================")
+
+    # 학습구간 exp011은 덮어쓰지 않음(백테스트 재현성/운영 안전)
+    return retrain_model_and_update_period(
+        train_from=train_from,
+        train_to=train_to,
+        update_from=update_from,
+        update_to=update_to,
+        model_name=model_name,
+        update_exp011_train=False,
     )
 
-    # update_m_rank_score_for_period(
 
-    #     from_date=update_from,
-    #     to_date=update_to,
-    #     model_name="sb_top3_20231201_20251130",
-    # )
+if __name__ == "__main__":
+    import sys
+
+    run_arg = sys.argv[1] if len(sys.argv) > 1 else None
+    run_monthly_roll12(run_arg)

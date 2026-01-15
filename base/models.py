@@ -90,6 +90,7 @@ class Exp010(models.Model):
     )
     cflag = models.CharField(max_length=1, blank=True, null=True)
     r_overview = models.CharField(max_length=1000, blank=True, null=True)
+    r_guide = models.CharField(max_length=1000, blank=True, null=True)
 
     class Meta:
         managed = True

@@ -349,12 +349,9 @@ def make_compact_overview(
 ) -> List[str]:
     lines: List[str] = []
 
-    lines.append(f"- 페이스: {pace}")
-    lines.append(f"- {lead_line}")
-
     if anchor_row is not None:
         lines.append(
-            f"- 핵심 축: {anchor_row['horse']}({int(anchor_row['gate'])}) "
+            f"핵심 축: {anchor_row['horse']}({int(anchor_row['gate'])}) "
             f"/ trust {anchor_row['trust_score']:.1f}({anchor_row['trust_label']}), "
             f"anchor {anchor_row['anchor_score']:.2f}({anchor_row['축강도(5)']})"
         )
@@ -372,7 +369,7 @@ def make_compact_overview(
             cond = "중위권 자리 선점 시"
 
         lines.append(
-            f"- 복병 포인트: {dark_row['horse']}({int(dark_row['gate'])}) "
+            f"복병 포인트: {dark_row['horse']}({int(dark_row['gate'])}) "
             f"/ dh {dark_row['복병점수']:.2f}({dark_row['복병강도(3)']}), {cond}"
         )
     else:
@@ -388,7 +385,10 @@ def make_compact_overview(
     else:
         outlook = "혼전/변수 구도"
 
-    lines.append(f"- 구도 요약: {outlook}")
+        lines.append(f"페이스: {pace}")
+    lines.append(f"{lead_line}")
+
+    lines.append(f"구도 요약: {outlook}")
     return lines
 
 
@@ -627,7 +627,7 @@ def print_report(
     else:
         for _, r in dark_df.iterrows():
             print(
-                f"- {r['horse']}({int(r['gate'])}) : score {r['복병점수']:.2f}({r['복병강도(3)']}) / {r['복병코멘트']}"
+                f"{r['horse']}({int(r['gate'])}) : score {r['복병점수']:.2f}({r['복병강도(3)']}) / {r['복병코멘트']}"
             )
 
     print("\n[경주 총평] (컴팩트)")
@@ -925,7 +925,7 @@ def main():
         type=str,
         help="단일 경주 처리용(기간 업데이트에서는 무시)",
     )
-    ap.add_argument("--rdate", default="20251128", type=str)
+    ap.add_argument("--rdate", default="20251228", type=str)
     ap.add_argument("--rno", default=5, type=int)
 
     ap.add_argument(

@@ -1069,7 +1069,7 @@ def set_rank2(rcity, rdate, rno):
             -- AND rank < 99 
             ORDER BY if( i_complex = 0, 100000, i_complex) ASC, gate      ASC
             ; """
-        )
+        ) 
 
         # print(strSql)
         cursor.execute(strSql)  # 결과값 개수 반환

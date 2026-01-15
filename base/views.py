@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from datetime import date, datetime
 from email.message import EmailMessage
 import os
@@ -13,6 +13,7 @@ from django.db.models import Count, Max, Min, Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
+from base.g2f_update import g2f_update
 from base.compute_gpt import process_race
 from base.data_management import (
     get_krafile,
@@ -21,6 +22,7 @@ from base.data_management import (
 
 from base.race_compute import baseline_compute, create_record, renewal_record_s
 from base.race_finalscore import update_exp010_overview_for_race, update_exp011_for_period, update_exp011_for_race
+from base.race_refund import calc_rpop_anchor_26_trifecta
 from base.simulation2 import get_weight2, mock_insert2, mock_traval2
 from base.mysqls import (
     get_award,
@@ -73,7 +75,8 @@ from base.mysqls import (
 from base.simulation import mock_insert, mock_traval, get_weight
 
 from base.race import countOfRace, recordsByHorse
-from base.train_LightGBM import update_m_rank_score_for_period, update_m_rank_score_for_race
+from base.race_bet_guide import run_rguide_update
+from base.train_LightGBM_roll12 import update_m_rank_score_for_period, update_m_rank_score_for_race
 from letsrace.settings import KRAFILE_ROOT
 
 
@@ -488,7 +491,7 @@ def home(request):
             except Exception:
                 return row
         expects = sorted(expects, key=_exp_key)
-        
+
     # expects Query
     try:
         cursor = connection.cursor()
@@ -515,7 +518,7 @@ def home(request):
         print("Failed selecting in expect ")
     finally:
         cursor.close()
-        
+
     # loadin = get_last2weeks_loadin(i_rdate)
 
     rflag = False  # 경마일, 비경마일 구분
@@ -526,7 +529,79 @@ def home(request):
             break
 
     check_visit(request)
-    
+
+    base_dt = datetime.strptime(i_rdate, "%Y%m%d")
+    from_date = (base_dt - timedelta(days=3)).strftime("%Y%m%d")
+    to_date = (base_dt + timedelta(days=4)).strftime("%Y%m%d")
+
+    race_df, summary = calc_rpop_anchor_26_trifecta(
+        from_date=from_date,
+        to_date=to_date,
+        bet_unit=100,
+    )
+
+    summary_display = []
+    summary_total = None
+    if isinstance(summary, dict):
+        day_summary = summary.get("day_summary", {})
+        total_races = 0
+        total_bet = 0.0
+        total_refund = 0.0
+        total_hits = 0
+        for day in sorted(day_summary.keys()):
+            d = day_summary[day]
+            refund_rate = (
+                d["total_refund"] / d["total_bet"] if d["total_bet"] > 0 else 0.0
+            )
+            hit_rate = d["hits"] / d["races"] if d["races"] > 0 else 0.0
+            profit = d["total_refund"] - d["total_bet"]
+            avg_bet = d["total_bet"] / d["races"] if d["races"] > 0 else 0.0
+            summary_display.append(
+                {
+                    "date": day,
+                    "races": d["races"],
+                    "refund_rate": refund_rate,
+                    "total_bet": d["total_bet"],
+                    "total_refund": d["total_refund"],
+                    "profit": profit,
+                    "hits": d["hits"],
+                    "hit_rate": hit_rate,
+                    "avg_bet": avg_bet,
+                }
+            )
+            total_races += d["races"]
+            total_bet += d["total_bet"]
+            total_refund += d["total_refund"]
+            total_hits += d["hits"]
+        if total_races > 0:
+            total_profit = total_refund - total_bet
+            total_refund_rate = total_refund / total_bet if total_bet > 0 else 0.0
+            total_hit_rate = total_hits / total_races if total_races > 0 else 0.0
+            total_avg_bet = total_bet / total_races if total_races > 0 else 0.0
+            summary_total = {
+                "races": total_races,
+                "total_bet": total_bet,
+                "total_refund": total_refund,
+                "profit": total_profit,
+                "hits": total_hits,
+                "hit_rate": total_hit_rate,
+                "refund_rate": total_refund_rate,
+                "avg_bet": total_avg_bet,
+            }
+        else:
+            summary_total = {
+                "races": 0,
+                "total_bet": 0.0,
+                "total_refund": 0.0,
+                "profit": 0.0,
+                "hits": 0,
+                "hit_rate": 0.0,
+                "refund_rate": 0.0,
+                "avg_bet": 0.0,
+            }
+
+    # print(summary_display)
+
     context = {
         "racings": racings,
         "expects": expects,
@@ -546,6 +621,9 @@ def home(request):
         "changed_race": changed_race,               #출마표 젼경
         "rflag": rflag,  # 경마일, 비경마일 구분
         "view_type": view_type,
+        "summary": summary,
+        "summary_display": summary_display,
+        "summary_total": summary_total,
 
     }
 
@@ -564,7 +642,7 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         )
     else:
         exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
-            "m_rank", "gate"
+            "r_pop", "gate"
         )
         
     compare_r = exp011s.aggregate(
@@ -998,6 +1076,23 @@ def raceRelatedInfo(request, rcity, rdate, rno):
         cursor.close()
 
     recovery_cnt, start_cnt, audit_cnt = countOfRace(rcity, rdate, rno)
+
+    view_type = (
+        request.GET.get("view_type") if request.GET.get("view_type") != None else ""
+    )  # 정렬방식
+    if view_type == "1":
+        # train는 raw SQL fetchall 결과(튜플)일 수 있음. 안전하게 정렬 키를 구성.
+        def _exp_key(row):
+            # 객체(Attr) 또는 튜플(Idx) 모두 지원
+            if hasattr(row, "rcity"):
+                return (row.rcity, row.rdate, row.rno, row.rank, row.gate)
+            # 튜플 인덱스: a.rcity(0), a.rdate(1), a.rno(3), b.gate(4), b.rank(5)
+            try:
+                return (row[0], row[1], row[3], row[5], row[4])
+            except Exception:
+                return row
+
+        train = sorted(train, key=_exp_key)
 
     # print(start_cnt)
 
@@ -1820,7 +1915,7 @@ def raceCalculation(request):
 
         for index, exp010 in enumerate(exp010s):
 
-            # print(exp010[0], exp010[1], exp010[2], "경주 Mock Audit 시작")
+            print(exp010[0], exp010[1], exp010[2], "경주 Mock Audit 시작")
 
             r_condition = Exp010.objects.filter(rcity=exp010[0], rdate=exp010[1], rno=exp010[2]).get()
 
@@ -1833,13 +1928,17 @@ def raceCalculation(request):
             # if exp010[2] == 1:
             #     break
 
+        # m_rank m_score 갱신
         update_m_rank_score_for_period(
             rdate1,
             rdate2,
-            model_name="sb_top3_20241129_20251130",
+            # model_name="sb_top3_20241129_20251130",
+            model_name=f"sb_top3_roll12_{rdate1[0:6]}"
         )
 
-        update_exp011_for_period(rdate1, rdate2)
+        update_exp011_for_period(rdate1, rdate2)         #f_score, f_rank 점수 갱신  
+        # exp010 r_guide 업데이트 (기간)
+        run_rguide_update(from_date=rdate1, to_date=rdate2, dry_run=False)
 
     context = {
         "q1": q1,
@@ -1983,12 +2082,14 @@ def mockAudit(request, rcity, rdate, rno, hname, awardee):
                 print("❌ mock_traval2 에러:", e)
                 return JsonResponse({"status": "error", "msg": "Broken pipe"})
 
+            # update_m_rank_score_for_race(
+            #     rcity, rdate, rno, model_name="sb_top3_20241129_20251130"
+            # )  # 저장해둔 모델 이름
+
             update_m_rank_score_for_race(
-                rcity, rdate, rno, model_name="sb_top3_20241129_20251130"
+                rcity, rdate, rno, model_name=f"sb_top3_roll12_{rdate[0:6]}"
             )  # 저장해둔 모델 이름
-            
-            
-            
+
         else:
             messages.error(request, "weight error")
 
@@ -1999,7 +2100,7 @@ def mockAudit(request, rcity, rdate, rno, hname, awardee):
     # 6) calc != 1 이면 -> 초기 로드(조회) 모드: DB에서 필요한 데이터 조회 후 context 생성
     # exp011s 조회
     exp011s = Exp011s2.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
-        "rank", "gate"
+        "r_pop", "gate"
     )
     # for r in exp011s:
     #     print(r.s1f_rank, r.g1f_rank, r.g2f_rank, r.g3f_rank)
@@ -2671,13 +2772,29 @@ def execChatGPT(request, rcity, rdate, rno):
             WHERE rcity = %s
             AND rdate = %s
             AND rno   = %s
+            AND rank < 98
         ORDER BY gate ASC
         """
+        
+        # print(strSql % (rcity, rdate, rno))  # 디버깅용 출력
 
         cursor.execute(strSql, [rcity, rdate, rno])
         exp011s = cursor.fetchall()   # 튜플 리스트
-
-        # print(f"✅ exp011 데이터 조회 완료: {(exp011s)}")
+        
+        
+        """       # ✅ g2f_update 함수 호출"""
+        # for e in exp011s:
+        #     rcity = e[0]
+        #     rdate = e[1]
+        #     horse = e[4]
+        #     distance = e[52]
+        #     print("g2f_update 호출:", rcity, rdate, horse, distance)
+        #     try:
+        #         g2f_update(rcity, rdate, horse, distance, connection,)
+        #     except Exception as e:
+        #         print("g2f_update 실패:", rcity, rdate, horse, distance, e)
+            
+            
 
         # ✅ compute_gpt.py 에서 만든 메인 함수 호출
         predictions = process_race(exp011s)
@@ -2749,14 +2866,37 @@ def execChatGPT(request, rcity, rdate, rno):
                     if cursor:
                         cursor.close()
 
+                score_display = p["score"] if p["score"] is not None else 0.0
+                early_display = p["early_score"] if p["early_score"] is not None else 0.0
+                late_display = p["late_score"] if p["late_score"] is not None else 0.0
+                late200_display = (
+                    p["late200_score"] if p["late200_score"] is not None else 0.0
+                )
+                speed_display = (
+                    p["speed_score"] if p["speed_score"] is not None else 0.0
+                )
+                form_display = p["form_score"] if p["form_score"] is not None else 0.0
+                conn_display = p["conn_score"] if p["conn_score"] is not None else 0.0
+                front_display = (
+                    p["front_run_place_prob"]
+                    if p["front_run_place_prob"] is not None
+                    else 0.0
+                )
+
+                one_line_display = (
+                    p["one_line_comment"] if p["one_line_comment"] is not None else ""
+                )
+                reason_display = p["reason"] if p["reason"] is not None else ""
+
                 print(
                     f"{p['expected_rank']:^4} | {p['gate']:^6} | "
-                    f"{p['score']:^6.2f} | {p['early_score']:^5.1f} | {p['late_score']:^5.1f} | {p['late200_score']:^5.1f} | "
-                    f"{p['speed_score']:^6.1f} | {p['form_score']:^6.1f} | {p['conn_score']:^6.1f} | {p['front_run_place_prob']:^6.1f} | {p['horse']:10} | {p['one_line_comment']:^60} | {p['reason']:^1000}"
+                    f"{score_display:^6.2f} | {early_display:^5.1f} | {late_display:^5.1f} | {late200_display:^5.1f} | "
+                    f"{speed_display:^6.1f} | {form_display:^6.1f} | {conn_display:^6.1f} | {front_display:^6.1f} | {p['horse']:10} | {one_line_display:^60} | {reason_display:^1000}"
                 )
 
     except Exception as e:
         # 에러 내용도 같이 내려주면 디버깅 편함
+
         return JsonResponse(
             {
                 "status": "error",
@@ -2768,12 +2908,66 @@ def execChatGPT(request, rcity, rdate, rno):
         if cursor:
             cursor.close()
 
-    update_m_rank_score_for_race(
-                rcity, rdate, rno, model_name="sb_top3_20241129_20251130"
-            )  # 저장해둔 모델 이름
-    
-    update_exp011_for_race(rcity, rdate, rno)
-    print("---")
+    try:
+        cursor = connection.cursor()
+        update_sql = """
+            UPDATE exp011
+            SET r_pop = rank
+            WHERE rcity = %s AND rdate = %s AND rno = %s AND rank >= 98
+        """
+        cursor.execute(
+            update_sql,
+            (
+                rcity,
+                rdate,
+                rno
+            ),
+        )
+        
+        connection.commit()
+    except Exception as e:
+        print(f"Failed to update exp011: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+
+    print("✅ ChatGPT 예측 exp011 tot_race = 0 update 완료")
+
+    # update_m_rank_score_for_race(
+    #             rcity, rdate, rno, model_name="sb_top3_20241129_20251130"
+    #         )  # 저장해둔 모델 이름
+
+    try:
+        update_m_rank_score_for_race(
+            rcity, rdate, rno, model_name=f"sb_top3_roll12_{rdate[0:6]}"
+        )  # 저장해둔 모델 이름
+    except Exception as e:
+        print(f"⚠️ update_m_rank_score_for_race skipped: {e}")
+
+    # exp011 점수/순위 반영 (단일 경주)
+    try:
+        update_exp011_for_race(rcity, rdate, int(rno))
+    except Exception as e:
+        print(f"⚠️ update_exp011_for_race skipped: {e}")
+
+    # exp010 r_guide 업데이트 (단일 경주)
+    try:
+        info = run_rguide_update(
+            rcity=rcity,
+            rdate=rdate,
+            rno=int(rno),
+            dry_run=False,
+        )
+        updated = (info or {}).get("updated_rows")
+        total = (info or {}).get("total_races")
+        if updated is not None and total is not None:
+            print(f"[done] {rcity} {rdate} R{rno} -> exp010={total} races, updated={updated} rows")
+        else:
+            print("✅ r_guide updated successfully.")
+    except Exception as e:
+        print(f"⚠️ r_guide update skipped: {e}")
+    finally:
+        print("---")
 
     # ✅ 예측 결과를 그대로 반환
     return JsonResponse(

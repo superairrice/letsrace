@@ -188,13 +188,39 @@
       {% endif %}
       <hr style="border: solid 1px black;">
 
-      {% include 'base/m_prediction_rank_p.html' %}
+      {% include 'base/m_prediction.html' %}
 
     </div>
     <!-- Room End -->
   </div>
-
+  <!-- {{r_condition.r_guide}} -->
   {% if request.user.is_authenticated %}
+
+  <span style="color: var(--color-main); padding-top: 20px;">
+    <a href="{% url 'race_review' r_condition.rcity r_condition.rdate r_condition.rno %}" 
+              onclick="
+              monitorWidth = 1920; // 특정 모니터의 너비 (예: 1920px)
+              monitorHeight = 1080; // 특정 모니터의 높이 (예: 1080px)
+              monitorOffset = 1920; // 첫 번째 모니터 끝에서 두 번째 모니터가 시작하는 위치
+              
+              winWidth = 900; // 새 창의 너비
+              winHeight = 1000; // 새 창의 높이
+              
+              // winLeft =  monitorOffset + (monitorWidth - winWidth); // 두 번째 모니터 우측 정렬
+              winLeft = 1246; // 좌측 정렬: 모니터 시작 위치
+              winTop = 0; // 상단 고정
+              window.open(
+                this.href,
+                'w_race_review',
+                `width=${winWidth},height=${winHeight},toolbars=no,scrollbars=yes,left=${winLeft},top=${winTop}`
+              );
+              return false;">😎
+        <span style="font-size: 1.35rem;">
+      </span>
+    </a>
+  </span>
+  <span style="font-size: 1.3rem; color:var(--color-light-gray); padding-top: 20px;">{{r_condition.r_guide|linebreaksbr}}</span>
+  <br>
   <span style="font-size: 1.3rem; color:var(--color-r5);">{{r_condition.r_overview|linebreaksbr}}</span>
   {% endif %}
 

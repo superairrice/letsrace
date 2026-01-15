@@ -1299,7 +1299,7 @@ def set_record(connection, rcity, rdate, distance, horse, i_jockey, weight, i_av
             ),
         )  # 결과값 개수 반환
         races = cursor.fetchall()
-
+        
         (trend, trend_numeric), detail = judge_horse_trend_7level(races)
 
         # print(horse, trend_numeric)
@@ -1502,7 +1502,7 @@ def set_rank(connection, rcity, rdate, rno):
                 strSql = (
                     """ 
                     UPDATE exp011  															
-                    SET rank = 98
+                    SET rank = 99
                     WHERE rcity = '"""
                     + rcity
                     + """'
@@ -1532,11 +1532,11 @@ def set_rank(connection, rcity, rdate, rno):
             try:
                 cursor = connection.cursor()
 
-                # 기수의 거리별 게이트별 역량 + 부담중량까지 감안된 adv_jpckey
+                # 기수의 거리별 게이트별 역량 + 부담중량까지 감안된 adv_jockey
                 strSql = (
                     """ 
                     UPDATE exp011  															
-                    SET rank = if(r_rank = 99, 99,  """
+                    SET rank = if(r_rank >= 97, r_rank,  """
                     + str(index)
                     + """ ) 
                     WHERE rcity = '"""

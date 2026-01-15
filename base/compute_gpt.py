@@ -977,21 +977,25 @@ def process_race(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
     #     W_FORM = 0.20
     #     W_CONN = 0.05
     
-    if exp011_rows[0][IDX_DISTANCE] <= 1200:
+    distance = to_optional_float(exp011_rows[0][IDX_DISTANCE])
+    if distance is None:
+        distance = 1400.0  # fallback to mid-distance weights if data missing
+
+    if distance <= 1200:
         W_EARLY = 0.30
         W_LATE = 0.10
         W_SPEED = 0.30
         W_FORM = 0.10
         W_CONN = 0.20
 
-    elif 1300 <= exp011_rows[0][IDX_DISTANCE] <= 1700:
+    elif 1300 <= distance <= 1700:
         W_EARLY = 0.20
         W_LATE = 0.20
         W_SPEED = 0.20
         W_FORM = 0.20
         W_CONN = 0.20
 
-    elif exp011_rows[0][IDX_DISTANCE] >= 1800:
+    elif distance >= 1800:
         W_EARLY = 0.10
         W_LATE = 0.30
         W_SPEED = 0.30

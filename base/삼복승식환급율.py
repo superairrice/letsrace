@@ -114,18 +114,17 @@ def calc_top6_trifecta_raw(
     # ★ 신마 판정: rank >= 98
     df["신마"] = (df["rank"] >= 98).astype(int)
 
-    # 6복조 → 6마리 중 3마리 조합 = 20구멍
-    COMB_6_3 = 20
-    bet_per_race = COMB_6_3 * bet_unit
+    # 복조 조합 수 (N마리 중 3마리)
+    comb_by_n = {4: 4, 5: 10, 6: 20}
 
     race_rows = []
 
     # 누적 합계용
-    summary = {
-        "rank": {"total_bet": 0.0, "total_refund": 0.0},
-        "r_pop": {"total_bet": 0.0, "total_refund": 0.0},
-        "m_rank": {"total_bet": 0.0, "total_refund": 0.0},
-    }
+    summary = {}
+    for basis in ["rank", "r_pop", "m_rank"]:
+        for n in [4, 5, 6]:
+            summary[f"{basis}_{n}"] = {"total_bet": 0.0, "total_refund": 0.0}
+    total_races = 0
 
     # 경주 단위 루프
     for (track, date, rno), g in df.groupby(["경마장", "경주일", "경주번호"]):
@@ -135,6 +134,9 @@ def calc_top6_trifecta_raw(
         year_month = g["년월"].iloc[0]  # ★ 년월
         distance = g["경주거리"].iloc[0]  # ★ 경주거리
         new_cnt = int(g["신마"].sum())  # ★ 신마 수
+        if new_cnt >= 2:
+            continue
+        total_races += 1
 
         # 실제 1~3위
         actual_top3 = g[g["r_rank"] <= 3]["마번"].tolist()
@@ -151,27 +153,23 @@ def calc_top6_trifecta_raw(
         result_per_basis = {}
 
         for basis in ["rank", "r_pop", "m_rank"]:
-            # 해당 기준으로 오름차순 정렬 → 상위 6두
+            result_per_basis[basis] = {}
             g_sorted = g.sort_values(basis, ascending=True)
-            top6 = g_sorted.head(6)["마번"].tolist()
-            top6_set = set(top6)
+            for n in [4, 5, 6]:
+                topn = g_sorted.head(n)["마번"].tolist()
+                topn_set = set(topn)
+                hit_flag = int(bool(actual_set) and actual_set.issubset(topn_set))
+                refund = odds * bet_unit if hit_flag == 1 else 0.0
 
-            # 적중 조건: 실제 상위3마리가 모두 top6 안에 있으면,
-            # 6복조 20구멍 중 1구멍 적중
-            hit_flag = int(bool(actual_set) and actual_set.issubset(top6_set))
+                result_per_basis[basis][n] = {
+                    "topn": topn,
+                    "hit": hit_flag,
+                    "refund": refund,
+                }
 
-            # 환수금: 적중 시 배당 * bet_unit
-            refund = odds * bet_unit if hit_flag == 1 else 0.0
-
-            result_per_basis[basis] = {
-                "top6": top6,
-                "hit": hit_flag,
-                "refund": refund,
-            }
-
-            # 요약 누적
-            summary[basis]["total_bet"] += bet_per_race
-            summary[basis]["total_refund"] += refund
+                bet_per_race = comb_by_n[n] * bet_unit
+                summary[f"{basis}_{n}"]["total_bet"] += bet_per_race
+                summary[f"{basis}_{n}"]["total_refund"] += refund
 
         # 경주별 raw row 구성
         race_rows.append(
@@ -186,25 +184,58 @@ def calc_top6_trifecta_raw(
                 "실제_top3_마번": (
                     ",".join(map(str, sorted(actual_set))) if actual_set else ""
                 ),
-                # 기준별 1~6위 마번 목록
-                "rank_top6_마번": ",".join(map(str, result_per_basis["rank"]["top6"])),
+                # 기준별 1~4/5/6위 마번 목록
+                "rank_top4_마번": ",".join(
+                    map(str, result_per_basis["rank"][4]["topn"])
+                ),
+                "rank_top5_마번": ",".join(
+                    map(str, result_per_basis["rank"][5]["topn"])
+                ),
+                "rank_top6_마번": ",".join(
+                    map(str, result_per_basis["rank"][6]["topn"])
+                ),
+                "r_pop_top4_마번": ",".join(
+                    map(str, result_per_basis["r_pop"][4]["topn"])
+                ),
+                "r_pop_top5_마번": ",".join(
+                    map(str, result_per_basis["r_pop"][5]["topn"])
+                ),
                 "r_pop_top6_마번": ",".join(
-                    map(str, result_per_basis["r_pop"]["top6"])
+                    map(str, result_per_basis["r_pop"][6]["topn"])
+                ),
+                "m_rank_top4_마번": ",".join(
+                    map(str, result_per_basis["m_rank"][4]["topn"])
+                ),
+                "m_rank_top5_마번": ",".join(
+                    map(str, result_per_basis["m_rank"][5]["topn"])
                 ),
                 "m_rank_top6_마번": ",".join(
-                    map(str, result_per_basis["m_rank"]["top6"])
+                    map(str, result_per_basis["m_rank"][6]["topn"])
                 ),
                 # 기준별 적중/환수
-                "rank_적중": result_per_basis["rank"]["hit"],
-                "rank_환수금": result_per_basis["rank"]["refund"],
-                "r_pop_적중": result_per_basis["r_pop"]["hit"],
-                "r_pop_환수금": result_per_basis["r_pop"]["refund"],
-                "m_rank_적중": result_per_basis["m_rank"]["hit"],
-                "m_rank_환수금": result_per_basis["m_rank"]["refund"],
+                "rank4_적중": result_per_basis["rank"][4]["hit"],
+                "rank4_환수금": result_per_basis["rank"][4]["refund"],
+                "rank5_적중": result_per_basis["rank"][5]["hit"],
+                "rank5_환수금": result_per_basis["rank"][5]["refund"],
+                "rank6_적중": result_per_basis["rank"][6]["hit"],
+                "rank6_환수금": result_per_basis["rank"][6]["refund"],
+                "r_pop4_적중": result_per_basis["r_pop"][4]["hit"],
+                "r_pop4_환수금": result_per_basis["r_pop"][4]["refund"],
+                "r_pop5_적중": result_per_basis["r_pop"][5]["hit"],
+                "r_pop5_환수금": result_per_basis["r_pop"][5]["refund"],
+                "r_pop6_적중": result_per_basis["r_pop"][6]["hit"],
+                "r_pop6_환수금": result_per_basis["r_pop"][6]["refund"],
+                "m_rank4_적중": result_per_basis["m_rank"][4]["hit"],
+                "m_rank4_환수금": result_per_basis["m_rank"][4]["refund"],
+                "m_rank5_적중": result_per_basis["m_rank"][5]["hit"],
+                "m_rank5_환수금": result_per_basis["m_rank"][5]["refund"],
+                "m_rank6_적중": result_per_basis["m_rank"][6]["hit"],
+                "m_rank6_환수금": result_per_basis["m_rank"][6]["refund"],
                 # 공통 베팅 정보
-                "6복조_조합수": COMB_6_3,
+                "4복조_조합수": comb_by_n[4],
+                "5복조_조합수": comb_by_n[5],
+                "6복조_조합수": comb_by_n[6],
                 "구멍당_베팅금액": bet_unit,
-                "경주당_총베팅금액": bet_per_race,
                 "삼복승식배당율": odds,
             }
         )
@@ -213,10 +244,12 @@ def calc_top6_trifecta_raw(
 
     # 기준별 ROI 계산
     for basis in ["rank", "r_pop", "m_rank"]:
-        total_bet = summary[basis]["total_bet"]
-        total_refund = summary[basis]["total_refund"]
-        roi = (total_refund - total_bet) / total_bet if total_bet > 0 else 0.0
-        summary[basis]["roi"] = roi
+        for n in [4, 5, 6]:
+            key = f"{basis}_{n}"
+            total_bet = summary[key]["total_bet"]
+            total_refund = summary[key]["total_refund"]
+            roi = (total_refund - total_bet) / total_bet if total_bet > 0 else 0.0
+            summary[key]["roi"] = roi
 
     # 결과 출력
     print("===================================")
@@ -226,11 +259,12 @@ def calc_top6_trifecta_raw(
         ("r_pop", "예상순위2(r_pop)"),
         ("m_rank", "예상순위3(m_rank)"),
     ]:
-        s = summary[basis]
-        print(
-            f"[{label}]  총베팅액: {int(s['total_bet']):,}원  "
-            f"총환수액: {s['total_refund']:,.1f}원  ROI: {s['roi']:.3f}"
-        )
+        for n in [4, 5, 6]:
+            s = summary[f"{basis}_{n}"]
+            print(
+                f"[{label} - {n}복조]  경주수: {total_races}  총베팅액: {int(s['total_bet']):,}원  "
+                f"총환수액: {s['total_refund']:,.1f}원  ROI: {s['roi']:.3f}"
+            )
     print("===================================")
 
     return race_df, summary
@@ -242,7 +276,8 @@ def calc_top6_trifecta_raw(
 if __name__ == "__main__":
     # 예시: 2023-12-01 ~ 2025-11-30
     from_date = "20231201"
-    to_date = "20251207"
+    to_date = "20251221"
+    
 
     race_df, summary = calc_top6_trifecta_raw(
         from_date=from_date,

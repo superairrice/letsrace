@@ -22,3 +22,11 @@ def digits_only(value):
     if not value:
         return ""
     return "".join(re.findall(r"\d+", value))
+
+
+@register.filter
+def percent1(value):
+    try:
+        return f"{float(value) * 100:.1f}"
+    except (TypeError, ValueError):
+        return ""

@@ -79,6 +79,7 @@ ALLOWED_HOSTS = [
     "thethe9.com",
     "3.37.228.51",
     "123.111.131.8",
+    "112.152.252.174",
     "localhost",
     "0.0.0.0",
 ]
@@ -219,7 +220,7 @@ WSGI_APPLICATION = "letsrace.wsgi.application"
 #         "USER": "letslove",  # [3]
 #         "PASSWORD": "Ruddksp!23",  # [4]
 #         # "HOST": "super007.synology.me",  # [5]
-#         "HOST": "192.168.45.111",  # [5]
+#         "HOST": "192.168.219.111",  # [5]
 #         # 'HOST': '123.111.131.8',         # [5]
 #         "PORT": "3307",  # [6]
 #     }
