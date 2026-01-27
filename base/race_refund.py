@@ -1,7 +1,7 @@
 import pandas as pd
 from contextlib import closing
 from django.conf import settings
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL
 
 
@@ -9,7 +9,7 @@ from sqlalchemy.engine import URL
 # 1. 기간별 결과 데이터 로드
 # =========================
 def load_result_data_from_db(
-    engine,
+    conn,
     from_date: str,
     to_date: str,
 ) -> pd.DataFrame:
@@ -39,11 +39,15 @@ def load_result_data_from_db(
            ON x.rcity = e.rcity
           AND x.rdate = e.rdate
           AND x.rno   = e.rno
-    WHERE e.rdate >= %s
-      AND e.rdate <= %s
+    WHERE e.rdate >= :from_date
+      AND e.rdate <= :to_date
     ORDER BY e.rcity, e.rdate, e.rno, e.gate
     """
-    return pd.read_sql(sql, engine, params=[from_date, to_date])
+    return pd.read_sql(
+        text(sql),
+        conn,
+        params={"from_date": from_date, "to_date": to_date},
+    )
 
 
 def get_engine():
@@ -82,7 +86,8 @@ def calc_rpop_anchor_26_trifecta(
     """
     engine = get_engine()
     try:
-        df = load_result_data_from_db(engine, from_date=from_date, to_date=to_date)
+        with closing(engine.connect()) as conn:
+            df = load_result_data_from_db(conn, from_date=from_date, to_date=to_date)
     finally:
         engine.dispose()
 
