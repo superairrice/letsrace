@@ -1,31 +1,6 @@
-import pymysql
 import pandas as pd
 from contextlib import closing
-
-
-# =========================
-# 0. DB 접속 설정 (필요에 맞게 수정)
-# =========================
-DB_CONF = {
-    "host": "database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com",
-    "port": 3306,
-    "user": "letslove",
-    "password": "Ruddksp!23",
-    "db": "The1",
-    "charset": "utf8mb4",
-    "cursorclass": pymysql.cursors.DictCursor,
-    "autocommit": True,
-}
-
-
-def get_conn():
-    """단순 MySQL 커넥션 생성."""
-    conn = pymysql.connect(**DB_CONF)
-    try:
-        conn.ping(reconnect=True)
-    except Exception:
-        pass
-    return conn
+from django.db import connection
 
 
 # =========================
@@ -89,7 +64,7 @@ def calc_rpop_anchor_26_trifecta(
     - BOX4는 실제 1~3위가 r_pop 1~4 안에 있으면 적중.
     - 환수금/환수율 집계.
     """
-    with closing(get_conn()) as conn:
+    with closing(connection) as conn:
         df = load_result_data_from_db(conn, from_date=from_date, to_date=to_date)
 
     if df.empty:
