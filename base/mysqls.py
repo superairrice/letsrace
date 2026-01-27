@@ -2810,18 +2810,18 @@ def get_race_related(i_rcity, i_rdate, i_rno):
             from
             (
             select jockey, count(*) rcnt, 
-                sum(if(rank = 1, 1, 0)) r1, 
-                sum(if(rank = 2, 1, 0)) r2, 
-                sum(if(rank = 3, 1, 0)) r3,
-                sum(if(rank = 4, 1, 0)) r4,
-                sum(if(rank = 5, 1, 0)) r5,
-                sum(if(rank = 6, 1, 0)) r6,
-                sum(if(rank = 7, 1, 0)) r7,
-                sum(if(rank = 8, 1, 0)) r8,
-                sum(if(rank = 9, 1, 0)) r9,
-                sum(if(rank = 10, 1, 0)) r10,
-                sum(if(rank = 11, 1, 0)) r11,
-                sum(if(rank >= 12, 1, 0)) r12,
+                sum(if(r_pop = 1, 1, 0)) r1, 
+                sum(if(r_pop = 2, 1, 0)) r2, 
+                sum(if(r_pop = 3, 1, 0)) r3,
+                sum(if(r_pop = 4, 1, 0)) r4,
+                sum(if(r_pop = 5, 1, 0)) r5,
+                sum(if(r_pop = 6, 1, 0)) r6,
+                sum(if(r_pop = 7, 1, 0)) r7,
+                sum(if(r_pop = 8, 1, 0)) r8,
+                sum(if(r_pop = 9, 1, 0)) r9,
+                sum(if(r_pop = 10, 1, 0)) r10,
+                sum(if(r_pop = 11, 1, 0)) r11,
+                sum(if(r_pop >= 12, 1, 0)) r12,
                 
                 sum(if(r_rank > 0, 1, 0 )) rrcnt,
                 sum(if(r_rank = 1, 1, 0)) rr1, 
@@ -2871,18 +2871,18 @@ def get_race_related(i_rcity, i_rdate, i_rno):
             from
             (
             select trainer, count(*) rcnt, 
-                sum(if(rank = 1, 1, 0)) r1, 
-                sum(if(rank = 2, 1, 0)) r2, 
-                sum(if(rank = 3, 1, 0)) r3,
-                sum(if(rank = 4, 1, 0)) r4,
-                sum(if(rank = 5, 1, 0)) r5,
-                sum(if(rank = 6, 1, 0)) r6,
-                sum(if(rank = 7, 1, 0)) r7,
-                sum(if(rank = 8, 1, 0)) r8,
-                sum(if(rank = 9, 1, 0)) r9,
-                sum(if(rank = 10, 1, 0)) r10,
-                sum(if(rank = 11, 1, 0)) r11,
-                sum(if(rank >= 12, 1, 0)) r12,
+                sum(if(r_pop = 1, 1, 0)) r1, 
+                sum(if(r_pop = 2, 1, 0)) r2, 
+                sum(if(r_pop = 3, 1, 0)) r3,
+                sum(if(r_pop = 4, 1, 0)) r4,
+                sum(if(r_pop = 5, 1, 0)) r5,
+                sum(if(r_pop = 6, 1, 0)) r6,
+                sum(if(r_pop = 7, 1, 0)) r7,
+                sum(if(r_pop = 8, 1, 0)) r8,
+                sum(if(r_pop = 9, 1, 0)) r9,
+                sum(if(r_pop = 10, 1, 0)) r10,
+                sum(if(r_pop = 11, 1, 0)) r11,
+                sum(if(r_pop >= 12, 1, 0)) r12,
                 
                 sum(if(r_rank > 0, 1, 0 )) rrcnt,
                 sum(if(r_rank = 1, 1, 0)) rr1, 
@@ -2931,18 +2931,18 @@ def get_race_related(i_rcity, i_rdate, i_rno):
             from
             (
             select host, count(*) rcnt, 
-                sum(if(rank = 1, 1, 0)) r1, 
-                sum(if(rank = 2, 1, 0)) r2, 
-                sum(if(rank = 3, 1, 0)) r3,
-                sum(if(rank = 4, 1, 0)) r4,
-                sum(if(rank = 5, 1, 0)) r5,
-                sum(if(rank = 6, 1, 0)) r6,
-                sum(if(rank = 7, 1, 0)) r7,
-                sum(if(rank = 8, 1, 0)) r8,
-                sum(if(rank = 9, 1, 0)) r9,
-                sum(if(rank = 10, 1, 0)) r10,
-                sum(if(rank = 11, 1, 0)) r11,
-                sum(if(rank >= 12, 1, 0)) r12,
+                sum(if(r_pop = 1, 1, 0)) r1, 
+                sum(if(r_pop = 2, 1, 0)) r2, 
+                sum(if(r_pop = 3, 1, 0)) r3,
+                sum(if(r_pop = 4, 1, 0)) r4,
+                sum(if(r_pop = 5, 1, 0)) r5,
+                sum(if(r_pop = 6, 1, 0)) r6,
+                sum(if(r_pop = 7, 1, 0)) r7,
+                sum(if(r_pop = 8, 1, 0)) r8,
+                sum(if(r_pop = 9, 1, 0)) r9,
+                sum(if(r_pop = 10, 1, 0)) r10,
+                sum(if(r_pop = 11, 1, 0)) r11,
+                sum(if(r_pop >= 12, 1, 0)) r12,
                 
                 sum(if(r_rank > 0, 1, 0 )) rrcnt,
                 sum(if(r_rank = 1, 1, 0)) rr1, 
@@ -3009,7 +3009,7 @@ def get_race_related(i_rcity, i_rdate, i_rno):
                 a.grade,
                 dividing,
                 b.gate,
-                b.rank,
+                b.r_pop as rank,
                 b.r_rank,
                 b.horse,
                 b.remark,
@@ -3644,12 +3644,12 @@ def get_prediction(i_rdate):
                 b.complex5, b.gap_back, 
                 b.jt_per, b.jt_cnt, b.jt_3rd,
                 b.s1f_rank, b.i_cycle, a.rcount, recent3, recent5, convert_r, jockey_old, reason, b.alloc3r*1, b.m_rank, b.tot_score, b.s1f_per, b.g3f_per, b.g1f_per, b.start_score, 
-                b.comment_one, b.g2f_rank, b.rec_per, b.rec8_trend
+                b.comment_one, b.g2f_rank, b.rec_per, b.rec8_trend, b.h_weight
             
             from exp010 a, exp011 b
             where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
             and a.rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 4 DAY), '%%Y%%m%%d')
-            and b.rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98, 99 )
+            and b.rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 97, 98, 99 )
             order by b.rcity, b.rdate, b.rno, b.r_pop, b.gate 
             ; """
         cursor.execute(strSql, (i_rdate, i_rdate))
@@ -5230,7 +5230,9 @@ def set_changed_race(i_rcity, i_rdate, i_rno, r_content):
                                 set reason = '"""
                         + reason
                         + """',
-                                    r_rank = 99
+                                    r_rank = 98,
+                                    rank = 98,
+                                    r_pop = 98
                             where rdate = '"""
                         + rdate
                         + """' and rno = """
@@ -7351,7 +7353,7 @@ def get_thethe9_ranks_multi(
         ; """
         )
 
-        # print(strSql) 
+        print(strSql) 
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 

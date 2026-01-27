@@ -126,13 +126,13 @@ def calc_rpop_anchor_26_trifecta(
     # 신마 판정: rank >= 98
     df["신마"] = (df["rank"] >= 98).astype(int)
 
-    anchor1_24_57_bet_unit = 300
+    anchor1_24_57_bet_unit = 200
     anchor1_24_57_bet_per_race = 9 * anchor1_24_57_bet_unit  # 3 * 3
-    anchor1_24_bet_unit = 300
+    anchor1_24_bet_unit = 200
     anchor1_24_bet_per_race = 6 * anchor1_24_bet_unit  # 3P2
-    anchor1_24_trio_bet_unit = 500
+    anchor1_24_trio_bet_unit = 200
     anchor1_24_trio_bet_per_race = 3 * anchor1_24_trio_bet_unit  # C(3,2)
-    box4_trio_bet_unit = 500
+    box4_trio_bet_unit = 200
     box4_trio_bet_per_race = 4 * box4_trio_bet_unit  # C(4,3)
     total_races = 0
     excluded_races = 0
@@ -647,8 +647,8 @@ def calc_rpop_anchor_26_trifecta(
 
 
 if __name__ == "__main__":
-    from_date = "20260109"
-    to_date = "20260111"
+    from_date = "20230101"
+    to_date = "20251231"
 
     race_df, summary = calc_rpop_anchor_26_trifecta(
         from_date=from_date,

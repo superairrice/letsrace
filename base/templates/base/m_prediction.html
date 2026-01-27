@@ -266,25 +266,29 @@
           {% if request.user.username == 'admin' %}
 
           {% with r.h_weight|slice:"0:3"|add:0 as weight_prefix %}
-          {% with r.handycap|div:weight_prefix|mul:100 as handy_ratio %}
-          
-            {% if handy_ratio >= 11.95 and r.h_weight|slice:"4:"|mul:1 <= -5 %}
-              {% if r.h_sex == '암' or r.h_age >= 6.0 %}
-              <span class="tooltip" style="font-family: Arial; font-size: 0.9rem; color:var(--color-r1); font-weight: bold;">
-                🔥
-              </span>
+          {% if weight_prefix %}
+            {% with r.handycap|div:weight_prefix|mul:100 as handy_ratio %}
+              {% if handy_ratio >= 11.95 and r.h_weight|slice:"4:"|mul:1 <= -5 %}
+                {% if r.h_sex == '암' or r.h_age >= 6.0 %}
+                <span class="tooltip" style="font-family: Arial; font-size: 0.9rem; color:var(--color-r1); font-weight: bold;">
+                  🔥
+                </span>
+                {% else %}
+                <span style="font-family: Arial; font-size: 0.9rem; color:var(--color-r2);">
+                  ⚠️
+                </span>
+                {% endif %}
               {% else %}
-              <span style="font-family: Arial; font-size: 0.9rem; color:var(--color-r2);">
-                ⚠️
-              </span>
+                <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-gray);">
+                </span>
               {% endif %}
-
-            {% else %}
+            {% endwith %}
+          {% else %}
+            {% with 0 as handy_ratio %}
               <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-gray);">
-                
               </span>
-            {% endif %}
-          {% endwith %}
+            {% endwith %}
+          {% endif %}
           {% endwith %}
 
           {% if r.m_rank %}
@@ -498,25 +502,25 @@
               <span class="tooltip" style="font-family: Arial; border-radius: 7px; color:var(--color-r1); border: 1px solid var(--color-r1); padding:1px 4px;">
                 {{r.h_weight|slice:"4:"}}
                 <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:20rem">
-                  ↪︎&nbsp;&nbsp;체중대비 부담중량 ratio : {{r.handycap|div:weight_prefix|mul:100|floatformat:1}}</span>
+                  ↪︎&nbsp;&nbsp;체중대비 부담중량 ratio : {{handy_ratio|floatformat:1}}</span>
               </span>
             {% elif weight_diff <= -10 %}
               <span class="tooltip" style="font-family: Arial; border-radius: 7px; color:var(--color-r5); border: 1px solid var(--color-r5); padding:1px 4px;">
                 {{r.h_weight|slice:"4:"}}
                 <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:20rem">
-                  ↪︎&nbsp;&nbsp;체중대비 부담중량 ratio : {{r.handycap|div:weight_prefix|mul:100|floatformat:1}}</span>
+                  ↪︎&nbsp;&nbsp;체중대비 부담중량 ratio : {{handy_ratio|floatformat:1}}</span>
               </span>
             {% elif weight_diff >= 0 %}
               <span class="tooltip" style="font-family: Arial; border-radius: 7px; color:var(--color-r1); background-color: var(--color-bg); padding:1px 4px;">
                 {{r.h_weight|slice:"4:"}}
                 <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:20rem">
-                  ↪︎&nbsp;&nbsp;체중대비 부담중량 ratio : {{r.handycap|div:weight_prefix|mul:100|floatformat:1}}</span>
+                  ↪︎&nbsp;&nbsp;체중대비 부담중량 ratio : {{handy_ratio|floatformat:1}}</span>
               </span>
             {% else %}
               <span class="tooltip" style="font-family: Arial; border-radius: 7px; color:var(--color-r5); background-color: var(--color-bg); padding:1px 4px;">
                 {{r.h_weight|slice:"4:"}}
                 <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:20rem">
-                  ↪︎&nbsp;&nbsp;체중대비 부담중량 ratio : {{r.handycap|div:weight_prefix|mul:100|floatformat:1}}</span>
+                  ↪︎&nbsp;&nbsp;체중대비 부담중량 ratio : {{handy_ratio|floatformat:1}}</span>
               </span>
             {% endif %}
           {% endwith %}
@@ -526,23 +530,29 @@
 
         {% else %}
         {% with r.h_weight|slice:"0:3"|add:0 as weight_prefix %}
-        {% with r.handycap|div:weight_prefix|mul:100 as handy_ratio %}
-            {% if handy_ratio >= 11.95 %}
-              {% if r.h_sex == '암' or r.h_age >= 6.0 %}
-              <span style="font-family: Arial; font-size: 1.0rem; font-style: italic; color:var(--color-r1); font-weight: bold;">
-                {{handy_ratio|floatformat:1}}
-              </span>
+        {% if weight_prefix %}
+          {% with r.handycap|div:weight_prefix|mul:100 as handy_ratio %}
+              {% if handy_ratio >= 11.95 %}
+                {% if r.h_sex == '암' or r.h_age >= 6.0 %}
+                <span style="font-family: Arial; font-size: 1.0rem; font-style: italic; color:var(--color-r1); font-weight: bold;">
+                  {{handy_ratio|floatformat:1}}
+                </span>
+                {% else %}
+                <span style="font-family: Arial; font-size: 1.0rem; font-style: italic; color:var(--color-r2);">
+                  {{handy_ratio|floatformat:1}}
+                </span>
+                {% endif %}
               {% else %}
-              <span style="font-family: Arial; font-size: 1.0rem; font-style: italic; color:var(--color-r2);">
-                {{handy_ratio|floatformat:1}}
-              </span>
+                <span style="font-family: Arial; font-size: 1.0rem; font-style: italic; color:var(--color-gray);">
+                  {{handy_ratio|floatformat:1}}
+                </span>
               {% endif %}
-            {% else %}
-              <span style="font-family: Arial; font-size: 1.0rem; font-style: italic; color:var(--color-gray);">
-                {{handy_ratio|floatformat:1}}
-              </span>
-            {% endif %}
-          {% endwith %}
+            {% endwith %}
+          {% else %}
+            <span style="font-family: Arial; font-size: 1.0rem; font-style: italic; color:var(--color-gray);">
+              0.0
+            </span>
+          {% endif %}
         {% endwith %}
         {% endif %}
         
@@ -760,7 +770,11 @@
               <div style="font-family: Arial; color:var(--color-light-gray); text-align: left;">
                 2️⃣&nbsp;복승률 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 {% if r.jt_cnt > 0 %}
+                {% if r.jt_cnt %}
                 <span style="font-family: Arial; color: var(--color-r2);">{{r.jt_2nd|mul:100|div:r.jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                {% else %}
+                <span style="font-family: Arial; color: var(--color-r2);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                {% endif %}
                 {% else %}
                 <span style="font-family: Arial; color: var(--color-light-gray);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                 {% endif %}
@@ -768,7 +782,11 @@
               <div style="font-family: Arial; color:var(--color-light-gray); text-align: left;">
                 3️⃣&nbsp;연승률 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 {% if r.jt_cnt > 0 %}
+                {% if r.jt_cnt %}
                 <span style="font-family: Arial; color: var(--color-r1);">{{r.jt_3rd|mul:100|div:r.jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                {% else %}
+                <span style="font-family: Arial; color: var(--color-r1);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                {% endif %}
                 {% else %}
                 <span style="font-family: Arial; color: var(--color-light-gray);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                 {% endif %}
@@ -823,7 +841,11 @@
                   <div style="font-family: Arial; color:var(--color-light-gray); text-align: left;">
                     2️⃣&nbsp;복승률 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     {% if r.jt_cnt > 0 %}
+                    {% if r.jt_cnt %}
                     <span style="font-family: Arial; color: var(--color-r2);">{{r.jt_2nd|mul:100|div:r.jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                    {% else %}
+                    <span style="font-family: Arial; color: var(--color-r2);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                    {% endif %}
                     {% else %}
                     <span style="font-family: Arial; color: var(--color-light-gray);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                     {% endif %}
@@ -831,7 +853,11 @@
                   <div style="font-family: Arial; color:var(--color-light-gray); text-align: left;">
                     3️⃣&nbsp;연승률 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                     {% if r.jt_cnt > 0 %}
+                    {% if r.jt_cnt %}
                     <span style="font-family: Arial; color: var(--color-r1);">{{r.jt_3rd|mul:100|div:r.jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                    {% else %}
+                    <span style="font-family: Arial; color: var(--color-r1);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                    {% endif %}
                     {% else %}
                     <span style="font-family: Arial; color: var(--color-light-gray);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                     {% endif %}

@@ -539,6 +539,15 @@ def home(request):
         to_date=to_date,
         bet_unit=100,
     )
+    try:
+        summary_keys = list(summary.keys()) if isinstance(summary, dict) else []
+        race_rows = len(race_df) if race_df is not None else 0
+        print(
+            "[rpop2] from_date=%s to_date=%s summary_type=%s summary_keys=%s race_rows=%s"
+            % (from_date, to_date, type(summary).__name__, summary_keys, race_rows)
+        )
+    except Exception as exc:
+        print(f"[rpop2] debug failed: {exc}")
 
     summary_display = []
     summary_total = None
@@ -3771,9 +3780,9 @@ def jtAnalysisMulti(
         start,
     )
 
-    rank1 = [item for item in status if item[15] == 1]  # item[15] : 예상착순(rank)
-    rank2 = [item for item in status if item[15] == 2]  # item[15] : 예상착순(rank)
-    rank3 = [item for item in status if item[15] == 3]  # item[15] : 예상착순(rank)
+    rank1 = [item for item in status if item[29] == 1]  # item[29] : 예상착순(rank)
+    rank2 = [item for item in status if item[29] == 2]  # item[29] : 예상착순(rank)
+    rank3 = [item for item in status if item[29] == 3]  # item[29] : 예상착순(rank)
     r_rank1 = [item for item in status if item[16] == 1]  # item[16] : 실제착순(r_rank)
     r_rank2 = [item for item in status if item[16] == 2]  # item[16] : 실제착순(r_rank)
     r_rank3 = [item for item in status if item[16] == 3]  # item[16] : 실제착순(r_rank)
