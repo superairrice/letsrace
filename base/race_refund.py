@@ -9,7 +9,7 @@ from sqlalchemy.engine import URL
 # 1. 기간별 결과 데이터 로드
 # =========================
 def load_result_data_from_db(
-    conn,
+    engine,
     from_date: str,
     to_date: str,
 ) -> pd.DataFrame:
@@ -43,7 +43,7 @@ def load_result_data_from_db(
       AND e.rdate <= %s
     ORDER BY e.rcity, e.rdate, e.rno, e.gate
     """
-    return pd.read_sql(sql, conn, params=[from_date, to_date])
+    return pd.read_sql(sql, engine, params=[from_date, to_date])
 
 
 def get_engine():
@@ -81,8 +81,10 @@ def calc_rpop_anchor_26_trifecta(
     - 환수금/환수율 집계.
     """
     engine = get_engine()
-    with closing(engine.connect()) as conn:
-        df = load_result_data_from_db(conn, from_date=from_date, to_date=to_date)
+    try:
+        df = load_result_data_from_db(engine, from_date=from_date, to_date=to_date)
+    finally:
+        engine.dispose()
 
     if df.empty:
         print(f"▶ [{from_date} ~ {to_date}] 기간 데이터가 없습니다.")
