@@ -542,9 +542,20 @@ def home(request):
     try:
         summary_keys = list(summary.keys()) if isinstance(summary, dict) else []
         race_rows = len(race_df) if race_df is not None else 0
+        day_summary_len = (
+            len(summary.get("day_summary", {})) if isinstance(summary, dict) else 0
+        )
         print(
-            "[rpop2] from_date=%s to_date=%s summary_type=%s summary_keys=%s race_rows=%s"
-            % (from_date, to_date, type(summary).__name__, summary_keys, race_rows)
+            "[rpop2] from_date=%s to_date=%s summary_type=%s summary_keys=%s "
+            "race_rows=%s day_summary_len=%s"
+            % (
+                from_date,
+                to_date,
+                type(summary).__name__,
+                summary_keys,
+                race_rows,
+                day_summary_len,
+            )
         )
     except Exception as exc:
         print(f"[rpop2] debug failed: {exc}")
