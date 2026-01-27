@@ -1,6 +1,8 @@
 import pandas as pd
 from contextlib import closing
-from django.db import connection
+from django.conf import settings
+from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
 
 
 # =========================
@@ -44,6 +46,20 @@ def load_result_data_from_db(
     return pd.read_sql(sql, conn, params=[from_date, to_date])
 
 
+def get_engine():
+    db = settings.DATABASES.get("default", {})
+    url = URL.create(
+        drivername="mysql+pymysql",
+        username=db.get("USER"),
+        password=db.get("PASSWORD"),
+        host=db.get("HOST") or "localhost",
+        port=int(db.get("PORT") or 3306),
+        database=db.get("NAME"),
+        query={"charset": "utf8mb4"},
+    )
+    return create_engine(url)
+
+
 # =========================
 # 2. r_pop 1축(2~4) 2등/5~7 3등 삼쌍승식
 #    + r_pop 1~4 BOX4 삼복승식 환수 계산
@@ -64,7 +80,8 @@ def calc_rpop_anchor_26_trifecta(
     - BOX4는 실제 1~3위가 r_pop 1~4 안에 있으면 적중.
     - 환수금/환수율 집계.
     """
-    with closing(connection) as conn:
+    engine = get_engine()
+    with closing(engine.connect()) as conn:
         df = load_result_data_from_db(conn, from_date=from_date, to_date=to_date)
 
     if df.empty:
