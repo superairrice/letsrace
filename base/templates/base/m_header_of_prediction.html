@@ -95,6 +95,7 @@
         <td>
           <span style="font-family: Arial; text-align: right; font-size: 1.25rem;">{{distance}}<sup style="font-size:0.9rem">m</sup></span>
         </td>
+
         <td>
           {% if 'OPEN' in grade %}
           <span style="font-family: Arial; text-align: right; font-size: 1.15rem; color:var(--color-r3); background-color: var(--color-bg); border-radius: 7px;">{{grade|slice:"0:2"}}</span>
@@ -102,6 +103,7 @@
           <span style="font-family: Arial; text-align: right; font-size: 1.2rem;">{{grade|slice:"0:2"}}</span>
           {% endif %}
         </td>
+        
         <td>
           {% if dividing|slice:"0:1" == '핸' %}
           <span style="font-family: Arial; text-align: right; font-size: 1.2rem; color: var(--color-r5);">{{dividing|slice:"0:2"}}</span>
@@ -144,17 +146,22 @@
       })();
     </script>
     
-    <span style="font-size:1.4rem; color: var(--color-r3); padding: 4px 4px; font-weight: bold; background-color: var(--color-bg); border-radius: 7px; padding: 4px 8px;">{{r_condition.grade|slice:"0:2"}}</span>
+    <span style="font-size:1.4rem; color: var(--color-r3); padding: 4px 4px; background-color: var(--color-bg); border-radius: 7px; padding: 4px 8px;">{{r_condition.grade|slice:"0:2"}}</span>
     <span class="tooltip"
-      style="font-size:1.4rem; color: var(--color-main); padding: 4px 4px;">{{r_condition.rcon1}}
+      style="font-size:1.4rem; color: var(--color-main); padding: 4px 4px; font-weight: normal;">{{r_condition.rcon1}}
       <span class="tooltip-text" style="font-size:1.2rem; color: var(--color-main);">
         {{r_condition.rname}} <br>
         {{r_condition.rcon2}} 
       </span>
     </span>
 
-    <span style="font-size:1.4rem; color: var(--color-main-light); padding: 4px 4px;">{{r_condition.dividing}}</span>
-    <span class="tooltip" style="color:var(--color-light); font-size: 1.4rem; font-family: Arial; padding: 4px 4px;">&nbsp;{{r_condition.r1award|div:1000|intcomma}}
+    {% if r_condition.dividing == '핸디캡'%}
+    <span style="font-size:1.4rem; color: var(--color-main-light); padding: 4px 4px; color: var(--color-r3);">{{r_condition.dividing}}</span>
+    {% else %}
+    <span style="font-size:1.4rem; color: var(--color-main-light); padding: 4px 4px; color: var(--color-r2);">{{r_condition.dividing}}</span>
+    {% endif %} 
+
+    <span class="tooltip" style="color:var(--color-light); font-size: 1.4rem; font-family: Arial; padding: 4px 4px; font-weight: normal;">&nbsp;{{r_condition.r1award|div:1000|intcomma}}
       <span class="tooltip-text" style="text-align: right; font-family: Arial;">
         <table>
           <thead>
@@ -198,7 +205,8 @@
 
     <div class="room__topRight">
       {%if alloc.r2alloc %}
-      <span class="tooltip" style="font-family: Arial; color:var(--color-r5); font-size: 1.4rem; background-color: var(--color-bg); padding: 2px 6px; border-radius: 7px; width:5.5rem; text-align: right; padding:0.4rem;">{{alloc.r2alloc|slice:"2:10"|rjust:10}}
+      <span class="tooltip" style="font-weight: normal; font-family: Arial; color:var(--color-r3); font-size: 1.4rem; background-color: var(--color-bg); padding: 2px 6px; border-radius: 7px; width:5.5rem; text-align: right; padding:0.4rem;">
+        {{alloc.r2alloc|slice:"2:10"|rjust:10}}
         <span class="tooltip-text" style="text-align: left; font-family: Arial;">
           <table>
             <thead>
@@ -230,19 +238,7 @@
     
     <span style="font-size:1.4rem; color: var(--color-main-light); font-family: Arial; padding:0.4rem; ">{{r_condition.distance}}𝓂</span>
 
-    <span style="color: var(--color-main); padding:0.4rem;">
-      {% if request.user.username == 'admin' %}
-      <a href="{% url 'race_report' r_condition.rcity r_condition.rdate r_condition.rno %}"
-        onclick="window.open(this.href, '_blank', 'width=900, height=800, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
-        <span class="tooltip" style="font-size: 1.35rem;">⏰&nbsp;&nbsp;{{r_condition.rtime}}
-          <span class="tooltip-text">경주복기</span>
-        </span>
-      </a>
-      
-      {% else %}
-      ⏰&nbsp;&nbsp;{{r_condition.rtime}}
-      {% endif %}
-    </span>
+    
 
     
   </div>
@@ -265,6 +261,10 @@
       </span>
       </span>
     </form>
+
+    <span style="font-family: Arial; color: var(--color-main); padding:0.4rem;">
+      ⏰&nbsp;&nbsp;{{r_condition.rtime}}
+    </span>
     
   </div>
 

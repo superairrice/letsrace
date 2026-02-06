@@ -343,7 +343,7 @@
 
         {# 부담중량 #}
         <td style="font-size: 1.2rem;">
-          <a href="{% url 'jt_analysis' '%' rdate|mul:1|sub:10000 rdate jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' handycap %}" onclick="window.open(this.href, 'w_jt_analysis', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          <a href="{% url 'jt_analysis' '%' rdate|mul:1|sub:10000 rdate jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' handycap %}" onclick="window.open(this.href, 'w_jt_analysis', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
 
             {% if handycap > 56.0 %}
             <div style="font-size: 1.15rem; font-family: Arial; color:red;">{% if handycap %}{{handycap}}{% endif %}</div>
@@ -367,8 +367,9 @@
 
         {# 기수 / 마방 #}
         <td align="left" style="font-size: 1.2rem">
+          <a href="{% url 'jt_analysis_multi' rcity rdate|mul:1|sub:10000 rdate jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
           {% if jockey %}
-
+          
             {% if jockey_old %}  {# 기수변경 #}
               {% if r.jockey == jockey %}
               <div style="text-align: left;">
@@ -390,7 +391,9 @@
             {%endif%}
           
           {%endif%}
+          </a>
 
+          <a href="{% url 'jt_analysis_multi' rcity rdate|mul:1|sub:10000 rdate '%' trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
           {% if r.trainer == trainer %}
             <div style="text-align: right; font-size: 1.15rem;">
                 <span style="color:var(--color-r5); border-bottom: 1px solid var(--color-r5); font-size: 1.15rem;">{{trainer}}</span>
@@ -400,6 +403,7 @@
                 <span style="color:var(--color-r1); border-bottom: 1px solid var(--color-r1); font-size: 1.15rem;">{{trainer}}</span>
             </div>
           {%endif%}
+          </a>
           
         </td>
 
@@ -424,7 +428,7 @@
 
               <div style="font-size: 1.2rem; color:gray; text-align: right;">
                 <a href="{% url 'jt_analysis' '%' rdate|mul:1|sub:10000 rdate jockey trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' %}"
-                  onclick="window.open(this.href, 'w_jt_analysis', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                  onclick="window.open(this.href, 'w_jt_analysis', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
                   <span class="tooltip" style="font-family: Arial; color:var(--color-light-gray); z-index:9; text-decoration:line-through;">
                     {% if jt_cnt > 0 %}
                     <span style="font-family: Arial; color: var(--color-light-gray);">{{jt_3rd|mul:100|div:jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
@@ -476,21 +480,21 @@
               {# 기수 조교사 연대 출주 복승 회수 #}
               <div style="font-size: 1.15rem; color:gray; text-align: right;">
                 <a href="{% url 'jt_analysis' '%' rdate|mul:1|sub:10000 rdate jockey trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' %}"
-                  onclick="window.open(this.href, 'w_jt_analysis', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                  onclick="window.open(this.href, 'w_jt_analysis', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
                   <span class="tooltip" style="font-family: Arial; color:var(--color-light-gray); z-index:9;">
                     {% if jt_cnt > 0 %}
-                      {% if jt_3rd|mul:100|div:jt_cnt >= 50.0 %}
-                      <span style="font-family: Arial; color: var(--color-r1);">{{jt_3rd|mul:100|div:jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
-                      {% elif jt_3rd|mul:100|div:jt_cnt >= 40.0 %}
-                      <span style="font-family: Arial; color: var(--color-r2);">{{jt_3rd|mul:100|div:jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
-                      {% elif jt_3rd|mul:100|div:jt_cnt >= 30.0 %}
-                      <span style="font-family: Arial; color: var(--color-r3);">{{jt_3rd|mul:100|div:jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
-                      {% elif jt_3rd|mul:100|div:jt_cnt >= 20.0 %}
-                      <span style="font-family: Arial; color: var(--color-r4);">{{jt_3rd|mul:100|div:jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
-                      {% elif jt_3rd|mul:100|div:jt_cnt >= 10.0 %}
-                      <span style="font-family: Arial; color: var(--color-r5);">{{jt_3rd|mul:100|div:jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                      {% if jt_per >= 50.0 %}
+                      <span style="font-family: Arial; color: var(--color-r1);">{{jt_per}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                      {% elif jt_per >= 40.0 %}
+                      <span style="font-family: Arial; color: var(--color-r2);">{{jt_per}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                      {% elif jt_per >= 30.0 %}
+                      <span style="font-family: Arial; color: var(--color-r3);">{{jt_per}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                      {% elif jt_per >= 20.0 %}
+                      <span style="font-family: Arial; color: var(--color-r4);">{{jt_per}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                      {% elif jt_per >= 10.0 %}
+                      <span style="font-family: Arial; color: var(--color-r5);">{{jt_per}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                       {% else %}
-                      <span style="font-family: Arial; color: var(--color-light-gray);">{{jt_3rd|mul:100|div:jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                      <span style="font-family: Arial; color: var(--color-light-gray);">{{jt_per}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                       {% endif %}
                     {% else %}
                     <span style="font-family: Arial; color: var(--color-light-gray);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>

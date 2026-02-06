@@ -1,9 +1,53 @@
 {% load mathfilters %}
 
-      <table class="tt9dark-table" style="width: 98vw; max-width: 1550px; min-width: 800px; margin: 0 auto;">
+<style>
+  /* 포탈 기반 툴팁: 컨테이너 overflow에 잘리지 않도록 최상단에 표시 */
+  .tooltip .tooltip-text { display: none !important; }
+  .tooltip-portal {
+    position: fixed;
+    z-index: 99999;
+    max-width: 42rem;
+    background: rgba(18,18,18,0.96);
+    color: var(--color-light-gray);
+    padding: 8px 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    pointer-events: none;
+    font-size: 1.1rem;
+    line-height: 1.35;
+  }
+
+  /* 테이블 헤더 고정 + 바디만 스크롤 */
+  .tt9dark-table-wrap {
+    max-height: 90vh;
+    overflow-y: auto;
+    overflow-x: auto;
+  }
+  .tt9dark-table {
+    --tt9-head-row1-height: 3.4rem;
+    --tt9-sticky-top: 0px;
+    overflow: visible;
+  }
+  .tt9dark-table thead th {
+    position: sticky;
+    top: var(--tt9-sticky-top);
+    z-index: 2;
+  }
+  .tt9dark-table thead tr:first-child th {
+    top: var(--tt9-sticky-top);
+    z-index: 3;
+  }
+  .tt9dark-table thead tr:nth-child(2) th {
+    top: calc(var(--tt9-sticky-top) + var(--tt9-head-row1-height));
+  }
+</style>
+
+      <div class="tt9dark-table-wrap">
+        <table class="tt9dark-table" style="width: 98vw; max-width: 1550px; min-width: 800px; margin: 0 auto;">
         <thead>
           <tr>
-            <th colspan="25" style="font-size: 1.3rem;background-color: var(--color-dark); border-radius: 7px">
+            <th colspan="27" style="font-size: 1.3rem;background-color: var(--color-dark); border-radius: 7px">
               {% if jockey != '%' %}<span style="background-color: var(--color-r4); color:var(--color-bg); border-radius: 7px; padding: 2px 4px;">🏇&nbsp;{{jockey}}</span>{% endif %}
               <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
               {% if trainer != '%' %}<span style="background-color: var(--color-r4); color:var(--color-bg); border-radius: 7px; padding: 2px 4px;">🛖&nbsp;{{trainer}}</span>{% endif %}
@@ -63,6 +107,10 @@
             <th colspan="1" style="font-size: 1.2rem; background-color: var(--color-dark); border-radius: 7px;"><span>🤠</span></th>
             {% endif %}
             
+            <th colspan="1" style="font-size: 1.2rem; text-transform: lowercase; background-color: var(--color-dark); border-radius: 7px;"><span>S_per</span></th>
+            <th colspan="1" style="font-size: 1.2rem; text-transform: lowercase; background-color: var(--color-dark); border-radius: 7px;"><span>s1f</span></th>
+            <th colspan="1" style="font-size: 1.2rem; text-transform: lowercase; background-color: var(--color-dark); border-radius: 7px;"><span>g3f</span></th>
+            <th colspan="1" style="font-size: 1.2rem; text-transform: lowercase; background-color: var(--color-dark); border-radius: 7px;"><span>g1f</span></th>
             <th colspan="1" style="font-size: 1.3rem; background-color: var(--color-dark); border-radius: 7px;"><span>마번</span></th>
 
             <th colspan="1" style="font-size: 1.3rem; background-color: var(--color-dark); border-radius: 7px;">Corners</th>
@@ -71,7 +119,7 @@
             <th colspan="2" style="font-size: 1.3rem; background-color: var(--color-dark); border-radius: 7px;"><span>경주로</span></th>
             
             <th colspan="1" style="font-size: 1.3rem; background-color: var(--color-dark); border-radius: 7px"><span>복승</span></th>
-            <th colspan="2" style="font-size: 1.3rem; background-color: var(--color-dark); border-radius: 7px"><span>연식(인기)</span></th>
+            <th colspan="1" style="font-size: 1.3rem; background-color: var(--color-dark); border-radius: 7px"><span>연식</span></th>
 
             <th colspan="2" style="font-size: 1.3rem; background-color: var(--color-bg); border-radius: 7px; text-transform: lowercase;"><span>thethe9</span></th>
             <th colspan="1" style="font-size: 1.3rem; background-color: var(--color-bg); border-radius: 7px;"><span>R</span></th>
@@ -89,7 +137,7 @@
         </thead>
         <tbody>
 
-          {% for rcity, rdate, r_rno, rday, distance, grade, dividing, horse, jname, tname, hname, h_weight, handycap, i_prehandy, gate, rank, r_rank, corners, r_s1f, r_g3f, r_g1f, s1f_rank, g3f_rank, g2f_rank, g1f_rank, cs1f, cg3f, cg1f,i_cycle, r_pop, alloc1r, alloc3r, complex, r_record, track, jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd, jockey_old, reason, h_sex, h_age, birthplace, j_per, t_per, rating, r2alloc, r3alloc, r_etc, gap, gap_b, weather, rstate, rmoisture, adv_track, r_judge, rating, h_cnt, h_mare, pop_rank, r_flag, passage_s1f in status %}
+          {% for rcity, rdate, r_rno, rday, distance, grade, dividing, horse, jname, tname, hname, h_weight, handycap, i_prehandy, gate, rank, r_rank, corners, r_s1f, r_g3f, r_g1f, s1f_rank, g3f_rank, g2f_rank, g1f_rank, cs1f, cg3f, cg1f,i_cycle, r_pop, alloc1r, alloc3r, complex, r_record, track, jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd, jockey_old, reason, h_sex, h_age, birthplace, j_per, t_per, rating, r2alloc, r3alloc, r_etc, gap, gap_b, weather, rstate, rmoisture, adv_track, r_judge, rating, h_cnt, h_mare, pop_rank, r_flag, passage_s1f, s1f_per, g3f_per, g1f_per, start_score in status %}
           
           <tr class="view">
             
@@ -106,7 +154,7 @@
                       <span style="font-size: 1.3rem; font-weight:normal; font-family: Arial;">'{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
                       {% endif %}
 
-                      <span style="font-size: 1.3rem; font-weight:normal; font-family: Arial; color:var(--color-light);">{{distance}}</span>
+                      <span style="font-size: 1.3rem; font-weight:normal; font-family: Arial; color:var(--color-light);">{{distance}}ᴹ</span>
 
                       {% if 'OPEN' in grade %}
                       <span style="font-size: 1.15rem; font-family: Arial; color:var(--color-r1);">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}</span>
@@ -137,7 +185,7 @@
                     <span style="font-size: 1.3rem; font-weight:normal; font-family: Arial;">'{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
                     {% endif %}
 
-                    <span style="font-size: 1.3rem; font-weight:normal; font-family: Arial; color:var(--color-light);">{{distance}}</span>
+                    <span style="font-size: 1.3rem; font-weight:normal; font-family: Arial; color:var(--color-light);">{{distance}}ᴹ</span>
 
                     {% if 'OPEN' in grade %}
                     <span style="font-size: 1.15rem; font-family: Arial; color:var(--color-r1);">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}</span>
@@ -206,16 +254,7 @@
               <a href="{% url 'jt_analysis' '%' rdate|mul:1|sub:50000 rdate '%' '%' '%' horse '1' '99' '1' '99' '0' '0' '0' %}">
                 <div style="font-family: Arial; text-align: left;">
                   
-                {% if i_cycle %}
-                  {% if i_cycle <= 16 %}
-                  <span style="font-family: Arial; color:var(--color-light); border-radius: 5px; background-color:var(--color-r1); padding:2px 3px; font-size: 1.2rem;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
-                  {% elif i_cycle >= 68 %}
-                  <span style="font-family: Arial; color:var(--color-light); border-radius: 5px; background-color:var(--color-r2); padding:2px 3px; font-size:0.9rem;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
-                  {% else %}
-                  <span style="font-family: Arial; color:var(--color-bg); border-radius: 5px; background-color:var(--color-light-gray); padding:2px 3px; font-size: 1.2rem;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
-                  {% endif %}
-                {% endif %}
-
+                
                 {% if r_flag == None or r_flag == '0' %}
                   {% if today == rdate and rno == r_rno %}
                   <span style="color:var(--color-bg); background-color: var(--color-r4); padding: 2px 4px; border-radius: 7px;">{{horse|slice:"0:6"}}</span>
@@ -234,7 +273,17 @@
             </td>
             
             {# 경주마 성별 나이 등 #}
-            <td align="center">
+            <td align="right">
+
+              {% if i_cycle %}
+                  {% if i_cycle <= 15 %}
+                  <span style="font-family: Arial; color:var(--color-light); border-radius: 5px; background-color:var(--color-r1); padding:2px 3px; font-size: 1.1rem;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                  {% elif i_cycle >= 68 %}
+                  <span style="font-family: Arial; color:var(--color-light); border-radius: 5px; background-color:var(--color-r1); padding:2px 3px; font-size:0.9rem;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                  {% else %}
+                  <span style="font-family: Arial; color:var(--color-bg); border-radius: 5px; background-color:var(--color-light-gray); padding:2px 3px; font-size: 1.1rem;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                  {% endif %}
+                {% endif %}
               
               {# 출생지 #}
               {% if birthplace == '한' %}
@@ -511,6 +560,111 @@
             </td>
             {% endif %}
 
+            {# start_score #}
+            <td style="text-align: center; font-family: Arial, Helvetica, sans-serif;">
+              <span class="tooltip" style="font-weight: normal; font-size: 1.1rem;">
+              {% if start_score == 100 %}
+              <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">⚡️&nbsp;&nbsp;</span>
+              {% elif start_score >= 90.0 and start_score < 100 %}
+              <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{start_score|floatformat:1}}</span>
+              {% elif start_score >= 80.0 and start_score < 90 %}
+              <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{start_score|floatformat:1}}</span>
+              {% elif start_score >= 70 and start_score < 80 %}
+              <span style="font-family: Arial; color: var(--color-r3);">{{start_score|floatformat:1}}</span>
+              {% elif start_score >= 60 and start_score < 70 %}
+              <span style="font-family: Arial; color: var(--color-r4);">{{start_score|floatformat:1}}</span>
+              {% elif start_score >= 50 and start_score < 60 %}
+              <span style="font-family: Arial; color: var(--color-r5);">{{start_score|floatformat:1}}</span>
+              {% elif start_score == 0 %}
+              <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+              {% else %}
+              <span style="font-family: Arial; color: var(--color-gray);">{{start_score|floatformat:1}}</span>
+              {% endif %}
+              <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
+                  ↪︎&nbsp;&nbsp;초반 200m 점수: {{start_score|floatformat:1}}<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;{{r.corners}}</span>
+                
+                </span>
+            </td>
+            {# s1f_per #}
+            <td style="text-align: center; font-family: Arial, Helvetica, sans-serif;">
+              <span class="tooltip" style="font-weight: normal; font-size: 1.1rem;">
+              {% if s1f_per == 100 %}
+              <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">⚡️&nbsp;&nbsp;</span>
+              {% elif s1f_per >= 90.0 and s1f_per < 100 %}
+              <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{s1f_per|floatformat:1}}</span>
+              {% elif s1f_per >= 80.0 and s1f_per < 90 %}
+              <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{s1f_per|floatformat:1}}</span>
+              {% elif s1f_per >= 70 and s1f_per < 80 %}
+              <span style="font-family: Arial; color: var(--color-r3);">{{s1f_per|floatformat:1}}</span>
+              {% elif s1f_per >= 60 and s1f_per < 70 %}
+              <span style="font-family: Arial; color: var(--color-r4);">{{s1f_per|floatformat:1}}</span>
+              {% elif s1f_per >= 50 and s1f_per < 60 %}
+              <span style="font-family: Arial; color: var(--color-r5);">{{s1f_per|floatformat:1}}</span>
+              {% elif s1f_per == 0 %}
+              <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+              {% else %}
+              <span style="font-family: Arial; color: var(--color-gray);">{{s1f_per|floatformat:1}}</span>
+              {% endif %}
+              <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
+                  ↪︎&nbsp;&nbsp;초반 200m 점수: {{s1f_per|floatformat:1}}<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;{{r.corners}}</span>
+                
+                </span>
+            </td>
+            {# g3f_per #}
+            <td style="text-align: center; font-family: Arial, Helvetica, sans-serif;">
+              <span class="tooltip" style="font-weight: normal; font-size: 1.1rem;">
+              {% if g3f_per == 100 %}
+              <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">⚡️&nbsp;&nbsp;</span>
+              {% elif g3f_per >= 90.0 and g3f_per < 100 %}
+              <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{g3f_per|floatformat:1}}</span>
+              {% elif g3f_per >= 80.0 and g3f_per < 90 %}
+              <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{g3f_per|floatformat:1}}</span>
+              {% elif g3f_per >= 70 and g3f_per < 80 %}
+              <span style="font-family: Arial; color: var(--color-r3);">{{g3f_per|floatformat:1}}</span>
+              {% elif g3f_per >= 60 and g3f_per < 70 %}
+              <span style="font-family: Arial; color: var(--color-r4);">{{g3f_per|floatformat:1}}</span>
+              {% elif g3f_per >= 50 and g3f_per < 60 %}
+              <span style="font-family: Arial; color: var(--color-r5);">{{g3f_per|floatformat:1}}</span>
+              {% elif g3f_per == 0 %}
+              <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+              {% else %}
+              <span style="font-family: Arial; color: var(--color-gray);">{{g3f_per|floatformat:1}}</span>
+              {% endif %}
+              <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
+                  ↪︎&nbsp;&nbsp;초반 200m 점수: {{g3f_per|floatformat:1}}<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;{{r.corners}}</span>
+                
+                </span>
+            </td>
+            {# g1f_per #}
+            <td style="text-align: center; font-family: Arial, Helvetica, sans-serif;">
+              <span class="tooltip" style="font-weight: normal; font-size: 1.1rem;">
+              {% if g1f_per == 100 %}
+              <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">⚡️&nbsp;&nbsp;</span>
+              {% elif g1f_per >= 90.0 and g1f_per < 100 %}
+              <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{g1f_per|floatformat:1}}</span>
+              {% elif g1f_per >= 80.0 and g1f_per < 90 %}
+              <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{g1f_per|floatformat:1}}</span>
+              {% elif g1f_per >= 70 and g1f_per < 80 %}
+              <span style="font-family: Arial; color: var(--color-r3);">{{g1f_per|floatformat:1}}</span>
+              {% elif g1f_per >= 60 and g1f_per < 70 %}
+              <span style="font-family: Arial; color: var(--color-r4);">{{g1f_per|floatformat:1}}</span>
+              {% elif g1f_per >= 50 and g1f_per < 60 %}
+              <span style="font-family: Arial; color: var(--color-r5);">{{g1f_per|floatformat:1}}</span>
+              {% elif g1f_per == 0 %}
+              <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+              {% else %}
+              <span style="font-family: Arial; color: var(--color-gray);">{{g1f_per|floatformat:1}}</span>
+              {% endif %}
+              <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
+                  ↪︎&nbsp;&nbsp;초반 200m 점수: {{g1f_per|floatformat:1}}<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;{{r.corners}}</span>
+                
+                </span>
+            </td>
+
             {# gate #}
             <td align="center">
               <div style="font-family: Arial; font-size: 1.2rem; background-color: var(--color-bg); color: var(--color-light); border-radius: 7px; padding: 2px 4px;">
@@ -623,14 +777,14 @@
 
             <td align="center">
               {% if gap|length >= 2 %}
-              <sup style="font-size: 0.7rem; color:var(--color-r2)">{% if gap %}{{gap}}{% endif %}</sup>
+              <span style="font-size: 0.8rem; color:var(--color-r2)">{% if gap %}{{gap}}{% endif %}</span>
               {% else %}
-              <sup style="font-size: 1.15rem; color:var(--color-r2)">{% if gap %}{{gap}}{% endif %}</sup>
+              <span style="font-size: 1.1rem; color:var(--color-r2)">{% if gap %}{{gap}}{% endif %}</span>
               {% endif %}
               {% if gap_b|length >= 2 %}
-              <sub style="font-size: 0.7rem; color:var(--color-r4)">{% if gap_b %}{{gap_b}}{% endif %}</sub>
+              <span style="font-size: 0.8rem; color:var(--color-r4)">{% if gap_b %}{{gap_b}}{% endif %}</span>
               {% else %}
-              <sub style="font-size: 1.15rem; color:var(--color-r4)">{% if gap_b %}{{gap_b}}{% endif %}</sub>
+              <span style="font-size: 1.1rem; color:var(--color-r4)">{% if gap_b %}{{gap_b}}{% endif %}</span>
               {% endif %}
             </td>
 
@@ -642,24 +796,26 @@
               <span style="font-size: 1.15rem; font-family: Arial; color: var(--color-r1);">{{adv_track|floatformat:0}}</span>
               {% endif %}
 
-              {% if track == '②' %}
-              <span style="background-color: var(--color-light); padding: 2px 4px; border-radius: 7px; font-weight: 300; font-size: 1.15rem; color:var(--color-r1);">2</span>
+              {% if track == '①' %}
+              <span style="font-style: normal; font-size: 1.05rem; border-radius: 50%; background-color: var(--color-r1); padding: 2px 6px; color:var(--color-light); border: 1px solid var(--color-light);">1</span>
+              {% elif track == '②' %}
+              <span style="font-style: normal; font-size: 1.05rem; border-radius: 50%; background-color: var(--color-r1); padding: 2px 5px; color:var(--color-light);">2</span>
               {% elif track == '③' %}
-              <span style="background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; font-weight: 300; font-size: 1.15rem; color:var(--color-r1);">3</span>
+              <span style="font-style: normal; font-size: 1.05rem; border-radius: 50%; background-color: var(--color-r1); padding: 2px 5px; color:var(--color-bg);">3</span>
               {% elif track == '④' %}
-              <span style="background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; font-weight: 300; font-size: 1.15rem; color:var(--color-r2);">4</span>
+              <span style="font-style: normal; font-size: 1.05rem; border-radius: 50%; background-color: var(--color-r2); padding: 2px 5px; color:var(--color-bg);">4</span>
               {% elif track == '⑤' %}
-              <span style="background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; font-weight: 300; font-size: 1.15rem; color:var(--color-light-gray);">5</span>
+              <span style="font-style: normal; font-size: 1.05rem; border-radius: 50%; background-color: var(--color-r3); padding: 2px 5px; color:var(--color-bg);">5</span>
               {% elif track == '⑥' %}
-              <span style="background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; font-weight: 300; font-size: 1.15rem; color:var(--color-gray);">6</span>
+              <span style="font-style: normal; font-size: 1.05rem; border-radius: 50%; background-color: var(--color-r3); padding: 2px 5px; color:var(--color-dark-medium);">6</span>
               {% elif track == '⑦' %}
-              <span style="background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; font-weight: 300; font-size: 1.15rem; color:var(--color-r1);">7</span>
+              <span style="font-style: normal; font-size: 1.05rem; border-radius: 50%; background-color: var(--color-r4); padding: 2px 5px; color:var(--color-bg);">7</span>
               {% elif track == '⑧' %}
-              <span style="background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; font-weight: 300; font-size: 1.15rem; color:var(--color-r1);">8</span>
+              <span style="font-style: normal; font-size: 1.05rem; border-radius: 50%; background-color: var(--color-r5); padding: 2px 5px; color:var(--color-bg);">8</span>
               {% elif track == '⑨' %}
-              <span style="background-color: var(--color-main); padding: 2px 4px; border-radius: 7px; font-weight: 300; font-size: 1.15rem; color:var(--color-r1);">9</span>
+              <span style="font-style: normal; font-size: 1.05rem; border-radius: 50%; background-color: var(--color-bg); padding: 2px 5px; color:var(--color-light);">9</span>
               {% else %}
-              <span style="background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px; font-weight: 300; font-size: 1.15rem; color:var(--color-r5);">{% if track %}{{track}}{% else %}&nbsp;{% endif %}</span>
+              <span>{% if track %}{{track}}{% else %}{% endif %}</span>
               {% endif %}
             </td>
 
@@ -677,9 +833,9 @@
 
               {% if rstate %}
               {% if rstate == '불량' or rstate == '포화' %}
-              <span style="text-align:left; font-family: Arial; font-size: 0.9rem; color:tomato;">{{rstate|slice:"0:1"}}&nbsp;{{rmoisture}}</span>
+              <span style="text-align:left; font-family: Arial; font-size: 1.1rem; color:tomato;">{{rstate|slice:"0:1"}}&nbsp;{{rmoisture}}</span>
               {% else %}
-              <span style="text-align:left; font-family: Arial; font-size: 0.9rem; color:var(--color-gray)">{% if handycap %}{{rstate|slice:"0:1"}}&nbsp;{{rmoisture}}{% endif %}</span>
+              <span style="text-align:left; font-family: Arial; font-size: 1.1rem; color:var(--color-light-gray)">{% if handycap %}{{rstate|slice:"0:1"}}&nbsp;{{rmoisture}}{% endif %}</span>
               {% endif %}
               {% endif %}
 
@@ -740,49 +896,7 @@
               
             </td>
             
-            {# 인기 #}
-            <td style="text-align: center; font-family: Arial, Helvetica, sans-serif;">
-              <!-- {% if r_pop %}
-              <span class="tooltip" style="font-style: normal; color:var(--color-gray); font-size: 1.3rem;">
-                <progress value={{r_pop}} max="99" style="width: 2.4rem">{{r_pop}}%</progress>
-                <span class="tooltip-text" style="font-size: 1.2rem;">인기도&nbsp;:&nbsp;{{r_pop}}</span>
-              </span>
-              {% endif %} -->
-
-              {% if pop_rank %}
-                {% if pop_rank == 1 %}
-                <span style="font-family: Arial; font-size: 1.3rem; background-color: var(--color-r1); color: var(--color-light); border-radius: 10px; border:1px solid var(--color-light); padding: 2px 5px;">
-                  {{pop_rank}}
-                </span>
-                {% elif pop_rank == 2 %}
-                <span style="font-family: Arial; font-size: 1.3rem; background-color: var(--color-r2); color: var(--color-bg); border-radius: 10px; border:1px solid var(--color-light); padding: 2px 5px;">
-                  {{pop_rank}}
-                </span>
-                {% elif pop_rank == 3 %}
-                <span style="font-family: Arial; font-size: 1.3rem; background-color: var(--color-r3); color: var(--color-bg); border-radius: 10px; border:1px solid var(--color-light); padding: 2px 5px;">
-                  {{pop_rank}}
-                </span>
-                {% elif pop_rank == 4 %}
-                <span style="font-family: Arial; font-size: 1.3rem; border: 1px solid var(--color-r4); color: var(--color-r4); border-radius: 10px; border:1px solid var(--color-light); padding: 2px 4px;">
-                  {{pop_rank}}
-                </span>
-                {% elif pop_rank == 5 %}
-                <span style="font-family: Arial; font-size: 1.3rem; border: 1px solid var(--color-r5); color: var(--color-r5); border-radius: 10px; border:1px solid var(--color-light); padding: 2px 4px;">
-                  {{pop_rank}}
-                </span>
-                {% elif pop_rank > 90 %}
-                <span style="font-family: Arial; font-size: 1.15rem;">
-                  <span class="tooltip" style="font-size: 0.9rem;">🚫<span class="tooltip-text" style="font-size: 1.15rem;">사유 : {{reason}}</span></span>
-                </span>
-                {% else %}
-                <span style="font-family: Arial; font-size: 1.2rem; background-color: var(--color-bg); color: var(--color-light-gray); border-radius: 10px; border:1px solid var(--color-gray); padding: 2px 4px;">
-                  {{pop_rank}}
-                </span>
-                {% endif %}
-              {% endif %}
-              
-            </td>
-
+            
             {# thethe9 예상순위 #}
             <td align="center">
 
@@ -806,11 +920,24 @@
               <span style="font-family: Arial; font-size: 1.3rem; border: 1px solid var(--color-r5); color: var(--color-r5); border-radius: 10px; border:1px solid var(--color-light); padding: 2px 4px;">
                 {{r_pop}}
               </span>
-              {% elif r_pop > 90 %}
-              <span style="font-family: Arial; font-size: 1.15rem;">
-                <span class="tooltip" style="font-size: 0.9rem;">🚫<span class="tooltip-text" style="font-size: 1.15rem;">사유 : {{reason}}</span></span>
+              {% elif r_pop == 96 %}
+              <span class="tooltip" style="font-style: normal; font-family: Arial; font-size:1.0rem; color:var(--color-gray); text-align: right; padding:2px 4px; border-radius: 7px;">
+                😱<span class="tooltip-text">😱&nbsp;&nbsp;실격</span>
+              </span>
+              {% elif r_pop == 97 %}
+              <span class="tooltip" style="font-style: normal; font-family: Arial; font-size:1.0rem; color:var(--color-gray); text-align: right; padding:2px 4px; border-radius: 7px;">
+                🤬<span class="tooltip-text">🤬&nbsp;&nbsp;주행중지</span>
+              </span>
+              {% elif r_pop == 98 %}
+              <span class="tooltip" style="font-style: normal; font-family: Arial; font-size:1.0rem; color:var(--color-gray); text-align: right; padding:2px 4px; border-radius: 7px;">
+                🚫<span class="tooltip-text">🚫&nbsp;&nbsp;출주취소</span>
+              </span>
+              {% elif r_pop == 99 %}
+              <span class="tooltip" style="font-style: normal; font-family: Arial; font-size:1.0rem; color:var(--color-gray); text-align: right; padding:2px 4px; border-radius: 7px;">
+                🐣<span class="tooltip-text">🐣&nbsp;&nbsp;신마급</span>
               </span>
               {% else %}
+            
               <span style="font-family: Arial; font-size: 1.2rem; background-color: var(--color-bg); color: var(--color-light-gray); border-radius: 10px; border:1px solid var(--color-gray); padding: 2px 4px;">
                 {{r_pop}}
               </span>
@@ -857,85 +984,26 @@
             <td align="right">
               {% if r_judge %}
                 {% if r_judge|mul:"1" >= 5  %} 
-                <span class="tooltip" style="font-size: 1.15rem; font-family: Arial; color:var(--color-light); background-color: var(--color-r1); border-radius: 7px; padding: 2px 3px; font-weight: normal;">상<span class="tooltip-text" style="font-size: 1.15rem;">🚦<br>{{r_judge}}</span></span>
+                <span class="tooltip" style="font-size: 1.15rem; font-family: Arial; color:var(--color-light); background-color: var(--color-r1); border-radius: 50%; padding: 2px 4px; font-weight: normal;">상<span class="tooltip-text" style="font-size: 1.15rem;">🚦<br>{{r_judge}}</span></span>
                 {% elif r_judge|mul:"1" >= -5 and r_judge|mul:"1" <= 5 %} 
-                <span class="tooltip" style="font-size: 1.15rem; font-family: Arial; color:var(--color-r3); background-color: var(--color-bg); border-radius: 7px; padding: 2px 3px; font-weight: normal;">중<span class="tooltip-text" style="font-size: 1.15rem;">🚦<br>{{r_judge}}</span></span>
+                <span class="tooltip" style="font-size: 1.15rem; font-family: Arial; color:var(--color-r3); background-color: var(--color-bg); border-radius: 50%; padding: 2px 4px; font-weight: normal;">중<span class="tooltip-text" style="font-size: 1.15rem;">🚦<br>{{r_judge}}</span></span>
                 {% else %} 
-                <span class="tooltip" style="font-size: 1.15rem; font-family: Arial; color:var(--color-gray); background-color: var(--color-bg); border-radius: 7px; padding: 2px 3px; font-weight: normal;">하<span class="tooltip-text" style="font-size: 1.15rem;">🚦<br>{{r_judge}}</span></span>
+                <span class="tooltip" style="font-size: 1.15rem; font-family: Arial; color:var(--color-gray); background-color: var(--color-bg); border-radius: 50%; padding: 2px 4px; font-weight: normal;">하<span class="tooltip-text" style="font-size: 1.15rem;">🚦<br>{{r_judge}}</span></span>
                 {% endif %}
               {% endif %}
             </td>
             <td align="center">
               {% if h_cnt %}
                 <span style="font-size: 1.15rem; font-family: Arial; color:var(--color-light-gray);">{{h_cnt}}
-                  <sup style="font-size: 1.15rem; font-family: Arial; color:var(--color-r1); background-color: var(--color-bg); border-radius: 7px; padding: 2px 4px;">{{h_mare}}</sup>
+                  {% if h_sex == "암" %}
+                  <span style="font-size: 1.15rem; font-family: Arial; color:var(--color-bg); background-color: var(--color-r3); border-radius: 7px; padding: 2px 4px;">{{h_mare}}</span>
+                  {% else %}
+                  <span style="font-size: 1.15rem; font-family: Arial; color:var(--color-r5); background-color: var(--color-bg); border-radius: 7px; padding: 2px 4px;">{{h_mare}}</span>
+                  {% endif %}
                 </span>
               {% endif %}
             </td>
 
-            <!-- {# s1f 결과 #}
-            <td align="center">
-              <div>
-                {% if r_s1f %}
-                  {% if r_s1f > cs1f %}
-                  <span style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">{{r_s1f}}</span>
-                  {% elif r_s1f == cs1f %}
-                  <span style="font-family: Arial; font-size: 1.2rem; color:var(--color-light);">{{r_s1f}}</span>
-                  {% else %}
-                  <span style="font-family: Arial; font-size: 1.2rem; color:var(--color-r3);">{{r_s1f}}</span>
-                  {% endif %}
-                {% endif %}
-              </div>
-            </td>
-            {# g3f 결과 #}
-            <td align="center">
-              <div>
-                {% if r_g3f %}
-                  {% if r_g3f > cg3f %}
-                  <span style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">{{r_g3f}}</span>
-                  {% elif r_g3f == cs1f %}
-                  <span style="font-family: Arial; font-size: 1.2rem; color:var(--color-light);">{{r_g3f}}</span>
-                  {% else %}
-                  <span style="font-family: Arial; font-size: 1.2rem; color:var(--color-r3);">{{r_g3f}}</span>
-                  {% endif %}
-                {% endif %}
-              </div>
-            </td>
-            {# g1f 결과 #}
-            <td align="center">
-              <div>
-                {% if r_g1f %}
-                  {% if r_g1f > cg1f %}
-                  <span style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">{{r_g1f}}</span>
-                  {% elif r_g1f == cs1f %}
-                  <span style="font-family: Arial; font-size: 1.2rem; color:var(--color-light);">{{r_g1f}}</span>
-                  {% else %}
-                  <span style="font-family: Arial; font-size: 1.2rem; color:var(--color-r3);">{{r_g1f}}</span>
-                  {% endif %}
-                {% endif %}
-              </div>
-            </td>
-            
-            {# s1f 예상 #}
-            <td align="center">
-              <div>
-                <span style="font-family: Arial; font-size: 1.2rem; color:var(--color-light-gray);">{{cs1f}}</span>
-              </div>
-            </td>
-            {# g3f 예상 #}
-            <td align="center">
-              <div>
-                <span style="font-family: Arial; font-size: 1.2rem; color:var(--color-light-gray);">{{cg3f}}</span>
-              </div>
-            </td>
-            {# g1f 예상 #}
-            <td align="center">
-              <div>
-                <span style="font-family: Arial; font-size: 1.2rem; color:var(--color-light-gray);">{{cg1f}}</span>
-              </div>
-            </td> -->
-            
-            
           </tr>
 
           <!-- <tr class="fold">
@@ -947,5 +1015,58 @@
 
           {% endfor %}
         </tbody>
-      </table>
+        </table>
+      </div>
 
+<script>
+  (function () {
+    if (window.__tooltipPortalInit) return;
+    window.__tooltipPortalInit = true;
+
+    var portal = null;
+    var GAP = 12;
+
+    function ensurePortal() {
+      if (!portal) {
+        portal = document.createElement('div');
+        portal.className = 'tooltip-portal';
+        document.body.appendChild(portal);
+      }
+      return portal;
+    }
+
+    function place(x, y) {
+      var vw = window.innerWidth, vh = window.innerHeight;
+      portal.style.left = Math.max(8, Math.min(x, vw - portal.offsetWidth - 8)) + 'px';
+      portal.style.top  = Math.max(8, Math.min(y, vh - portal.offsetHeight - 8)) + 'px';
+    }
+
+    function onEnter(e) {
+      var host = e.target.closest('.tooltip');
+      if (!host) return;
+      var txt = host.querySelector('.tooltip-text');
+      if (!txt) return;
+      ensurePortal();
+      portal.innerHTML = txt.innerHTML;
+      var r = host.getBoundingClientRect();
+      place(r.right + GAP, r.top + GAP);
+      document.addEventListener('mousemove', onMove, true);
+    }
+
+    function onMove(e) {
+      if (!portal) return;
+      place(e.clientX + GAP, e.clientY + GAP);
+    }
+
+    function onLeave(e) {
+      var host = e.target.closest('.tooltip');
+      if (!host) return;
+      if (portal && portal.parentNode) portal.parentNode.removeChild(portal);
+      portal = null;
+      document.removeEventListener('mousemove', onMove, true);
+    }
+
+    document.addEventListener('mouseenter', onEnter, true);
+    document.addEventListener('mouseleave', onLeave, true);
+  })();
+</script>

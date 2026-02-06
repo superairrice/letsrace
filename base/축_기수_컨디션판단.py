@@ -99,8 +99,8 @@ class JockeyStat:
     long_win: int
     long_top3: int
     long_top3_rate: float
-    long_fail: int
-    long_fail_rate: float
+    long_fail4: int
+    long_fail4_rate: float
     long_avg_odds: float
     long_avg_pop: float
 
@@ -109,8 +109,8 @@ class JockeyStat:
     short_win: int
     short_top3: int
     short_top3_rate: float
-    short_fail: int
-    short_fail_rate: float
+    short_fail4: int
+    short_fail4_rate: float
     short_avg_odds: float
     short_avg_pop: float
 
@@ -125,12 +125,12 @@ def compute_jockey(row: Dict[str, Any]) -> JockeyStat:
     """
     row 예시(키):
       name,
-      long_n,long_win,long_top3,long_top3_rate,long_fail,long_fail_rate,long_avg_odds,long_avg_pop,
-      short_n,short_win,short_top3,short_top3_rate,short_fail,short_fail_rate,short_avg_odds,short_avg_pop
+      long_n,long_win,long_top3,long_top3_rate,long_fail4,long_fail4_rate,long_avg_odds,long_avg_pop,
+      short_n,short_win,short_top3,short_top3_rate,short_fail4,short_fail4_rate,short_avg_odds,short_avg_pop
     """
     lg = long_grade(float(row["long_top3_rate"]))
-    ss = short_state(int(row["short_fail"]))
-    flabel, fswitch = final_decision(lg, int(row["short_fail"]))
+    ss = short_state(int(row["short_fail4"]))
+    flabel, fswitch = final_decision(lg, int(row["short_fail4"]))
 
     return JockeyStat(
         name=str(row["name"]),
@@ -138,16 +138,16 @@ def compute_jockey(row: Dict[str, Any]) -> JockeyStat:
         long_win=int(row["long_win"]),
         long_top3=int(row["long_top3"]),
         long_top3_rate=float(row["long_top3_rate"]),
-        long_fail=int(row["long_fail"]),
-        long_fail_rate=float(row["long_fail_rate"]),
+        long_fail4=int(row["long_fail4"]),
+        long_fail4_rate=float(row["long_fail4_rate"]),
         long_avg_odds=float(row["long_avg_odds"]),
         long_avg_pop=float(row["long_avg_pop"]),
         short_n=int(row["short_n"]),
         short_win=int(row["short_win"]),
         short_top3=int(row["short_top3"]),
         short_top3_rate=float(row["short_top3_rate"]),
-        short_fail=int(row["short_fail"]),
-        short_fail_rate=float(row["short_fail_rate"]),
+        short_fail4=int(row["short_fail4"]),
+        short_fail4_rate=float(row["short_fail4_rate"]),
         short_avg_odds=float(row["short_avg_odds"]),
         short_avg_pop=float(row["short_avg_pop"]),
         long_grade=lg,
@@ -224,15 +224,15 @@ def fetch_jockey_condition_by_race(
         SUM(r_rank = 1) AS win_l,
         SUM(r_rank <= 3) AS top3_l,
         ROUND(SUM(r_rank <= 3)/COUNT(*), 3) AS top3_rate_l,
-        SUM(r_rank >= 8) AS fail8_l,
-        ROUND(SUM(r_rank >= 8)/COUNT(*), 3) AS fail8_rate_l,
+        SUM(r_rank >= 4) AS fail4_l,
+        ROUND(SUM(r_rank >= 4)/COUNT(*), 3) AS fail4_rate_l,
         ROUND(AVG(r_rank), 2) AS avg_rank_l,
         ROUND(AVG(alloc3r), 2) AS avg_place_odds_l,
         CASE
           WHEN COUNT(*) < 5 THEN 'WATCH(표본부족)'
-          WHEN (SUM(r_rank >= 8)/COUNT(*)) >= 0.30 THEN 'STOP(축 금지)'
+          WHEN (SUM(r_rank >= 4)/COUNT(*)) >= 0.30 THEN 'STOP(축 금지)'
           WHEN (SUM(r_rank <= 3)/COUNT(*)) >= 0.60
-               AND (SUM(r_rank >= 8)/COUNT(*)) <= 0.10
+               AND (SUM(r_rank >= 4)/COUNT(*)) <= 0.10
             THEN 'PASS(축 OK)'
           ELSE 'WATCH(축 주의)'
         END AS grade_long
@@ -246,14 +246,14 @@ def fetch_jockey_condition_by_race(
         SUM(r_rank = 1) AS win_s,
         SUM(r_rank <= 3) AS top3_s,
         ROUND(SUM(r_rank <= 3)/COUNT(*), 3) AS top3_rate_s,
-        SUM(r_rank >= 8) AS fail8_s,
-        ROUND(SUM(r_rank >= 8)/COUNT(*), 3) AS fail8_rate_s,
+        SUM(r_rank >= 4) AS fail4_s,
+        ROUND(SUM(r_rank >= 4)/COUNT(*), 3) AS fail4_rate_s,
         ROUND(AVG(r_rank), 2) AS avg_rank_s,
         ROUND(AVG(alloc3r), 2) AS avg_place_odds_s,
         CASE
           WHEN COUNT(*) < 5 THEN 'NA(표본부족)'
-          WHEN SUM(r_rank >= 8) >= 3 THEN 'COLD'
-          WHEN (SUM(r_rank <= 3)/COUNT(*)) >= 0.60 AND SUM(r_rank >= 8) <= 1 THEN 'HOT'
+          WHEN SUM(r_rank >= 4) >= 3 THEN 'COLD'
+          WHEN (SUM(r_rank <= 3)/COUNT(*)) >= 0.60 AND SUM(r_rank >= 4) <= 1 THEN 'HOT'
           ELSE 'WARM'
         END AS grade_short
       FROM base
@@ -270,8 +270,8 @@ def fetch_jockey_condition_by_race(
       COALESCE(l.win_l, 0) AS win_l,
       COALESCE(l.top3_l, 0) AS top3_l,
       COALESCE(l.top3_rate_l, 0) AS top3_rate_l,
-      COALESCE(l.fail8_l, 0) AS fail8_l,
-      COALESCE(l.fail8_rate_l, 0) AS fail8_rate_l,
+      COALESCE(l.fail4_l, 0) AS fail4_l,
+      COALESCE(l.fail4_rate_l, 0) AS fail4_rate_l,
       l.avg_rank_l, l.avg_place_odds_l,
       COALESCE(l.grade_long, 'WATCH(표본부족)') AS grade_long,
 
@@ -279,19 +279,19 @@ def fetch_jockey_condition_by_race(
       COALESCE(s.win_s, 0) AS win_s,
       COALESCE(s.top3_s, 0) AS top3_s,
       COALESCE(s.top3_rate_s, 0) AS top3_rate_s,
-      COALESCE(s.fail8_s, 0) AS fail8_s,
-      COALESCE(s.fail8_rate_s, 0) AS fail8_rate_s,
+      COALESCE(s.fail4_s, 0) AS fail4_s,
+      COALESCE(s.fail4_rate_s, 0) AS fail4_rate_s,
       s.avg_rank_s, s.avg_place_odds_s,
       COALESCE(s.grade_short, 'NA(표본부족)') AS grade_short,
 
       CASE
         WHEN COALESCE(l.grade_long, 'WATCH(표본부족)') LIKE 'STOP%%' THEN 'STOP(축 금지)'
-        WHEN COALESCE(s.rides_s,0) >= 5 AND s.fail8_s >= 3 THEN 'STOP(단기악화)'
-        WHEN COALESCE(s.rides_s,0) >= 5 AND s.fail8_s = 2 THEN 'WATCH(단기경고)'
+        WHEN COALESCE(s.rides_s,0) >= 5 AND s.fail4_s >= 3 THEN 'STOP(단기악화)'
+        WHEN COALESCE(s.rides_s,0) >= 5 AND s.fail4_s = 2 THEN 'WATCH(단기경고)'
         WHEN COALESCE(l.grade_long, 'WATCH(표본부족)') LIKE 'PASS%%'
              AND COALESCE(l.rides_l,0) >= 30
              AND COALESCE(s.rides_s,0) >= 5
-             AND s.fail8_s <= 1
+             AND s.fail4_s <= 1
           THEN 'PASS(축 OK)'
         WHEN COALESCE(l.grade_long, 'WATCH(표본부족)') LIKE 'PASS%%'
              AND COALESCE(l.rides_l,0) < 30
@@ -347,7 +347,7 @@ def parse_line_csvlike(line: str) -> Dict[str, Any]:
     name = parts[0]
 
     # 장기 숫자 8개 + 비율 1개 포함 총 8? (네 포맷은 long이 8개 숫자 + top3_rate 등 총 8개? 실제는 8개+??)
-    # 네 데이터는 장기: n, win, top3, top3_rate, fail, fail_rate, avg_odds, avg_pop (총 8개) -> name 포함하면 9칸
+    # 네 데이터는 장기: n, win, top3, top3_rate, fail4, fail4_rate, avg_odds, avg_pop (총 8개) -> name 포함하면 9칸
     # 즉 parts[1:9]가 장기 8개
     long_vals = parts[1:9]
 
@@ -369,16 +369,16 @@ def parse_line_csvlike(line: str) -> Dict[str, Any]:
         "long_win": long_vals[1],
         "long_top3": long_vals[2],
         "long_top3_rate": long_vals[3],
-        "long_fail": long_vals[4],
-        "long_fail_rate": long_vals[5],
+        "long_fail4": long_vals[4],
+        "long_fail4_rate": long_vals[5],
         "long_avg_odds": long_vals[6],
         "long_avg_pop": long_vals[7],
         "short_n": short_vals[0],
         "short_win": short_vals[1],
         "short_top3": short_vals[2],
         "short_top3_rate": short_vals[3],
-        "short_fail": short_vals[4],
-        "short_fail_rate": short_vals[5],
+        "short_fail4": short_vals[4],
+        "short_fail4_rate": short_vals[5],
         "short_avg_odds": short_vals[6],
         "short_avg_pop": short_vals[7],
     }

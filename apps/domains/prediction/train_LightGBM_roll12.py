@@ -7,10 +7,9 @@ from contextlib import closing
 from typing import Optional
 
 
-# 현재 파일: /Users/Super007/Project/letsrace/base/train_LightGBM.py
-# -> parent: base
-# -> parent.parent: 프로젝트 루트(여기에 manage.py가 있다고 가정)
-BASE_DIR = Path(__file__).resolve().parent.parent
+# 현재 파일: /Users/Super007/Project/letsrace/apps/domains/prediction/train_LightGBM_roll12.py
+# -> parents[3]: 프로젝트 루트(여기에 manage.py가 있다고 가정)
+BASE_DIR = Path(__file__).resolve().parents[3]
 
 # 프로젝트 루트를 sys.path 에 추가 (패키지 import 가능하도록)
 if str(BASE_DIR) not in sys.path:
@@ -441,9 +440,12 @@ def load_latest_lgb_model_from_db(conn, model_name: str) -> lgb.Booster:
     """
     lgb_models 테이블에서 주어진 model_name의 최신 버전 모델을 로드하여
     LightGBM Booster 객체로 반환.
+
+    - 정확한 model_name이 없으면,
+      sb_top3_roll12_YYYYMM 형식일 때 최신 roll12 모델로 fallback.
     """
     sql = """
-        SELECT model_text
+        SELECT model_name, model_text
         FROM lgb_models
         WHERE model_name = %s
         ORDER BY version DESC
@@ -453,6 +455,25 @@ def load_latest_lgb_model_from_db(conn, model_name: str) -> lgb.Booster:
         cur.execute(sql, (model_name,))
         row = cur.fetchone()
 
+        if not row:
+            # fallback: sb_top3_roll12_YYYYMM → sb_top3_roll12_ 최신 모델
+            fallback_prefix = None
+            if "_roll12_" in model_name and len(model_name) >= 6 and model_name[-6:].isdigit():
+                fallback_prefix = model_name.rsplit("_", 1)[0] + "_"
+
+            if fallback_prefix:
+                cur.execute(
+                    """
+                    SELECT model_name, model_text
+                    FROM lgb_models
+                    WHERE model_name LIKE %s
+                    ORDER BY created_at DESC, version DESC
+                    LIMIT 1
+                    """,
+                    (f"{fallback_prefix}%",),
+                )
+                row = cur.fetchone()
+
     if not row:
         raise ValueError(
             f"[{model_name}] 이름의 모델을 lgb_models에서 찾을 수 없습니다."
@@ -460,7 +481,11 @@ def load_latest_lgb_model_from_db(conn, model_name: str) -> lgb.Booster:
 
     model_text = row["model_text"]
     booster = lgb.Booster(model_str=model_text)
-    print(f"▶ 모델 [{model_name}] 최신 버전 로드 완료.")
+    loaded_name = row.get("model_name", model_name)
+    if loaded_name != model_name:
+        print(f"⚠️ 모델 [{model_name}] 없음 → [{loaded_name}] 최신 모델로 대체 로드.")
+    else:
+        print(f"▶ 모델 [{model_name}] 최신 버전 로드 완료.")
     return booster
 
 

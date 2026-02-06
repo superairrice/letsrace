@@ -1,0 +1,133 @@
+from django.urls import path
+from . import views
+
+
+urlpatterns = [
+    path("awards/", views.awards, name="awards"),
+    path(
+        "award_status_trainer/", views.awardStatusTrainer, name="award_status_trainer"
+    ),
+    path("award_status_jockey/", views.awardStatusJockey, name="award_status_jockey"),
+    path("award_status_week/", views.awardStatusWeek, name="award_status_week"),
+    path("data_management/", views.dataManagement, name="data_management"),
+    path("race_breakingnews/", views.raceBreakingNews, name="race_breakingnews"),
+    path("race_calculation", views.raceCalculation, name="race_calculation"),
+    path("krafile_input/", views.krafileInput, name="krafile_input"),
+    path("breakingnews_input/", views.BreakingNewsInput, name="breakingnews_input"),
+    path(
+        "race_review/<str:rcity>/<str:rdate>/<int:rno>",
+        views.raceReview,
+        name="race_review",
+    ),
+    path(
+        "race_report/<str:rcity>/<str:rdate>/<int:rno>",
+        views.raceReport,
+        name="race_report",
+    ),
+    path(
+        "race_training/<str:rcity>/<str:rdate>/<int:rno>",
+        views.raceTraining,
+        name="race_training",
+    ),
+    path(
+        "race_judged/<str:rcity>/<str:rdate>/<int:rno>",
+        views.raceJudged,
+        name="race_judged",
+    ),
+    path(
+        "race_related/<str:rcity>/<str:rdate>/<int:rno>",
+        views.raceRelated,
+        name="race_related",
+    ),
+    path(
+        "race_related_info/<str:rcity>/<str:rdate>/<int:rno>",
+        views.raceRelatedInfo,
+        name="race_related_info",
+    ),
+    path(
+        "training_awardee/<str:rdate>/<str:awardee>/<str:name>/<str:hname>",
+        views.trainingAwardee,
+        name="training_awardee",
+    ),
+    path(
+        "training_horse/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>",
+        views.trainingHorse,
+        name="training_horse",
+    ),
+    path(
+        "race_result_horse/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>",
+        views.raceResultHorse,
+        name="race_result_horse",
+    ),
+    path(
+        "jt_collaboration/<str:rcity>/<str:rdate>/<int:rno>/<str:jockey>/<str:trainer>",
+        views.jtCollaboration,
+        name="jt_collaboration",
+    ),
+    path(
+        "jockey_2week_train/<str:rcity>/<str:rdate>/<int:rno>/<str:jockey>/<str:trainer>",
+        views.jockey2weekTrain,
+        name="jockey_2week_train",
+    ),
+    path(
+        "race_axis/<str:rcity>/<str:rdate>/<int:rno>/<str:jockey>",
+        views.raceAxis,
+        name="race_axis",
+    ),
+    path(
+        "race_result/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:rcity1>/<str:rdate1>/<int:rno1>",
+        views.raceResult,
+        name="race_result",
+    ),
+    path(
+        "status_stable/<str:rcity>/<str:rdate>/<int:rno>",
+        views.statusStable,
+        name="status_stable",
+    ),
+    path(
+        "race_train/<str:rcity>/<str:rdate>/<int:rno>",
+        views.raceTrain,
+        name="race_train",
+    ),
+    path(
+        "trend_winning_rate/<str:rcity>/<str:rdate>/<int:rno>/<str:awardee>/<str:i_filter>",
+        views.trendWinningRate,
+        name="trend_winning_rate",
+    ),
+    path(
+        "cycle_winning_rate/<str:rcity>/<str:rdate>/<int:rno>/<str:awardee>/<str:i_filter>",
+        views.cycleWinningRate,
+        name="cycle_winning_rate",
+    ),
+    path(
+        "weeks_status/<str:rcity>/<str:rdate>", views.weeksStatus, name="weeks_status"
+    ),
+    path(
+        "jt_analysis/<str:rcity>/<str:fdate>/<str:tdate>/<str:jockey>/<str:trainer>/<str:host>/<str:horse>/<int:r1>/<int:r2>/<int:rr1>/<int:rr2>/<int:gate>/<int:distance>/<str:handycap>",
+        views.jtAnalysis,
+        name="jt_analysis",
+    ),
+    path(
+        "jt_analysis_jockey/<str:rcity>/<str:fdate>/<str:tdate>/<str:jockey>/<str:trainer>/<str:host>/<str:jockey_b>/<int:r1>/<int:r2>/<int:rr1>/<int:rr2>/<int:gate>/<int:distance>/<str:handycap>/<int:rno>",
+        views.jtAnalysisJockey,
+        name="jt_analysis_jockey",
+    ),
+    path(
+        "jt_analysis_multi/<str:rcity>/<str:fdate>/<str:tdate>/<str:jockey>/<str:trainer>/<str:host>/<str:jockey_b>/<int:r1>/<int:r2>/<int:rr1>/<int:rr2>/<int:gate>/<int:distance>/<str:handycap>/<int:rno>/<str:start>",
+        views.jtAnalysisMulti,
+        name="jt_analysis_multi",
+    ),
+    path(
+        "race_prediction/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",
+        views.racePrediction,
+        name="race_prediction",
+    ),  # 로그인 후
+    path(
+        "race_simulation/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",
+        views.raceSimulation,
+        name="race_simulation",
+    ),
+    path(
+        "print_prediction/", views.printPrediction, name="print_prediction"
+    ),  # 경주일별 예상 순위 리스트 프린터
+]

@@ -41,7 +41,7 @@ def get_paternal(rcity, rdate, rno, distance):
         with connection.cursor() as cursor:  # 자동으로 cursor 닫기
             strSql = """ 
                 SELECT max(a.host),
-                    a.gate, a.m_rank as rank, a.horse, a.r_rank, a.rating, a.birthplace, a.h_sex, a.h_age, a.i_cycle, a.complex5, 
+                    a.gate, a.r_pop as rank, a.horse, a.r_rank, a.rating, a.birthplace, a.h_sex, a.h_age, a.i_cycle, a.complex5, 
                     b.paternal,
                     SUM(IF(c.distance = %s, c.r1, 0)) AS rd1,
                     SUM(IF(c.distance = %s, c.r2, 0)) AS rd2,
@@ -6903,8 +6903,7 @@ def get_weeks_status(rcity, rdate):
     try:
         cursor = connection.cursor()
 
-        strSql = (
-            """ select 
+        strSql = """ select 
                 a.rcity, a.rdate, a.rno, b.rday, b.distance, b.grade, 
                 concat(b.dividing, ' ', b.rname, ' ', b.rcon1, ' ', b.rcon2), 
                 a.horse, a.jockey, a.trainer, a.host, a.h_weight, a.handycap, a.handycap - a.i_prehandy,
@@ -6915,7 +6914,7 @@ def get_weeks_status(rcity, rdate):
                 a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
                 a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
                 a.j_per, a.t_per, a.rating, c.r2alloc1, c.r333alloc1, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, 
-                d.adv_track, c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f 
+                d.adv_track, c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f, s1f_per, g3f_per, g1f_per, start_score
             FROM 
                 The1.exp011 a
             LEFT JOIN 
@@ -6930,7 +6929,6 @@ def get_weeks_status(rcity, rdate):
             -- and ( a.r_rank between 1 and 3 or ( a.r_rank = 0 and a.rank <= 3 ) )
             order by a.rcity, a.rdate, a.rno, a.r_rank, a.rank
         ; """
-        )
         cursor.execute(strSql, (rcity, rdate, rdate))
         result = cursor.fetchall()
 
@@ -7006,7 +7004,7 @@ def get_thethe9_ranks(
                     a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
                     a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
                     a.j_per, a.t_per, a.rating, c.r2alloc1, c.r333alloc1, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, 
-                    d.adv_track, c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f
+                    d.adv_track, c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f, a.s1f_per, a.g3f_per, a.g1f_per, a.start_score 
                 FROM 
                     The1.exp011 a
                 LEFT JOIN 
@@ -7015,10 +7013,7 @@ def get_thethe9_ranks(
                     The1.rec010 c ON a.rcity = c.rcity AND a.rdate = c.rdate AND a.rno = c.rno 
                 LEFT OUTER JOIN 
                     The1.rec011 d ON a.rcity = d.rcity AND a.rdate = d.rdate AND a.rno = d.rno and a.gate = d.gate
-                WHERE a.rcity like '%"""
-            + rcity
-            + """%'
-                and a.rdate between '"""
+                WHERE a.rdate between '"""
             + fdate
             + """' and '"""
             + tdate
@@ -7108,8 +7103,8 @@ def get_thethe9_ranks_jockey(
         else:
             and_r_rank = " and a.r_rank between " + str(rr1) + " and " + str(rr2)
 
-        # print(rr1, rr2, and_r_rank) 
-        
+        # print(rr1, rr2, and_r_rank)
+
         if gate == 0 or gate == "0":
             and_gate = ""
         else:
@@ -7131,7 +7126,7 @@ def get_thethe9_ranks_jockey(
                 + handycap[0:2]
                 + ".5"
             )
-            
+
         if jockey_b == 0 or jockey_b == "" or jockey_b == "%":
             and_jockey_b = ""
         else:
@@ -7157,7 +7152,7 @@ def get_thethe9_ranks_jockey(
                     a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
                     a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
                     a.j_per, a.t_per, a.rating, c.r2alloc, c.r333alloc, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, d.adv_track, 
-                    c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f
+                    c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f, a.s1f_per, a.g3f_per, a.g1f_per, a.start_score 
                 FROM 
                     The1.exp011 a
                 LEFT JOIN 
@@ -7204,7 +7199,7 @@ def get_thethe9_ranks_jockey(
         ; """
         )
 
-        # print(strSql) 
+        # print(strSql)
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 
@@ -7242,7 +7237,7 @@ def get_thethe9_ranks_multi(
         if r2 == 99 or r2 == "99":
             and_rank = ""
         else:
-            and_rank = " and d.pop_rank between " + str(r1) + " and " + str(r2)
+            and_rank = " and d.r_pop between " + str(r1) + " and " + str(r2)
 
         if rr2 == 99 or rr2 == "99":
             and_r_rank = ""
@@ -7303,7 +7298,7 @@ def get_thethe9_ranks_multi(
                     a.cs1f, a.cg3f, a.cg1f, a.i_cycle, a.r_pop, a.alloc1r, a.alloc3r, a.complex, a.r_record, c.race_speed,
                     a.jt_per, a.jt_cnt, a.jt_1st, a.jt_2nd, a.jt_3rd, a.jockey_old, a.reason, a.h_sex, a.h_age, a.birthplace, 
                     a.j_per, a.t_per, a.rating, c.r2alloc1, c.r333alloc1, d.r_etc, d.gap, d.gap_b, c.weather, c.rstate, c.rmoisture, d.adv_track, 
-                    c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f
+                    c.r_judge, a.rating, d.h_cnt, d.h_mare, d.pop_rank, d.r_flag, passage_s1f, a.s1f_per, a.g3f_per, a.g1f_per, a.start_score 
                 FROM 
                     The1.exp011 a
                 LEFT JOIN 
@@ -7353,7 +7348,7 @@ def get_thethe9_ranks_multi(
         ; """
         )
 
-        print(strSql) 
+        # print(strSql) 
         r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
         result = cursor.fetchall()
 

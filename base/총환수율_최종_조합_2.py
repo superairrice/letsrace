@@ -2,7 +2,6 @@ import pymysql
 import pandas as pd
 from contextlib import closing
 from collections import Counter
-from bisect import bisect_left
 
 
 # =========================
@@ -83,6 +82,7 @@ def load_result_data_from_db(
 # =========================
 # 2. r_pop 1축(2~4) 2등/5~7 3등 삼쌍승식
 #    + r_pop 1~4 BOX4 삼복승식 집계
+#    + r_pop 5~7 1축 + r_pop 1~4 복조 삼복승식
 # =========================
 def calc_rpop_anchor_26_trifecta(
     from_date: str,
@@ -94,97 +94,13 @@ def calc_rpop_anchor_26_trifecta(
     - 각 경주에 대해 r_pop 1을 1등축으로,
       r_pop 2~4(2등축), r_pop 5~7(3등) 삼쌍승식 베팅.
     - r_pop 1축 + r_pop 2~4(3복조) 삼쌍승식 베팅.
+    - r_pop 5~7 1축 + r_pop 1~4 복조 삼복승식 베팅.
     - r_pop 1축 + r_pop 2~4 삼복승식 베팅.
     - r_pop 1~4 BOX4 삼복승식 베팅.
     - 실제 1~3위가 (r_pop1, r_pop2~4, r_pop5~7) 순서로 맞으면 적중.
     - BOX4는 실제 1~3위가 r_pop 1~4 안에 있으면 적중.
     - 베팅/적중 집계.
     """
-    def normalize_key(rcity, distance, grade, dividing):
-        rcity = (str(rcity).strip() if rcity is not None else None) or None
-        grade = (str(grade).strip() if grade is not None else None) or None
-        dividing = (str(dividing).strip() if dividing is not None else None) or None
-        dist_val = None
-        if distance is not None and not pd.isna(distance):
-            try:
-                dist_val = int(float(distance))
-            except ValueError:
-                dist_val = None
-        return (rcity, dist_val, grade, dividing)
-
-    def load_roi_lookup(from_date_val: str, to_date_val: str):
-        sql = """
-        SELECT rcity, distance, grade, dividing, from_date, to_date, roi
-          FROM The1.race_roi
-         WHERE to_date <= %s
-        """
-        with closing(get_conn()) as conn:
-            roi_df = pd.read_sql(sql, conn, params=[to_date_val])
-        if roi_df.empty:
-            return {}
-        roi_df["from_date"] = pd.to_numeric(
-            roi_df["from_date"], errors="coerce"
-        ).fillna(0)
-        roi_df["to_date"] = pd.to_numeric(roi_df["to_date"], errors="coerce").fillna(0)
-        roi_df["distance"] = pd.to_numeric(
-            roi_df["distance"], errors="coerce"
-        ).fillna(pd.NA)
-        lookup = {}
-        for _, row in roi_df.iterrows():
-            key = normalize_key(
-                row.get("rcity"),
-                row.get("distance"),
-                row.get("grade"),
-                row.get("dividing"),
-            )
-            if key not in lookup:
-                lookup[key] = {"dates": [], "from_dates": [], "rois": []}
-            lookup[key]["dates"].append(int(row["to_date"]))
-            lookup[key]["from_dates"].append(int(row["from_date"]))
-            lookup[key]["rois"].append(
-                float(row["roi"]) if row.get("roi") is not None else 0.0
-            )
-        for key, payload in lookup.items():
-            zipped = sorted(
-                zip(payload["dates"], payload["from_dates"], payload["rois"]),
-                key=lambda x: x[0],
-            )
-            payload["dates"] = [d for d, _, _ in zipped]
-            payload["from_dates"] = [f for _, f, _ in zipped]
-            payload["rois"] = [r for _, _, r in zipped]
-        return lookup
-
-    def get_roi_for_race(lookup, rcity, distance, grade, dividing, race_date):
-        key = normalize_key(rcity, distance, grade, dividing)
-        if key not in lookup:
-            return None, None, None, None
-        payload = lookup[key]
-        race_date_int = int(race_date)
-        race_ym = race_date_int // 100
-        idx = bisect_left(payload["dates"], race_date_int) - 1
-        while idx >= 0:
-            date_val = payload["dates"][idx]
-            if date_val // 100 != race_ym:
-                return (
-                    payload["rois"][idx],
-                    date_val // 100,
-                    payload["from_dates"][idx],
-                    date_val,
-                )
-            idx -= 1
-        return None, None, None, None
-
-    def get_adjusted_bet_unit(roi_used, base_unit):
-        if roi_used is None:
-            bet_unit = 100
-        elif roi_used < 0.8:
-            bet_unit = 100
-        elif roi_used <= 1.2:
-            bet_unit = 200
-        else:
-            bet_unit = 200
-        return bet_unit, bet_unit / base_unit if base_unit > 0 else 0.0
-
     def get_avg_bucket(avg_val):
         if avg_val is None or pd.isna(avg_val):
             return "NA"
@@ -203,8 +119,6 @@ def calc_rpop_anchor_26_trifecta(
 
     with closing(get_conn()) as conn:
         df = load_result_data_from_db(conn, from_date=from_date, to_date=to_date)
-    roi_lookup = load_roi_lookup(from_date, to_date)
-
     if df.empty:
         print(f"▶ [{from_date} ~ {to_date}] 기간 데이터가 없습니다.")
         return pd.DataFrame(), {}
@@ -272,12 +186,10 @@ def calc_rpop_anchor_26_trifecta(
     anchor1_24_57_bet_per_race = 9 * anchor1_24_57_bet_unit  # 3 * 3
     anchor1_24_bet_unit = 200
     anchor1_24_bet_per_race = 6 * anchor1_24_bet_unit  # 3P2
-    rank1_24_trio_bet_unit = 200
-    rank1_24_trio_bet_per_race = 3 * rank1_24_trio_bet_unit  # C(3,2)
-    rank1_24_exact_bet_unit = 200
-    rank1_24_exact_bet_per_race = 6 * rank1_24_exact_bet_unit  # 3P2
-    r_pop1_5_exact_bet_unit = 200
-    r_pop1_5_exact_bet_per_race = 10 * r_pop1_5_exact_bet_unit  # C(5,2)
+    r_pop4_8_anchor_1_3_trio_bet_unit = 200
+    r_pop4_8_anchor_1_3_trio_bet_per_race = (
+        15 * r_pop4_8_anchor_1_3_trio_bet_unit
+    )  # 5 * C(3,2)
     total_races_bet = 0
     excluded_races = 0
     anchor1_24_57_total_bet = 0.0
@@ -288,25 +200,13 @@ def calc_rpop_anchor_26_trifecta(
     anchor1_24_total_refund = 0.0
     anchor1_24_total_hits = 0
     anchor1_24_races = 0
-    rank1_24_trio_total_bet = 0.0
-    rank1_24_trio_total_refund = 0.0
-    rank1_24_trio_total_hits = 0
-    rank1_24_trio_races = 0
-    rank1_24_exact_total_bet = 0.0
-    rank1_24_exact_total_refund = 0.0
-    rank1_24_exact_total_hits = 0
-    rank1_24_exact_races = 0
-    r_pop1_5_exact_total_bet = 0.0
-    r_pop1_5_exact_total_refund = 0.0
-    r_pop1_5_exact_total_hits = 0
-    r_pop1_5_exact_races = 0
-    r_pop1_5_exact_hit_rows = []
+    r_pop4_8_anchor_1_3_trio_total_bet = 0.0
+    r_pop4_8_anchor_1_3_trio_total_refund = 0.0
+    r_pop4_8_anchor_1_3_trio_total_hits = 0
+    r_pop4_8_anchor_1_3_trio_races = 0
     total_hits_any = 0
     total_holes_all = 0
     total_refund_all = 0.0
-    total_bet_adjusted = 0.0
-    total_refund_adjusted = 0.0
-    month_summary_refund = {}
     month_summary_raw = {}
     race_bet_summaries = []
     r_pop1_rank4plus_r_pop2_win = 0
@@ -344,14 +244,19 @@ def calc_rpop_anchor_26_trifecta(
             if anchor_burden is None or pd.isna(anchor_burden) or anchor_burden < 48.5:
                 continue
             top4 = g_sorted.head(4)["마번"].tolist()
-            top5 = g_sorted.head(5)["마번"].tolist()
             rank_top4 = rank_sorted.head(4)["마번"].tolist()
             anchor_gate = top4[0] if top4 else None
             top2_4 = g_sorted.iloc[1:4]["마번"].tolist()
             top5_7 = g_sorted.iloc[4:7]["마번"].tolist()
             top2_4_set = set(top2_4)
             top5_7_set = set(top5_7)
-            top5_set = set(top5)
+            top1_4_set = set(top4)
+            top1_3 = g_sorted.iloc[0:3]["마번"].tolist()
+            top4_7 = g_sorted.iloc[3:7]["마번"].tolist()
+            top1_3_set = set(top1_3)
+            top4_7_set = set(top4_7)
+            top4_8 = g_sorted.iloc[3:8]["마번"].tolist()
+            top4_8_set = set(top4_8)
             rank_anchor = rank_top4[0] if rank_top4 else None
             rank2_4 = rank_top4[1:4] if len(rank_top4) >= 4 else []
             rank2_4_set = set(rank2_4)
@@ -360,7 +265,6 @@ def calc_rpop_anchor_26_trifecta(
             actual_set = set(actual_top3)
             odds = float(g["삼쌍승식배당율"].iloc[0])
             odds_trio = float(g["삼복승식배당율"].iloc[0])
-            odds_exacta = float(g["복승식배당율"].iloc[0])
 
             anchor1_24_57_valid = (
                 anchor_gate is not None and len(top2_4) == 3 and len(top5_7) == 3
@@ -387,63 +291,37 @@ def calc_rpop_anchor_26_trifecta(
             anchor1_24_refund = (
                 odds * anchor1_24_bet_unit if anchor1_24_hit_flag == 1 else 0.0
             )
-            rank1_24_trio_valid = rank_anchor is not None and len(rank2_4) == 3
-            rank1_24_trio_hit_flag = int(
-                rank1_24_trio_valid
+            r_pop4_8_anchor_1_3_trio_valid = len(top1_3) == 3 and len(top4_8) == 5
+            r_pop4_8_anchor_1_3_trio_hit_flag = int(
+                r_pop4_8_anchor_1_3_trio_valid
                 and len(actual_top3) == 3
-                and rank_anchor in actual_set
-                and actual_set.issubset({rank_anchor} | rank2_4_set)
+                and actual_set.issubset(top1_3_set | top4_8_set)
+                and len(actual_set & top4_8_set) == 1
+                and len(actual_set & top1_3_set) == 2
             )
-            rank1_24_trio_refund = (
-                odds_trio * rank1_24_trio_bet_unit
-                if rank1_24_trio_hit_flag == 1
-                else 0.0
-            )
-            rank1_24_exact_valid = rank_anchor is not None and len(rank2_4) == 3
-            rank1_24_exact_hit_flag = int(
-                rank1_24_exact_valid
-                and len(actual_top3) == 3
-                and actual_top3[0] == rank_anchor
-                and actual_top3[1] in rank2_4_set
-                and actual_top3[2] in rank2_4_set
-                and actual_top3[1] != actual_top3[2]
-            )
-            rank1_24_exact_refund = (
-                odds * rank1_24_exact_bet_unit
-                if rank1_24_exact_hit_flag == 1
-                else 0.0
-            )
-            r_pop1_5_exact_valid = len(top5) == 5
-            r_pop1_5_exact_hit_flag = int(
-                r_pop1_5_exact_valid
-                and len(actual_top2) == 2
-                and set(actual_top2).issubset(top5_set)
-            )
-            r_pop1_5_exact_refund = (
-                odds_exacta * r_pop1_5_exact_bet_unit
-                if r_pop1_5_exact_hit_flag == 1
+            r_pop4_8_anchor_1_3_trio_refund = (
+                odds_trio * r_pop4_8_anchor_1_3_trio_bet_unit
+                if r_pop4_8_anchor_1_3_trio_hit_flag == 1
                 else 0.0
             )
             race_total_bet = (
                 (anchor1_24_57_bet_per_race if anchor1_24_57_valid else 0.0)
                 + (anchor1_24_bet_per_race if anchor1_24_valid else 0.0)
-                + (rank1_24_trio_bet_per_race if rank1_24_trio_valid else 0.0)
-                + (rank1_24_exact_bet_per_race if rank1_24_exact_valid else 0.0)
-                + (r_pop1_5_exact_bet_per_race if r_pop1_5_exact_valid else 0.0)
+                + (
+                    r_pop4_8_anchor_1_3_trio_bet_per_race
+                    if r_pop4_8_anchor_1_3_trio_valid
+                    else 0.0
+                )
             )
             race_total_refund = (
                 anchor1_24_57_refund
                 + anchor1_24_refund
-                + rank1_24_trio_refund
-                + rank1_24_exact_refund
-                + r_pop1_5_exact_refund
+                + r_pop4_8_anchor_1_3_trio_refund
             )
             race_hit_any = int(
                 anchor1_24_57_hit_flag
                 or anchor1_24_hit_flag
-                or rank1_24_trio_hit_flag
-                or rank1_24_exact_hit_flag
-                or r_pop1_5_exact_hit_flag
+                or r_pop4_8_anchor_1_3_trio_hit_flag
             )
             combo_key = (
                 f"{track}/"
@@ -543,14 +421,8 @@ def calc_rpop_anchor_26_trifecta(
             f"{grade if grade != '' else '미상'}/"
             f"{dividing if dividing != '' else '미상'}"
         )
-        roi_used, roi_ym_used, roi_from_used, roi_to_used = get_roi_for_race(
-            roi_lookup, track, distance, grade, dividing, date
-        )
-        base_unit = anchor1_24_57_bet_unit
-        bet_unit_adjusted, adjust_ratio = get_adjusted_bet_unit(roi_used, base_unit)
         total_races_bet += 1
         top4 = g_sorted.head(4)["마번"].tolist()
-        top5 = g_sorted.head(5)["마번"].tolist()
         rank_top4 = rank_sorted.head(4)["마번"].tolist()
         anchor_gate = top4[0] if top4 else None
         r_pop2_gate = g_sorted.iloc[1]["마번"] if len(g_sorted) > 1 else None
@@ -560,7 +432,13 @@ def calc_rpop_anchor_26_trifecta(
         top5_7 = g_sorted.iloc[4:7]["마번"].tolist()
         top2_4_set = set(top2_4)
         top5_7_set = set(top5_7)
-        top5_set = set(top5)
+        top1_4_set = set(top4)
+        top1_3 = g_sorted.iloc[0:3]["마번"].tolist()
+        top4_7 = g_sorted.iloc[3:7]["마번"].tolist()
+        top1_3_set = set(top1_3)
+        top4_7_set = set(top4_7)
+        top4_8 = g_sorted.iloc[3:8]["마번"].tolist()
+        top4_8_set = set(top4_8)
         rank_anchor = rank_top4[0] if rank_top4 else None
         rank2_4 = rank_top4[1:4] if len(rank_top4) >= 4 else []
         rank2_4_set = set(rank2_4)
@@ -572,7 +450,6 @@ def calc_rpop_anchor_26_trifecta(
         actual_top2 = g[g["r_rank"] <= 2].sort_values("r_rank")["마번"].tolist()
         odds = float(g["삼쌍승식배당율"].iloc[0])
         odds_trio = float(g["삼복승식배당율"].iloc[0])
-        odds_exacta = float(g["복승식배당율"].iloc[0])
         r_pop1_actual_rank = (
             int(g.loc[g["마번"] == anchor_gate, "r_rank"].iloc[0])
             if anchor_gate is not None and not g.loc[g["마번"] == anchor_gate].empty
@@ -707,76 +584,38 @@ def calc_rpop_anchor_26_trifecta(
         anchor1_24_refund = (
             odds * anchor1_24_bet_unit if anchor1_24_hit_flag == 1 else 0.0
         )
-        rank1_24_trio_valid = rank_anchor is not None and len(rank2_4) == 3
-        rank1_24_trio_hit_flag = int(
-            rank1_24_trio_valid
+        r_pop4_8_anchor_1_3_trio_valid = len(top1_3) == 3 and len(top4_8) == 5
+        r_pop4_8_anchor_1_3_trio_hit_flag = int(
+            r_pop4_8_anchor_1_3_trio_valid
             and len(actual_top3) == 3
-            and rank_anchor in actual_set
-            and actual_set.issubset({rank_anchor} | rank2_4_set)
+            and actual_set.issubset(top1_3_set | top4_8_set)
+            and len(actual_set & top4_8_set) == 1
+            and len(actual_set & top1_3_set) == 2
         )
-        rank1_24_trio_refund = (
-            odds_trio * rank1_24_trio_bet_unit
-            if rank1_24_trio_hit_flag == 1
+        r_pop4_8_anchor_1_3_trio_refund = (
+            odds_trio * r_pop4_8_anchor_1_3_trio_bet_unit
+            if r_pop4_8_anchor_1_3_trio_hit_flag == 1
             else 0.0
         )
-        rank1_24_exact_valid = rank_anchor is not None and len(rank2_4) == 3
-        rank1_24_exact_hit_flag = int(
-            rank1_24_exact_valid
-            and len(actual_top3) == 3
-            and actual_top3[0] == rank_anchor
-            and actual_top3[1] in rank2_4_set
-            and actual_top3[2] in rank2_4_set
-            and actual_top3[1] != actual_top3[2]
-        )
-        rank1_24_exact_refund = (
-            odds * rank1_24_exact_bet_unit
-            if rank1_24_exact_hit_flag == 1
-            else 0.0
-        )
-        r_pop1_5_exact_valid = len(top5) == 5
-        r_pop1_5_exact_hit_flag = int(
-            r_pop1_5_exact_valid
-            and len(actual_top2) == 2
-            and set(actual_top2).issubset(top5_set)
-        )
-        r_pop1_5_exact_refund = (
-            odds_exacta * r_pop1_5_exact_bet_unit
-            if r_pop1_5_exact_hit_flag == 1
-            else 0.0
-        )
-        if r_pop1_5_exact_hit_flag == 1:
-            r_pop1_5_exact_hit_rows.append(
-                {
-                    "경마장": track,
-                    "경주일": date,
-                    "경주번호": rno,
-                    "복승식배당율": odds_exacta,
-                    "환수액": r_pop1_5_exact_refund,
-                }
-            )
         hit_any = int(
             anchor1_24_57_hit_flag
             or anchor1_24_hit_flag
-            or rank1_24_trio_hit_flag
-            or rank1_24_exact_hit_flag
-            or r_pop1_5_exact_hit_flag
+            or r_pop4_8_anchor_1_3_trio_hit_flag
         )
         race_total_bet = (
             (anchor1_24_57_bet_per_race if anchor1_24_57_valid else 0.0)
             + (anchor1_24_bet_per_race if anchor1_24_valid else 0.0)
-            + (rank1_24_trio_bet_per_race if rank1_24_trio_valid else 0.0)
-            + (rank1_24_exact_bet_per_race if rank1_24_exact_valid else 0.0)
-            + (r_pop1_5_exact_bet_per_race if r_pop1_5_exact_valid else 0.0)
+            + (
+                r_pop4_8_anchor_1_3_trio_bet_per_race
+                if r_pop4_8_anchor_1_3_trio_valid
+                else 0.0
+            )
         )
         race_total_refund = (
             anchor1_24_57_refund
             + anchor1_24_refund
-            + rank1_24_trio_refund
-            + rank1_24_exact_refund
-            + r_pop1_5_exact_refund
+            + r_pop4_8_anchor_1_3_trio_refund
         )
-        race_total_bet_adjusted = race_total_bet * adjust_ratio
-        race_total_refund_adjusted = race_total_refund * adjust_ratio
         anchor1_24_57_total_bet += (
             anchor1_24_57_bet_per_race if anchor1_24_57_valid else 0.0
         )
@@ -784,47 +623,22 @@ def calc_rpop_anchor_26_trifecta(
         anchor1_24_57_total_hits += anchor1_24_57_hit_flag
         anchor1_24_57_races += 1 if anchor1_24_57_valid else 0
         anchor1_24_total_bet += anchor1_24_bet_per_race if anchor1_24_valid else 0.0
-        rank1_24_trio_total_bet += (
-            rank1_24_trio_bet_per_race if rank1_24_trio_valid else 0.0
+        r_pop4_8_anchor_1_3_trio_total_bet += (
+            r_pop4_8_anchor_1_3_trio_bet_per_race
+            if r_pop4_8_anchor_1_3_trio_valid
+            else 0.0
         )
-        rank1_24_trio_total_refund += rank1_24_trio_refund
-        rank1_24_trio_total_hits += rank1_24_trio_hit_flag
-        rank1_24_trio_races += 1 if rank1_24_trio_valid else 0
-        rank1_24_exact_total_bet += (
-            rank1_24_exact_bet_per_race if rank1_24_exact_valid else 0.0
+        r_pop4_8_anchor_1_3_trio_total_refund += r_pop4_8_anchor_1_3_trio_refund
+        r_pop4_8_anchor_1_3_trio_total_hits += r_pop4_8_anchor_1_3_trio_hit_flag
+        r_pop4_8_anchor_1_3_trio_races += (
+            1 if r_pop4_8_anchor_1_3_trio_valid else 0
         )
-        rank1_24_exact_total_refund += rank1_24_exact_refund
-        rank1_24_exact_total_hits += rank1_24_exact_hit_flag
-        rank1_24_exact_races += 1 if rank1_24_exact_valid else 0
-        r_pop1_5_exact_total_bet += (
-            r_pop1_5_exact_bet_per_race if r_pop1_5_exact_valid else 0.0
-        )
-        r_pop1_5_exact_total_refund += r_pop1_5_exact_refund
-        r_pop1_5_exact_total_hits += r_pop1_5_exact_hit_flag
-        r_pop1_5_exact_races += 1 if r_pop1_5_exact_valid else 0
         anchor1_24_total_refund += anchor1_24_refund
         anchor1_24_total_hits += anchor1_24_hit_flag
         anchor1_24_races += 1 if anchor1_24_valid else 0
         total_refund_all += race_total_refund
-        total_bet_adjusted += race_total_bet_adjusted
-        total_refund_adjusted += race_total_refund_adjusted
         total_hits_any += hit_any
         year_month = str(date)[:6]
-        stats = month_summary_refund.setdefault(
-            year_month,
-            {
-                "races": 0,
-                "total_bet": 0.0,
-                "total_refund": 0.0,
-                "hits": 0,
-                "r_pop1_top3": 0,
-            },
-        )
-        stats["races"] += 1
-        stats["total_bet"] += race_total_bet_adjusted
-        stats["total_refund"] += race_total_refund_adjusted
-        stats["hits"] += hit_any
-        stats["r_pop1_top3"] += r_pop1_top3_hit
         raw_stats = month_summary_raw.setdefault(
             year_month,
             {
@@ -848,21 +662,13 @@ def calc_rpop_anchor_26_trifecta(
                 "적중여부": hit_any,
                 "베팅금액": race_total_bet,
                 "환수금액": race_total_refund,
-                "베팅금액_ROI": race_total_bet_adjusted,
-                "환수금액_ROI": race_total_refund_adjusted,
-                "roi_used": roi_used,
-                "roi_ym_used": roi_ym_used,
-                "roi_from_used": roi_from_used,
-                "roi_to_used": roi_to_used,
             }
         )
 
         holes_per_race = (
             (9 if anchor1_24_57_valid else 0)
             + (6 if anchor1_24_valid else 0)
-            + (3 if rank1_24_trio_valid else 0)
-            + (6 if rank1_24_exact_valid else 0)
-            + (10 if r_pop1_5_exact_valid else 0)
+            + (15 if r_pop4_8_anchor_1_3_trio_valid else 0)
         )
         total_holes_all += holes_per_race
         race_rows.append(
@@ -877,34 +683,31 @@ def calc_rpop_anchor_26_trifecta(
                 "2~4_마번": ",".join(map(str, top2_4)),
                 "5~7_마번": ",".join(map(str, top5_7)),
                 "r_pop_top4_마번": ",".join(map(str, top4)),
+                "4~8_마번": ",".join(map(str, top4_8)),
                 "실제_top3_마번": ",".join(map(str, actual_top3)),
                 "r_pop1_축_2~4_5~7_적중": anchor1_24_57_hit_flag,
                 "r_pop1_축_2~4_적중": anchor1_24_hit_flag,
-                "rank1_축_2~4_삼복_적중": rank1_24_trio_hit_flag,
-                "rank1_축_2~4_삼쌍_적중": rank1_24_exact_hit_flag,
-                "r_pop1~5_복승_적중": r_pop1_5_exact_hit_flag,
+                "r_pop4~8_축_1~3_복조_삼복_적중": r_pop4_8_anchor_1_3_trio_hit_flag,
                 "1축_2~4_5~7_베팅액": (
                     anchor1_24_57_bet_per_race if anchor1_24_57_valid else 0.0
                 ),
                 "1축_2~4_베팅액": (
                     anchor1_24_bet_per_race if anchor1_24_valid else 0.0
                 ),
-                "rank1_축_2~4_삼복_베팅액": (
-                    rank1_24_trio_bet_per_race if rank1_24_trio_valid else 0.0
-                ),
-                "rank1_축_2~4_삼쌍_베팅액": (
-                    rank1_24_exact_bet_per_race if rank1_24_exact_valid else 0.0
-                ),
-                "r_pop1~5_복승_베팅액": (
-                    r_pop1_5_exact_bet_per_race if r_pop1_5_exact_valid else 0.0
+                "r_pop4~8_축_1~3_복조_삼복_베팅액": (
+                    r_pop4_8_anchor_1_3_trio_bet_per_race
+                    if r_pop4_8_anchor_1_3_trio_valid
+                    else 0.0
                 ),
                 "총구멍수": holes_per_race,
                 "총베팅액": (
                     (anchor1_24_57_bet_per_race if anchor1_24_57_valid else 0.0)
                     + (anchor1_24_bet_per_race if anchor1_24_valid else 0.0)
-                    + (rank1_24_trio_bet_per_race if rank1_24_trio_valid else 0.0)
-                    + (rank1_24_exact_bet_per_race if rank1_24_exact_valid else 0.0)
-                    + (r_pop1_5_exact_bet_per_race if r_pop1_5_exact_valid else 0.0)
+                    + (
+                        r_pop4_8_anchor_1_3_trio_bet_per_race
+                        if r_pop4_8_anchor_1_3_trio_valid
+                        else 0.0
+                    )
                 ),
                 "삼쌍승식배당율": odds,
                 "삼복승식배당율": odds_trio,
@@ -938,41 +741,23 @@ def calc_rpop_anchor_26_trifecta(
         "anchor1_24_hit_rate": (
             anchor1_24_total_hits / total_races_bet if total_races_bet > 0 else 0.0
         ),
-        "rank1_24_trio_total_bet": rank1_24_trio_total_bet,
-        "rank1_24_trio_total_refund": rank1_24_trio_total_refund,
-        "rank1_24_trio_races": rank1_24_trio_races,
-        "rank1_24_trio_hits": rank1_24_trio_total_hits,
-        "rank1_24_trio_hit_rate": (
-            rank1_24_trio_total_hits / total_races_bet if total_races_bet > 0 else 0.0
-        ),
-        "rank1_24_exact_total_bet": rank1_24_exact_total_bet,
-        "rank1_24_exact_total_refund": rank1_24_exact_total_refund,
-        "rank1_24_exact_races": rank1_24_exact_races,
-        "rank1_24_exact_hits": rank1_24_exact_total_hits,
-        "rank1_24_exact_hit_rate": (
-            rank1_24_exact_total_hits / total_races_bet if total_races_bet > 0 else 0.0
-        ),
-        "r_pop1_5_exact_total_bet": r_pop1_5_exact_total_bet,
-        "r_pop1_5_exact_total_refund": r_pop1_5_exact_total_refund,
-        "r_pop1_5_exact_races": r_pop1_5_exact_races,
-        "r_pop1_5_exact_hits": r_pop1_5_exact_total_hits,
-        "r_pop1_5_exact_hit_rate": (
-            r_pop1_5_exact_total_hits / total_races_bet if total_races_bet > 0 else 0.0
+        "r_pop4_8_anchor_1_3_trio_total_bet": r_pop4_8_anchor_1_3_trio_total_bet,
+        "r_pop4_8_anchor_1_3_trio_total_refund": r_pop4_8_anchor_1_3_trio_total_refund,
+        "r_pop4_8_anchor_1_3_trio_races": r_pop4_8_anchor_1_3_trio_races,
+        "r_pop4_8_anchor_1_3_trio_hits": r_pop4_8_anchor_1_3_trio_total_hits,
+        "r_pop4_8_anchor_1_3_trio_hit_rate": (
+            r_pop4_8_anchor_1_3_trio_total_hits / total_races_bet
+            if total_races_bet > 0
+            else 0.0
         ),
     }
     total_bet_all = (
         anchor1_24_57_total_bet
         + anchor1_24_total_bet
-        + rank1_24_trio_total_bet
-        + rank1_24_exact_total_bet
-        + r_pop1_5_exact_total_bet
+        + r_pop4_8_anchor_1_3_trio_total_bet
     )
     total_profit_all = total_refund_all - total_bet_all
     total_roi_all = total_refund_all / total_bet_all if total_bet_all > 0 else 0.0
-    total_profit_adjusted = total_refund_adjusted - total_bet_adjusted
-    total_roi_adjusted = (
-        total_refund_adjusted / total_bet_adjusted if total_bet_adjusted > 0 else 0.0
-    )
     total_hit_rate_all = (
         total_hits_any / total_races_bet if total_races_bet > 0 else 0.0
     )
@@ -1020,13 +805,6 @@ def calc_rpop_anchor_26_trifecta(
         f"적중경주수: {total_hits_any}  적중율: {total_hit_rate_all:.3f}"
     )
     print(
-        "[ROI 기준 베팅금액 적용]  "
-        f"총베팅액: {int(total_bet_adjusted):,}원  "
-        f"총환수액: {total_refund_adjusted:,.1f}원  "
-        f"총손익: {total_profit_adjusted:,.1f}원  "
-        f"ROI: {total_roi_adjusted:.3f}"
-    )
-    print(
         f"[경주당]  총구멍수: {avg_holes_per_race:.1f}  "
         f"총베팅액: {avg_bet_per_race:,.1f}원"
     )
@@ -1050,38 +828,14 @@ def calc_rpop_anchor_26_trifecta(
         f"ROI: {(summary['anchor1_24_total_refund'] / anchor1_24_total_bet if anchor1_24_total_bet > 0 else 0.0):.3f}"
     )
     print(
-        "[rank 1축(2~4) 삼복승식]  "
-        f"경주수: {summary['rank1_24_trio_races']}  "
-        f"적중경주수: {summary['rank1_24_trio_hits']}  "
-        f"적중율: {summary['rank1_24_trio_hit_rate']:.3f}  "
-        f"총베팅액: {int(rank1_24_trio_total_bet):,}원  "
-        f"총환수액: {summary['rank1_24_trio_total_refund']:,.1f}원  "
-        f"ROI: {(summary['rank1_24_trio_total_refund'] / rank1_24_trio_total_bet if rank1_24_trio_total_bet > 0 else 0.0):.3f}"
+        "[r_pop 4~8 1축 + r_pop 1~3 복조 삼복승식]  "
+        f"경주수: {summary['r_pop4_8_anchor_1_3_trio_races']}  "
+        f"적중경주수: {summary['r_pop4_8_anchor_1_3_trio_hits']}  "
+        f"적중율: {summary['r_pop4_8_anchor_1_3_trio_hit_rate']:.3f}  "
+        f"총베팅액: {int(r_pop4_8_anchor_1_3_trio_total_bet):,}원  "
+        f"총환수액: {summary['r_pop4_8_anchor_1_3_trio_total_refund']:,.1f}원  "
+        f"ROI: {(summary['r_pop4_8_anchor_1_3_trio_total_refund'] / r_pop4_8_anchor_1_3_trio_total_bet if r_pop4_8_anchor_1_3_trio_total_bet > 0 else 0.0):.3f}"
     )
-    print(
-        "[rank 1축(2~4) 삼쌍승식]  "
-        f"경주수: {summary['rank1_24_exact_races']}  "
-        f"적중경주수: {summary['rank1_24_exact_hits']}  "
-        f"적중율: {summary['rank1_24_exact_hit_rate']:.3f}  "
-        f"총베팅액: {int(rank1_24_exact_total_bet):,}원  "
-        f"총환수액: {summary['rank1_24_exact_total_refund']:,.1f}원  "
-        f"ROI: {(summary['rank1_24_exact_total_refund'] / rank1_24_exact_total_bet if rank1_24_exact_total_bet > 0 else 0.0):.3f}"
-    )
-    print(
-        "[r_pop 1~5 복승식]  "
-        f"경주수: {summary['r_pop1_5_exact_races']}  "
-        f"적중경주수: {summary['r_pop1_5_exact_hits']}  "
-        f"적중율: {summary['r_pop1_5_exact_hit_rate']:.3f}  "
-        f"총베팅액: {int(r_pop1_5_exact_total_bet):,}원  "
-        f"총환수액: {summary['r_pop1_5_exact_total_refund']:,.1f}원  "
-        f"ROI: {(summary['r_pop1_5_exact_total_refund'] / r_pop1_5_exact_total_bet if r_pop1_5_exact_total_bet > 0 else 0.0):.3f}"
-    )
-    print("[r_pop 1~5 복승식 적중 경주]")
-    for row in r_pop1_5_exact_hit_rows:
-        print(
-            f"{row['경마장']} {row['경주일']} {row['경주번호']}경주  "
-            f"배당:{row['복승식배당율']:.1f}  환수:{row['환수액']:,.1f}"
-        )
     for ym in sorted(month_summary_raw.keys()):
         m = month_summary_raw[ym]
         month_profit = m["total_refund"] - m["total_bet"]
@@ -1099,31 +853,15 @@ def calc_rpop_anchor_26_trifecta(
             f"적중경주수: {m['hits']}  적중율: {month_hit_rate:.3f}  "
             f"r_pop1 3위내: {r_pop1_top3_rate:.3f}"
         )
-    for ym in sorted(month_summary_refund.keys()):
-        m = month_summary_refund[ym]
-        month_profit = m["total_refund"] - m["total_bet"]
-        month_roi = m["total_refund"] / m["total_bet"] if m["total_bet"] > 0 else 0.0
-        month_hit_rate = m["hits"] / m["races"] if m["races"] > 0 else 0.0
-        r_pop1_top3_rate = (
-            m["r_pop1_top3"] / m["races"] if m["races"] > 0 else 0.0
-        )
-        print(
-            f"[ROI 기준 월별 집계 {ym}]  경주수: {m['races']}  "
-            f"총베팅액: {int(m['total_bet']):,}원  "
-            f"총환수액: {m['total_refund']:,.1f}원  "
-            f"총손익: {month_profit:,.1f}원  "
-            f"ROI: {month_roi:.3f}  "
-            f"적중경주수: {m['hits']}  적중율: {month_hit_rate:.3f}  "
-            f"r_pop1 3위내: {r_pop1_top3_rate:.3f}"
-        )
     print("===================================")
 
     return race_df, summary
 
 
 if __name__ == "__main__":
-    from_date = "20260116"
-    to_date = "20260118"
+    from_date = "20250207"
+
+    to_date = "20250209"
 
 
     race_df, summary = calc_rpop_anchor_26_trifecta(

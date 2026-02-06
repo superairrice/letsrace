@@ -1,5 +1,5 @@
-from base.race_compute import f_t2s
-from base.simulation2 import judge_horse_trend_7level
+from apps.domains.race.race_compute import f_t2s
+from apps.domains.prediction.simulation2 import judge_horse_trend_7level
 
 
 def g2f_update(rcity, rdate, horse, distance, connection,):

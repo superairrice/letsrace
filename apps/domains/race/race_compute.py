@@ -1,7 +1,7 @@
 import pymysql
 from datetime import datetime, timedelta
 
-from base.simulation2 import judge_horse_trend_7level
+from apps.domains.prediction.simulation2 import judge_horse_trend_7level
 
 
 def baseline_compute(connection, as_rdate):

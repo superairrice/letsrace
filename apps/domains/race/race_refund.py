@@ -28,8 +28,8 @@ def load_result_data_from_db(
         e.rank       AS rank,       -- 예상순위(rank)
         e.r_pop      AS r_pop,      -- 예상순위(r_pop)
         e.r_rank     AS r_rank,     -- 실제순위
-        CAST(SUBSTRING(r.r123alloc, 4) AS DECIMAL(10, 0)) AS 삼쌍승식배당율,
-        CAST(SUBSTRING(r.r333alloc, 4) AS DECIMAL(10, 0)) AS 삼복승식배당율
+        CAST(SUBSTRING(r.r123alloc, 4) AS DECIMAL(10, 1)) AS 삼쌍승식배당율,
+        CAST(SUBSTRING(r.r333alloc, 4) AS DECIMAL(10, 1)) AS 삼복승식배당율
     FROM The1.exp011 AS e
     LEFT JOIN The1.rec010 AS r
            ON r.rcity = e.rcity
@@ -71,7 +71,7 @@ def get_engine():
 def calc_rpop_anchor_26_trifecta(
     from_date: str,
     to_date: str,
-    bet_unit: int = 100,
+    bet_unit: int = 200,
 ) -> tuple[pd.DataFrame, dict]:
     """
     기간(from_date ~ to_date) 동안,
@@ -132,13 +132,13 @@ def calc_rpop_anchor_26_trifecta(
     # 신마 판정: rank >= 98
     df["신마"] = (df["rank"] >= 98).astype(int)
 
-    anchor1_24_57_bet_unit = 300
+    anchor1_24_57_bet_unit = bet_unit
     anchor1_24_57_bet_per_race = 9 * anchor1_24_57_bet_unit  # 3 * 3
-    anchor1_24_bet_unit = 300
+    anchor1_24_bet_unit = bet_unit
     anchor1_24_bet_per_race = 6 * anchor1_24_bet_unit  # 3P2
-    anchor1_24_trio_bet_unit = 500
+    anchor1_24_trio_bet_unit = bet_unit
     anchor1_24_trio_bet_per_race = 3 * anchor1_24_trio_bet_unit  # C(3,2)
-    box4_trio_bet_unit = 500
+    box4_trio_bet_unit = bet_unit
     box4_trio_bet_per_race = 4 * box4_trio_bet_unit  # C(4,3)
     total_races = 0
     excluded_races = 0

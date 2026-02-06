@@ -16,7 +16,7 @@ from django.db.models import Count, Max, Min, Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from base.data_management import (
+from apps.domains.ops.data_management import (
     get_breakingnews,
     get_file_contents,
     get_kradata,
@@ -24,7 +24,7 @@ from base.data_management import (
     krafile_convert,
 )
 
-from base.mysqls import (
+from apps.domains.ops.mysqls import (
     get_award,
     get_award_race,
     get_jockey_trend,
