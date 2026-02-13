@@ -35,13 +35,95 @@
 
   <title>Race Simulation '{{r_condition.rdate|slice:"2:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}}) {{r_condition.rcity}}&nbsp;&nbsp;{{r_condition.rno}}R</title>
 
+  <style>
+    body.race-simulation-page {
+      padding: 0.2rem 2rem;
+    }
+    body.race-simulation-page .container {
+      max-width: none;
+      width: 100%;
+    }
+    body.race-simulation-page .roomList {
+      width: 100%;
+    }
+
+    #race-simulation-loader-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100000;
+      background: rgba(12, 14, 18, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: all;
+      opacity: 1;
+      transition: opacity 0.25s ease;
+    }
+
+    #race-simulation-loader-overlay.is-hidden {
+      opacity: 0;
+    }
+
+    #race-simulation-loader-box {
+      width: min(460px, 90vw);
+      padding: 18px 16px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.26);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(2px);
+    }
+
+    #race-simulation-loader-label {
+      font-size: 1.2rem;
+      color: var(--color-light-gray);
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    #race-simulation-loader-track {
+      width: min(420px, 86vw);
+      height: 4px;
+      background: rgba(255, 255, 255, 0.14);
+      overflow: hidden;
+      border-radius: 999px;
+    }
+
+    #race-simulation-loader-bar {
+      width: 42%;
+      height: 100%;
+      background: linear-gradient(90deg, #ff6f3d 0%, #ffd166 100%);
+      box-shadow: 0 0 14px rgba(255, 111, 61, 0.55);
+      animation: race-simulation-loading-bar 1.2s ease-in-out infinite;
+    }
+
+    @keyframes race-simulation-loading-bar {
+      0% {
+        transform: translateX(-120%);
+      }
+      50% {
+        transform: translateX(65%);
+      }
+      100% {
+        transform: translateX(220%);
+      }
+    }
+  </style>
+
 </head>
 
 
 
 {% block content %}
-<body class="create-room layout" style="padding-bottom: 5px;" >
+<body class="create-room layout race-simulation-page" style="padding-bottom: 5px;" >
 <!-- <main class="profile-page layout layout--2"> -->
+  <div id="race-simulation-loader-overlay" aria-live="polite" aria-label="페이지 로딩 중">
+    <div id="race-simulation-loader-box">
+      <div id="race-simulation-loader-label">데이터 불러오는 중...</div>
+      <div id="race-simulation-loader-track">
+        <div id="race-simulation-loader-bar"></div>
+      </div>
+    </div>
+  </div>
 
   <div class="container">
     <div class="roomList" style="height: auto;">
@@ -1081,9 +1163,25 @@
   </script>
 
   <script>
-    $(window).on('load', function () {
-      $('.loader').fadeOut();
-    });
+    (function () {
+      function hideRaceSimulationLoader() {
+        var overlay = document.getElementById('race-simulation-loader-overlay');
+        if (!overlay) return;
+        overlay.classList.add('is-hidden');
+        window.setTimeout(function () {
+          if (overlay && overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+          }
+        }, 260);
+      }
+
+      if (document.readyState === 'complete') {
+        hideRaceSimulationLoader();
+        return;
+      }
+
+      window.addEventListener('load', hideRaceSimulationLoader, { once: true });
+    })();
   </script>
 
   <!-- Google Tag Manager (noscript) -->

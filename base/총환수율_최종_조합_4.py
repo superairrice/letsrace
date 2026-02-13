@@ -275,6 +275,22 @@ def calc_rpop_anchor_26_trifecta(
     anchor1_24_trio_bet_per_race = 3 * anchor1_24_trio_bet_unit  # C(3,2)
     box4_trio_bet_unit = 100
     box4_trio_bet_per_race = 4 * box4_trio_bet_unit  # C(4,3)
+    top3_anchor_4_8_trio_unit = 100
+    top3_anchor_4_8_trio_bet_per_race = 15 * top3_anchor_4_8_trio_unit  # C(3,2)*5
+    top3_anchor_4_7_trio_unit = 100
+    top3_anchor_4_7_trio_bet_per_race = 12 * top3_anchor_4_7_trio_unit  # C(3,2)*4
+    anchor1_25_trio_unit = 100
+    anchor1_25_trio_bet_per_race = 6 * anchor1_25_trio_unit  # C(4,2)
+    anchor1_26_trio_unit = 100
+    anchor1_26_trio_bet_per_race = 10 * anchor1_26_trio_unit  # C(5,2)
+    anchor12_36_trio_unit = 100
+    anchor12_36_trio_bet_per_race = 4 * anchor12_36_trio_unit  # 2 anchors + 4 choices
+    top3_anchor_4_6_trio_unit = 100
+    top3_anchor_4_6_trio_bet_per_race = 9 * top3_anchor_4_6_trio_unit  # C(3,2)*3
+    top3_anchor_4_6_trifecta_unit = 100
+    top3_anchor_4_6_trifecta_bet_per_race = (
+        18 * top3_anchor_4_6_trifecta_unit
+    )  # P(3,2)*3
     total_races = 0
     excluded_races = 0
     anchor1_24_57_total_bet = 0.0
@@ -289,6 +305,27 @@ def calc_rpop_anchor_26_trifecta(
     box4_trio_total_bet = 0.0
     box4_trio_total_refund = 0.0
     box4_trio_total_hits = 0
+    top3_anchor_4_8_trio_total_bet = 0.0
+    top3_anchor_4_8_trio_total_refund = 0.0
+    top3_anchor_4_8_trio_total_hits = 0
+    top3_anchor_4_7_trio_total_bet = 0.0
+    top3_anchor_4_7_trio_total_refund = 0.0
+    top3_anchor_4_7_trio_total_hits = 0
+    anchor1_25_trio_total_bet = 0.0
+    anchor1_25_trio_total_refund = 0.0
+    anchor1_25_trio_total_hits = 0
+    anchor1_26_trio_total_bet = 0.0
+    anchor1_26_trio_total_refund = 0.0
+    anchor1_26_trio_total_hits = 0
+    anchor12_36_trio_total_bet = 0.0
+    anchor12_36_trio_total_refund = 0.0
+    anchor12_36_trio_total_hits = 0
+    top3_anchor_4_6_trio_total_bet = 0.0
+    top3_anchor_4_6_trio_total_refund = 0.0
+    top3_anchor_4_6_trio_total_hits = 0
+    top3_anchor_4_6_trifecta_total_bet = 0.0
+    top3_anchor_4_6_trifecta_total_refund = 0.0
+    top3_anchor_4_6_trifecta_total_hits = 0
     total_hits_any = 0
     total_holes_all = 0
     week_summary = {}
@@ -299,11 +336,16 @@ def calc_rpop_anchor_26_trifecta(
     month_summary_box4_trio = {}
     month_summary_rpop1_5_7_anchor_2_4_trio = {}
     month_summary_rpop5_7_anchor_1_4_trio = {}
+    month_summary_top3_anchor_4_8_trio = {}
+    month_summary_top3_anchor_4_7_trio = {}
+    month_summary_anchor1_25_trio = {}
+    month_summary_anchor1_26_trio = {}
+    month_summary_anchor12_36_trio = {}
+    month_summary_top3_anchor_4_6_trio = {}
+    month_summary_top3_anchor_4_6_trifecta = {}
     race_rows = []
 
     for (track, date, rno), g in df.groupby(["경마장", "경주일", "경주번호"]):
-        if (track == "서울" and rno > 6) or (track == "부산" and rno > 4):
-            continue
         g = g.copy()
         if len(g) >= 13:
             excluded_races += 1
@@ -325,10 +367,28 @@ def calc_rpop_anchor_26_trifecta(
         top2_4_set = set(top2_4)
         top5_7_set = set(top5_7)
         top1_4_set = set(top4)
+        top1_2 = g_sorted.iloc[0:2]["마번"].tolist()
+        top1_2_set = set(top1_2)
         top1_3 = g_sorted.iloc[0:3]["마번"].tolist()
         top4_6 = g_sorted.iloc[3:6]["마번"].tolist()
         top1_3_set = set(top1_3)
         top4_6_set = set(top4_6)
+        top4_10 = g_sorted.iloc[3:10]["마번"].tolist()
+        top4_10_set = set(top4_10)
+        top4_8 = g_sorted.iloc[3:8]["마번"].tolist()
+        top4_8_set = set(top4_8)
+        top4_7 = g_sorted.iloc[3:7]["마번"].tolist()
+        top4_7_set = set(top4_7)
+        top5_8 = g_sorted.iloc[4:8]["마번"].tolist()
+        top5_8_set = set(top5_8)
+        top5_7 = g_sorted.iloc[4:7]["마번"].tolist()
+        top5_7_set = set(top5_7)
+        top2_5 = g_sorted.iloc[1:5]["마번"].tolist()
+        top2_5_set = set(top2_5)
+        top2_6 = g_sorted.iloc[1:6]["마번"].tolist()
+        top2_6_set = set(top2_6)
+        top3_6 = g_sorted.iloc[2:6]["마번"].tolist()
+        top3_6_set = set(top3_6)
         anchor1_5_7 = [anchor_gate] + top5_7 if anchor_gate is not None else top5_7
         anchor1_5_7 = list(dict.fromkeys(anchor1_5_7))
         anchor1_5_7_set = set(anchor1_5_7)
@@ -337,8 +397,6 @@ def calc_rpop_anchor_26_trifecta(
         actual_set = set(actual_top3)
         odds = float(g["삼쌍승식배당율"].iloc[0])
         odds_trio = float(g["삼복승식배당율"].iloc[0])
-        odds = min(odds, 1000.0)
-        odds_trio = min(odds_trio, 500.0)
 
         anchor1_24_57_valid = (
             anchor_gate is not None and len(top2_4) == 3 and len(top5_7) == 3
@@ -386,11 +444,100 @@ def calc_rpop_anchor_26_trifecta(
         box4_trio_refund = (
             odds_trio * box4_trio_bet_unit if box4_trio_hit_flag == 1 else 0.0
         )
+        top3_anchor_4_8_trio_valid = len(top1_3) == 3 and len(top4_8) == 5
+        top3_anchor_4_8_trio_hit_flag = int(
+            top3_anchor_4_8_trio_valid
+            and len(actual_set) == 3
+            and len(actual_set.intersection(top1_3_set)) == 2
+            and len(actual_set.intersection(top4_8_set)) == 1
+        )
+        top3_anchor_4_8_trio_refund = (
+            odds_trio * top3_anchor_4_8_trio_unit
+            if top3_anchor_4_8_trio_hit_flag == 1
+            else 0.0
+        )
+        top3_anchor_4_7_trio_valid = len(top1_3) == 3 and len(top4_7) == 4
+        top3_anchor_4_7_trio_hit_flag = int(
+            top3_anchor_4_7_trio_valid
+            and len(actual_set) == 3
+            and len(actual_set.intersection(top1_3_set)) == 2
+            and len(actual_set.intersection(top4_7_set)) == 1
+        )
+        top3_anchor_4_7_trio_refund = (
+            odds_trio * top3_anchor_4_7_trio_unit
+            if top3_anchor_4_7_trio_hit_flag == 1
+            else 0.0
+        )
+        anchor1_25_trio_valid = anchor_gate is not None and len(top2_5) == 4
+        anchor1_25_trio_hit_flag = int(
+            anchor1_25_trio_valid
+            and len(actual_set) == 3
+            and anchor_gate in actual_set
+            and set(actual_set).issubset({anchor_gate} | top2_5_set)
+        )
+        anchor1_25_trio_refund = (
+            odds_trio * anchor1_25_trio_unit if anchor1_25_trio_hit_flag == 1 else 0.0
+        )
+        anchor1_26_trio_valid = anchor_gate is not None and len(top2_6) == 5
+        anchor1_26_trio_hit_flag = int(
+            anchor1_26_trio_valid
+            and len(actual_set) == 3
+            and anchor_gate in actual_set
+            and set(actual_set).issubset({anchor_gate} | top2_6_set)
+        )
+        anchor1_26_trio_refund = (
+            odds_trio * anchor1_26_trio_unit if anchor1_26_trio_hit_flag == 1 else 0.0
+        )
+        anchor12_36_trio_valid = len(top4) >= 2 and len(top3_6) == 4
+        anchor12_36_trio_hit_flag = int(
+            anchor12_36_trio_valid
+            and len(actual_set) == 3
+            and set(top4[:2]).issubset(actual_set)
+            and len(actual_set.intersection(top3_6_set)) == 1
+        )
+        anchor12_36_trio_refund = (
+            odds_trio * anchor12_36_trio_unit
+            if anchor12_36_trio_hit_flag == 1
+            else 0.0
+        )
+        top3_anchor_4_6_trio_valid = len(top1_3) == 3 and len(top4_6) == 3
+        top3_anchor_4_6_trio_hit_flag = int(
+            top3_anchor_4_6_trio_valid
+            and len(actual_set) == 3
+            and len(actual_set.intersection(top1_3_set)) == 2
+            and len(actual_set.intersection(top4_6_set)) == 1
+        )
+        top3_anchor_4_6_trio_refund = (
+            odds_trio * top3_anchor_4_6_trio_unit
+            if top3_anchor_4_6_trio_hit_flag == 1
+            else 0.0
+        )
+        top3_anchor_4_6_trifecta_valid = len(top1_3) == 3 and len(top4_6) == 3
+        top3_anchor_4_6_trifecta_hit_flag = int(
+            top3_anchor_4_6_trifecta_valid
+            and len(actual_top3) == 3
+            and actual_top3[0] in top1_3_set
+            and actual_top3[1] in top1_3_set
+            and actual_top3[0] != actual_top3[1]
+            and actual_top3[2] in top4_6_set
+        )
+        top3_anchor_4_6_trifecta_refund = (
+            odds * top3_anchor_4_6_trifecta_unit
+            if top3_anchor_4_6_trifecta_hit_flag == 1
+            else 0.0
+        )
         hit_any = int(
             anchor1_24_57_hit_flag
             or anchor1_24_hit_flag
             or anchor1_24_trio_hit_flag
             or box4_trio_hit_flag
+            or top3_anchor_4_8_trio_hit_flag
+            or top3_anchor_4_7_trio_hit_flag
+            or anchor1_25_trio_hit_flag
+            or anchor1_26_trio_hit_flag
+            or anchor12_36_trio_hit_flag
+            or top3_anchor_4_6_trio_hit_flag
+            or top3_anchor_4_6_trifecta_hit_flag
         )
         anchor1_24_57_total_bet += (
             anchor1_24_57_bet_per_race if anchor1_24_57_valid else 0.0
@@ -408,6 +555,43 @@ def calc_rpop_anchor_26_trifecta(
         box4_trio_total_bet += box4_trio_bet_per_race
         box4_trio_total_refund += box4_trio_refund
         box4_trio_total_hits += box4_trio_hit_flag
+        top3_anchor_4_8_trio_total_bet += (
+            top3_anchor_4_8_trio_bet_per_race if top3_anchor_4_8_trio_valid else 0.0
+        )
+        top3_anchor_4_8_trio_total_refund += top3_anchor_4_8_trio_refund
+        top3_anchor_4_8_trio_total_hits += top3_anchor_4_8_trio_hit_flag
+        top3_anchor_4_7_trio_total_bet += (
+            top3_anchor_4_7_trio_bet_per_race if top3_anchor_4_7_trio_valid else 0.0
+        )
+        top3_anchor_4_7_trio_total_refund += top3_anchor_4_7_trio_refund
+        top3_anchor_4_7_trio_total_hits += top3_anchor_4_7_trio_hit_flag
+        anchor1_25_trio_total_bet += (
+            anchor1_25_trio_bet_per_race if anchor1_25_trio_valid else 0.0
+        )
+        anchor1_25_trio_total_refund += anchor1_25_trio_refund
+        anchor1_25_trio_total_hits += anchor1_25_trio_hit_flag
+        anchor1_26_trio_total_bet += (
+            anchor1_26_trio_bet_per_race if anchor1_26_trio_valid else 0.0
+        )
+        anchor1_26_trio_total_refund += anchor1_26_trio_refund
+        anchor1_26_trio_total_hits += anchor1_26_trio_hit_flag
+        anchor12_36_trio_total_bet += (
+            anchor12_36_trio_bet_per_race if anchor12_36_trio_valid else 0.0
+        )
+        anchor12_36_trio_total_refund += anchor12_36_trio_refund
+        anchor12_36_trio_total_hits += anchor12_36_trio_hit_flag
+        top3_anchor_4_6_trio_total_bet += (
+            top3_anchor_4_6_trio_bet_per_race if top3_anchor_4_6_trio_valid else 0.0
+        )
+        top3_anchor_4_6_trio_total_refund += top3_anchor_4_6_trio_refund
+        top3_anchor_4_6_trio_total_hits += top3_anchor_4_6_trio_hit_flag
+        top3_anchor_4_6_trifecta_total_bet += (
+            top3_anchor_4_6_trifecta_bet_per_race
+            if top3_anchor_4_6_trifecta_valid
+            else 0.0
+        )
+        top3_anchor_4_6_trifecta_total_refund += top3_anchor_4_6_trifecta_refund
+        top3_anchor_4_6_trifecta_total_hits += top3_anchor_4_6_trifecta_hit_flag
         total_hits_any += hit_any
 
         date_dt = pd.to_datetime(date, format="%Y%m%d", errors="coerce")
@@ -472,6 +656,55 @@ def calc_rpop_anchor_26_trifecta(
                 "total_refund": 0.0,
                 "hits": 0,
             }
+        if year_month not in month_summary_top3_anchor_4_8_trio:
+            month_summary_top3_anchor_4_8_trio[year_month] = {
+                "races": 0,
+                "total_bet": 0.0,
+                "total_refund": 0.0,
+                "hits": 0,
+            }
+        if year_month not in month_summary_top3_anchor_4_7_trio:
+            month_summary_top3_anchor_4_7_trio[year_month] = {
+                "races": 0,
+                "total_bet": 0.0,
+                "total_refund": 0.0,
+                "hits": 0,
+            }
+        if year_month not in month_summary_anchor1_25_trio:
+            month_summary_anchor1_25_trio[year_month] = {
+                "races": 0,
+                "total_bet": 0.0,
+                "total_refund": 0.0,
+                "hits": 0,
+            }
+        if year_month not in month_summary_anchor1_26_trio:
+            month_summary_anchor1_26_trio[year_month] = {
+                "races": 0,
+                "total_bet": 0.0,
+                "total_refund": 0.0,
+                "hits": 0,
+            }
+        if year_month not in month_summary_anchor12_36_trio:
+            month_summary_anchor12_36_trio[year_month] = {
+                "races": 0,
+                "total_bet": 0.0,
+                "total_refund": 0.0,
+                "hits": 0,
+            }
+        if year_month not in month_summary_top3_anchor_4_6_trio:
+            month_summary_top3_anchor_4_6_trio[year_month] = {
+                "races": 0,
+                "total_bet": 0.0,
+                "total_refund": 0.0,
+                "hits": 0,
+            }
+        if year_month not in month_summary_top3_anchor_4_6_trifecta:
+            month_summary_top3_anchor_4_6_trifecta[year_month] = {
+                "races": 0,
+                "total_bet": 0.0,
+                "total_refund": 0.0,
+                "hits": 0,
+            }
         month_summary[year_month]["races"] += 1
         week_summary[week_key]["races"] += 1
         month_summary[year_month]["total_bet"] += (
@@ -479,24 +712,96 @@ def calc_rpop_anchor_26_trifecta(
             + (anchor1_24_bet_per_race if anchor1_24_valid else 0.0)
             + (anchor1_24_trio_bet_per_race if anchor1_24_trio_valid else 0.0)
             + box4_trio_bet_per_race
+            + (
+                top3_anchor_4_8_trio_bet_per_race
+                if top3_anchor_4_8_trio_valid
+                else 0.0
+            )
+            + (
+                top3_anchor_4_7_trio_bet_per_race
+                if top3_anchor_4_7_trio_valid
+                else 0.0
+            )
+            + (
+                anchor1_25_trio_bet_per_race if anchor1_25_trio_valid else 0.0
+            )
+            + (
+                anchor1_26_trio_bet_per_race if anchor1_26_trio_valid else 0.0
+            )
+            + (
+                anchor12_36_trio_bet_per_race if anchor12_36_trio_valid else 0.0
+            )
+            + (
+                top3_anchor_4_6_trio_bet_per_race
+                if top3_anchor_4_6_trio_valid
+                else 0.0
+            )
+            + (
+                top3_anchor_4_6_trifecta_bet_per_race
+                if top3_anchor_4_6_trifecta_valid
+                else 0.0
+            )
         )
         week_summary[week_key]["total_bet"] += (
             (anchor1_24_57_bet_per_race if anchor1_24_57_valid else 0.0)
             + (anchor1_24_bet_per_race if anchor1_24_valid else 0.0)
             + (anchor1_24_trio_bet_per_race if anchor1_24_trio_valid else 0.0)
             + box4_trio_bet_per_race
+            + (
+                top3_anchor_4_8_trio_bet_per_race
+                if top3_anchor_4_8_trio_valid
+                else 0.0
+            )
+            + (
+                top3_anchor_4_7_trio_bet_per_race
+                if top3_anchor_4_7_trio_valid
+                else 0.0
+            )
+            + (
+                anchor1_25_trio_bet_per_race if anchor1_25_trio_valid else 0.0
+            )
+            + (
+                anchor1_26_trio_bet_per_race if anchor1_26_trio_valid else 0.0
+            )
+            + (
+                anchor12_36_trio_bet_per_race if anchor12_36_trio_valid else 0.0
+            )
+            + (
+                top3_anchor_4_6_trio_bet_per_race
+                if top3_anchor_4_6_trio_valid
+                else 0.0
+            )
+            + (
+                top3_anchor_4_6_trifecta_bet_per_race
+                if top3_anchor_4_6_trifecta_valid
+                else 0.0
+            )
         )
         month_summary[year_month]["total_refund"] += (
             anchor1_24_57_refund
             + anchor1_24_refund
             + anchor1_24_trio_refund
             + box4_trio_refund
+            + top3_anchor_4_8_trio_refund
+            + top3_anchor_4_7_trio_refund
+            + anchor1_25_trio_refund
+            + anchor1_26_trio_refund
+            + anchor12_36_trio_refund
+            + top3_anchor_4_6_trio_refund
+            + top3_anchor_4_6_trifecta_refund
         )
         week_summary[week_key]["total_refund"] += (
             anchor1_24_57_refund
             + anchor1_24_refund
             + anchor1_24_trio_refund
             + box4_trio_refund
+            + top3_anchor_4_8_trio_refund
+            + top3_anchor_4_7_trio_refund
+            + anchor1_25_trio_refund
+            + anchor1_26_trio_refund
+            + anchor12_36_trio_refund
+            + top3_anchor_4_6_trio_refund
+            + top3_anchor_4_6_trifecta_refund
         )
         month_summary[year_month]["hits"] += hit_any
         week_summary[week_key]["hits"] += hit_any
@@ -526,11 +831,84 @@ def calc_rpop_anchor_26_trifecta(
         month_summary_box4_trio[year_month]["total_bet"] += box4_trio_bet_per_race
         month_summary_box4_trio[year_month]["total_refund"] += box4_trio_refund
         month_summary_box4_trio[year_month]["hits"] += box4_trio_hit_flag
+        month_summary_top3_anchor_4_8_trio[year_month]["races"] += 1
+        month_summary_top3_anchor_4_8_trio[year_month]["total_bet"] += (
+            top3_anchor_4_8_trio_bet_per_race if top3_anchor_4_8_trio_valid else 0.0
+        )
+        month_summary_top3_anchor_4_8_trio[year_month][
+            "total_refund"
+        ] += top3_anchor_4_8_trio_refund
+        month_summary_top3_anchor_4_8_trio[year_month]["hits"] += (
+            top3_anchor_4_8_trio_hit_flag
+        )
+        month_summary_top3_anchor_4_7_trio[year_month]["races"] += 1
+        month_summary_top3_anchor_4_7_trio[year_month]["total_bet"] += (
+            top3_anchor_4_7_trio_bet_per_race if top3_anchor_4_7_trio_valid else 0.0
+        )
+        month_summary_top3_anchor_4_7_trio[year_month][
+            "total_refund"
+        ] += top3_anchor_4_7_trio_refund
+        month_summary_top3_anchor_4_7_trio[year_month]["hits"] += (
+            top3_anchor_4_7_trio_hit_flag
+        )
+        month_summary_anchor1_25_trio[year_month]["races"] += 1
+        month_summary_anchor1_25_trio[year_month]["total_bet"] += (
+            anchor1_25_trio_bet_per_race if anchor1_25_trio_valid else 0.0
+        )
+        month_summary_anchor1_25_trio[year_month][
+            "total_refund"
+        ] += anchor1_25_trio_refund
+        month_summary_anchor1_25_trio[year_month]["hits"] += anchor1_25_trio_hit_flag
+        month_summary_anchor1_26_trio[year_month]["races"] += 1
+        month_summary_anchor1_26_trio[year_month]["total_bet"] += (
+            anchor1_26_trio_bet_per_race if anchor1_26_trio_valid else 0.0
+        )
+        month_summary_anchor1_26_trio[year_month][
+            "total_refund"
+        ] += anchor1_26_trio_refund
+        month_summary_anchor1_26_trio[year_month]["hits"] += anchor1_26_trio_hit_flag
+        month_summary_anchor12_36_trio[year_month]["races"] += 1
+        month_summary_anchor12_36_trio[year_month]["total_bet"] += (
+            anchor12_36_trio_bet_per_race if anchor12_36_trio_valid else 0.0
+        )
+        month_summary_anchor12_36_trio[year_month][
+            "total_refund"
+        ] += anchor12_36_trio_refund
+        month_summary_anchor12_36_trio[year_month]["hits"] += anchor12_36_trio_hit_flag
+        month_summary_top3_anchor_4_6_trio[year_month]["races"] += 1
+        month_summary_top3_anchor_4_6_trio[year_month]["total_bet"] += (
+            top3_anchor_4_6_trio_bet_per_race if top3_anchor_4_6_trio_valid else 0.0
+        )
+        month_summary_top3_anchor_4_6_trio[year_month][
+            "total_refund"
+        ] += top3_anchor_4_6_trio_refund
+        month_summary_top3_anchor_4_6_trio[year_month]["hits"] += (
+            top3_anchor_4_6_trio_hit_flag
+        )
+        month_summary_top3_anchor_4_6_trifecta[year_month]["races"] += 1
+        month_summary_top3_anchor_4_6_trifecta[year_month]["total_bet"] += (
+            top3_anchor_4_6_trifecta_bet_per_race
+            if top3_anchor_4_6_trifecta_valid
+            else 0.0
+        )
+        month_summary_top3_anchor_4_6_trifecta[year_month][
+            "total_refund"
+        ] += top3_anchor_4_6_trifecta_refund
+        month_summary_top3_anchor_4_6_trifecta[year_month]["hits"] += (
+            top3_anchor_4_6_trifecta_hit_flag
+        )
         holes_per_race = (
             (9 if anchor1_24_57_valid else 0)
             + (6 if anchor1_24_valid else 0)
             + (3 if anchor1_24_trio_valid else 0)
             + 4
+            + (15 if top3_anchor_4_8_trio_valid else 0)
+            + (12 if top3_anchor_4_7_trio_valid else 0)
+            + (6 if anchor1_25_trio_valid else 0)
+            + (10 if anchor1_26_trio_valid else 0)
+            + (4 if anchor12_36_trio_valid else 0)
+            + (9 if top3_anchor_4_6_trio_valid else 0)
+            + (18 if top3_anchor_4_6_trifecta_valid else 0)
         )
         total_holes_all += holes_per_race
         race_rows.append(
@@ -554,6 +932,20 @@ def calc_rpop_anchor_26_trifecta(
                 "r_pop1_축_2~4_삼복_환수액": anchor1_24_trio_refund,
                 "r_pop1~4_BOX4_삼복_적중": box4_trio_hit_flag,
                 "r_pop1~4_BOX4_삼복_환수액": box4_trio_refund,
+                "r_pop1~3_복조_4~8_삼복_적중": top3_anchor_4_8_trio_hit_flag,
+                "r_pop1~3_복조_4~8_삼복_환수액": top3_anchor_4_8_trio_refund,
+                "r_pop1~3_복조_4~7_삼복_적중": top3_anchor_4_7_trio_hit_flag,
+                "r_pop1~3_복조_4~7_삼복_환수액": top3_anchor_4_7_trio_refund,
+                "r_pop1_축_2~5_삼복_적중": anchor1_25_trio_hit_flag,
+                "r_pop1_축_2~5_삼복_환수액": anchor1_25_trio_refund,
+                "r_pop1_축_2~6_삼복_적중": anchor1_26_trio_hit_flag,
+                "r_pop1_축_2~6_삼복_환수액": anchor1_26_trio_refund,
+                "r_pop1~2_복조_3~6_삼복_적중": anchor12_36_trio_hit_flag,
+                "r_pop1~2_복조_3~6_삼복_환수액": anchor12_36_trio_refund,
+                "r_pop1~3_복조_4~6_삼복_적중": top3_anchor_4_6_trio_hit_flag,
+                "r_pop1~3_복조_4~6_삼복_환수액": top3_anchor_4_6_trio_refund,
+                "r_pop1~3_복조_4~6_삼쌍_적중": top3_anchor_4_6_trifecta_hit_flag,
+                "r_pop1~3_복조_4~6_삼쌍_환수액": top3_anchor_4_6_trifecta_refund,
                 "1축_2~4_5~7_베팅액": (
                     anchor1_24_57_bet_per_race if anchor1_24_57_valid else 0.0
                 ),
@@ -568,17 +960,97 @@ def calc_rpop_anchor_26_trifecta(
                 "1축_2~4_삼복_환수액": anchor1_24_trio_refund,
                 "BOX4_삼복_베팅액": box4_trio_bet_per_race,
                 "BOX4_삼복_환수액": box4_trio_refund,
+                "1~3복조_4~8_삼복_베팅액": (
+                    top3_anchor_4_8_trio_bet_per_race
+                    if top3_anchor_4_8_trio_valid
+                    else 0.0
+                ),
+                "1~3복조_4~8_삼복_환수액": top3_anchor_4_8_trio_refund,
+                "1~3복조_4~7_삼복_베팅액": (
+                    top3_anchor_4_7_trio_bet_per_race
+                    if top3_anchor_4_7_trio_valid
+                    else 0.0
+                ),
+                "1~3복조_4~7_삼복_환수액": top3_anchor_4_7_trio_refund,
+                "1축_2~5_삼복_베팅액": (
+                    anchor1_25_trio_bet_per_race if anchor1_25_trio_valid else 0.0
+                ),
+                "1축_2~5_삼복_환수액": anchor1_25_trio_refund,
+                "1축_2~6_삼복_베팅액": (
+                    anchor1_26_trio_bet_per_race if anchor1_26_trio_valid else 0.0
+                ),
+                "1축_2~6_삼복_환수액": anchor1_26_trio_refund,
+                "1~2복조_3~6_삼복_베팅액": (
+                    anchor12_36_trio_bet_per_race
+                    if anchor12_36_trio_valid
+                    else 0.0
+                ),
+                "1~2복조_3~6_삼복_환수액": anchor12_36_trio_refund,
+                "1~3복조_4~6_삼복_베팅액": (
+                    top3_anchor_4_6_trio_bet_per_race
+                    if top3_anchor_4_6_trio_valid
+                    else 0.0
+                ),
+                "1~3복조_4~6_삼복_환수액": top3_anchor_4_6_trio_refund,
+                "1~3복조_4~6_삼쌍_베팅액": (
+                    top3_anchor_4_6_trifecta_bet_per_race
+                    if top3_anchor_4_6_trifecta_valid
+                    else 0.0
+                ),
+                "1~3복조_4~6_삼쌍_환수액": top3_anchor_4_6_trifecta_refund,
                 "총구멍수": holes_per_race,
                 "총베팅액": (
                     (anchor1_24_57_bet_per_race if anchor1_24_57_valid else 0.0)
                     + (anchor1_24_bet_per_race if anchor1_24_valid else 0.0)
                     + (anchor1_24_trio_bet_per_race if anchor1_24_trio_valid else 0.0)
                     + box4_trio_bet_per_race
+                    + (
+                        top3_anchor_4_8_trio_bet_per_race
+                        if top3_anchor_4_8_trio_valid
+                        else 0.0
+                    )
+                    + (
+                        top3_anchor_4_7_trio_bet_per_race
+                        if top3_anchor_4_7_trio_valid
+                        else 0.0
+                    )
+                    + (
+                        anchor1_25_trio_bet_per_race
+                        if anchor1_25_trio_valid
+                        else 0.0
+                    )
+                    + (
+                        anchor1_26_trio_bet_per_race
+                        if anchor1_26_trio_valid
+                        else 0.0
+                    )
+                    + (
+                        anchor12_36_trio_bet_per_race
+                        if anchor12_36_trio_valid
+                        else 0.0
+                    )
+                    + (
+                        top3_anchor_4_6_trio_bet_per_race
+                        if top3_anchor_4_6_trio_valid
+                        else 0.0
+                    )
+                    + (
+                        top3_anchor_4_6_trifecta_bet_per_race
+                        if top3_anchor_4_6_trifecta_valid
+                        else 0.0
+                    )
                 ),
                 "총환수액": anchor1_24_57_refund
                 + anchor1_24_refund
                 + anchor1_24_trio_refund
-                + box4_trio_refund,
+                + box4_trio_refund
+                + top3_anchor_4_8_trio_refund
+                + top3_anchor_4_7_trio_refund
+                + anchor1_25_trio_refund
+                + anchor1_26_trio_refund
+                + anchor12_36_trio_refund
+                + top3_anchor_4_6_trio_refund
+                + top3_anchor_4_6_trifecta_refund,
                 "삼쌍승식배당율": odds,
                 "삼복승식배당율": odds_trio,
             }
@@ -628,18 +1100,105 @@ def calc_rpop_anchor_26_trifecta(
         "box4_trio_hit_rate": (
             box4_trio_total_hits / total_races if total_races > 0 else 0.0
         ),
+        "top3_anchor_4_8_trio_total_bet": top3_anchor_4_8_trio_total_bet,
+        "top3_anchor_4_8_trio_total_refund": top3_anchor_4_8_trio_total_refund,
+        "top3_anchor_4_8_trio_refund_rate": (
+            top3_anchor_4_8_trio_total_refund / top3_anchor_4_8_trio_total_bet
+            if top3_anchor_4_8_trio_total_bet > 0
+            else 0.0
+        ),
+        "top3_anchor_4_8_trio_hit_rate": (
+            top3_anchor_4_8_trio_total_hits / total_races if total_races > 0 else 0.0
+        ),
+        "top3_anchor_4_7_trio_total_bet": top3_anchor_4_7_trio_total_bet,
+        "top3_anchor_4_7_trio_total_refund": top3_anchor_4_7_trio_total_refund,
+        "top3_anchor_4_7_trio_refund_rate": (
+            top3_anchor_4_7_trio_total_refund / top3_anchor_4_7_trio_total_bet
+            if top3_anchor_4_7_trio_total_bet > 0
+            else 0.0
+        ),
+        "top3_anchor_4_7_trio_hit_rate": (
+            top3_anchor_4_7_trio_total_hits / total_races if total_races > 0 else 0.0
+        ),
+        "anchor1_25_trio_total_bet": anchor1_25_trio_total_bet,
+        "anchor1_25_trio_total_refund": anchor1_25_trio_total_refund,
+        "anchor1_25_trio_refund_rate": (
+            anchor1_25_trio_total_refund / anchor1_25_trio_total_bet
+            if anchor1_25_trio_total_bet > 0
+            else 0.0
+        ),
+        "anchor1_25_trio_hit_rate": (
+            anchor1_25_trio_total_hits / total_races if total_races > 0 else 0.0
+        ),
+        "anchor1_26_trio_total_bet": anchor1_26_trio_total_bet,
+        "anchor1_26_trio_total_refund": anchor1_26_trio_total_refund,
+        "anchor1_26_trio_refund_rate": (
+            anchor1_26_trio_total_refund / anchor1_26_trio_total_bet
+            if anchor1_26_trio_total_bet > 0
+            else 0.0
+        ),
+        "anchor1_26_trio_hit_rate": (
+            anchor1_26_trio_total_hits / total_races if total_races > 0 else 0.0
+        ),
+        "anchor12_36_trio_total_bet": anchor12_36_trio_total_bet,
+        "anchor12_36_trio_total_refund": anchor12_36_trio_total_refund,
+        "anchor12_36_trio_refund_rate": (
+            anchor12_36_trio_total_refund / anchor12_36_trio_total_bet
+            if anchor12_36_trio_total_bet > 0
+            else 0.0
+        ),
+        "anchor12_36_trio_hit_rate": (
+            anchor12_36_trio_total_hits / total_races if total_races > 0 else 0.0
+        ),
+        "top3_anchor_4_6_trio_total_bet": top3_anchor_4_6_trio_total_bet,
+        "top3_anchor_4_6_trio_total_refund": top3_anchor_4_6_trio_total_refund,
+        "top3_anchor_4_6_trio_refund_rate": (
+            top3_anchor_4_6_trio_total_refund / top3_anchor_4_6_trio_total_bet
+            if top3_anchor_4_6_trio_total_bet > 0
+            else 0.0
+        ),
+        "top3_anchor_4_6_trio_hit_rate": (
+            top3_anchor_4_6_trio_total_hits / total_races if total_races > 0 else 0.0
+        ),
+        "top3_anchor_4_6_trifecta_total_bet": top3_anchor_4_6_trifecta_total_bet,
+        "top3_anchor_4_6_trifecta_total_refund": top3_anchor_4_6_trifecta_total_refund,
+        "top3_anchor_4_6_trifecta_refund_rate": (
+            top3_anchor_4_6_trifecta_total_refund
+            / top3_anchor_4_6_trifecta_total_bet
+            if top3_anchor_4_6_trifecta_total_bet > 0
+            else 0.0
+        ),
+        "top3_anchor_4_6_trifecta_hit_rate": (
+            top3_anchor_4_6_trifecta_total_hits / total_races
+            if total_races > 0
+            else 0.0
+        ),
     }
     total_bet_all = (
         anchor1_24_57_total_bet
         + anchor1_24_total_bet
         + anchor1_24_trio_total_bet
         + box4_trio_total_bet
+        + top3_anchor_4_8_trio_total_bet
+        + top3_anchor_4_7_trio_total_bet
+        + anchor1_25_trio_total_bet
+        + anchor1_26_trio_total_bet
+        + anchor12_36_trio_total_bet
+        + top3_anchor_4_6_trio_total_bet
+        + top3_anchor_4_6_trifecta_total_bet
     )
     total_refund_all = (
         anchor1_24_57_total_refund
         + anchor1_24_total_refund
         + anchor1_24_trio_total_refund
         + box4_trio_total_refund
+        + top3_anchor_4_8_trio_total_refund
+        + top3_anchor_4_7_trio_total_refund
+        + anchor1_25_trio_total_refund
+        + anchor1_26_trio_total_refund
+        + anchor12_36_trio_total_refund
+        + top3_anchor_4_6_trio_total_refund
+        + top3_anchor_4_6_trifecta_total_refund
     )
     total_refund_rate_all = (
         total_refund_all / total_bet_all if total_bet_all > 0 else 0.0
@@ -652,6 +1211,27 @@ def calc_rpop_anchor_26_trifecta(
     anchor1_24_profit = anchor1_24_total_refund - anchor1_24_total_bet
     anchor1_24_trio_profit = anchor1_24_trio_total_refund - anchor1_24_trio_total_bet
     box4_trio_profit = box4_trio_total_refund - box4_trio_total_bet
+    top3_anchor_4_8_trio_profit = (
+        top3_anchor_4_8_trio_total_refund - top3_anchor_4_8_trio_total_bet
+    )
+    top3_anchor_4_7_trio_profit = (
+        top3_anchor_4_7_trio_total_refund - top3_anchor_4_7_trio_total_bet
+    )
+    anchor1_25_trio_profit = (
+        anchor1_25_trio_total_refund - anchor1_25_trio_total_bet
+    )
+    anchor1_26_trio_profit = (
+        anchor1_26_trio_total_refund - anchor1_26_trio_total_bet
+    )
+    anchor12_36_trio_profit = (
+        anchor12_36_trio_total_refund - anchor12_36_trio_total_bet
+    )
+    top3_anchor_4_6_trio_profit = (
+        top3_anchor_4_6_trio_total_refund - top3_anchor_4_6_trio_total_bet
+    )
+    top3_anchor_4_6_trifecta_profit = (
+        top3_anchor_4_6_trifecta_total_refund - top3_anchor_4_6_trifecta_total_bet
+    )
 
     print("===================================")
     print(f"기간: {from_date} ~ {to_date}")
@@ -697,6 +1277,62 @@ def calc_rpop_anchor_26_trifecta(
         f"총환수액: {box4_trio_total_refund:,.1f}원  "
         f"이익금액: {box4_trio_profit:,.1f}원  "
         f"환수율: {summary['box4_trio_refund_rate']:.3f}"
+    )
+    print(
+        "[r_pop 1~3 복조 + 4~8 삼복승식]  "
+        f"적중율: {summary['top3_anchor_4_8_trio_hit_rate']:.3f}  "
+        f"총베팅액: {int(top3_anchor_4_8_trio_total_bet):,}원  "
+        f"총환수액: {top3_anchor_4_8_trio_total_refund:,.1f}원  "
+        f"이익금액: {top3_anchor_4_8_trio_profit:,.1f}원  "
+        f"환수율: {summary['top3_anchor_4_8_trio_refund_rate']:.3f}"
+    )
+    print(
+        "[r_pop 1~3 복조 + 4~7 삼복승식]  "
+        f"적중율: {summary['top3_anchor_4_7_trio_hit_rate']:.3f}  "
+        f"총베팅액: {int(top3_anchor_4_7_trio_total_bet):,}원  "
+        f"총환수액: {top3_anchor_4_7_trio_total_refund:,.1f}원  "
+        f"이익금액: {top3_anchor_4_7_trio_profit:,.1f}원  "
+        f"환수율: {summary['top3_anchor_4_7_trio_refund_rate']:.3f}"
+    )
+    print(
+        "[r_pop 1축(2~5) 삼복승식]  "
+        f"적중율: {summary['anchor1_25_trio_hit_rate']:.3f}  "
+        f"총베팅액: {int(anchor1_25_trio_total_bet):,}원  "
+        f"총환수액: {anchor1_25_trio_total_refund:,.1f}원  "
+        f"이익금액: {anchor1_25_trio_profit:,.1f}원  "
+        f"환수율: {summary['anchor1_25_trio_refund_rate']:.3f}"
+    )
+    print(
+        "[r_pop 1축(2~6) 삼복승식]  "
+        f"적중율: {summary['anchor1_26_trio_hit_rate']:.3f}  "
+        f"총베팅액: {int(anchor1_26_trio_total_bet):,}원  "
+        f"총환수액: {anchor1_26_trio_total_refund:,.1f}원  "
+        f"이익금액: {anchor1_26_trio_profit:,.1f}원  "
+        f"환수율: {summary['anchor1_26_trio_refund_rate']:.3f}"
+    )
+    print(
+        "[r_pop 1~2 복조 + 3~6 삼복승식]  "
+        f"적중율: {summary['anchor12_36_trio_hit_rate']:.3f}  "
+        f"총베팅액: {int(anchor12_36_trio_total_bet):,}원  "
+        f"총환수액: {anchor12_36_trio_total_refund:,.1f}원  "
+        f"이익금액: {anchor12_36_trio_profit:,.1f}원  "
+        f"환수율: {summary['anchor12_36_trio_refund_rate']:.3f}"
+    )
+    print(
+        "[r_pop 1~3 복조 + 4~6 삼복승식]  "
+        f"적중율: {summary['top3_anchor_4_6_trio_hit_rate']:.3f}  "
+        f"총베팅액: {int(top3_anchor_4_6_trio_total_bet):,}원  "
+        f"총환수액: {top3_anchor_4_6_trio_total_refund:,.1f}원  "
+        f"이익금액: {top3_anchor_4_6_trio_profit:,.1f}원  "
+        f"환수율: {summary['top3_anchor_4_6_trio_refund_rate']:.3f}"
+    )
+    print(
+        "[r_pop 1~3 복조 + 4~6 삼쌍승식]  "
+        f"적중율: {summary['top3_anchor_4_6_trifecta_hit_rate']:.3f}  "
+        f"총베팅액: {int(top3_anchor_4_6_trifecta_total_bet):,}원  "
+        f"총환수액: {top3_anchor_4_6_trifecta_total_refund:,.1f}원  "
+        f"이익금액: {top3_anchor_4_6_trifecta_profit:,.1f}원  "
+        f"환수율: {summary['top3_anchor_4_6_trifecta_refund_rate']:.3f}"
     )
     for week in sorted(week_summary.keys()):
         d = week_summary[week]
@@ -780,6 +1416,97 @@ def calc_rpop_anchor_26_trifecta(
             f"이익금액: {month_profit:,.1f}원  "
             f"환수율: {month_refund_rate:.3f}  적중경주수: {m['hits']}  적중율: {month_hit_rate:.3f}"
         )
+    for ym in sorted(month_summary_top3_anchor_4_8_trio.keys()):
+        m = month_summary_top3_anchor_4_8_trio[ym]
+        month_refund_rate = (
+            m["total_refund"] / m["total_bet"] if m["total_bet"] > 0 else 0.0
+        )
+        month_hit_rate = m["hits"] / m["races"] if m["races"] > 0 else 0.0
+        month_profit = m["total_refund"] - m["total_bet"]
+        print(
+            f"[월별(1~3복조+4~8 삼복) {ym}]  경주수: {m['races']}  "
+            f"총베팅액: {int(m['total_bet']):,}원  총환수액: {m['total_refund']:,.1f}원  "
+            f"이익금액: {month_profit:,.1f}원  "
+            f"환수율: {month_refund_rate:.3f}  적중경주수: {m['hits']}  적중율: {month_hit_rate:.3f}"
+        )
+    for ym in sorted(month_summary_top3_anchor_4_7_trio.keys()):
+        m = month_summary_top3_anchor_4_7_trio[ym]
+        month_refund_rate = (
+            m["total_refund"] / m["total_bet"] if m["total_bet"] > 0 else 0.0
+        )
+        month_hit_rate = m["hits"] / m["races"] if m["races"] > 0 else 0.0
+        month_profit = m["total_refund"] - m["total_bet"]
+        print(
+            f"[월별(1~3복조+4~7 삼복) {ym}]  경주수: {m['races']}  "
+            f"총베팅액: {int(m['total_bet']):,}원  총환수액: {m['total_refund']:,.1f}원  "
+            f"이익금액: {month_profit:,.1f}원  "
+            f"환수율: {month_refund_rate:.3f}  적중경주수: {m['hits']}  적중율: {month_hit_rate:.3f}"
+        )
+    for ym in sorted(month_summary_anchor1_25_trio.keys()):
+        m = month_summary_anchor1_25_trio[ym]
+        month_refund_rate = (
+            m["total_refund"] / m["total_bet"] if m["total_bet"] > 0 else 0.0
+        )
+        month_hit_rate = m["hits"] / m["races"] if m["races"] > 0 else 0.0
+        month_profit = m["total_refund"] - m["total_bet"]
+        print(
+            f"[월별(1축2~5 삼복) {ym}]  경주수: {m['races']}  "
+            f"총베팅액: {int(m['total_bet']):,}원  총환수액: {m['total_refund']:,.1f}원  "
+            f"이익금액: {month_profit:,.1f}원  "
+            f"환수율: {month_refund_rate:.3f}  적중경주수: {m['hits']}  적중율: {month_hit_rate:.3f}"
+        )
+    for ym in sorted(month_summary_anchor1_26_trio.keys()):
+        m = month_summary_anchor1_26_trio[ym]
+        month_refund_rate = (
+            m["total_refund"] / m["total_bet"] if m["total_bet"] > 0 else 0.0
+        )
+        month_hit_rate = m["hits"] / m["races"] if m["races"] > 0 else 0.0
+        month_profit = m["total_refund"] - m["total_bet"]
+        print(
+            f"[월별(1축2~6 삼복) {ym}]  경주수: {m['races']}  "
+            f"총베팅액: {int(m['total_bet']):,}원  총환수액: {m['total_refund']:,.1f}원  "
+            f"이익금액: {month_profit:,.1f}원  "
+            f"환수율: {month_refund_rate:.3f}  적중경주수: {m['hits']}  적중율: {month_hit_rate:.3f}"
+        )
+    for ym in sorted(month_summary_anchor12_36_trio.keys()):
+        m = month_summary_anchor12_36_trio[ym]
+        month_refund_rate = (
+            m["total_refund"] / m["total_bet"] if m["total_bet"] > 0 else 0.0
+        )
+        month_hit_rate = m["hits"] / m["races"] if m["races"] > 0 else 0.0
+        month_profit = m["total_refund"] - m["total_bet"]
+        print(
+            f"[월별(1~2복조+3~6 삼복) {ym}]  경주수: {m['races']}  "
+            f"총베팅액: {int(m['total_bet']):,}원  총환수액: {m['total_refund']:,.1f}원  "
+            f"이익금액: {month_profit:,.1f}원  "
+            f"환수율: {month_refund_rate:.3f}  적중경주수: {m['hits']}  적중율: {month_hit_rate:.3f}"
+        )
+    for ym in sorted(month_summary_top3_anchor_4_6_trio.keys()):
+        m = month_summary_top3_anchor_4_6_trio[ym]
+        month_refund_rate = (
+            m["total_refund"] / m["total_bet"] if m["total_bet"] > 0 else 0.0
+        )
+        month_hit_rate = m["hits"] / m["races"] if m["races"] > 0 else 0.0
+        month_profit = m["total_refund"] - m["total_bet"]
+        print(
+            f"[월별(1~3복조+4~6 삼복) {ym}]  경주수: {m['races']}  "
+            f"총베팅액: {int(m['total_bet']):,}원  총환수액: {m['total_refund']:,.1f}원  "
+            f"이익금액: {month_profit:,.1f}원  "
+            f"환수율: {month_refund_rate:.3f}  적중경주수: {m['hits']}  적중율: {month_hit_rate:.3f}"
+        )
+    for ym in sorted(month_summary_top3_anchor_4_6_trifecta.keys()):
+        m = month_summary_top3_anchor_4_6_trifecta[ym]
+        month_refund_rate = (
+            m["total_refund"] / m["total_bet"] if m["total_bet"] > 0 else 0.0
+        )
+        month_hit_rate = m["hits"] / m["races"] if m["races"] > 0 else 0.0
+        month_profit = m["total_refund"] - m["total_bet"]
+        print(
+            f"[월별(1~3복조+4~6 삼쌍) {ym}]  경주수: {m['races']}  "
+            f"총베팅액: {int(m['total_bet']):,}원  총환수액: {m['total_refund']:,.1f}원  "
+            f"이익금액: {month_profit:,.1f}원  "
+            f"환수율: {month_refund_rate:.3f}  적중경주수: {m['hits']}  적중율: {month_hit_rate:.3f}"
+        )
     week_rows = []
     for week in sorted(week_summary.keys()):
         d = week_summary[week]
@@ -815,7 +1542,7 @@ def calc_rpop_anchor_26_trifecta(
 if __name__ == "__main__":
     from_date = "20250101"
 
-    to_date = "20260201"
+    to_date = "20260209"
 
     race_df, summary = calc_rpop_anchor_26_trifecta(
         from_date=from_date,

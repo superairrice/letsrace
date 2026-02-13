@@ -5,6 +5,12 @@
 {% load humanize %}
 
 <style>
+  .home-left-sub2-row,
+  .home-left-sub2-row td,
+  .home-left-sub2-row th {
+    border-color: var(--color-bg) !important;
+  }
+
   /* 원래 내장된 tooltip 텍스트는 숨기고, 포탈로만 표시 */
   .tooltip .tooltip-text { display: none !important; }
   /* 포탈 기본 스타일 (JS에서 position과 좌표만 제어) */
@@ -25,23 +31,29 @@
   }
 </style>
 
-<tr>
+<tr class="home-left-sub2-row">
   
   {# 경주번호 / 경주조건 #}
   <td style="vertical-align: middle; background-color: var(--color-dark-mid);">
     <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
       
-      <div class="tooltip" style="font-size: 1.7rem; background-color: var(--color-bg); padding: 8px 10px; border-radius: 10px;">
-        {% if r_rcity == '서울' %}
-        <div style="font-size: 1.0rem; font-weight: 350; color:var(--color-main); padding-top: 5px;">{{r_rcity}}</div>
-        {% else %}
-        <div style="font-size: 1.0rem; font-weight: 350; color:var(--color-r3); padding-top: 5px;">{{r_rcity}}</div>
-        {% endif %}
-        <span style="text-align: right; font-weight: 350; font-size: 1.7rem; border-bottom:1px solid orange; border-radius: 5px;">
-
-          {% if r_rno|mul:1 >= 10 %}{{r_rno}}<sup style="font-size: 1.0rem;">R</sup>{% else %}&nbsp;{{r_rno}}<sup style="font-size: 1.0rem;">R</sup>{% endif %}
-          
+      {% if r_rday == '일' %}
+      <div class="tooltip" style="font-size: 1.7rem; background-color: var(--color-bg); padding: 8px 10px; border-radius: 10px; border: 1px solid var(--color-gray);">
+      {% else %}
+      <div class="tooltip" style="font-size: 1.7rem; background-color: var(--color-bg-mid); padding: 8px 10px; border-radius: 10px; border: 1px solid var(--color-dark-light);">
+      {% endif %}
+        
+        {% ifchanged r_rday %}
+        <span style="font-size: 1.3rem; color:var(--color-r5); background-color: var(--color-dark-mid); border: 1px solid var(--color-r5); padding: 3px 5px; border-radius: 50%;">
+          {{r_rday}}
         </span>
+        {% endifchanged %}
+        
+        
+        <span style="text-align: right; font-weight: normal; font-size: 1.7rem; border-bottom:1px solid orange; border-radius: 5px;">
+          {% if r_rno|mul:1 >= 10 %}{{r_rno}}<sup style="font-size: 1.0rem;">R</sup>{% else %}&nbsp;{{r_rno}}<sup style="font-size: 1.0rem;">R</sup>{% endif %}
+        </span>
+
         <div class="tooltip-text" style="font-size: 1.1rem; text-align: left; color:var(--color-light-gray); width: 20rem; z-index:999;">
           {% if request.user.username == 'admin' %}
           <span style="font-size: 1.1rem; color:var(--color-light-gray);">{{r_overview|linebreaksbr}}</span>
@@ -62,6 +74,7 @@
           {% else %}
           <span style="font-size: 1.1rem; color:var(--color-light-gray);">경주반호</span>
           {% endif %}
+        </div>
       </div>
     </a>
     
@@ -71,10 +84,19 @@
     <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
       <span>
         <div style="font-family: Arial; font-size: 1.0rem; text-align: right; color: var(--color-main);">{{rtime}}</div>
-        <div style="font-family: Arial; font-size: 1.0rem; text-align: right; color: var(--color-light);">{{distance}}</div>
+        <div style="font-family: Arial; font-size: 1.0rem; text-align: right; color: var(--color-r3);">{{distance}}</div>
+        {% if 'OPEN' in grade %}
+        <div style="font-family: Arial; font-size: 1.0rem; text-align: right; color: var(--color-r1);">{{grade|slice:"0:2"}}</div>
+        {% else %}
         <div style="font-family: Arial; font-size: 1.0rem; text-align: right; color: var(--color-light-gray);">{{grade|slice:"0:2"}}</div>
-        
+        {% endif %}
+
+        {% if dividing|slice:"0:2" == '별정' %}
+        <div style="font-family: Arial; font-size: 1.0rem; text-align: right; color: var(--color-r1);">{{dividing|slice:"0:2"}}</div>
+        {% else %}
         <div style="font-family: Arial; font-size: 1.0rem; text-align: right; color: var(--color-light-gray);">{{dividing|slice:"0:2"}}</div>
+        {% endif %}
+        
       </span>
     </a>
   </td>
@@ -401,9 +423,7 @@
   </td>
   
   <td align="center" {% if rank < 90 %} style="font-family: Arial; color: var(--color-main); border-right: 1px solid gray;" {% else %} style="font-family: Arial; color: var(--color-main); background-color: var(--color-dark-light); border-right: 1px solid gray;" {% endif %}>
-    
-    
-    
+
     <div style="text-align:right; font-size:0.9rem;">
       <span class="tooltip" style="font-weight: normal;">
       {% if s1f_per == 100 %}

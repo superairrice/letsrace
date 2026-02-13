@@ -1,7 +1,60 @@
 {% load humanize %}
 {% load mathfilters %}
 
+<style>
+  .home-right-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+    display: block;
+    height: 60vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-radius: 7px;
+    border: none !important;
+    border-style: none !important;
+    outline: none;
+    box-shadow: none !important;
+    isolation: isolate;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .home-right-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 120;
+    background-color: var(--color-dark) !important;
+    transform: translateZ(0);
+  }
+
+  .home-right-table thead tr {
+    background-color: var(--color-dark) !important;
+  }
+
+  .home-right-table thead th {
+    background-color: var(--color-dark) !important;
+    background-image: none !important;
+    background-clip: padding-box;
+    opacity: 1;
+  }
+</style>
+
 <script>
+  function resizeHomeRightTableHeight() {
+    var table = document.querySelector('.tab-content1.current .home-right-table');
+    if (!table) return;
+
+    var rect = table.getBoundingClientRect();
+    var bottomGap = 16;
+    var available = window.innerHeight - rect.top - bottomGap;
+
+    table.style.height = Math.max(260, available) + 'px';
+  }
+
+  window.addEventListener('resize', resizeHomeRightTableHeight);
+  window.addEventListener('load', resizeHomeRightTableHeight);
+
   $(document).ready(function () {
 
     $('ul.tabs1 li').click(function () {
@@ -12,8 +65,10 @@
 
       $(this).addClass('current');
       $("#" + tab_id).addClass('current');
+      resizeHomeRightTableHeight();
     })
 
+    resizeHomeRightTableHeight();
   })
 </script>
 
@@ -35,19 +90,19 @@
 <div>
 
   <ul class="tabs1">
-    <li class="tab-link current" data-tab="tab-right1" style="padding: 6px 25px; border-radius: 4px;">서울</li>
-    <li class="tab-link" data-tab="tab-right2" style="padding: 6px 25px; border-radius: 4px;">부산</li>
-    <li class="tab-link" data-tab="tab-right3" style="padding: 6px 25px; border-radius: 4px;">출전표변경</li>
+    <li class="tab-link current" data-tab="tab-right1" style="padding: 4px 25px; border-radius: 4px;">서울<sup style="font-size: 1.2rem; color: var(--color-r2);">&nbsp;</sup></li>
+    <li class="tab-link" data-tab="tab-right2" style="padding: 4px 25px; border-radius: 4px;">부산<sup style="font-size: 1.2rem; color: var(--color-r2);">&nbsp;</sup></li>
+    <li class="tab-link" data-tab="tab-right3" style="padding: 4px 25px; border-radius: 4px;">출전표변경<sup style="font-size: 1.2rem; color: var(--color-r2);">&nbsp;</sup></li>
   </ul>
 
   <div id="tab-right1" class="tab-content1 current">
 
-    <table class="fold-table" style="border-radius: 7px;">
+    <table class="fold-table home-right-table" style="border-radius: 7px;">
       <thead>
         <tr>
           <th rowspan="2" colspan="2" style="width:36%; text-transform:capitalize; vertical-align: middle; padding-top: 1.00rem; padding-bottom: 1.00rem; border-right: solid 1px gray;">
             Jockey<br>(최근1년 1위)</th>
-          <th colspan="4" style="width:32%; border-right: solid 1px gray;"><span style="text-transform:capitalize;">This Week</span></th>
+          <th colspan="4" style="width:32%; border-right: solid 1px gray;"><span style="text-transform:capitalize; font-family: Verdana, Geneva, Tahoma, sans-serif;">This Week</span></th>
           <th colspan="4" style="width:32%; border-right: solid 1px gray;"><span style="text-transform:capitalize;">직전 경마주간</span></th>
         </tr>
 
@@ -76,7 +131,7 @@
           </td>
           {# 최근 1년 1위 #}
           <td align="right" style="border-right: solid 1px gray;">
-            <a href="{% url 'jt_analysis' '%' to|sub:10000 to jockey '%' '%' '%' '1' '99' '1' '1' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1250, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
+            <a href="{% url 'jt_analysis' '%' to|sub:10000 to jockey '%' '%' '%' '1' '99' '1' '1' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1600, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
               {% if tot_1st|mod:100 >= 96 %}
               <span class="tooltip" style="font-family: Arial; font-size: 1.15rem; padding: 2px 4px; color: var(--color-light); border-radius: 5px; background-color: var(--color-r1);">{{year_1st}}
                 <span class="tooltip-text" style="font-size: 1.2rem; z-index: 9;">🏇&nbsp;통산&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp; {{tot_1st}}&nbsp;승</span>
@@ -93,7 +148,7 @@
             </a>
           </td>
           <td style="border-right: solid 1px gray;">
-            <a href="{% url 'jt_analysis' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1250, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
+            <a href="{% url 'jt_analysis_multi' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' '0' '%' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1600, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
               <div style="font-size: 1.2rem; font-family: Arial; background-color: var(--color-bg); border-radius: 7px;">
                 <span style="font-family: Arial; border-bottom:1px solid var(--color-gray); border-radius: 5px; padding: 2px 4px;">{{rcnt}}</span>
               </div>
@@ -127,7 +182,7 @@
             </div>
           </td>
           <td style="border-right: solid 1px gray;">
-            <a href="{% url 'jt_analysis' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1250, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
+            <a href="{% url 'jt_analysis_multi' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' '0' '%' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1600, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
               <div style="font-size: 1.2rem; font-family: Arial; background-color: var(--color-dark); color:var(--color-main); border-radius: 7px;">
                 {% if wrace %}
                 <span style="font-family: Arial; border-bottom:1px solid var(--color-gray); border-radius: 5px; padding: 2px 4px;">{{wrace}}</span>
@@ -239,7 +294,7 @@
 
   <div id="tab-right2" class="tab-content1">
 
-    <table class="fold-table" style="border-radius: 7px;">
+    <table class="fold-table home-right-table" style="border-radius: 7px;">
       <thead>
         <tr>
           <th rowspan="2" colspan="2" style="width:36%; text-transform:capitalize; vertical-align: middle; padding-top: 1.00rem; padding-bottom: 1.00rem; border-right: solid 1px gray;">
@@ -273,7 +328,7 @@
           </td>
           {# 최근 1년 1위 #}
           <td align="right" style="border-right: solid 1px gray;">
-            <a href="{% url 'jt_analysis' '%' to|sub:10000 to jockey '%' '%' '%' '1' '99' '1' '1' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1250, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
+            <a href="{% url 'jt_analysis' '%' to|sub:10000 to jockey '%' '%' '%' '1' '99' '1' '1' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1600, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
               {% if tot_1st|mod:100 >= 96 %}
               <span class="tooltip" style="font-family: Arial; font-size: 1.15rem; padding: 2px 4px; color: var(--color-light); border-radius: 5px; background-color: var(--color-r1);">{{year_1st}}
                 <span class="tooltip-text" style="font-size: 1.2rem; z-index: 9;">🏇&nbsp;통산&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp; {{tot_1st}}&nbsp;승</span>
@@ -290,7 +345,7 @@
             </a>
           </td>
           <td style="border-right: solid 1px gray;">
-            <a href="{% url 'jt_analysis' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1250, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
+            <a href="{% url 'jt_analysis_multi' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' '0' '%' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1600, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
               <div style="font-size: 1.2rem; font-family: Arial; background-color: var(--color-bg); border-radius: 7px;">
                 <span style="font-family: Arial; border-bottom:1px solid var(--color-gray); border-radius: 5px; padding: 2px 4px;">{{rcnt}}</span>
               </div>
@@ -324,7 +379,7 @@
             </div>
           </td>
           <td style="border-right: solid 1px gray;">
-            <a href="{% url 'jt_analysis' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1250, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
+            <a href="{% url 'jt_analysis_multi' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' '0' '%' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1600, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
               <div style="font-size: 1.2rem; font-family: Arial; background-color: var(--color-dark); color:var(--color-main); border-radius: 7px;">
                 {% if wrace %}
                 <span style="font-family: Arial; border-bottom:1px solid var(--color-gray); border-radius: 5px; padding: 2px 4px;">{{wrace}}</span>
@@ -430,7 +485,7 @@
 
   <div id="tab-right3" class="tab-content1">
 
-    <table class="fold-table" style="border-radius: 7px;">
+    <table class="fold-table home-right-table" style="border-radius: 7px;">
       <thead>
         <tr>
           <th rowspan="2" colspan="2" style="width: 42%; text-transform:capitalize; vertical-align: middle; padding-top: 2.00rem; padding-bottom: 2.00rem; border-right: solid 1px gray;">Horse</th>
@@ -534,6 +589,3 @@
 
 
 </div>
-
-
-

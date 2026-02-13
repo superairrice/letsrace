@@ -26,6 +26,69 @@
     gtag('config', 'G-BFZZL101LZ');
   </script>
 
+  <style>
+    #jt-analysis-loader-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100000;
+      background: rgba(12, 14, 18, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: all;
+      opacity: 1;
+      transition: opacity 0.25s ease;
+    }
+
+    #jt-analysis-loader-overlay.is-hidden {
+      opacity: 0;
+    }
+
+    #jt-analysis-loader-box {
+      width: min(460px, 90vw);
+      padding: 18px 16px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.26);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(2px);
+    }
+
+    #jt-analysis-loader-label {
+      font-size: 1.2rem;
+      color: var(--color-light-gray);
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    #jt-analysis-loader-track {
+      width: min(420px, 86vw);
+      height: 4px;
+      background: rgba(255, 255, 255, 0.14);
+      overflow: hidden;
+      border-radius: 999px;
+    }
+
+    #jt-analysis-loader-bar {
+      width: 42%;
+      height: 100%;
+      background: linear-gradient(90deg, #ff6f3d 0%, #ffd166 100%);
+      box-shadow: 0 0 14px rgba(255, 111, 61, 0.55);
+      animation: jt-analysis-loading-bar 1.2s ease-in-out infinite;
+    }
+
+    @keyframes jt-analysis-loading-bar {
+      0% {
+        transform: translateX(-120%);
+      }
+      50% {
+        transform: translateX(65%);
+      }
+      100% {
+        transform: translateX(220%);
+      }
+    }
+  </style>
+
   <form class="header__search" method="GET" action="{% url 'jt_analysis' rcity fdate tdate jockey trainer host horse r1 r2 rr1 rr2 gate distance handycap %}"> 
     {% csrf_token %}
 
@@ -133,6 +196,15 @@
 {% block content %}
 
 <!-- <main class="create-room layout"> -->
+<div id="jt-analysis-loader-overlay" aria-live="polite" aria-label="페이지 로딩 중">
+  <div id="jt-analysis-loader-box">
+    <div id="jt-analysis-loader-label">데이터 불러오는 중...</div>
+    <div id="jt-analysis-loader-track">
+      <div id="jt-analysis-loader-bar"></div>
+    </div>
+  </div>
+</div>
+
 <main class="create-room layout" style="margin-top: 0px; border-radius: 7px;">
   <div style="border-radius: 7px; width: 100%; overflow-x: auto; text-align: center;">
 
@@ -142,6 +214,28 @@
 
   </div>
 </main>
+
+<script>
+  (function () {
+    function hideJtAnalysisLoader() {
+      var overlay = document.getElementById('jt-analysis-loader-overlay');
+      if (!overlay) return;
+      overlay.classList.add('is-hidden');
+      window.setTimeout(function () {
+        if (overlay && overlay.parentNode) {
+          overlay.parentNode.removeChild(overlay);
+        }
+      }, 260);
+    }
+
+    if (document.readyState === 'complete') {
+      hideJtAnalysisLoader();
+      return;
+    }
+
+    window.addEventListener('load', hideJtAnalysisLoader, { once: true });
+  })();
+</script>
 {% endblock %}
 
 {% include 'footer.html' %}

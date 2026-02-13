@@ -2,9 +2,79 @@
 
 {% block content %}
 
-<main class="layout layout--2"  style="margin-top: 2px;">
+<style>
+  #home-loader-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    background: rgba(12, 14, 18, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: all;
+    opacity: 1;
+    transition: opacity 0.25s ease;
+  }
 
-  <div class="loader"></div>
+  #home-loader-overlay.is-hidden {
+    opacity: 0;
+  }
+
+  #home-loader-track {
+    width: min(420px, 86vw);
+    height: 4px;
+    background: rgba(255, 255, 255, 0.14);
+    overflow: hidden;
+    border-radius: 999px;
+  }
+
+  #home-loader-box {
+    width: min(460px, 90vw);
+    padding: 18px 16px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.26);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(2px);
+  }
+
+  #home-loader-label {
+    font-size: 1.2rem;
+    color: var(--color-light-gray);
+    margin-bottom: 10px;
+    text-align: center;
+  }
+
+  #home-loader-bar {
+    width: 42%;
+    height: 100%;
+    background: linear-gradient(90deg, #ff6f3d 0%, #ffd166 100%);
+    box-shadow: 0 0 14px rgba(255, 111, 61, 0.55);
+    animation: home-loading-bar 1.2s ease-in-out infinite;
+  }
+
+  @keyframes home-loading-bar {
+    0% {
+      transform: translateX(-120%);
+    }
+    50% {
+      transform: translateX(65%);
+    }
+    100% {
+      transform: translateX(220%);
+    }
+  }
+</style>
+
+<div id="home-loader-overlay" aria-live="polite" aria-label="페이지 로딩 중">
+  <div id="home-loader-box">
+    <div id="home-loader-label">데이터 불러오는 중...</div>
+    <div id="home-loader-track">
+      <div id="home-loader-bar"></div>
+    </div>
+  </div>
+</div>
+
+<main class="layout layout--2"  style="margin-top: 2px;">
   
   <div class="container">
     <!-- Topics Start -->
@@ -40,9 +110,25 @@
 </main>
 
 <script>
-  $(window).on('load', function () {
-    $('.loader').fadeOut();
-  });
+  (function () {
+    function hideHomeLoader() {
+      var overlay = document.getElementById('home-loader-overlay');
+      if (!overlay) return;
+      overlay.classList.add('is-hidden');
+      window.setTimeout(function () {
+        if (overlay && overlay.parentNode) {
+          overlay.parentNode.removeChild(overlay);
+        }
+      }, 260);
+    }
+
+    if (document.readyState === 'complete') {
+      hideHomeLoader();
+      return;
+    }
+
+    window.addEventListener('load', hideHomeLoader, { once: true });
+  })();
 </script>
     
 {% endblock %}

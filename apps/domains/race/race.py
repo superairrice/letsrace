@@ -26,12 +26,16 @@ def recordsByHorse(rcity, rdate, rno, hname):
                         b.g2f_rank, b.g1f_rank, b.recent3, b.recent5, b.fast_r, 
                         b.slow_r, b.avg_r, b.convert_r, b.i_cycle, b.gap_b, 
                         b.jockey_old, b.reason, b.r_pop, b.jt_per, b.jt_cnt, 
-                        b.jt_1st, b.jt_2nd, b.jt_3rd, b.h_cnt, b.h_mare, if( isnull(i_prehandy), 0, handycap - i_prehandy ) AS prehandy, b.i_mock
-                        
+                        b.jt_1st, b.jt_2nd, b.jt_3rd, b.h_cnt, b.h_mare, if(isnull(b.i_prehandy), 0, b.handycap - b.i_prehandy) AS prehandy, b.i_mock,
+                        c.s1f_per, c.g3f_per, c.g1f_per, c.start_score,c.tot_score
                     FROM rec010 a
                     JOIN rec011 b ON a.rcity = b.rcity 
                                 AND a.rdate = b.rdate 
                                 AND a.rno = b.rno
+                    LEFT OUTER JOIN exp011 c ON c.rcity = b.rcity 
+                                            AND c.rdate = b.rdate 
+                                            AND c.rno = b.rno
+                                            AND c.gate = b.gate 
                     WHERE b.horse IN (
                         SELECT horse 
                         FROM exp011 
@@ -71,11 +75,16 @@ def recordsByHorse(rcity, rdate, rno, hname):
                         b.g2f_rank, b.g1f_rank, b.recent3, b.recent5, b.fast_r, 
                         b.slow_r, b.avg_r, b.convert_r, b.i_cycle, b.gap_b, 
                         b.jockey_old, b.reason, b.r_pop, b.jt_per, b.jt_cnt, 
-                        b.jt_1st, b.jt_2nd, b.jt_3rd, b.h_cnt, b.h_mare, if( isnull(i_prehandy), 0, handycap - i_prehandy ) AS prehandy
+                        b.jt_1st, b.jt_2nd, b.jt_3rd, b.h_cnt, b.h_mare, if(isnull(b.i_prehandy), 0, b.handycap - b.i_prehandy) AS prehandy, b.i_mock,
+                        c.s1f_per, c.g3f_per, c.g1f_per, c.start_score,c.tot_score
                     FROM rec010 a
                     JOIN rec011 b ON a.rcity = b.rcity 
                                 AND a.rdate = b.rdate 
                                 AND a.rno = b.rno
+                    LEFT OUTER JOIN exp011 c ON c.rcity = b.rcity
+                                            AND c.rdate = b.rdate
+                                            AND c.rno = b.rno
+                                            AND c.gate = b.gate
                     WHERE b.horse = %s
                     
                     AND b.rdate < %s

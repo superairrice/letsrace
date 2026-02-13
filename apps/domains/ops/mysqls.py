@@ -3674,8 +3674,7 @@ def get_prediction(i_rdate):
             week1 = '7'
             week2 = '14' 
 
-        strSql = (
-            """
+        strSql = """
             select a.rcity, a.jockey, count(*),
                 sum(if(r_rank = 1, 1, 0) ) +  sum(if(r_rank = 2, 1, 0) ) +  sum(if(r_rank = 3, 1, 0) ) rr123_cnt,
                 sum(if(r_rank = 1, 1, 0)) rr1, 
@@ -3688,7 +3687,8 @@ def get_prediction(i_rdate):
                 b.tot_1st tot_1st, 
                 b.year_1st year_1st, 
                 date_format(DATE_ADD(  %s , INTERVAL - %s DAY), '%%Y%%m%%d'),
-                max(rdate)
+                date_format(DATE_ADD(  max(rdate) , INTERVAL 3 DAY), '%%Y%%m%%d')
+                
             from exp011 a right OUTER JOIN jockey_w b ON  a.jockey = b.jockey
                                     and b.wdate = ( select max(wdate) from jockey_w where wdate < date_format(DATE_ADD(  %s , INTERVAL - %s DAY), '%%Y%%m%%d') )
             where rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
@@ -3698,7 +3698,6 @@ def get_prediction(i_rdate):
             order by b.year_1st desc, max(w1st) desc, max(w2nd) desc, max(w3rd) desc
             
             ; """
-        )
         cursor.execute(strSql, (i_rdate, week2, i_rdate, week1, i_rdate, i_rdate))
         award_j = cursor.fetchall()
 

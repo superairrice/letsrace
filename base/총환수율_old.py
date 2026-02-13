@@ -81,6 +81,7 @@ def calc_rpop_anchor_26_trifecta(
     from_date: str,
     to_date: str,
     bet_unit: int = 100,
+    apply_odds_filter: bool = True,
 ) -> tuple[pd.DataFrame, dict]:
     """
     기간(from_date ~ to_date) 동안,
@@ -159,6 +160,7 @@ def calc_rpop_anchor_26_trifecta(
     box4_trio_total_hits = 0
     total_hits_any = 0
     total_holes_all = 0
+    week_summary = {}
     month_summary = {}
     month_summary_anchor_24_57 = {}
     month_summary_anchor_24 = {}
@@ -206,8 +208,9 @@ def calc_rpop_anchor_26_trifecta(
         actual_set = set(actual_top3)
         odds = float(g["삼쌍승식배당율"].iloc[0])
         odds_trio = float(g["삼복승식배당율"].iloc[0])
-        odds = min(odds, 1000.0)
-        odds_trio = min(odds_trio, 500.0)
+        if apply_odds_filter and (odds_trio >= 500 or odds >= 1000):
+            excluded_races += 1
+            continue
 
         anchor1_24_57_valid = (
             anchor_gate is not None and len(top2_4) == 3 and len(top5_7) == 3
@@ -282,6 +285,25 @@ def calc_rpop_anchor_26_trifecta(
         box4_trio_total_hits += box4_trio_hit_flag
         total_hits_any += hit_any
 
+        date_dt = pd.to_datetime(date, format="%Y%m%d", errors="coerce")
+        if pd.notna(date_dt):
+            weekday = date_dt.weekday()
+            # Saturday-centered bucket: Thu/Fri/Sat/Sun/Mon -> same Saturday,
+            # Tue/Wed -> next Saturday.
+            sat_offset = {0: -2, 1: -3, 2: 3, 3: 2, 4: 1, 5: 0, 6: -1}[weekday]
+            week_key = (date_dt + pd.to_timedelta(sat_offset, unit="D")).strftime(
+                "%Y%m%d"
+            )
+        else:
+            week_key = date
+        if week_key not in week_summary:
+            week_summary[week_key] = {
+                "races": 0,
+                "total_bet": 0.0,
+                "total_refund": 0.0,
+                "hits": 0,
+            }
+
         if year_month not in month_summary:
             month_summary[year_month] = {
                 "races": 0,
@@ -328,7 +350,14 @@ def calc_rpop_anchor_26_trifecta(
                 "hits": 0,
             }
         month_summary[year_month]["races"] += 1
+        week_summary[week_key]["races"] += 1
         month_summary[year_month]["total_bet"] += (
+            (anchor1_24_57_bet_per_race if anchor1_24_57_valid else 0.0)
+            + (anchor1_24_bet_per_race if anchor1_24_valid else 0.0)
+            + (anchor1_24_trio_bet_per_race if anchor1_24_trio_valid else 0.0)
+            + box4_trio_bet_per_race
+        )
+        week_summary[week_key]["total_bet"] += (
             (anchor1_24_57_bet_per_race if anchor1_24_57_valid else 0.0)
             + (anchor1_24_bet_per_race if anchor1_24_valid else 0.0)
             + (anchor1_24_trio_bet_per_race if anchor1_24_trio_valid else 0.0)
@@ -340,7 +369,14 @@ def calc_rpop_anchor_26_trifecta(
             + anchor1_24_trio_refund
             + box4_trio_refund
         )
+        week_summary[week_key]["total_refund"] += (
+            anchor1_24_57_refund
+            + anchor1_24_refund
+            + anchor1_24_trio_refund
+            + box4_trio_refund
+        )
         month_summary[year_month]["hits"] += hit_any
+        week_summary[week_key]["hits"] += hit_any
         month_summary[year_month]["r_pop1_top1_hits"] += r_pop1_top1_hit
         month_summary[year_month]["r_pop1_top3_hits"] += r_pop1_top3_hit
         month_summary[year_month]["r_pop1_3_top1_hits"] += r_pop1_3_top1_hit
@@ -431,6 +467,7 @@ def calc_rpop_anchor_26_trifecta(
     summary = {
         "races": total_races,
         "excluded_races": excluded_races,
+        "week_summary": week_summary,
         "anchor1_24_57_total_bet": anchor1_24_57_total_bet,
         "anchor1_24_57_total_refund": anchor1_24_57_total_refund,
         "anchor1_24_57_refund_rate": (
@@ -496,6 +533,12 @@ def calc_rpop_anchor_26_trifecta(
     anchor1_24_trio_profit = anchor1_24_trio_total_refund - anchor1_24_trio_total_bet
     box4_trio_profit = box4_trio_total_refund - box4_trio_total_bet
 
+    summary["total_bet_all"] = total_bet_all
+    summary["total_refund_all"] = total_refund_all
+    summary["total_profit_all"] = total_profit_all
+    summary["total_refund_rate_all"] = total_refund_rate_all
+    summary["total_hit_rate_all"] = total_hit_rate_all
+
     print("===================================")
     print(f"기간: {from_date} ~ {to_date}")
     print(f"경주수: {total_races}  제외(신마 3두 이상/13두↑): {excluded_races}")
@@ -541,6 +584,19 @@ def calc_rpop_anchor_26_trifecta(
         f"이익금액: {box4_trio_profit:,.1f}원  "
         f"환수율: {summary['box4_trio_refund_rate']:.3f}"
     )
+    for week in sorted(week_summary.keys()):
+        d = week_summary[week]
+        week_refund_rate = (
+            d["total_refund"] / d["total_bet"] if d["total_bet"] > 0 else 0.0
+        )
+        week_hit_rate = d["hits"] / d["races"] if d["races"] > 0 else 0.0
+        week_profit = d["total_refund"] - d["total_bet"]
+        print(
+            f"[토요일기준 {week}]  경주수: {d['races']}  "
+            f"총베팅액: {int(d['total_bet']):,}원  총환수액: {d['total_refund']:,.1f}원  "
+            f"이익금액: {week_profit:,.1f}원  "
+            f"환수율: {week_refund_rate:.3f}  적중경주수: {d['hits']}  적중율: {week_hit_rate:.3f}"
+        )
     for ym in sorted(month_summary.keys()):
         m = month_summary[ym]
         month_refund_rate = (
@@ -620,15 +676,40 @@ def calc_rpop_anchor_26_trifecta(
 if __name__ == "__main__":
     from_date = "20250101"
 
-    to_date = "20260201"
+    to_date = "20260209"
 
     race_df, summary = calc_rpop_anchor_26_trifecta(
         from_date=from_date,
         to_date=to_date,
         bet_unit=100,
+        apply_odds_filter=True,
     )
 
-    out_path = "/Users/Super007/Documents/r_pop_total.csv"
+    race_df_all, summary_all = calc_rpop_anchor_26_trifecta(
+        from_date=from_date,
+        to_date=to_date,
+        bet_unit=100,
+        apply_odds_filter=False,
+    )
+
+    print("===================================")
+    print("[배당율 조건 비교]")
+    print(
+        f"제외 적용: 경주수 {summary['races']}  제외 {summary['excluded_races']}  "
+        f"총베팅액 {int(summary['total_bet_all']):,}  "
+        f"총환수액 {summary['total_refund_all']:,.1f}  "
+        f"환수율 {summary['total_refund_rate_all']:.3f}  "
+        f"적중율 {summary['total_hit_rate_all']:.3f}"
+    )
+    print(
+        f"제외 미적용: 경주수 {summary_all['races']}  제외 {summary_all['excluded_races']}  "
+        f"총베팅액 {int(summary_all['total_bet_all']):,}  "
+        f"총환수액 {summary_all['total_refund_all']:,.1f}  "
+        f"환수율 {summary_all['total_refund_rate_all']:.3f}  "
+        f"적중율 {summary_all['total_hit_rate_all']:.3f}"
+    )
+
+    out_path = "/Users/Super007/Documents/r_pop_total_old.csv"
     if not race_df.empty:
         race_df = race_df.drop_duplicates(subset=["경마장", "경주일", "경주번호"])
         race_df.to_csv(out_path, index=False, encoding="utf-8-sig")

@@ -34,6 +34,68 @@
 
   <title>경주결과&nbsp;{% if hname %}'{{r_condition.rdate|slice:"2:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}})&nbsp;{{r_condition.rcity}}&nbsp;{{r_condition.rno}}경주{% endif %}</title>
 
+  <style>
+    #race-result-loader-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100000;
+      background: rgba(12, 14, 18, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: all;
+      opacity: 1;
+      transition: opacity 0.25s ease;
+    }
+
+    #race-result-loader-overlay.is-hidden {
+      opacity: 0;
+    }
+
+    #race-result-loader-box {
+      width: min(460px, 90vw);
+      padding: 18px 16px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.26);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(2px);
+    }
+
+    #race-result-loader-label {
+      font-size: 1.2rem;
+      color: var(--color-light-gray);
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    #race-result-loader-track {
+      width: min(420px, 86vw);
+      height: 4px;
+      background: rgba(255, 255, 255, 0.14);
+      overflow: hidden;
+      border-radius: 999px;
+    }
+
+    #race-result-loader-bar {
+      width: 42%;
+      height: 100%;
+      background: linear-gradient(90deg, #ff6f3d 0%, #ffd166 100%);
+      box-shadow: 0 0 14px rgba(255, 111, 61, 0.55);
+      animation: race-result-loading-bar 1.2s ease-in-out infinite;
+    }
+
+    @keyframes race-result-loading-bar {
+      0% {
+        transform: translateX(-120%);
+      }
+      50% {
+        transform: translateX(65%);
+      }
+      100% {
+        transform: translateX(220%);
+      }
+    }
+  </style>
 
 </head>
 
@@ -57,6 +119,15 @@
 
 <!-- <main class="create-room layout"> -->
 <body class="create-room layout">
+  <div id="race-result-loader-overlay" aria-live="polite" aria-label="페이지 로딩 중">
+    <div id="race-result-loader-box">
+      <div id="race-result-loader-label">데이터 불러오는 중...</div>
+      <div id="race-result-loader-track">
+        <div id="race-result-loader-bar"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- <div class="room" style="height: 100.5vh;"> -->
   <div class="container">
 
@@ -941,6 +1012,28 @@
     </div>
 
   </div>
+
+  <script>
+    (function () {
+      function hideRaceResultLoader() {
+        var overlay = document.getElementById('race-result-loader-overlay');
+        if (!overlay) return;
+        overlay.classList.add('is-hidden');
+        window.setTimeout(function () {
+          if (overlay && overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+          }
+        }, 260);
+      }
+
+      if (document.readyState === 'complete') {
+        hideRaceResultLoader();
+        return;
+      }
+
+      window.addEventListener('load', hideRaceResultLoader, { once: true });
+    })();
+  </script>
 
 </body>
 {% endblock %}
