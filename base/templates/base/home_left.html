@@ -133,6 +133,39 @@
 </script>
 
 <script>
+  function getKoreanWeekday() {
+    var days = ['일', '월', '화', '수', '목', '금', '토'];
+    return days[new Date().getDay()];
+  }
+
+  function scrollHomeLeftByWeekday() {
+    var table = document.querySelector('.tab-content.current .home-left-table');
+    if (!table) return;
+
+    var today = getKoreanWeekday();
+    var candidates = [];
+
+    if (today === '토') {
+      candidates = ['토', '일'];
+    } else if (today === '일') {
+      candidates = ['일', '토'];
+    } else if (today === '금') {
+      candidates = ['토', '일'];
+    } else {
+      candidates = [today, '토', '일'];
+    }
+
+    var targetRow = null;
+    for (var i = 0; i < candidates.length; i++) {
+      targetRow = table.querySelector('tbody tr[data-rday="' + candidates[i] + '"]');
+      if (targetRow) break;
+    }
+    if (!targetRow) return;
+
+    var top = targetRow.offsetTop - table.querySelector('thead').offsetHeight - 6;
+    table.scrollTop = Math.max(0, top);
+  }
+
   function resizeHomeLeftTableHeight() {
     var table = document.querySelector('.tab-content.current .home-left-table');
     if (!table) return;
@@ -145,7 +178,10 @@
   }
 
   window.addEventListener('resize', resizeHomeLeftTableHeight);
-  window.addEventListener('load', resizeHomeLeftTableHeight);
+  window.addEventListener('load', function () {
+    resizeHomeLeftTableHeight();
+    scrollHomeLeftByWeekday();
+  });
 
   $(document).ready(function () {
 
@@ -158,8 +194,10 @@
       $(this).addClass('current');
       $("#" + tab_id).addClass('current');
       resizeHomeLeftTableHeight();
+      scrollHomeLeftByWeekday();
     })
 
     resizeHomeLeftTableHeight();
+    scrollHomeLeftByWeekday();
   })
 </script>
