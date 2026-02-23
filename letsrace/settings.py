@@ -58,7 +58,16 @@ def get_secret(setting):
     raise ImproperlyConfigured(error_msg)
 
 
-SECRET_KEY = get_secret("SECRET_KEY")
+SETTINGS_MODULE = os.getenv("DJANGO_SETTINGS_MODULE", "").strip()
+IS_DEV_SETTINGS = SETTINGS_MODULE.endswith("settings_dev")
+
+SECRET_KEY = os.getenv("SECRET_KEY", "").strip()
+if not SECRET_KEY:
+    if IS_DEV_SETTINGS:
+        # Keep local/dev commands runnable without exporting secrets.
+        SECRET_KEY = "unsafe-dev-secret-key"
+    else:
+        SECRET_KEY = get_secret("SECRET_KEY")
 
 # Email 전송 (기본: iCloud SMTP)
 EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.mail.me.com")
@@ -70,7 +79,11 @@ EMAIL_HOST_USER = (
 ).strip()
 
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-if not EMAIL_HOST_PASSWORD:
+if EMAIL_HOST_PASSWORD:
+    EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD.strip()
+elif IS_DEV_SETTINGS:
+    EMAIL_HOST_PASSWORD = ""
+else:
     EMAIL_HOST_PASSWORD = get_secret("EMAIL_HOST_PASSWORD")
 
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
@@ -152,8 +165,7 @@ SOCIALACCOUNT_PROVIDERS = {
 # settings.py
 ACCOUNT_SIGNUP_REDIRECT_URL = "/"
 LOGIN_REDIRECT_URL = "/"
-_settings_module = os.getenv("DJANGO_SETTINGS_MODULE", "")
-_default_protocol = "https" if _settings_module.endswith("settings_prod") else "http"
+_default_protocol = "https" if SETTINGS_MODULE.endswith("settings_prod") else "http"
 ACCOUNT_DEFAULT_HTTP_PROTOCOL = os.getenv(
     "ACCOUNT_DEFAULT_HTTP_PROTOCOL",
     _default_protocol,
