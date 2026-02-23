@@ -2,6 +2,7 @@ from django.forms import ModelForm
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import ValidationError
 import os
+import uuid
 
 from .models import Room, User
 # from django.contrib.auth.models import User
@@ -61,6 +62,9 @@ class UserForm(ModelForm):
         allowed_ext = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"}
         if ext not in allowed_ext:
             raise ValidationError("지원하지 않는 이미지 형식입니다. (jpg, png, gif, webp, svg)")
+
+        # Normalize uploaded filename to ASCII-safe UUID to avoid encoded path issues.
+        avatar.name = f"{uuid.uuid4().hex}{ext}"
 
         return avatar
 

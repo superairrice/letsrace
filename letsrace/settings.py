@@ -349,7 +349,7 @@ USE_TZ = False  # False = 한국시간대로 설정됨
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 STATIC_ROOT = "/tmp/.static_root"  # EC2 폴더권한문제 방지 nginx
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 MEDIA_URL = "/media/"
 
 STATICFILES_DIRS = [BASE_DIR / "static"]
