@@ -1,4 +1,5 @@
 from apps.common import *
+from apps.domains.race.race import resultOfRace
 
 # Prediction views
 
@@ -437,14 +438,17 @@ def printPrediction(request):
 
 
 def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
-    records = RecordS.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
-        "rank", "gate"
-    )
+    # records = RecordS.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
+    #     "rank", "gate"
+    # )
+    records = resultOfRace(rcity, rdate, rno)
     if not records:
         return render(request, "base/home.html")
 
     # r_condition = Rec010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
     r_condition = Rec010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).first()
+    if r_condition is None:
+        return render(request, "base/home.html")
 
     # rdate_1year = (
     #     str(int(rdate[0:4]) - 1) + rdate[4:8]
@@ -456,19 +460,35 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
 
     hr_records = recordsByHorse(rcity, rdate, rno, "None")
 
-    compare_r = records.aggregate(
-        Min("i_s1f"),
-        Min("i_g1f"),
-        Min("i_g2f"),
-        Min("i_g3f"),
-        Min("s1f_rank"),
-        Min("recent3"),
-        Min("recent5"),
-        Min("convert_r"),
-        Min("p_record"),
-        Max("handycap"),
-        Max("rating"),
+    compare_r = Rec011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).aggregate(
+        compare_i_s1f__min=Min("i_s1f"),
+        compare_i_g1f__min=Min("i_g1f"),
+        compare_i_g2f__min=Min("i_g2f"),
+        compare_i_g3f__min=Min("i_g3f"),
+        compare_handycap__max=Max("handycap"),
+        compare_rating__max=Max("rating"),
     )
+
+    # rec011 모델에 없는 필드(recent3/recent5/convert_r)는 resultOfRace 튜플에서 직접 산출
+    def _min_tuple_value(rows, idx):
+        vals = []
+        for row in rows or []:
+            if len(row) <= idx:
+                continue
+            v = row[idx]
+            if v is None:
+                continue
+            s = str(v).strip()
+            if not s:
+                continue
+            vals.append(s)
+        return min(vals) if vals else None
+
+    # race_result.html의 records 튜플 인덱스 기준
+    # recent3:74, recent5:75, convert_r:79
+    compare_r["compare_recent3__min"] = _min_tuple_value(records, 74)
+    compare_r["compare_recent5__min"] = _min_tuple_value(records, 75)
+    compare_r["compare_convert_r__min"] = _min_tuple_value(records, 79)
 
     judged_list, judged = get_judged(rcity, rdate, rno)
     track = get_track_record(rcity, rdate, rno)  # 경주 등급 평균
@@ -522,6 +542,7 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
         "recovery_cnt": recovery_cnt,
         "start_cnt": start_cnt,
         "audit_cnt": audit_cnt,
+        **compare_r,
     }
 
     return render(request, "base/race_result.html", context)

@@ -1,52 +1,160 @@
 {% extends "account/base.html" %}
+{% load i18n %}
 
 {% block content %}
-<div class="container">
-  <div class="layout__box">
-    <div class="layout__boxHeader">
-      <div class="layout__boxTitle">
-        <h3>회원 등록</h3>
-      </div>
-    </div>
-    <div class="layout__body">
-      <h3 class="auth__tagline">회원가입 정보를 입력하십시오.</h3>
+<style>
+  .signup-check {
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    align-items: start;
+    column-gap: 1rem;
+    margin-bottom: 0.4rem;
+  }
 
-      <form class="form" action="" method="POST">
-        {% csrf_token %}
-        {% for field in form %}
-        <div class="form__group form__group">
-          <label for="room_name">{{field.label}}</label>
-          {{field}}
+  .signup-check input[type="checkbox"] {
+    margin-top: 0.3rem;
+    justify-self: start;
+  }
+
+  .signup-check label {
+    margin: 0;
+    text-align: left;
+    line-height: 1.45;
+  }
+
+  .signup-check-links {
+    margin-top: -0.2rem;
+    margin-bottom: 0.8rem;
+    margin-left: 3rem;
+    font-size: 1.2rem;
+    text-align: left;
+  }
+</style>
+<main class="auth layout">
+  <div class="container">
+    <div class="layout__box">
+      <div class="layout__boxHeader">
+        <div class="layout__boxTitle">
+          <h3>회원가입</h3>
         </div>
+      </div>
 
-        {% endfor %}
+      <div class="layout__body">
+        <h3 class="auth__tagline">30초 만에 가입하고 서비스를 시작하세요.</h3>
 
-        <button class="btn btn--main" type="submit">
-          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-            <title>lock</title>
-            <path
-              d="M27 12h-1v-2c0-5.514-4.486-10-10-10s-10 4.486-10 10v2h-1c-0.553 0-1 0.447-1 1v18c0 0.553 0.447 1 1 1h22c0.553 0 1-0.447 1-1v-18c0-0.553-0.447-1-1-1zM8 10c0-4.411 3.589-8 8-8s8 3.589 8 8v2h-16v-2zM26 30h-20v-16h20v16z">
-            </path>
-            <path d="M15 21.694v4.306h2v-4.306c0.587-0.348 1-0.961 1-1.694 0-1.105-0.895-2-2-2s-2 0.895-2 2c0 0.732 0.413 1.345 1 1.694z">
-            </path>
-          </svg>
+        {% if form.non_field_errors %}
+        <div class="form__errors" style="margin-bottom:1rem;color:#ffb2b2;">
+          {% for err in form.non_field_errors %}
+          <div>{{ err }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
 
-          Register
-        </button>
-        {% for message in messages %}
-        {{ message.tag }}
-        {{ message.message }}
-        {% endfor %}
-      </form>
+        <form class="form" action="" method="POST">
+          {% csrf_token %}
 
+          <div class="form__group">
+            <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+            {{ form.name }}
+            {% for err in form.name.errors %}
+            <p style="color:#ffb2b2;margin-top:0.4rem;">{{ err }}</p>
+            {% endfor %}
+          </div>
 
+          <div class="form__group">
+            <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+            {{ form.username }}
+            {% for err in form.username.errors %}
+            <p style="color:#ffb2b2;margin-top:0.4rem;">{{ err }}</p>
+            {% endfor %}
+          </div>
 
-      <div class="auth__action">
-        <p>이미 가입하셨다면?</p>
-        <a href="{% url 'account_login' %}" class="btn btn--link">Log in</a>
+          <div class="form__group">
+            <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+            {{ form.email }}
+            {% for err in form.email.errors %}
+            <p style="color:#ffb2b2;margin-top:0.4rem;">{{ err }}</p>
+            {% endfor %}
+          </div>
 
+          <div class="form__group">
+            <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+            {{ form.password1 }}
+            <div id="password-hint" style="margin-top:0.6rem;font-size:1.2rem;color:var(--color-light-gray);">
+              <div id="pw-len">- 8자 이상</div>
+              <div id="pw-char">- 문자+숫자 조합 권장</div>
+            </div>
+            {% for err in form.password1.errors %}
+            <p style="color:#ffb2b2;margin-top:0.4rem;">{{ err }}</p>
+            {% endfor %}
+          </div>
+
+          <div class="form__group">
+            <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+            {{ form.password2 }}
+            {% for err in form.password2.errors %}
+            <p style="color:#ffb2b2;margin-top:0.4rem;">{{ err }}</p>
+            {% endfor %}
+          </div>
+
+          <div class="form__group signup-check">
+            {{ form.agree_terms }}
+            <label for="{{ form.agree_terms.id_for_label }}">{{ form.agree_terms.label }}</label>
+          </div>
+          <p class="signup-check-links">
+            <a href="{% url 'terms_of_service' %}" target="_blank" rel="noopener">이용약관 보기 ↗ 새 탭</a>
+            <span style="color:var(--color-light-gray);">&nbsp;|&nbsp;</span>
+            <a href="{% url 'privacy_policy' %}" target="_blank" rel="noopener">개인정보처리방침 보기 ↗ 새 탭</a>
+          </p>
+          {% for err in form.agree_terms.errors %}
+          <p style="color:#ffb2b2;margin-top:-0.6rem;">{{ err }}</p>
+          {% endfor %}
+
+          <div class="form__group signup-check">
+            {{ form.agree_marketing }}
+            <label for="{{ form.agree_marketing.id_for_label }}">{{ form.agree_marketing.label }}</label>
+          </div>
+
+          {% if redirect_field_value %}
+          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+          {% endif %}
+
+          <button class="btn btn--main" type="submit">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+              <title>lock</title>
+              <path d="M27 12h-1v-2c0-5.514-4.486-10-10-10s-10 4.486-10 10v2h-1c-0.553 0-1 0.447-1 1v18c0 0.553 0.447 1 1 1h22c0.553 0 1-0.447 1-1v-18c0-0.553-0.447-1-1-1zM8 10c0-4.411 3.589-8 8-8s8 3.589 8 8v2h-16v-2zM26 30h-20v-16h20v16z"></path>
+              <path d="M15 21.694v4.306h2v-4.306c0.587-0.348 1-0.961 1-1.694 0-1.105-0.895-2-2-2s-2 0.895-2 2c0 0.732 0.413 1.345 1 1.694z"></path>
+            </svg>
+            가입하기
+          </button>
+        </form>
+
+        <div class="auth__action">
+          <p>이미 계정이 있으신가요?</p>
+          <a href="{% url 'account_login' %}" class="btn btn--link">로그인</a>
+        </div>
       </div>
     </div>
   </div>
-</div>
+</main>
+
+<script>
+  (function () {
+    var pwInput = document.getElementById("id_password1");
+    var lenEl = document.getElementById("pw-len");
+    var charEl = document.getElementById("pw-char");
+    if (!pwInput || !lenEl || !charEl) return;
+
+    function updateHint() {
+      var value = pwInput.value || "";
+      var hasLen = value.length >= 8;
+      var hasCharMix = /[A-Za-z]/.test(value) && /\d/.test(value);
+      lenEl.style.color = hasLen ? "#84d6a0" : "var(--color-light-gray)";
+      charEl.style.color = hasCharMix ? "#84d6a0" : "var(--color-light-gray)";
+    }
+
+    pwInput.addEventListener("input", updateHint);
+    updateHint();
+  })();
+</script>
 {% endblock %}

@@ -4,25 +4,48 @@
 
 <head>
 
+  {% if GTM_CONTAINER_ID %}
+  <!-- Google Tag Manager -->
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','{{ GTM_CONTAINER_ID }}');
+  </script>
+  <!-- End Google Tag Manager -->
+  {% endif %}
+
+  {% if GA_MEASUREMENT_ID %}
   <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-BFZZL101LZ"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ GA_MEASUREMENT_ID }}"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag() { dataLayer.push(arguments); }
     gtag('js', new Date());
-
-    gtag('config', 'G-BFZZL101LZ');
+    gtag('config', '{{ GA_MEASUREMENT_ID }}');
   </script>
   <!-- End Google tag -->
+  {% endif %}
 
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script>
+    (function () {
+      var saved = null;
+      try {
+        saved = localStorage.getItem('site-theme');
+      } catch (e) {}
+      var theme = saved === 'light' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 
   <link rel="shortcut icon" type="image/x-icon" href="{% static '/images/number-9.png' %}" />
   
-  <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
-  <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
+  <link rel="stylesheet" href="{% static 'styles/style.css' %}?v=20260218-spacing1" />
+  <link rel="stylesheet" href="{% static 'styles/styles.css' %}?v=20260218-spacing1" />
 
   <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
 
@@ -44,12 +67,80 @@
       /* background-color: #f5f5f5; */
       font-weight: bold;
     }
+
+    .tooltip .tooltip-text {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+    }
+
+    .app-tooltip-portal {
+      position: fixed;
+      z-index: 99999;
+      min-width: 14rem;
+      max-width: min(36rem, calc(100vw - 1.6rem));
+      padding: 0.95rem 1.15rem;
+      border-radius: 12px;
+      background: linear-gradient(165deg, rgba(15, 23, 38, 0.93), rgba(24, 36, 58, 0.93));
+      border: 1px solid rgba(132, 166, 214, 0.46);
+      color: #dce8ff;
+      font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      font-size: clamp(1.08rem, 0.94rem + 0.22vw, 1.22rem);
+      line-height: 1.58;
+      letter-spacing: 0.008em;
+      box-shadow: 0 18px 36px rgba(5, 11, 22, 0.45);
+      pointer-events: none;
+      white-space: normal;
+      word-break: keep-all;
+      backdrop-filter: blur(8px) saturate(120%);
+      -webkit-backdrop-filter: blur(8px) saturate(120%);
+      transition: opacity 120ms ease;
+      opacity: 0;
+    }
+
+    .app-tooltip-portal[data-open="true"] {
+      opacity: 1;
+    }
+
+    html[data-theme="light"] .app-tooltip-portal {
+      color: #1f2f46;
+      background: linear-gradient(165deg, rgba(253, 255, 255, 0.96), rgba(241, 247, 255, 0.96));
+      border-color: rgba(124, 151, 191, 0.48);
+      box-shadow: 0 16px 30px rgba(35, 56, 84, 0.18);
+    }
+
+    @media (max-width: 844px) {
+      .app-tooltip-portal {
+        min-width: 11.5rem;
+        max-width: min(30rem, calc(100vw - 1.2rem));
+        padding: 0.78rem 0.92rem;
+        border-radius: 10px;
+        font-size: clamp(1.02rem, 0.92rem + 0.18vw, 1.12rem);
+        line-height: 1.5;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .app-tooltip-portal {
+        min-width: 10.5rem;
+        max-width: calc(100vw - 1rem);
+        padding: 0.68rem 0.82rem;
+        border-radius: 9px;
+        font-size: 1.0rem;
+        line-height: 1.45;
+      }
+    }
   </style>
 
 
 </head>
 
 <body>
+  {% if GTM_CONTAINER_ID %}
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ GTM_CONTAINER_ID }}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+  {% endif %}
   
   <!-- <div id="visitor-count">v {{ t_count }}</div> -->
 
@@ -66,17 +157,230 @@
 
   {% block content %}
   {% endblock %}
-
-
-  </body>
   {% include 'footer.html' %}
 
   <script src="{% static 'js/script.js' %}"></script>   {# 로그인 후 드롭다운 메뉴 #}
+  <script>
+    (function () {
+      if (window.__appTooltipUnifiedInit) return;
+      window.__appTooltipUnifiedInit = true;
+
+      var portal = null;
+      var activeTrigger = null;
+      var GAP_X = 14;
+      var GAP_Y = 16;
+      var EDGE = 10;
+      var lastPointer = null;
+      var rafId = 0;
+
+      function ensurePortal() {
+        document.querySelectorAll('.tooltip-portal').forEach(function (el) {
+          if (el && el.parentNode) el.parentNode.removeChild(el);
+        });
+
+        var portals = document.querySelectorAll('.app-tooltip-portal');
+        if (portals.length > 1) {
+          for (var i = 1; i < portals.length; i++) {
+            if (portals[i] && portals[i].parentNode) {
+              portals[i].parentNode.removeChild(portals[i]);
+            }
+          }
+        }
+
+        portal = document.getElementById('app-tooltip-portal');
+        if (!portal) {
+          portal = document.createElement('div');
+          portal.id = 'app-tooltip-portal';
+          portal.className = 'app-tooltip-portal';
+          portal.hidden = true;
+          portal.setAttribute('data-open', 'false');
+          document.body.appendChild(portal);
+        }
+        return portal;
+      }
+
+      function escapeHtml(text) {
+        return String(text)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function getTooltipHtml(trigger) {
+        if (!trigger) return '';
+        var dataTip = trigger.getAttribute('data-tip');
+        if (dataTip) {
+          return String(dataTip).split('||').map(escapeHtml).join('<br>');
+        }
+
+        var legacy = trigger.querySelector('.tooltip-text');
+        if (!legacy) return '';
+        legacy.style.display = 'none';
+        return legacy.innerHTML || '';
+      }
+
+      function placePortal(trigger, pointer) {
+        if (!portal || !trigger) return;
+        var rect = trigger.getBoundingClientRect();
+        var vw = window.innerWidth;
+        var vh = window.innerHeight;
+        var pw = portal.offsetWidth;
+        var ph = portal.offsetHeight;
+
+        var left = rect.left + rect.width / 2 - pw / 2;
+        var top = rect.bottom + GAP_Y;
+
+        if (pointer && typeof pointer.x === 'number' && typeof pointer.y === 'number') {
+          left = pointer.x + GAP_X;
+          top = pointer.y + GAP_Y;
+        }
+
+        // Trigger overlap 회피: 겹치면 우선 오른쪽, 부족하면 아래로 이동
+        var overlapsTrigger =
+          left < rect.right &&
+          left + pw > rect.left &&
+          top < rect.bottom &&
+          top + ph > rect.top;
+        if (overlapsTrigger) {
+          left = rect.right + GAP_X;
+          top = rect.top;
+        }
+
+        if (left < EDGE) left = EDGE;
+        if (left + pw > vw - EDGE) left = vw - pw - EDGE;
+        if (top + ph > vh - EDGE) top = rect.top - ph - GAP_Y;
+        if (top < EDGE) top = rect.bottom + GAP_Y;
+        if (top + ph > vh - EDGE) top = vh - ph - EDGE;
+
+        portal.style.left = left + 'px';
+        portal.style.top = top + 'px';
+      }
+
+      function showTooltip(trigger, pointer) {
+        var html = getTooltipHtml(trigger);
+        if (!html) return;
+        ensurePortal();
+        portal.innerHTML = html;
+        portal.hidden = false;
+        portal.setAttribute('data-open', 'true');
+        activeTrigger = trigger;
+        placePortal(trigger, pointer);
+      }
+
+      function hideTooltip(trigger) {
+        if (!portal) return;
+        if (trigger && activeTrigger && trigger !== activeTrigger) return;
+        portal.setAttribute('data-open', 'false');
+        portal.hidden = true;
+        activeTrigger = null;
+      }
+
+      function getTrigger(target) {
+        return target ? target.closest('.tooltip, [data-tip]') : null;
+      }
+
+      function scheduleReposition() {
+        if (!activeTrigger || !portal || portal.hidden) return;
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(function () {
+          rafId = 0;
+          placePortal(activeTrigger, lastPointer);
+        });
+      }
+
+      document.addEventListener('pointerover', function (e) {
+        var trigger = getTrigger(e.target);
+        if (!trigger) return;
+        if (e.relatedTarget && trigger.contains(e.relatedTarget)) return;
+        lastPointer = { x: e.clientX, y: e.clientY };
+        showTooltip(trigger, lastPointer);
+      }, true);
+
+      document.addEventListener('pointermove', function (e) {
+        if (!activeTrigger) return;
+        if (!activeTrigger.contains(e.target)) return;
+        lastPointer = { x: e.clientX, y: e.clientY };
+        scheduleReposition();
+      }, { passive: true, capture: true });
+
+      document.addEventListener('pointerout', function (e) {
+        var trigger = getTrigger(e.target);
+        if (!trigger || trigger !== activeTrigger) return;
+        if (e.relatedTarget && trigger.contains(e.relatedTarget)) return;
+        hideTooltip(trigger);
+      }, true);
+
+      document.addEventListener('focusin', function (e) {
+        var trigger = getTrigger(e.target);
+        if (!trigger) return;
+        showTooltip(trigger);
+      });
+
+      document.addEventListener('focusout', function (e) {
+        var trigger = getTrigger(e.target);
+        if (!trigger || trigger !== activeTrigger) return;
+        if (e.relatedTarget && trigger.contains(e.relatedTarget)) return;
+        hideTooltip(trigger);
+      });
+
+      document.addEventListener('click', function (e) {
+        var trigger = getTrigger(e.target);
+        if (!trigger) {
+          hideTooltip();
+          return;
+        }
+        if (activeTrigger === trigger && portal && !portal.hidden) {
+          hideTooltip(trigger);
+          return;
+        }
+        showTooltip(trigger, { x: e.clientX, y: e.clientY });
+      });
+
+      function syncPortalPosition() {
+        if (activeTrigger && portal && !portal.hidden) {
+          scheduleReposition();
+        }
+      }
+
+      window.addEventListener('scroll', syncPortalPosition, { passive: true });
+      document.addEventListener('scroll', syncPortalPosition, { passive: true, capture: true });
+      window.addEventListener('resize', syncPortalPosition, { passive: true });
+    })();
+  </script>
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var btn = document.getElementById('theme-toggle');
+      if (!btn) return;
+      var iconEl = btn.querySelector('.theme-toggle-btn__icon');
+      var textEl = btn.querySelector('.theme-toggle-btn__text');
+
+      function syncButton(theme) {
+        var nextTheme = theme === 'dark' ? 'light' : 'dark';
+        if (iconEl) iconEl.textContent = nextTheme === 'dark' ? '☾' : '☀';
+        if (textEl) textEl.textContent = nextTheme === 'dark' ? '다크모드' : '일반모드';
+        btn.setAttribute('data-next-theme', nextTheme);
+        btn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+      }
+
+      function applyTheme(theme) {
+        root.setAttribute('data-theme', theme);
+        try {
+          localStorage.setItem('site-theme', theme);
+        } catch (e) {}
+        syncButton(theme);
+      }
+
+      syncButton(root.getAttribute('data-theme') || 'dark');
+      btn.addEventListener('click', function () {
+        var current = root.getAttribute('data-theme') || 'dark';
+        applyTheme(current === 'dark' ? 'light' : 'dark');
+      });
+    })();
+
+  </script>
+  </body>
 
 </html>
-
-
-
-
-
-

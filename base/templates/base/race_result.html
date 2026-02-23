@@ -95,6 +95,16 @@
         transform: translateX(220%);
       }
     }
+
+    .race-insight-grid {
+      display: grid;
+      grid-template-columns: minmax(210px, 0.72fr) minmax(320px, 1.14fr) minmax(320px, 1.14fr);
+      gap: 0.8rem;
+      margin-top: 0.55rem;
+      align-items: stretch;
+      overflow-x: auto;
+      white-space: normal;
+    }
   </style>
 
 </head>
@@ -198,10 +208,13 @@
               </a>
             </th>
             <th rowspan="2" style="vertical-align: middle;"><span class="tooltip">J&T<span class="tooltip-text">마방 & 기수 3위내 입상현황</span></span></th>
+
+            <th rowspan="2" style="vertical-align: middle;"><span class="tooltip">
+              <span style="font-size: 0.8rem; text-transform:capitalize;">Form<br>Race8</span><span class="tooltip-text">최근 기록 Form & 최근 8경주 추세</span></span>
+            </th>
             
             <th rowspan="1"><span>s1f</span></th>
             <th rowspan="1"><span>g3f</span></th>
-            <th rowspan="1"><span>g2f</span></th>
             <th rowspan="1"><span>g1f</span></th>
 
             <th rowspan="2" align="center" style="vertical-align: middle;"><span style="font-size: 1.2rem;">코너전개</span></th>
@@ -247,9 +260,8 @@
               </a>
             </th>
             <th rowspan="1"><span style="font-size: 1.0rem; color:var(--color-r5);">rank</span></th>
-            <th rowspan="1" colspan="3">
+            <th rowspan="1" colspan="2">
               <div style="font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif; background-color: var(--color-bg); padding:1px 4px; border-radius: 7px;">
-                <span style="font-size: 1.2rem;">등급평균&nbsp;:</span>
                 <span style="font-size: 1.2rem; color:var(--color-main); font-style: italic;">
                   {{track.0.0|slice:"0:1"}}&nbsp;{{track.0.0|slice:"1:"}}
                 </span>
@@ -267,21 +279,21 @@
       
         </thead>
         <tbody>
-          {% for r in records %}
+          {% for rcity, rdate, rno, rday, rseq, distance, grade, r1award, dividing, rname, rcon1, rcon2, weather, rstate, rmoisture, race_speed, r_judge, r2alloc1, r2alloc2, r333alloc1, r333alloc2, gate, rank, horse, birthplace, h_sex, h_age, handycap, jockey, joc_adv, trainer, host, rating, h_weight, w_change, record, gap, corners, rs1f, r1c, r2c, r3c, r4c, rg3f, rg2f, rg1f, alloc1r, alloc3r, judge, judge_reason, audit_reason, i_s1f, i_g3f, i_g2f, i_g1f, i_record, jockey_w, burden_w, adv_jockey, adv_track, i_convert, r_start, r_corners, r_finish, r_wrapup, r_etc, r_flag, p_rank, p_record, pop_rank, s1f_rank, g3f_rank, g2f_rank, g1f_rank, recent3, recent5, fast_r, slow_r, avg_r, convert_r, i_cycle, gap_b, jockey_old, reason, r_pop, jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd, h_cnt, h_mare, prehandy, i_mock, s1f_per, g3f_per, g1f_per, start_score, tot_score, rec_per, rec8_trend in records %}
           <tr class="view">
 
             <td align="center" style="font-family: Arial; font-size: 1.4rem; color: var(--color-main-light); background-color: var(--color-dark-medium); border-radius: 10px; border: 1px solid var(--color-bg);">
-              {% if r.rank > 20 %}
+              {% if rank > 20 %}
               <div style="font-family: Arial; font-style: normal; font-size: 1.0rem;">🚫</div>
               {% else %}
-              <div style="font-family: Arial; font-style: normal;">{{r.rank}}</div>
+              <div style="font-family: Arial; font-style: normal;">{{rank}}</div>
               {% endif %}
 
               <div style="font-family: Arial; font-size: 1.0rem; text-align: right; ">
-                {% if compare_r.rating__max == r.rating and r.rating != 0 %}
-                <span style="font-family: Arial; color:var(--color-light); border-radius: 10px; background-color:var(--color-r1); padding: 2px 4px; border: solid 1px var(--color-light);">{{r.rating}}</span>
+                {% if compare_rating__max == rating and rating != 0 %}
+                <span style="font-family: Arial; color:var(--color-light); border-radius: 10px; background-color:var(--color-r1); padding: 2px 4px; border: solid 1px var(--color-light);">{{rating}}</span>
                 {% else %}
-                <span style="font-family: Arial; color:var(--color-light-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">{{r.rating}}</span>
+                <span style="font-family: Arial; color:var(--color-light-gray); border-radius: 10px; background-color:var(--color-bg); padding: 2px 4px;">{{rating}}</span>
                 {% endif %}
               </div>
               
@@ -290,28 +302,28 @@
             {# 마번 #}
             <td align="center" style="font-size: 1.4rem; border-radius: 10px; border: 0.5px solid gray;">
               <div style="font-family: Arial; font-style: italic; color:var(--color-main-light);">
-                {% if r.p_rank == 1 %}
+                {% if p_rank == 1 %}
                 <span style="font-family: Arial; font-style: italic; color:var(--color-r1);">
-                  {{r.gate}}
+                  {{gate}}
                 </span>
-                {% elif r.p_rank == 2 %}
+                {% elif p_rank == 2 %}
                 <span style="font-family: Arial; font-style: italic; color:var(--color-r2);">
-                  {{r.gate}}
+                  {{gate}}
                 </span>
-                {% elif r.p_rank == 3 %}
+                {% elif p_rank == 3 %}
                 <span style="font-family: Arial; font-style: italic; color:var(--color-r3);">
-                  {{r.gate}}
+                  {{gate}}
                 </span>
-                {% elif r.p_rank == 4 %}
+                {% elif p_rank == 4 %}
                 <span style="font-family: Arial; font-style: italic; color:var(--color-r4);">
-                  {{r.gate}}
+                  {{gate}}
                 </span>
-                {% elif r.p_rank == 5 %}
+                {% elif p_rank == 5 %}
                 <span style="font-family: Arial; font-style: italic; color:var(--color-r5);">
-                  {{r.gate}}
+                  {{gate}}
                 </span>
                 {% else %}
-                <span style="font-family: Arial; font-style: normal; ">{{r.gate}}</span>
+                <span style="font-family: Arial; font-style: normal; ">{{gate}}</span>
                 {% endif %}
               
               </div>   
@@ -320,49 +332,45 @@
               {# 인기순위 / 프로그램 예상순위 #}
               <div style="font-family: Arial; font-size:1.0rem; font-style: italic; color:var(--color-r1); text-align: right;">
 
-              {% if r.pop_rank %}
-                {% if r.pop_rank == 1 %}
-                  <span style="color:var(--color-light); font-size: 0.8rem; font-family: Arial; background-color: var(--color-r1); border: 1px solid var(--color-light); padding: 2px 4px; border-radius: 10px;">{{r.pop_rank}}</span>
-                {% elif r.pop_rank == 2 %}
-                  <span style="color:var(--color-bg); font-size: 0.8rem; font-family: Arial; background-color: var(--color-r2); border: 1px solid var(--color-light); padding: 2px 4px; border-radius: 10px;">{{r.pop_rank}}</span>
-                {% elif r.pop_rank == 3 %}
-                  <span style="color:var(--color-bg); font-size: 0.8rem; font-family: Arial; background-color: var(--color-r3); border: 1px solid var(--color-light); padding: 2px 4px; border-radius: 10px;">{{r.pop_rank}}</span>
-                {% elif r.pop_rank == 4 %}
-                  <span style="color:var(--color-r4); font-size: 0.8rem; font-family: Arial; padding: 2px 4px; border-radius: 10px; border: 1px solid var(--color-r4);">{{r.pop_rank}}</span>
-                {% elif r.pop_rank == 5 %}
-                  <span style="color:var(--color-r5); font-size: 0.8rem; font-family: Arial; padding: 2px 4px; border-radius: 10px; border: 1px solid var(--color-r5);">{{r.pop_rank}}</span>
-                {% elif r.pop_rank == 6 %}
-                  <span style="color:var(--color-r6); font-size: 0.8rem; font-family: Arial; padding: 2px 4px; border-radius: 10px; border: 1px solid var(--color-r6);">{{r.pop_rank}}</span>
-                {% elif r.pop_rank > 6 and r.pop_rank <= 9 %}
-                  <span style="color:var(--color-main); font-size: 0.8rem; font-family: Arial; padding: 2px 4px;">{{r.pop_rank}}</span>
+              {% if pop_rank %}
+                {% if pop_rank == 1 %}
+                  <span style="color:var(--color-light); font-size: 0.8rem; font-family: Arial; background-color: var(--color-r1); border: 1px solid var(--color-light); padding: 2px 4px; border-radius: 10px;">{{pop_rank}}</span>
+                {% elif pop_rank == 2 %}
+                  <span style="color:var(--color-bg); font-size: 0.8rem; font-family: Arial; background-color: var(--color-r2); border: 1px solid var(--color-light); padding: 2px 4px; border-radius: 10px;">{{pop_rank}}</span>
+                {% elif pop_rank == 3 %}
+                  <span style="color:var(--color-bg); font-size: 0.8rem; font-family: Arial; background-color: var(--color-r3); border: 1px solid var(--color-light); padding: 2px 4px; border-radius: 10px;">{{pop_rank}}</span>
+                {% elif pop_rank == 4 %}
+                  <span style="color:var(--color-r4); font-size: 0.8rem; font-family: Arial; padding: 2px 4px; border-radius: 10px; border: 1px solid var(--color-r4);">{{pop_rank}}</span>
+                {% elif pop_rank == 5 %}
+                  <span style="color:var(--color-r5); font-size: 0.8rem; font-family: Arial; padding: 2px 4px; border-radius: 10px; border: 1px solid var(--color-r5);">{{pop_rank}}</span>
+                {% elif pop_rank == 6 %}
+                  <span style="color:var(--color-r6); font-size: 0.8rem; font-family: Arial; padding: 2px 4px; border-radius: 10px; border: 1px solid var(--color-r6);">{{pop_rank}}</span>
+                {% elif pop_rank > 6 and pop_rank <= 9 %}
+                  <span style="color:var(--color-main); font-size: 0.8rem; font-family: Arial; padding: 2px 4px;">{{pop_rank}}</span>
                 {% else %}
-                  <span style="color:var(--color-main); font-size: 0.8rem; font-family: Arial; padding: 2px 2px;">{% if r.pop_rank > 20 %}﹆{% else %}{{r.pop_rank}}{% endif %}</span>
+                  <span style="color:var(--color-main); font-size: 0.8rem; font-family: Arial; padding: 2px 2px;">{% if pop_rank > 20 %}﹆{% else %}{{pop_rank}}{% endif %}</span>
                 {% endif %}
               {% endif %}
 
 
-              {% if r.r_pop %}
-              
-                {% if r.r_pop == 1 %}
-                <span style="font-family: Arial; font-size:0.8rem; color:var(--color-main-light); text-align: right; padding:2px 3px; border-radius: 7px; border: 1px solid var(--color-light); background-color: var(--color-r1);">{{r.r_pop}}</span>
-                {% elif r.r_pop == 2 %}
-                <span style="font-family: Arial; font-size:0.8rem; color:var(--color-bg); text-align: right; padding:2px 3px; border-radius: 7px; border: 1px solid var(--color-light); background-color: var(--color-r2);">{{r.r_pop}}</span>
-                {% elif r.r_pop == 3 %}
-                <span style="font-family: Arial; font-size:0.8rem; color:var(--color-bg); text-align: right; padding:2px 3px; border-radius: 7px; border: 1px solid var(--color-light); background-color: var(--color-r3);">{{r.r_pop}}</span>
-                {% elif r.r_pop == 4 %}
-                <span style="font-family: Arial; font-size:0.8rem; color:var(--color-r4); text-align: right; padding:2px 3px; border-radius: 7px; border: 1px solid var(--color-r4);">{{r.r_pop}}</span>
-                {% elif r.r_pop == 5 %}
-                <span style="font-family: Arial; font-size:0.8rem; color:var(--color-r5); text-align: right; padding:2px 3px; border-radius: 7px; border: 1px solid var(--color-r5);">{{r.r_pop}}</span>
-                {% elif r.r_pop == 6 %}
-                <span style="font-family: Arial; font-size:0.8rem; color:var(--color-r6); text-align: right; padding:2px 3px; border-radius: 7px; border: 1px solid var(--color-r6);">{{r.r_pop}}</span>
-                {% elif r.r_pop >= 10 %}
-                <span style="font-family: Arial; font-size:0.8rem; color:var(--color-main); text-align: right; padding:1px;">{{r.r_pop}}</span>
-                {% elif r.r_pop == 99 %}
-                <span style="font-family: Arial; font-size:0.8rem; color:var(--color-gray); text-align: right; padding:2px 3px; border-radius: 7px;">🚫</span>
+              {% if r_pop %}
+                {% if r_pop == 1 %}
+                  <span style="color:var(--color-light); font-size: 0.8rem; font-family: Arial; background-color: var(--color-r1); border: 1px solid var(--color-light); padding: 2px 4px; border-radius: 10px;">{{r_pop}}</span>
+                {% elif r_pop == 2 %}
+                  <span style="color:var(--color-bg); font-size: 0.8rem; font-family: Arial; background-color: var(--color-r2); border: 1px solid var(--color-light); padding: 2px 4px; border-radius: 10px;">{{r_pop}}</span>
+                {% elif r_pop == 3 %}
+                  <span style="color:var(--color-bg); font-size: 0.8rem; font-family: Arial; background-color: var(--color-r3); border: 1px solid var(--color-light); padding: 2px 4px; border-radius: 10px;">{{r_pop}}</span>
+                {% elif r_pop == 4 %}
+                  <span style="color:var(--color-r4); font-size: 0.8rem; font-family: Arial; padding: 2px 4px; border-radius: 10px; border: 1px solid var(--color-r4);">{{r_pop}}</span>
+                {% elif r_pop == 5 %}
+                  <span style="color:var(--color-r5); font-size: 0.8rem; font-family: Arial; padding: 2px 4px; border-radius: 10px; border: 1px solid var(--color-r5);">{{r_pop}}</span>
+                {% elif r_pop == 6 %}
+                  <span style="color:var(--color-r6); font-size: 0.8rem; font-family: Arial; padding: 2px 4px; border-radius: 10px; border: 1px solid var(--color-r6);">{{r_pop}}</span>
+                {% elif r_pop > 6 and r_pop <= 9 %}
+                  <span style="color:var(--color-main); font-size: 0.8rem; font-family: Arial; padding: 2px 4px;">{{r_pop}}</span>
                 {% else %}
-                <span style="font-family: Arial; font-size:0.8rem; color:var(--color-main); text-align: right; padding:2px 3px; border-radius: 7px;">{{r.r_pop}}</span>
+                  <span style="color:var(--color-main); font-size: 0.8rem; font-family: Arial; padding: 2px 2px;">{% if r_pop > 20 %}﹆{% else %}{{r_pop}}{% endif %}</span>
                 {% endif %}
-                
               {% endif %}
                 
                 
@@ -375,17 +383,17 @@
                 <!-- {% if r_condition.dividing == '주행검사' %}
                 {% else %}
                 <span class="tooltip">
-                  <progress value={{r.r_pop}} max="99" style="width: 2.5rem"></progress>
+                  <progress value={{r_pop}} max="99" style="width: 2.5rem"></progress>
                   <span class="tooltip-text" style="z-index: 9;">
-                    <div>📊&nbsp;{{r.horse}}</div>
-                    <div style="text-align: right;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;인기도&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{r.r_pop}}</div>
+                    <div>📊&nbsp;{{horse}}</div>
+                    <div style="text-align: right;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;인기도&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{r_pop}}</div>
                   </span>
                 </span>&nbsp;
                 {% endif %} -->
 
-                {% if request.user.username == 'admin' %}
+                {% if request.useusername == 'admin' %}
 
-                <a href="{% url 'write_significant' r.rdate r.horse %}" 
+                <a href="{% url 'write_significant' rdate horse %}" 
                         onclick="window.open(this.href, 'write_significant', 'top=' + window.screenTop + ', left=' + window.screen.width + ', width=500, height=550, toolbars=no, scrollbars=yes'); return false;">
 
                   {% include 'base/m_memo.html' with size='1.3rem' color='var(--color-r4)' %}
@@ -393,15 +401,15 @@
                 </a>
                 {% endif %}
 
-                {% if r.horse == hname %}
-                <span style="font-size:1.25rem; font-style: italic; color:var(--color-bg); background-color: var(--color-r3); border-radius: 7px; padding: 1px 4px;">{{r.horse|slice:"0:6"}}</span>
+                {% if horse == hname %}
+                <span style="font-size:1.25rem; font-style: italic; color:var(--color-bg); background-color: var(--color-r3); border-radius: 7px; padding: 1px 4px;">{{horse|slice:"0:6"}}</span>
                 {% else %}
                   {% for rr in horses %}
-                    {% if rr.horse == r.horse %}
+                    {% if rr.horse == horse %}
                     <span style="font-size:1.25rem; font-style: italic; color:var(--color-bg); background-color: var(--color-r5); border-radius: 7px; padding: 1px 4px;">
                     {% endif %}
                   {% endfor %}
-                  {{r.horse|slice:"0:6"}}</span>
+                  {{horse|slice:"0:6"}}</span>
                 {% endif %}
           
               </div>
@@ -409,56 +417,56 @@
               <div align="right" style="font-size: 1.235rem; color:var(--color-gray);">
 
                 {# 출주주기 #}
-                {% if r.r_rank == 99 %}
+                {% if r_rank == 99 %}
                 <span style="font-size: 1.15rem;">&nbsp;</span>
-                <span style="font-size:0.9rem; color:gray;">{% if r.reason %}{{r.reason|slice:"0:8"}}{% endif %}
+                <span style="font-size:0.9rem; color:gray;">{% if reason %}{{reason|slice:"0:8"}}{% endif %}
                 </span>
                 {% else %}
 
-                  {% if r.rank >= 20 %}
+                  {% if rank >= 20 %}
                   <span style="font-size: 1.15rem;">&nbsp;</span>
                   {% else %}
-                    {% if r.i_cycle <= 16 %}
-                    <span style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; border: solid 1px var(--color-r1); padding:2px 4px;">{{r.i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                    {% if i_cycle <= 16 %}
+                    <span style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; border: solid 1px var(--color-r1); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                     
-                    {% elif r.i_cycle >= 26 and r.i_cycle < 80 %}
-                    <span style="font-family: Arial; font-size:1.15rem; color:var(--color-main); border-radius: 10px; border-bottom: solid 1px var(--color-main); padding:2px 4px;">{{r.i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
-                    {% elif r.i_cycle >= 80 %}
-                    <span style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; border-bottom: solid 1px var(--color-r1); padding:2px 4px;">{{r.i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                    {% elif i_cycle >= 26 and i_cycle < 80 %}
+                    <span style="font-family: Arial; font-size:1.15rem; color:var(--color-main); border-radius: 10px; border-bottom: solid 1px var(--color-main); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                    {% elif i_cycle >= 80 %}
+                    <span style="font-family: Arial; font-size:1.15rem; color:var(--color-r1); border-radius: 10px; border-bottom: solid 1px var(--color-r1); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                     {% else %}
-                    <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light-gray); border-radius: 10px; border-bottom: 1px solid var(--color-gray); padding:2px 4px;">{{r.i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                    <span style="font-family: Arial; font-size:1.15rem; color:var(--color-light-gray); border-radius: 10px; border-bottom: 1px solid var(--color-gray); padding:2px 4px;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                     {% endif %}
                   {% endif %}
 
                   {# 출생지 #}
-                  {% if r.birthplace == '한' %}
-                  <span style="font-size: 1.15rem; color:var(--color-light); border-radius: 10px; background-color:var(--color-bg); padding: 0px 2px;">{{r.birthplace}}</span>
-                  {% elif r.birthplace == '미' %}
-                  <span style="font-size: 1.15rem; color:var(--color-main); border-radius: 10px; border: 1px solid var(--color-r1); padding: 0px 2px;">{{r.birthplace}}</span>
+                  {% if birthplace == '한' %}
+                  <span style="font-size: 1.15rem; color:var(--color-light); border-radius: 10px; background-color:var(--color-bg); padding: 0px 2px;">{{birthplace}}</span>
+                  {% elif birthplace == '미' %}
+                  <span style="font-size: 1.15rem; color:var(--color-main); border-radius: 10px; border: 1px solid var(--color-r1); padding: 0px 2px;">{{birthplace}}</span>
                   {%else%}
-                    {% if '포' in r.birthplace %}
+                    {% if '포' in birthplace %}
                     <span style="font-size: 1.15rem; color:var(--color-r4); border-radius: 10px; border: 1px solid var(--color-r5); padding: 0px 2px;">포</span>
                     {% else %}
-                    <span style="font-size: 1.15rem; color:var(--color-r4); border-radius: 10px; background-color:var(--color-bg); padding: 0px 2px;">{{r.birthplace}}</span>
+                    <span style="font-size: 1.15rem; color:var(--color-r4); border-radius: 10px; background-color:var(--color-bg); padding: 0px 2px;">{{birthplace}}</span>
                     {% endif %}
                   {%endif%}
                   
                   {# 성별 #}
-                  {% if r.h_sex == '암' %}
-                  <span style="font-size: 1.15rem; color:var(--color-r5); border-radius: 10px; background-color:var(--color-bg); padding: 1px 2px;">{{r.h_sex}}</span>
-                  {% elif r.h_sex == '거' %}
-                  <span style="font-size: 1.15rem; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding: 1px 2px;">{{r.h_sex}}</span>
+                  {% if h_sex == '암' %}
+                  <span style="font-size: 1.15rem; color:var(--color-r5); border-radius: 10px; background-color:var(--color-bg); padding: 1px 2px;">{{h_sex}}</span>
+                  {% elif h_sex == '거' %}
+                  <span style="font-size: 1.15rem; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding: 1px 2px;">{{h_sex}}</span>
                   {%else%}
-                  <span style="font-size: 1.15rem; color:var(--color-light-gray); border-radius: 10px; background-color:var(--color-bg); padding: 1px 2px;">{{r.h_sex}}</span>
+                  <span style="font-size: 1.15rem; color:var(--color-light-gray); border-radius: 10px; background-color:var(--color-bg); padding: 1px 2px;">{{h_sex}}</span>
                   {%endif%}
                   
                   {# 나이 #}
-                  {% if r.h_age >= 5.9 %}
-                  <span style="font-family: Arial; font-size: 1.1rem; font-style: italic; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding:1px 3px">{{r.h_age}}</span>
-                  {% elif r.h_age < 3 %}
-                  <span style="font-family: Arial; font-size: 1.1rem; font-style: italic; color:var(--color-r2); border-radius: 10px; background-color:var(--color-bg); padding:1px 3px">{{r.h_age}}</span>
+                  {% if h_age >= 5.9 %}
+                  <span style="font-family: Arial; font-size: 1.1rem; font-style: italic; color:var(--color-r1); border-radius: 10px; background-color:var(--color-bg); padding:1px 3px">{{h_age}}</span>
+                  {% elif h_age < 3 %}
+                  <span style="font-family: Arial; font-size: 1.1rem; font-style: italic; color:var(--color-r2); border-radius: 10px; background-color:var(--color-bg); padding:1px 3px">{{h_age}}</span>
                   {%else%}
-                  <span style="font-family: Arial; font-size: 1.1rem; font-style: italic; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding:1px 3px">{{r.h_age}}</span>
+                  <span style="font-family: Arial; font-size: 1.1rem; font-style: italic; color:var(--color-gray); border-radius: 10px; background-color:var(--color-bg); padding:1px 3px">{{h_age}}</span>
                   {%endif%}
 
                 {% endif %}
@@ -466,6 +474,7 @@
               </div>
                     
             </td>
+
             {# 경주마 체중 증감#}
             <td align="center" style="font-family: Arial; font-size: 1.2rem ">
               
@@ -473,24 +482,24 @@
 
                 {# 경주마 체중 증감 #}
 
-                {% if r.h_weight|slice:"0:3" <= '420' %}
-                <span style="padding:2px 2px; font-family: Arial; color:var(--color-r5);">{{r.h_weight|slice:"0:3"}}<sup style="font-size: 0.7rem; font-style: italic;">㎏</sup></span>
-                {% elif r.h_weight|slice:"0:3" >= '510' %}
-                <span style="padding:2px 2px; font-family: Arial; color:var(--color-r2);">{{r.h_weight|slice:"0:3"}}<sup style="font-size: 0.7rem; font-style: italic;">㎏</sup></span>
+                {% if h_weight|slice:"0:3" <= '420' %}
+                <span style="padding:2px 2px; font-family: Arial; color:var(--color-r5);">{{h_weight|slice:"0:3"}}<sup style="font-size: 0.7rem; font-style: italic;">㎏</sup></span>
+                {% elif h_weight|slice:"0:3" >= '510' %}
+                <span style="padding:2px 2px; font-family: Arial; color:var(--color-r2);">{{h_weight|slice:"0:3"}}<sup style="font-size: 0.7rem; font-style: italic;">㎏</sup></span>
                 {% else %}
-                <span style="padding:2px 2px; font-family: Arial; color:var(--color-light-gray);">{{r.h_weight|slice:"0:3"}}<sup style="font-size: 0.7rem; font-style: italic;">㎏</sup></span>
+                <span style="padding:2px 2px; font-family: Arial; color:var(--color-light-gray);">{{h_weight|slice:"0:3"}}<sup style="font-size: 0.7rem; font-style: italic;">㎏</sup></span>
                 {% endif %}
                 
               </div>
 
-              {% if r.w_change %}
-                {% if r.w_change|slice:"0:1" == '+' %}
+              {% if w_change %}
+                {% if w_change|slice:"0:1" == '+' %}
                 <div style="text-align:right; font-style: italic; font-size: 1.1rem;  color:var(--color-r1);">
-                  <span style="font-family: Arial; border-radius: 7px; background-color: var(--color-bg); padding:1px 4px;">{{r.w_change|slice:"0:"}}</span>
+                  <span style="font-family: Arial; border-radius: 7px; background-color: var(--color-bg); padding:1px 4px;">{{w_change|slice:"0:"}}</span>
                 </div>
                 {% else %}
                 <div style="text-align:right; font-style: italic; font-size: 1.1rem;  color:var(--color-r5);">
-                  <span style="font-family: Arial; border-radius: 7px; background-color: var(--color-bg); padding:1px 4px;">{{r.w_change|slice:"0:"}}</span>
+                  <span style="font-family: Arial; border-radius: 7px; background-color: var(--color-bg); padding:1px 4px;">{{w_change|slice:"0:"}}</span>
                 </div>
                 {% endif %}
               {% endif %}
@@ -500,38 +509,44 @@
             {# 부담중량 #}
             <td align="center" style="font-size: 1.2rem ">
               
-              {% if r.handycap == compare_r.handycap__max %}
-              <div style="font-family: Arial; text-align: center; color:var(--color-r1);">{{r.handycap}}&nbsp;</div>
+              {% if handycap == compare_handycap__max %}
+              <div style="font-family: Arial; text-align: center; color:var(--color-r1);">{{handycap}}&nbsp;</div>
               {% else %}
-              <div style="font-family: Arial; text-align: center; color:var(--color-light-gray);">{{r.handycap}}&nbsp;</div>
+              <div style="font-family: Arial; text-align: center; color:var(--color-light-gray);">{{handycap}}&nbsp;</div>
               {% endif %}
               
-              <div style="font-family: Arial; text-align:right; color:var(--color-gray); font-size: 1.0rem;">{{r.burden_w|floatformat:1}}</div>
-              
+              {% if prehandy == 0 or prehandy == handycap %}
+              <div style="font-size: 1.1rem; font-family: Arial; text-align: right;">-&nbsp;&nbsp;</div>
+              {% elif prehandy > 0 %}
+              <div style="text-align: right; font-size: 1.1rem; font-family: Arial; font-style: italic; color:red; padding:0px 3px; border-radius: 5px; background-color:lightblue;">+{{prehandy}}</div>
+              {% else %}
+              <div style="text-align: right; font-size: 1.1rem; font-family: Arial; font-style: italic; color:blue; padding:0px 3px; border-radius: 5px; background-color:lightsalmon;">{{prehandy}}</div>
+              {% endif %}
+
             </td>
 
             {# 기수 조교사 #}
             <td align="center">
               <div style="font-size: 1.2rem; text-align: left; ">
-                <a href="{% url 'jt_analysis_multi' r.rcity r.rdate|mul:1|sub:10000 r.rdate r.jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                <a href="{% url 'jt_analysis_multi' rcity rdate|mul:1|sub:10000 rdate jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
                 <span style="color:var(--color-r2); font-size:0.9rem">
                 </span>
-                {% if r.jockey_old %}   {# 기수변경 #}
-                  <span class="tooltip" style="font-style: italic; color:var(--color-r2); border-bottom:1px solid var(--color-gray);">{{r.jockey|slice:"0:3"}}
+                {% if jockey_old %}   {# 기수변경 #}
+                  <span class="tooltip" style="font-style: italic; color:var(--color-r2); border-bottom:1px solid var(--color-gray);">{{jockey|slice:"0:3"}}
                     <span class="tooltip-text" style="z-index: 9;">
-                      🐴 변경사유 : {{r.reason}}{% if r.jockey_old %}
+                      🐴 변경사유 : {{reason}}{% if jockey_old %}
                       <br>
-                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;변경전 기수 : <span style="color:var(--color-r2); background-color:var(--color-light); border-radius: 7px; padding: 2px 4px;">{{r.jockey_old}}</span>{% endif %}
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;변경전 기수 : <span style="color:var(--color-r2); background-color:var(--color-light); border-radius: 7px; padding: 2px 4px;">{{jockey_old}}</span>{% endif %}
                       
                     </span>
                   </span>
                   
                 {% else %}
-                  <span style="color:var(--color-light-gray); border-bottom:1px solid var(--color-gray);">{{r.jockey|slice:"0:3"}}</span>
+                  <span style="color:var(--color-light-gray); border-bottom:1px solid var(--color-gray);">{{jockey|slice:"0:3"}}</span>
                 {%endif %}
 
-                {% for jockey, cnt in training_cnt %}
-                  {% if r.jockey == jockey %}
+                {% for jname, cnt in training_cnt %}
+                  {% if jockey == jname %}
                     {% if cnt|mul:1 <= 4 %}
                     <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-bg);">{{cnt}}</span>
                     {% elif cnt|mul:1 == 5 %}
@@ -551,27 +566,27 @@
                 
               </div>
               
-              {% if r.trainer in trainer_double_check %}
+              {% if trainer in trainer_double_check %}
               <div style="font-size: 1.2rem; text-align: right;">
-                <a href="{% url 'jt_analysis_multi' r.rno r.rdate|mul:1|sub:10000 r.rdate '%' r.trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                <a href="{% url 'jt_analysis_multi' rno rdate|mul:1|sub:10000 rdate '%' trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
                 {% for hname, max_date, cnt in disease %}
-                  {% if r.horse == hname %}
+                  {% if horse == hname %}
                   <span style="font-family: Arial; font-size: 1.1rem; border-radius: 10px; background-color: var(--color-bg); padding:2px 4px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{cnt}}</span>
                   {% endif %}
                 {% endfor %}  
                 
-                <span style="color:var(--color-r3); border-bottom:1px solid var(--color-gray);">{{r.trainer}}</span>
+                <span style="color:var(--color-r3); border-bottom:1px solid var(--color-gray);">{{trainer}}</span>
                 </a>
               </div>
               {% else %}
               <div style="font-size: 1.2rem; text-align: right;">
-                <a href="{% url 'jt_analysis_multi' r.rno r.rdate|mul:1|sub:10000 r.rdate '%' r.trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+                <a href="{% url 'jt_analysis_multi' rno rdate|mul:1|sub:10000 rdate '%' trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
                 {% for hname, max_date, cnt in disease %}
-                  {% if r.horse == hname %}
+                  {% if horse == hname %}
                   <span style="font-family: Arial; font-size: 1.1rem; border-radius: 10px; background-color: var(--color-bg); padding:2px 4px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{cnt}}</span>
                   {% endif %}
                 {% endfor %}  
-                <span style="color:var(--color-gray); border-bottom:1px solid var(--color-gray);">{{r.trainer}}</span>
+                <span style="color:var(--color-gray); border-bottom:1px solid var(--color-gray);">{{trainer}}</span>
                 </a>
               </div>
               {% endif %}
@@ -579,27 +594,27 @@
             </td>
 
             {# 기수 조교사 연대율 #}
-            {# url "jt_analysis" '%' r_condition.rdate|mul:1|sub:10000 r_condition.rdate r.jockey r.trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' as url_path #}
+            {# url "jt_analysis" '%' r_condition.rdate|mul:1|sub:10000 r_condition.rdate jockey trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' as url_path #}
             <td align="right">
 
-              {% if r.jockey_old %}
+              {% if jockey_old %}
                 {# 기수가 변경되었으면 기존 기수의 기록을 삭제 #}
-                {% if r.jt_cnt %}
+                {% if jt_cnt %}
                 <div style="font-size: 1.2rem;">
-                  {% if r.jt_per == 100.0 %} 
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); text-decoration: line-through;">{{r.jt_per|floatformat:0}}</span> 
-                  {% elif r.jt_per >= 50 %} 
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); text-decoration: line-through;">{{r.jt_per|floatformat:1}}</span>
-                  {% elif r.jt_per >= 40 and r.jt_per < 50 %} 
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r2); text-decoration: line-through;">{{r.jt_per|floatformat:1}}</span>
-                  {% elif r.jt_per >= 30 and r.jt_per < 40 %} 
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r3); text-decoration: line-through;">{{r.jt_per|floatformat:1}}</span>
-                  {% elif r.jt_per >= 20 and r.jt_per < 30 %} 
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r4); text-decoration: line-through;">{{r.jt_per|floatformat:1}}</span>
-                  {% elif r.jt_per >= 10 and r.jt_per < 20 %} 
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r5); text-decoration: line-through;">{{r.jt_per|floatformat:1}}</span>
+                  {% if jt_per == 100.0 %} 
+                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); text-decoration: line-through;">{{jt_per|floatformat:0}}</span> 
+                  {% elif jt_per >= 50 %} 
+                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
+                  {% elif jt_per >= 40 and jt_per < 50 %} 
+                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r2); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
+                  {% elif jt_per >= 30 and jt_per < 40 %} 
+                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r3); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
+                  {% elif jt_per >= 20 and jt_per < 30 %} 
+                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r4); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
+                  {% elif jt_per >= 10 and jt_per < 20 %} 
+                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r5); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
                   {% else %}
-                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-gray); text-decoration: line-through;">{{r.jt_per|floatformat:1}}</span>
+                  <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-gray); text-decoration: line-through;">{{jt_per|floatformat:1}}</span>
                   {% endif %}
                 </div>
                 {% endif %}
@@ -610,19 +625,19 @@
                     onclick="window.open(this.href, 'jt_analysis', 'width=1350, height=1000, toolbars=no, scrollbars=yes'); return false;"> -->
 
                     <span class="tooltip" style="font-family: Arial; color:var(--color-light-gray);">
-                      <span style="font-family: Arial; color:var(--color-r1);">{{r.jt_1st}}</span>
-                      <span style="font-family: Arial; color:var(--color-r2);">{{r.jt_2nd|sub:r.jt_1st}}</span>
-                      <span style="font-family: Arial; color:var(--color-r3);">{{r.jt_3rd|sub:r.jt_2nd}}</span>
+                      <span style="font-family: Arial; color:var(--color-r1);">{{jt_1st}}</span>
+                      <span style="font-family: Arial; color:var(--color-r2);">{{jt_2nd|sub:jt_1st}}</span>
+                      <span style="font-family: Arial; color:var(--color-r3);">{{jt_3rd|sub:jt_2nd}}</span>
                       <span class="tooltip-text" style="font-family: Arial; font-size: 1.15rem; z-index:9;">
-                        <div style="font-family: Arial; color:var(--color-light); text-align:center;">👥&nbsp; {{r.jockey}}&nbsp;﹆&nbsp;{{r.trainer}}</div>
+                        <div style="font-family: Arial; color:var(--color-light); text-align:center;">👥&nbsp; {{jockey}}&nbsp;﹆&nbsp;{{trainer}}</div>
                         <hr>
                         <div style="font-family: Arial; color:var(--color-main); text-align: left; padding-top: 6px;">1️⃣&nbsp;경주일 기준 최근 1년간 경주성적 : 
 
-                          {% if r.jt_cnt %}
-                          <span style="font-family: Arial; color:var(--color-r2); background-color: var(--color-bg); border-radius: 7px; padding: 2px 4px;">{{r.jt_cnt}}</span>
-                          <span style="font-family: Arial; color:var(--color-r3)">{{r.jt_1st}}</span>
-                          <span style="font-family: Arial; color:var(--color-r4)">{{r.jt_2nd|sub:r.jt_1st}}</span>
-                          <span style="font-family: Arial; color:var(--color-r5)">{{r.jt_3rd|sub:r.jt_2nd}}</span>
+                          {% if jt_cnt %}
+                          <span style="font-family: Arial; color:var(--color-r2); background-color: var(--color-bg); border-radius: 7px; padding: 2px 4px;">{{jt_cnt}}</span>
+                          <span style="font-family: Arial; color:var(--color-r3)">{{jt_1st}}</span>
+                          <span style="font-family: Arial; color:var(--color-r4)">{{jt_2nd|sub:jt_1st}}</span>
+                          <span style="font-family: Arial; color:var(--color-r5)">{{jt_3rd|sub:jt_2nd}}</span>
                           {% else %}
                           <span style="font-family: Arial; color:var(--color-r2); background-color: var(--color-bg); border-radius: 7px; padding: 2px 4px;">0</span>
                           <span style="font-family: Arial; color:var(--color-r3)">0</span>
@@ -632,16 +647,16 @@
                         </div>
                         <div style="font-family: Arial; color:var(--color-light-gray); text-align: left;">
                           2️⃣&nbsp;복승률 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                          {% if r.jt_cnt > 0 %}
-                          <span style="font-family: Arial; color: var(--color-r2);">{{r.jt_2nd|mul:100|div:r.jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                          {% if jt_cnt > 0 %}
+                          <span style="font-family: Arial; color: var(--color-r2);">{{jt_2nd|mul:100|div:jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                           {% else %}
                           <span style="font-family: Arial; color: var(--color-light-gray);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                           {% endif %}
                         </div>
                         <div style="font-family: Arial; color:var(--color-light-gray); text-align: left;">
                           3️⃣&nbsp;연승률 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                          {% if r.jt_cnt > 0 %}
-                          <span style="font-family: Arial; color: var(--color-r1);">{{r.jt_3rd|mul:100|div:r.jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                          {% if jt_cnt > 0 %}
+                          <span style="font-family: Arial; color: var(--color-r1);">{{jt_3rd|mul:100|div:jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                           {% else %}
                           <span style="font-family: Arial; color: var(--color-light-gray);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                           {% endif %}
@@ -653,52 +668,52 @@
                   <!-- </a> -->
                 </div>
               {% else %}
-                {% if r.jt_cnt %}
+                {% if jt_cnt %}
                   <div style="font-size: 1.2rem;">
-                    {% if r.jt_per == 100.0 %} 
-                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); background-color: var(--color-bg); padding: 2px 4px; border-radius: 5px;">{{r.jt_per|floatformat:0}}</span> 
-                      {% elif r.jt_per >= 50 %} 
-                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); background-color: var(--color-bg); padding: 2px 4px; border-radius: 5px;">{{r.jt_per|floatformat:1}}</span>
-                      {% elif r.jt_per >= 40 and r.jt_per < 50 %} 
-                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r2); background-color: var(--color-bg); padding: 2px 4px; border-radius: 5px;">{{r.jt_per|floatformat:1}}</span>
-                      {% elif r.jt_per >= 30 and r.jt_per < 40 %} 
-                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r3); background-color: var(--color-bg); padding: 2px 4px; border-radius: 5px;">{{r.jt_per|floatformat:1}}</span>
-                      {% elif r.jt_per >= 20 and r.jt_per < 30 %} 
-                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r4);">{{r.jt_per|floatformat:1}}</span>
+                    {% if jt_per == 100.0 %} 
+                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); background-color: var(--color-bg); padding: 2px 4px; border-radius: 5px;">{{jt_per|floatformat:0}}</span> 
+                      {% elif jt_per >= 50 %} 
+                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r1); background-color: var(--color-bg); padding: 2px 4px; border-radius: 5px;">{{jt_per|floatformat:1}}</span>
+                      {% elif jt_per >= 40 and jt_per < 50 %} 
+                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r2); background-color: var(--color-bg); padding: 2px 4px; border-radius: 5px;">{{jt_per|floatformat:1}}</span>
+                      {% elif jt_per >= 30 and jt_per < 40 %} 
+                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r3); background-color: var(--color-bg); padding: 2px 4px; border-radius: 5px;">{{jt_per|floatformat:1}}</span>
+                      {% elif jt_per >= 20 and jt_per < 30 %} 
+                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-r4);">{{jt_per|floatformat:1}}</span>
                       
                       {% else %}
-                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-gray);">{{r.jt_per|floatformat:1}}</span>
+                      <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
                       {% endif %}
                   </div>
                 {% endif %}
               
                 {# 기수 조교사 연대 출주 복승 회수 #}
                 <div style="font-size: 1.05rem; color:gray;">
-                  {% if r.jt_cnt == 0 %}
+                  {% if jt_cnt == 0 %}
                   <span class="tooltip" style="font-family: Arial; color:var(--color-r1); text-align: center;">🅾️
                     <span class="tooltip-text" style="z-index: 9; font-size: 1.1rem;">🅾️&nbsp;최근 1년간 기수 & 조교사 경주&nbsp;🚫</span>
                   </span>
                   {% else %}
-                    {% if r.jt_per == 0.0 %}
-                    <span class="tooltip" style="font-family: Arial; color:var(--color-r5); border:1px solid orange; border-radius: 5px; padding: 0px 4px;">{{r.jt_cnt}}
+                    {% if jt_per == 0.0 %}
+                    <span class="tooltip" style="font-family: Arial; color:var(--color-r5); border:1px solid orange; border-radius: 5px; padding: 0px 4px;">{{jt_cnt}}
                       <span class="tooltip-text" style="z-index: 9; font-size: 1.1rem;">🆕&nbsp;기수 & 조교사 최근 1년 출주 수</span>
                     </span>
                     {% else %}
                     <span class="tooltip" style="font-family: Arial; color:var(--color-light-gray);">
-                      <span style="font-family: Arial; color:var(--color-r1);">{{r.jt_1st}}</span>
-                      <span style="font-family: Arial; color:var(--color-r2);">{{r.jt_2nd|sub:r.jt_1st}}</span>
-                      <span style="font-family: Arial; color:var(--color-r3);">{{r.jt_3rd|sub:r.jt_2nd}}</span>
+                      <span style="font-family: Arial; color:var(--color-r1);">{{jt_1st}}</span>
+                      <span style="font-family: Arial; color:var(--color-r2);">{{jt_2nd|sub:jt_1st}}</span>
+                      <span style="font-family: Arial; color:var(--color-r3);">{{jt_3rd|sub:jt_2nd}}</span>
                       
                       <span class="tooltip-text" style="font-family: Arial; font-size: 1.15rem; z-index:9;">
-                        <div style="font-family: Arial; color:var(--color-light); text-align:center;">👥&nbsp; {{r.jockey}}&nbsp;﹆&nbsp;{{r.trainer}}</div>
+                        <div style="font-family: Arial; color:var(--color-light); text-align:center;">👥&nbsp; {{jockey}}&nbsp;﹆&nbsp;{{trainer}}</div>
                         <hr>
                         <div style="font-family: Arial; color:var(--color-main); text-align: left; padding-top: 6px;">1️⃣&nbsp;경주일 기준 최근 1년간 경주성적 : 
 
-                          {% if r.jt_cnt %}
-                          <span style="font-family: Arial; color:var(--color-r2); background-color: var(--color-bg); border-radius: 7px; padding: 2px 4px;">{{r.jt_cnt}}</span>
-                          <span style="font-family: Arial; color:var(--color-r3)">{{r.jt_1st}}</span>
-                          <span style="font-family: Arial; color:var(--color-r4)">{{r.jt_2nd|sub:r.jt_1st}}</span>
-                          <span style="font-family: Arial; color:var(--color-r5)">{{r.jt_3rd|sub:r.jt_2nd}}</span>
+                          {% if jt_cnt %}
+                          <span style="font-family: Arial; color:var(--color-r2); background-color: var(--color-bg); border-radius: 7px; padding: 2px 4px;">{{jt_cnt}}</span>
+                          <span style="font-family: Arial; color:var(--color-r3)">{{jt_1st}}</span>
+                          <span style="font-family: Arial; color:var(--color-r4)">{{jt_2nd|sub:jt_1st}}</span>
+                          <span style="font-family: Arial; color:var(--color-r5)">{{jt_3rd|sub:jt_2nd}}</span>
                           {% else %}
                           <span style="font-family: Arial; color:var(--color-r2); background-color: var(--color-bg); border-radius: 7px; padding: 2px 4px;">0</span>
                           <span style="font-family: Arial; color:var(--color-r3)">0</span>
@@ -708,16 +723,16 @@
                         </div>
                         <div style="font-family: Arial; color:var(--color-light-gray); text-align: left;">
                           2️⃣&nbsp;복승률 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                          {% if r.jt_cnt > 0 %}
-                          <span style="font-family: Arial; color: var(--color-r2);">{{r.jt_2nd|mul:100|div:r.jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                          {% if jt_cnt > 0 %}
+                          <span style="font-family: Arial; color: var(--color-r2);">{{jt_2nd|mul:100|div:jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                           {% else %}
                           <span style="font-family: Arial; color: var(--color-light-gray);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                           {% endif %}
                         </div>
                         <div style="font-family: Arial; color:var(--color-light-gray); text-align: left;">
                           3️⃣&nbsp;연승률 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                          {% if r.jt_cnt > 0 %}
-                          <span style="font-family: Arial; color: var(--color-r1);">{{r.jt_3rd|mul:100|div:r.jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
+                          {% if jt_cnt > 0 %}
+                          <span style="font-family: Arial; color: var(--color-r1);">{{jt_3rd|mul:100|div:jt_cnt|floatformat:"1"}}<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                           {% else %}
                           <span style="font-family: Arial; color: var(--color-light-gray);">0.0<sup style="color:var(--color-gray); font-size:0.7rem;">%</sup></span>
                           {% endif %}
@@ -731,7 +746,7 @@
               {% endif %}
             </td>
 
-            {% if r.rank >= 90 %}
+            {% if rank >= 90 %}
             <td align="center">-</td>
             <td align="center">-</td>
             <td align="center">-</td>
@@ -743,99 +758,187 @@
             <td align="center">-</td>
             {%else%}
             
-            {# 경주전개 furlong 기록 #}
-            <td align="center" style="font-size: 1.20rem ">
-
-              {% if compare_r.i_s1f__min == r.i_s1f %}
-              <span style="font-family: Arial; color:var(--color-r1); font-weight: 500; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{r.rs1f|slice:"-4:"}}</span>
-              {% elif r.i_s1f|sub:7 < compare_r.i_s1f__min %}
-              <span style="font-family: Arial; color:var(--color-r2); font-weight: 500;">{{r.rs1f|slice:"-4:"}}</span>
-              {% else %}
-              <span style="font-family: Arial; color:var(--color-light-gray);">{{r.rs1f|slice:"-4:"}}</span>
-              {% endif %}
-
+            <td align="right" style="vertical-align: middle;">
+              <div style="text-align:right; font-size:1.15rem;">
+                <span class="tooltip" style="font-weight: normal;">
+                {% if rec_per == 100 %}
+                <span style="font-family: Arial; color: var(--color-r1); font-weight: bold;">{{rec_per|floatformat:0}}</span>
+                {% elif rec_per >= 90.0 and rec_per < 100 %}
+                <span style="font-family: Arial; color: var(--color-r1);">{{rec_per|floatformat:1}}</span>
+                {% elif rec_per >= 80.0 and rec_per < 90 %}
+                <span style="font-family: Arial; color: var(--color-r2);">{{rec_per|floatformat:1}}</span>
+                {% elif rec_per >= 70 and rec_per < 80 %}
+                <span style="font-family: Arial; color: var(--color-r3);">{{rec_per|floatformat:1}}</span>
+                {% elif rec_per >= 60 and rec_per < 70 %}
+                <span style="font-family: Arial; color: var(--color-r4);">{{rec_per|floatformat:1}}</span>
+                {% elif rec_per >= 50 and rec_per < 60 %}
+                <span style="font-family: Arial; color: var(--color-r5);">{{rec_per|floatformat:1}}</span>
+                {% elif rec_per == 0 %}
+                <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+                {% else %}
+                <span style="font-family: Arial; color: var(--color-gray);">{{rec_per|floatformat:1}}</span>
+                {% endif %}
+                <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
+                    ↪︎&nbsp;&nbsp;최근 Form 점수: {{rec_per|floatformat:1}}</span></span>
+              </div>
+              <div style="text-align:right; font-size:1.15rem;">
+                <span class="tooltip" style="font-weight: normal;">
+                {% if rec8_trend == 100 %}
+                <span style="font-family: Arial; color: var(--color-r1); font-weight: bold;">{{rec8_trend|floatformat:0}}</span>
+                {% elif rec8_trend >= 90.0 and rec8_trend < 100 %}
+                <span style="font-family: Arial; color: var(--color-r1);">{{rec8_trend|floatformat:1}}</span>
+                {% elif rec8_trend >= 80.0 and rec8_trend < 90 %}
+                <span style="font-family: Arial; color: var(--color-r2);">{{rec8_trend|floatformat:1}}</span>
+                {% elif rec8_trend >= 70 and rec8_trend < 80 %}
+                <span style="font-family: Arial; color: var(--color-r3);">{{rec8_trend|floatformat:1}}</span>
+                {% elif rec8_trend >= 60 and rec8_trend < 70 %}
+                <span style="font-family: Arial; color: var(--color-r4);">{{rec8_trend|floatformat:1}}</span>
+                {% elif rec8_trend >= 50 and rec8_trend < 60 %}
+                <span style="font-family: Arial; color: var(--color-r5);">{{rec8_trend|floatformat:1}}</span>
+                {% elif rec8_trend == 0 %}
+                <span style="font-family: Arial; color: var(--color-r1);">{{rec8_trend|floatformat:1}}</span>
+                {% else %}
+                <span style="font-family: Arial; color: var(--color-gray);">{{rec8_trend|floatformat:1}}</span>
+                {% endif %}
+                <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
+                    ↪︎&nbsp;&nbsp;최근 8경주 트렌드 점수: {{rec8_trend|floatformat:1}}</span></span>
+              </div>
             </td>
-            <td align="center" style="font-size: 1.20rem ">
-              {% if compare_r.i_g3f__min == r.i_g3f %}
-              <span style="font-family: Arial; color:var(--color-r1); font-weight: 500; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{r.rg3f|slice:"-4:"}}</span>
-              {% elif r.i_g3f|sub:7 < compare_r.i_g3f__min %}
-              <span style="font-family: Arial; color:var(--color-r2); font-weight: 500;">{{r.rg3f|slice:"-4:"}}</span>
+      
+            {# 경주전개 furlong 기록 #}
+            <td align="center" style="font-size: 1.25rem; border-radius: 10px; border: 0.5px solid gray; ">
+              {% if rs1f %}
+              {% if compare_i_s1f__min == i_s1f %}
+              <span style="font-family: Arial; color:var(--color-r1); background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{rs1f|slice:"2:6"}}</span>
+              {% elif i_s1f|sub:7 < compare_i_s1f__min %}
+              <span style="font-family: Arial; color:var(--color-r2); padding: 2px 4px;">{{rs1f|slice:"2:6"}}</span>
               {% else %}
-              <span style="font-family: Arial; color:var(--color-light-gray);">{{r.rg3f|slice:"-4:"}}</span>
+              <span style="font-family: Arial; color:var(--color-light-gray); padding: 2px 4px;">{{rs1f|slice:"2:6"}}</span>
+              {% endif %}
               {% endif %}
               
-              <div style="text-align:right; font-size:1.0rem;">
-                <span style="font-size: 1.0rem;">&nbsp;</span>
-                {% for hname, cnt in recovery_cnt %}
-                  {% if r.horse == hname %}
-                  <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-r1); border-radius: 7px; background-color: var(--color-bg); padding:2px 4px; border: 1px solid var(--color-r1);">{{cnt}}</span>
-                  {% endif %}
-                {% endfor %}               
-              </div>
-
-
-            </td>
-            <td align="center" style="font-size: 1.20rem;">
-              {% if compare_r.i_g2f__min == r.i_g2f %}
-              <span style="font-family: Arial; color:var(--color-r1); font-weight: 500; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{r.rg2f|slice:"-4:"}}</span>
-              {% elif r.i_g2f|sub:7 < compare_r.i_g2f__min %} 
-              <span style="font-family: Arial; color:var(--color-r2); font-weight: 500;">{{r.rg2f|slice:"-4:"}}</span>
-              {% else %}
-              <span style="font-family: Arial; color:var(--color-light-gray);">{{r.rg2f|slice:"-4:"}}</span>
-              {% endif %}
-
-              <div style="text-align:right; font-size:1.0rem;">
-                <span style="font-size: 1.0rem;">&nbsp;</span>
-                {% for hname, cnt in audit_cnt %}
-                  {% if r.horse == hname %}
-                  <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-r4); border-radius: 7px; background-color: var(--color-bg); padding:2px 4px; border: 1px solid var(--color-r4);">{{cnt}}</span>
-                  {% endif %}
-                {% endfor %}  
+              <div  style="text-align:right; font-size:1.0rem; ">
+                <span class="tooltip" style="font-weight: normal;">
+                {% if s1f_per == 100 %}
+                <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">⚡️&nbsp;&nbsp;</span>
+                {% elif s1f_per >= 90.0 and s1f_per < 100 %}
+                <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{s1f_per|floatformat:1}}</span>
+                {% elif s1f_per >= 80.0 and s1f_per < 90 %}
+                <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{s1f_per|floatformat:1}}</span>
+                {% elif s1f_per >= 70 and s1f_per < 80 %}
+                <span style="font-family: Arial; color: var(--color-r3);">{{s1f_per|floatformat:1}}</span>
+                {% elif s1f_per >= 60 and s1f_per < 70 %}
+                <span style="font-family: Arial; color: var(--color-r4);">{{s1f_per|floatformat:1}}</span>
+                {% elif s1f_per >= 50 and s1f_per < 60 %}
+                <span style="font-family: Arial; color: var(--color-r5);">{{s1f_per|floatformat:1}}</span>
+                {% elif s1f_per == 0 %}
+                <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+                {% else %}
+                <span style="font-family: Arial; color: var(--color-gray);">{{s1f_per|floatformat:1}}</span>
+                {% endif %}
+                <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
+                    ↪︎&nbsp;&nbsp;초반 200m 점수: {{s1f_per|floatformat:1}}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;{{corners}}</span>
+                  
+                  </span>
               </div>
 
             </td>
-            <td align="center" style="font-size: 1.20rem;">
-
-              {% if compare_r.i_g1f__min == r.i_g1f %}
-              <span style="font-family: Arial; color:var(--color-r1); font-weight: 500; background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{r.rg1f|slice:"-4:"}}</span>
-              {% elif r.i_g1f|sub:7 < compare_r.i_g1f__min %}
-              <span style="font-family: Arial; color:var(--color-r2); font-weight: 500;">{{r.rg1f|slice:"-4:"}}</span>
+            <td align="center" style="font-size: 1.25rem;">
+              {% if rg3f %}
+              {% if compare_i_g3f__min == i_g3f %}
+              <span style="font-family: Arial; color:var(--color-r1); background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{rg3f}}</span>
+              {% elif i_g3f|sub:7 < compare_i_g3f__min %}
+              <span style="font-family: Arial; color:var(--color-r2); padding: 2px 4px;">{{rg3f}}</span>
               {% else %}
-              <span style="font-family: Arial; color:var(--color-light-gray);">{{r.rg1f|slice:"-4:"}}</span>
+              <span style="font-family: Arial; color:var(--color-light-gray); padding: 2px 4px;">{{rg3f}}</span>
+              {% endif %}
+              {% endif %}
+              
+              <div  style="text-align:right; font-size:1.0rem; ">
+                <span class="tooltip" style="font-weight: normal;">
+                {% if g3f_per == 100 %}
+                <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">⚡️&nbsp;&nbsp;</span>
+                {% elif g3f_per >= 90.0 and g3f_per < 100 %}
+                <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{g3f_per|floatformat:1}}</span>
+                {% elif g3f_per >= 80.0 and g3f_per < 90 %}
+                <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{g3f_per|floatformat:1}}</span>
+                {% elif g3f_per >= 70 and g3f_per < 80 %}
+                <span style="font-family: Arial; color: var(--color-r3);">{{g3f_per|floatformat:1}}</span>
+                {% elif g3f_per >= 60 and g3f_per < 70 %}
+                <span style="font-family: Arial; color: var(--color-r4);">{{g3f_per|floatformat:1}}</span>
+                {% elif g3f_per >= 50 and g3f_per < 60 %}
+                <span style="font-family: Arial; color: var(--color-r5);">{{g3f_per|floatformat:1}}</span>
+                {% elif g3f_per == 0 %}
+                <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+                {% else %}
+                <span style="font-family: Arial; color: var(--color-gray);">{{g3f_per|floatformat:1}}</span>
+                {% endif %}
+                <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
+                    ↪︎&nbsp;&nbsp;종반 600m 점수: {{g3f_per|floatformat:1}}</span></span>
+              </div>
+
+            </td>
+
+            <td align="center" style="font-size: 1.25rem;">
+              {% if rg1f %}
+              {% if compare_i_g1f__min == i_g1f %}
+              <span style="font-family: Arial; color:var(--color-r1); background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{rg1f}}</span>
+              {% elif i_g1f|sub:7 < compare_i_g1f__min %}
+              <span style="font-family: Arial; color:var(--color-r2); padding: 2px 4px;">{{rg1f}}</span>
+              {% else %}
+              <span style="font-family: Arial; color:var(--color-light-gray); padding: 2px 4px;">{{rg1f}}</span>
+              {% endif %}
               {% endif %}
 
-              <div style="text-align:right; font-size:1.0rem;">
-                <span style="font-size: 1.0rem;">&nbsp;</span>
-                {% for hname, cnt in start_cnt %}
-                  {% if r.horse == hname %}
-                  <span style="font-family: Arial; font-size: 1.0rem; color:var(--color-r5); border-radius: 7px; background-color: var(--color-bg); padding:2px 4px; border: 1px solid var(--color-r5);">{{cnt}}</span>
-                  {% endif %}
-                {% endfor %}  
+              <div  style="text-align:right; font-size:1.0rem; ">
+                <span class="tooltip" style="font-weight: normal;">
+                {% if g1f_per == 100 %}
+                <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">⚡️&nbsp;&nbsp;</span>
+                {% elif g1f_per >= 90.0 and g1f_per < 100 %}
+                <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{g1f_per|floatformat:1}}</span>
+                {% elif g1f_per >= 80.0 and g1f_per < 90 %}
+                <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{g1f_per|floatformat:1}}</span>
+                {% elif g1f_per >= 70 and g1f_per < 80 %}
+                <span style="font-family: Arial; color: var(--color-r3);">{{g1f_per|floatformat:1}}</span>
+                {% elif g1f_per >= 60 and g1f_per < 70 %}
+                <span style="font-family: Arial; color: var(--color-r4);">{{g1f_per|floatformat:1}}</span>
+                {% elif g1f_per >= 50 and g1f_per < 60 %}
+                <span style="font-family: Arial; color: var(--color-r5);">{{g1f_per|floatformat:1}}</span>
+                {% elif g1f_per == 0 %}
+                <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+                {% else %}
+                <span style="font-family: Arial; color: var(--color-gray);">{{g1f_per|floatformat:1}}</span>
+                {% endif %}
+                <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
+                    ↪︎&nbsp;&nbsp;종반 200m 점수: {{g1f_per|floatformat:1}}</span></span>
               </div>
+
+              
             </td>
 
             {# 코너전개 #}
             <td align="center" style="font-size: 1.1rem;">
               
-              {% if r.corners %}
-                {% if r.corners|slice:"0:2" == '1-' %}
-                <div style="font-family: Arial; text-align: left; color: var(--color-r1);">{{r.corners|slice:"0:9"}}</div>
-                <div style="font-family: Arial; text-align: right; color: var(--color-r1);">{{r.corners|slice:"9:20"}}</div>
-                {% elif r.corners|slice:"0:2" == '2-' %}
-                <div style="font-family: Arial; text-align: left; color: var(--color-r2);">{{r.corners|slice:"0:9"}}</div>
-                <div style="font-family: Arial; text-align: right; color: var(--color-r2);">{{r.corners|slice:"9:20"}}</div>
-                {% elif r.corners|slice:"0:2" == '3-' %}
-                <div style="font-family: Arial; text-align: left; color: var(--color-r3);">{{r.corners|slice:"0:9"}}</div>
-                <div style="font-family: Arial; text-align: right; color: var(--color-r3);">{{r.corners|slice:"9:20"}}</div>
-                {% elif r.corners|slice:"0:2" == '4-' %}
-                <div style="font-family: Arial; text-align: left; color: var(--color-r4);">{{r.corners|slice:"0:9"}}</div>
-                <div style="font-family: Arial; text-align: right; color: var(--color-r4);">{{r.corners|slice:"9:20"}}</div>
-                {% elif r.corners|slice:"0:2" == '5-' %}
-                <div style="font-family: Arial; text-align: left; color: var(--color-r5);">{{r.corners|slice:"0:9"}}</div>
-                <div style="font-family: Arial; text-align: right; color: var(--color-r5);">{{r.corners|slice:"9:20"}}</div>
+              {% if corners %}
+                {% if corners|slice:"0:2" == '1-' %}
+                <div style="font-family: Arial; text-align: left; color: var(--color-r1);">{{corners|slice:"0:9"}}</div>
+                <div style="font-family: Arial; text-align: right; color: var(--color-r1);">{{corners|slice:"9:20"}}</div>
+                {% elif corners|slice:"0:2" == '2-' %}
+                <div style="font-family: Arial; text-align: left; color: var(--color-r2);">{{corners|slice:"0:9"}}</div>
+                <div style="font-family: Arial; text-align: right; color: var(--color-r2);">{{corners|slice:"9:20"}}</div>
+                {% elif corners|slice:"0:2" == '3-' %}
+                <div style="font-family: Arial; text-align: left; color: var(--color-r3);">{{corners|slice:"0:9"}}</div>
+                <div style="font-family: Arial; text-align: right; color: var(--color-r3);">{{corners|slice:"9:20"}}</div>
+                {% elif corners|slice:"0:2" == '4-' %}
+                <div style="font-family: Arial; text-align: left; color: var(--color-r4);">{{corners|slice:"0:9"}}</div>
+                <div style="font-family: Arial; text-align: right; color: var(--color-r4);">{{corners|slice:"9:20"}}</div>
+                {% elif corners|slice:"0:2" == '5-' %}
+                <div style="font-family: Arial; text-align: left; color: var(--color-r5);">{{corners|slice:"0:9"}}</div>
+                <div style="font-family: Arial; text-align: right; color: var(--color-r5);">{{corners|slice:"9:20"}}</div>
                 {% else %}
-                <div style="font-family: Arial; text-align: left; color: var(--color-gray);">{{r.corners|slice:"0:9"}}</div>
-                <div style="font-family: Arial; text-align: right; color: var(--color-gray);">{{r.corners|slice:"9:20"}}</div>
+                <div style="font-family: Arial; text-align: left; color: var(--color-gray);">{{corners|slice:"0:9"}}</div>
+                <div style="font-family: Arial; text-align: right; color: var(--color-gray);">{{corners|slice:"9:20"}}</div>
                 {% endif %}
               {% endif %}
               
@@ -844,22 +947,22 @@
             {# 경주기록 / 도착차이 #}
             <td align="center" style="border-radius: 10px; border: 0.5px solid gray;">
               
-              {% if r.gap %}
+              {% if gap %}
                 <div  style="font-size: 1.0rem; text-align: right;">
-                  <a href="{% url 'race_axis' r.rcity r.rdate r.rno r.jockey %}"
+                  <a href="{% url 'race_axis' rcity rdate rno jockey %}"
                     onclick="window.open(this.href, 'w_race_axis', 'top=100, left=900, width=500, height=720, toolbars=no, scrollbars=yes'); return false;">
                     
-                  {% if r.horse == hname %}
-                  <span style="color:var(--color-r3); font-weight: 400; font-family: Arial; border-radius: 10px; background-color: var(--color-bg);padding: 2px 4px;">{{r.gap}}</span>
+                  {% if horse == hname %}
+                  <span style="color:var(--color-r3); font-weight: 400; font-family: Arial; border-radius: 10px; background-color: var(--color-bg);padding: 2px 4px;">{{gap}}</span>
                   {%else%}
-                  <span style="color:var(--color-light); font-family: Arial; border-radius: 10px; background-color: var(--color-dark);padding: 2px 4px;">{{r.gap}}</span>
+                  <span style="color:var(--color-light); font-family: Arial; border-radius: 10px; background-color: var(--color-dark);padding: 2px 4px;">{{gap}}</span>
                   {%endif%}
                 </a>
                 </div>
               {% else %}
-                {% if r.rank == 1 %}
+                {% if rank == 1 %}
                 <div  style="font-size: 1.0rem; text-align: right;">
-                  <a href="{% url 'race_axis' r.rcity r.rdate r.rno r.jockey %}"
+                  <a href="{% url 'race_axis' rcity rdate rno jockey %}"
                     onclick="window.open(this.href, 'w_race_axis', 'top=100, left=900, width=500, height=720, toolbars=no, scrollbars=yes'); return false;">
                     <span style="font-style: italic; font-size:0.9rem; padding:1px 4px; border-radius: 7px;">📌</span>
                   </a>
@@ -868,10 +971,10 @@
               {%endif%}
 
               <div style="font-size: 1.25rem; font-style: italic; padding-top: 0.25rem;">
-                {% if r.horse == hname %}
-                <span style="font-family: Arial; color:var(--color-r3); background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{r.record|slice:"0:1"}}&nbsp;{{r.record|slice:"1:6"}}</span>
+                {% if horse == hname %}
+                <span style="font-family: Arial; color:var(--color-r3); background-color: var(--color-bg); padding: 2px 4px; border-radius: 7px;">{{record|slice:"0:1"}}&nbsp;{{record|slice:"1:6"}}</span>
                 {% else %}
-                <span style="font-family: Arial; color:var(--color-light-gray);">{{r.record|slice:"0:1"}}&nbsp;{{r.record|slice:"1:6"}}</span>
+                <span style="font-family: Arial; color:var(--color-light-gray);">{{record|slice:"0:1"}}&nbsp;{{record|slice:"1:6"}}</span>
                 {% endif %}
               </div>
 
@@ -880,108 +983,108 @@
             {# 프로그램 예상기록 /  환산기록 #}
             <td align="center">
               <div style="font-size: 1.2rem;  text-align: center;">
-                {% if r.p_rank == 1 %}
+                {% if p_rank == 1 %}
                 <span style="font-family: Arial; padding:2px 4px; background-color: var(--color-r1); border-radius: 7px; color:var(--color-light); font-style: italic;">
-                  {% if r.p_rank <= 20 %}{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}{% endif %}
+                  {% if p_rank <= 20 %}{{p_record|slice:"0:1"}}&nbsp;{{p_record|slice:"1:6"}}{% endif %}
                 </span>
-                {% elif r.p_rank == 2 %}
+                {% elif p_rank == 2 %}
                 <span style="font-family: Arial; padding:2px 4px; background-color: var(--color-r2); border-radius: 7px; color:var(--color-light); font-style: italic;">
-                  {% if r.p_rank <= 20 %}{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}{% endif %}
+                  {% if p_rank <= 20 %}{{p_record|slice:"0:1"}}&nbsp;{{p_record|slice:"1:6"}}{% endif %}
                 </span>
-                {% elif r.p_rank == 3 %}
+                {% elif p_rank == 3 %}
                 <span style="font-family: Arial; padding:2px 4px; background-color: var(--color-r3); border-radius: 7px; color:var(--color-bg); font-style: italic;">
-                  {% if r.p_rank <= 20 %}{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}{% endif %}
+                  {% if p_rank <= 20 %}{{p_record|slice:"0:1"}}&nbsp;{{p_record|slice:"1:6"}}{% endif %}
                 </span>
-                {% elif r.p_rank == 4 %}
+                {% elif p_rank == 4 %}
                 <span style="font-family: Arial; padding:2px 4px; border: 1px solid var(--color-r4); border-radius: 7px; color:var(--color-r4); font-style: italic;">
-                  {% if r.p_rank <= 20 %}{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}{% endif %}
+                  {% if p_rank <= 20 %}{{p_record|slice:"0:1"}}&nbsp;{{p_record|slice:"1:6"}}{% endif %}
                 </span>
-                {% elif r.p_rank == 5 %}
+                {% elif p_rank == 5 %}
                 <span style="font-family: Arial; padding:2px 4px; border: 1px solid var(--color-r5); border-radius: 7px; color:var(--color-r5); font-style: italic;">
-                  {% if r.p_rank <= 20 %}{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}{% endif %}
+                  {% if p_rank <= 20 %}{{p_record|slice:"0:1"}}&nbsp;{{p_record|slice:"1:6"}}{% endif %}
                 </span>
                 {% else %}
                 <span style="font-family: Arial; padding:2px 4px; background-color: var(--color-dark-medium); border-radius: 7px; font-weight:300; color:var(--color-gray); font-style: italic;">
-                  {% if r.p_rank <= 20 %}{{r.p_record|slice:"0:1"}}&nbsp;{{r.p_record|slice:"1:6"}}{% endif %}
+                  {% if p_rank <= 20 %}{{p_record|slice:"0:1"}}&nbsp;{{p_record|slice:"1:6"}}{% endif %}
                 </span>
                 {% endif %}
               </div>
           
-              {% if compare_r.convert_r__min == r.convert_r and r.convert_r %}
-              <div style="font-family: Arial; font-size: 1.2rem; color:var(--color-r1); text-align: right;">{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}</div>
+              {% if compare_convert_r__min == convert_r and convert_r %}
+              <div style="font-family: Arial; font-size: 1.2rem; color:var(--color-r1); text-align: right;">{{convert_r|slice:"0:1"}}&nbsp;{{convert_r|slice:"1:6"}}</div>
               {% else %}
-              <div style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray); text-align: right;">{% if r.convert_r %}{{r.convert_r|slice:"0:1"}}&nbsp;{{r.convert_r|slice:"1:6"}}{% endif %}</div>
+              <div style="font-family: Arial; font-size: 1.2rem; color:var(--color-gray); text-align: right;">{% if convert_r %}{{convert_r|slice:"0:1"}}&nbsp;{{convert_r|slice:"1:6"}}{% endif %}</div>
               {% endif %}
             </td>
 
             <td align="center">
-              {% if compare_r.recent3__min == r.recent3 and r.recent3 %}
-              <div style="font-family: Arial; font-family: Arial; font-size: 1.2rem; color:var(--color-r1);">{{r.recent3|slice:"0:1"}}&nbsp;{{r.recent3|slice:"1:6"}}</div>
+              {% if compare_recent3__min == recent3 and recent3 %}
+              <div style="font-family: Arial; font-family: Arial; font-size: 1.2rem; color:var(--color-r1);">{{recent3|slice:"0:1"}}&nbsp;{{recent3|slice:"1:6"}}</div>
               {% else %}
-              <div style="font-family: Arial; font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">{% if r.recent3 %}{{r.recent3|slice:"0:1"}}&nbsp;{{r.recent3|slice:"1:6"}}{% endif %}</div>
+              <div style="font-family: Arial; font-family: Arial; font-size: 1.2rem; color:var(--color-gray);">{% if recent3 %}{{recent3|slice:"0:1"}}&nbsp;{{recent3|slice:"1:6"}}{% endif %}</div>
               {% endif %}
-              {% if compare_r.recent5__min == r.recent5 and r.recent5 %}
-              <div style="font-family: Arial; font-family: Arial; font-size: 1.2rem; color:var(--color-r1); text-align: right;">{{r.recent5|slice:"0:1"}}&nbsp;{{r.recent5|slice:"1:6"}}</div>
+              {% if compare_recent5__min == recent5 and recent5 %}
+              <div style="font-family: Arial; font-family: Arial; font-size: 1.2rem; color:var(--color-r1); text-align: right;">{{recent5|slice:"0:1"}}&nbsp;{{recent5|slice:"1:6"}}</div>
               {% else %}
-              <div style="font-family: Arial; font-family: Arial; font-size: 1.2rem; color:var(--color-gray); text-align: right;">{% if r.recent5 %}{{r.recent5|slice:"0:1"}}&nbsp;{{r.recent5|slice:"1:6"}}{% endif %}</div>
+              <div style="font-family: Arial; font-family: Arial; font-size: 1.2rem; color:var(--color-gray); text-align: right;">{% if recent5 %}{{recent5|slice:"0:1"}}&nbsp;{{recent5|slice:"1:6"}}{% endif %}</div>
               {% endif %}
             </td>
             
             {# 단식 / 연식 #}
             <td align="right">
               
-                {% if r.pop_rank %}
-                {% if r.pop_rank == 1 %}
+                {% if pop_rank %}
+                {% if pop_rank == 1 %}
                 <div style="color:var(--color-r1); font-style: italic; font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif;">
-                  {% if r.alloc1r != None %}{{r.alloc1r}}{% endif %}
+                  {% if alloc1r != None %}{{alloc1r}}{% endif %}
                 </div>
-                {% elif r.pop_rank == 2 %}
+                {% elif pop_rank == 2 %}
                 <div style="color:var(--color-r2); font-style: italic; font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif;">
-                  {% if r.alloc1r != None %}{{r.alloc1r}}{% endif %}
+                  {% if alloc1r != None %}{{alloc1r}}{% endif %}
                 </div>
-                {% elif r.pop_rank == 3 %}
+                {% elif pop_rank == 3 %}
                 <div style="color:var(--color-r3); font-style: italic; font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif;">
-                  {% if r.alloc1r != None %}{{r.alloc1r}}{% endif %}
+                  {% if alloc1r != None %}{{alloc1r}}{% endif %}
                 </div>
-                {% elif r.pop_rank == 4 %}
+                {% elif pop_rank == 4 %}
                 <div style="color:var(--color-r4); font-style: italic; font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif;">
-                  {% if r.alloc1r != None %}{{r.alloc1r}}{% endif %}
+                  {% if alloc1r != None %}{{alloc1r}}{% endif %}
                 </div>
-                {% elif r.pop_rank == 5 %}
+                {% elif pop_rank == 5 %}
                 <div style="color:var(--color-r5); font-style: italic; font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif;">
-                  {% if r.alloc1r != None %}{{r.alloc1r}}{% endif %}
+                  {% if alloc1r != None %}{{alloc1r}}{% endif %}
                 </div>
                 {% else %}
                 <div style="font-weight:300; color:var(--color-gray); font-style: italic; font-size: 1.2rem; font-family: Arial, Helvetica, sans-serif;">
-                  {% if r.alloc1r != None %}{{r.alloc1r}}{% endif %}
+                  {% if alloc1r != None %}{{alloc1r}}{% endif %}
                 </div>
                 {% endif %}
                 {% endif %}
 
-                {% if r.pop_rank %}
-                {% if r.pop_rank == 1 %}
+                {% if pop_rank %}
+                {% if pop_rank == 1 %}
                 <div style="color:var(--color-r1); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: right;">
-                  {% if r.alloc3r != None %}{{r.alloc3r}}{% endif %}
+                  {% if alloc3r != None %}{{alloc3r}}{% endif %}
                 </div>
-                {% elif r.pop_rank == 2 %}
+                {% elif pop_rank == 2 %}
                 <div style="color:var(--color-r2); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: right;">
-                  {% if r.alloc3r != None %}{{r.alloc3r}}{% endif %}
+                  {% if alloc3r != None %}{{alloc3r}}{% endif %}
                 </div>
-                {% elif r.pop_rank == 3 %}
+                {% elif pop_rank == 3 %}
                 <div style="color:var(--color-r3); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: right;">
-                  {% if r.alloc3r != None %}{{r.alloc3r}}{% endif %}
+                  {% if alloc3r != None %}{{alloc3r}}{% endif %}
                 </div>
-                {% elif r.pop_rank == 4 %}
+                {% elif pop_rank == 4 %}
                 <div style="color:var(--color-r4); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: right;">
-                  {% if r.alloc3r != None %}{{r.alloc3r}}{% endif %}
+                  {% if alloc3r != None %}{{alloc3r}}{% endif %}
                 </div>
-                {% elif r.pop_rank == 5 %}
+                {% elif pop_rank == 5 %}
                 <div style="color:var(--color-r5); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: right;">
-                  {% if r.alloc3r != None %}{{r.alloc3r}}{% endif %}
+                  {% if alloc3r != None %}{{alloc3r}}{% endif %}
                 </div>
                 {% else %}
                 <div style="font-weight:300; color:var(--color-gray); font-style: italic; font-size: 1.2rem; font-family: Arial; text-align: right;">
-                  {% if r.alloc3r != None %}{{r.alloc3r}}{% endif %}
+                  {% if alloc3r != None %}{{alloc3r}}{% endif %}
                 </div>
                 {% endif %}
                 {% endif %}
@@ -993,7 +1096,9 @@
 
           <tr class="fold">
             <td colspan="18">
-              {% include 'base/m_result.html' %}
+              {% with row_rcity=rcity row_rdate=rdate row_rno=rno row_jockey=jockey row_trainer=trainer row_host=host row_handycap=handycap row_horse=horse %}
+              {% include 'base/m_result.html' with rcity=row_rcity rdate=row_rdate rno=row_rno jockey=row_jockey trainer=row_trainer host=row_host %}
+              {% endwith %}
             </td>
           </tr>
           {% endfor %}
@@ -1001,6 +1106,49 @@
       
         </tbody>
       </table>
+
+      <section class="race-insight-grid">
+        <div style="background:rgba(18,26,40,0.86); border:1px solid rgba(130,149,176,0.32); border-radius:0.6rem; padding:0.6rem 0.8rem;">
+          <div style="font-size:1.14rem; font-family: Arial, Helvetica, sans-serif; font-weight:700; color:var(--color-main); margin-bottom:0.2rem;">Passage</div>
+          <div id="passage-raw" style="font-size:1.1rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-light-gray); line-height:1.52;">
+            <div style="display:flex; align-items:flex-start; gap:0.55rem; margin:0.04rem 0;"><span style="flex:0 0 3.4rem; color:var(--color-main-medium); font-weight:600;">S1F:</span><span style="flex:1; color:var(--color-light); letter-spacing:0.1px; word-break:break-word;">{{ r_condition.passage_s1f|default:"-" }}</span></div>
+            <div style="display:flex; align-items:flex-start; gap:0.55rem; margin:0.04rem 0;"><span style="flex:0 0 3.4rem; color:var(--color-main-medium); font-weight:600;">G8F:</span><span style="flex:1; color:var(--color-light); letter-spacing:0.1px; word-break:break-word;">{{ r_condition.passage_g8f|default:"-" }}</span></div>
+            <div style="display:flex; align-items:flex-start; gap:0.55rem; margin:0.04rem 0;"><span style="flex:0 0 3.4rem; color:var(--color-main-medium); font-weight:600;">1C:</span><span style="flex:1; color:var(--color-light); letter-spacing:0.1px; word-break:break-word;">{{ r_condition.passage_1c|default:"-" }}</span></div>
+            <div style="display:flex; align-items:flex-start; gap:0.55rem; margin:0.04rem 0;"><span style="flex:0 0 3.4rem; color:var(--color-main-medium); font-weight:600;">2C:</span><span style="flex:1; color:var(--color-light); letter-spacing:0.1px; word-break:break-word;">{{ r_condition.passage_2c|default:"-" }}</span></div>
+            <div style="display:flex; align-items:flex-start; gap:0.55rem; margin:0.04rem 0;"><span style="flex:0 0 3.4rem; color:var(--color-main-medium); font-weight:600;">3C:</span><span style="flex:1; color:var(--color-light); letter-spacing:0.1px; word-break:break-word;">{{ r_condition.passage_3c|default:"-" }}</span></div>
+            <div style="display:flex; align-items:flex-start; gap:0.55rem; margin:0.04rem 0;"><span style="flex:0 0 3.4rem; color:var(--color-main-medium); font-weight:600;">4C:</span><span style="flex:1; color:var(--color-light); letter-spacing:0.1px; word-break:break-word;">{{ r_condition.passage_4c|default:"-" }}</span></div>
+            <div style="display:flex; align-items:flex-start; gap:0.55rem; margin:0.04rem 0;"><span style="flex:0 0 3.4rem; color:var(--color-main-medium); font-weight:600;">G1F:</span><span style="flex:1; color:var(--color-light); letter-spacing:0.1px; word-break:break-word;">{{ r_condition.passage_g1f|default:"-" }}</span></div>
+            <div style="display:flex; align-items:flex-start; gap:0.85rem; margin:0.07rem 0 0;"><span style="flex:0 0 3.4rem; color:var(--color-main-medium); font-weight:600;">R3F:</span><span style="color:var(--color-light); letter-spacing:0.1px;">{{ r_condition.r3f|default:"-" }}</span><span style="margin-left:0.7rem; color:var(--color-main-medium); font-weight:600;">R4F:</span><span style="color:var(--color-light); letter-spacing:0.1px;">{{ r_condition.r4f|default:"-" }}</span></div>
+          </div>
+        </div>
+        <div style="background:rgba(18,26,40,0.86); border:1px solid rgba(130,149,176,0.32); border-radius:0.6rem; padding:0.55rem 0.7rem;">
+          <div style="font-size:1.14rem; font-family: Arial, Helvetica, sans-serif; font-weight:700; color:var(--color-main); margin-bottom:0.2rem;">레이스 전개 흐름</div>
+          <div id="passage-analysis-left" style="font-size:1.12rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-main); line-height:1.5; white-space:pre-line;"></div>
+        </div>
+        <div style="background:rgba(18,26,40,0.86); border:1px solid rgba(130,149,176,0.32); border-radius:0.6rem; padding:0.55rem 0.7rem;">
+          <div style="font-size:1.14rem; font-family: Arial, Helvetica, sans-serif; font-weight:700; color:var(--color-main); margin-bottom:0.2rem;">핵심 인사이트</div>
+          <div id="passage-analysis-right" style="font-size:1.12rem; font-family: Arial, Helvetica, sans-serif; color:var(--color-main); line-height:1.5; white-space:pre-line;"></div>
+        </div>
+      </section>
+
+      <script id="horse-rows-json" type="application/json">
+        [
+        {% for row in records %}
+          {
+            "gate": "{{ row.21|default_if_none:''|escapejs }}",
+            "rank": "{{ row.22|default_if_none:''|escapejs }}",
+            "horse": "{{ row.23|default_if_none:''|escapejs }}",
+            "record": "{{ row.35|default_if_none:''|escapejs }}",
+            "corners": "{{ row.37|default_if_none:''|escapejs }}",
+            "rs1f": "{{ row.38|default_if_none:''|escapejs }}",
+            "rg3f": "{{ row.43|default_if_none:''|escapejs }}",
+            "rg1f": "{{ row.45|default_if_none:''|escapejs }}",
+            "pRank": "{{ row.67|default_if_none:''|escapejs }}",
+            "popRank": "{{ row.69|default_if_none:''|escapejs }}"
+          }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+        ]
+      </script>
 
       <div style="font-size: 0.3rem; padding: 2px 6px;">&nbsp;</div>
       <span style="font-size: 1.3rem; padding: 2px 6px;">⚖️&nbsp;심판위원 Report</span>
@@ -1032,6 +1180,349 @@
       }
 
       window.addEventListener('load', hideRaceResultLoader, { once: true });
+    })();
+
+    (function () {
+      var passageFlowEl = document.getElementById('passage-analysis-left');
+      var passageInsightEl = document.getElementById('passage-analysis-right');
+      if (!passageFlowEl || !passageInsightEl) return;
+
+      var passageRaw = {
+        s1f: "{{ r_condition.passage_s1f|default_if_none:''|escapejs }}",
+        g8f: "{{ r_condition.passage_g8f|default_if_none:''|escapejs }}",
+        c1: "{{ r_condition.passage_1c|default_if_none:''|escapejs }}",
+        c2: "{{ r_condition.passage_2c|default_if_none:''|escapejs }}",
+        c3: "{{ r_condition.passage_3c|default_if_none:''|escapejs }}",
+        c4: "{{ r_condition.passage_4c|default_if_none:''|escapejs }}",
+        g1f: "{{ r_condition.passage_g1f|default_if_none:''|escapejs }}",
+        r3f: "{{ r_condition.r3f|default_if_none:''|escapejs }}",
+        r4f: "{{ r_condition.r4f|default_if_none:''|escapejs }}"
+      };
+
+      var horseRows = [];
+      try {
+        var horseRowsNode = document.getElementById('horse-rows-json');
+        var parsedHorseRows = horseRowsNode ? JSON.parse(horseRowsNode.textContent || "[]") : [];
+        horseRows = parsedHorseRows.map(function (row) {
+          return {
+            gate: Number(row.gate) || null,
+            rank: Number(row.rank) || null,
+            horse: row.horse || "",
+            record: row.record || "",
+            corners: row.corners || "",
+            rs1f: row.rs1f || "",
+            rg3f: row.rg3f || "",
+            rg1f: row.rg1f || "",
+            pRank: Number(row.pRank) || null,
+            popRank: Number(row.popRank) || null
+          };
+        });
+      } catch (e) {
+        horseRows = [];
+      }
+
+      function parseOrder(value) {
+        var list = (String(value || "").match(/\^?\d+/g) || []).map(function (v) {
+          return parseInt(v.replace("^", ""), 10);
+        });
+        var seen = {};
+        return list.filter(function (v) {
+          if (seen[v]) return false;
+          seen[v] = true;
+          return true;
+        });
+      }
+
+      function firstFloat(value) {
+        var m = String(value || "").match(/-?\d+(?:\.\d+)?/);
+        return m ? parseFloat(m[0]) : null;
+      }
+
+      function toSeconds(value) {
+        var s = String(value || "").trim();
+        if (!s) return null;
+        var mmss = s.match(/(\d+):(\d+(?:\.\d+)?)/);
+        if (mmss) return parseInt(mmss[1], 10) * 60 + parseFloat(mmss[2]);
+        var ff = s.match(/-?\d+(?:\.\d+)?/);
+        return ff ? parseFloat(ff[0]) : null;
+      }
+
+      function parseGroups(value) {
+        var raw = String(value || "");
+        var out = [];
+        var re = /\(([^)]+)\)|\^?\d+/g;
+        var m;
+        while ((m = re.exec(raw)) !== null) {
+          if (m[1]) {
+            var g = m[1].split(",").map(function (x) {
+              return parseInt(x.replace("^", "").trim(), 10);
+            }).filter(Boolean);
+            if (g.length) out.push(g);
+          } else {
+            var n = parseInt(m[0].replace("^", ""), 10);
+            if (n) out.push([n]);
+          }
+        }
+        return out;
+      }
+
+      // Parse passage with relation operators:
+      // "," = next slot, "=" = same slot (tie), "-" = separated block.
+      function parseStructured(rawValue) {
+        var raw = String(rawValue || "");
+        var tokens = raw.match(/\([^)]+\)|\^?\d+|[=-]/g) || [];
+        var tiers = [];
+        var breaks = 0;
+        var lastOp = ",";
+        var currentTier = [];
+
+        function parseHorseToken(token) {
+          if (!token) return [];
+          if (token.charAt(0) === "(" && token.charAt(token.length - 1) === ")") {
+            return token.slice(1, -1).split(",").map(function (x) {
+              return parseInt(x.replace("^", "").trim(), 10);
+            }).filter(Boolean);
+          }
+          var n = parseInt(token.replace("^", ""), 10);
+          return n ? [n] : [];
+        }
+
+        function pushTier() {
+          if (currentTier.length) tiers.push(currentTier.slice());
+        }
+
+        tokens.forEach(function (token) {
+          if (token === "=" || token === "-") {
+            lastOp = token;
+            return;
+          }
+          var horses = parseHorseToken(token);
+          if (!horses.length) return;
+
+          if (!currentTier.length) {
+            currentTier = horses.slice();
+            return;
+          }
+
+          if (lastOp === "=") {
+            currentTier = currentTier.concat(horses);
+          } else {
+            pushTier();
+            if (lastOp === "-") breaks += 1;
+            currentTier = horses.slice();
+          }
+          lastOp = ",";
+        });
+
+        pushTier();
+        var order = [];
+        var seen = {};
+        tiers.forEach(function (tier) {
+          tier.forEach(function (n) {
+            if (!seen[n]) {
+              seen[n] = true;
+              order.push(n);
+            }
+          });
+        });
+        return { tiers: tiers, order: order, breaks: breaks };
+      }
+
+      function leaderFrom(raw, fallbackOrder) {
+        var marked = (String(raw || "").match(/\^(\d+)/g) || []).map(function (v) {
+          return parseInt(v.replace("^", ""), 10);
+        }).filter(Boolean);
+        if (marked.length) return marked[0];
+        return fallbackOrder.length ? fallbackOrder[0] : null;
+      }
+
+      function posMap(order) {
+        var m = {};
+        order.forEach(function (h, i) { m[h] = i + 1; });
+        return m;
+      }
+
+      function topMovers(prevOrder, curOrder, minShift) {
+        var prev = posMap(prevOrder);
+        var cur = posMap(curOrder);
+        var up = [];
+        var down = [];
+        Object.keys(cur).forEach(function (k) {
+          var horse = parseInt(k, 10);
+          if (!prev[horse]) return;
+          var diff = prev[horse] - cur[horse];
+          if (diff >= minShift) up.push({ horse: horse, diff: diff });
+          if (diff <= -minShift) down.push({ horse: horse, diff: diff });
+        });
+        up.sort(function (a, b) { return b.diff - a.diff; });
+        down.sort(function (a, b) { return a.diff - b.diff; });
+        return { up: up, down: down };
+      }
+
+      function topN(order, n) {
+        return order.slice(0, n).join(",");
+      }
+
+      function overlapTop(a, b, n) {
+        var sa = new Set(a.slice(0, n));
+        return b.slice(0, n).filter(function (x) { return sa.has(x); }).length;
+      }
+
+      function topBy(rows, key, asc) {
+        var out = rows
+          .map(function (r) { return { horse: r.horse, rank: r.rank, v: key(r) }; })
+          .filter(function (x) { return x.v !== null && x.v !== undefined; })
+          .sort(function (a, b) { return asc ? (a.v - b.v) : (b.v - a.v); });
+        return out.length ? out[0] : null;
+      }
+
+      function cornerShift(corners) {
+        var nums = (String(corners || "").match(/\d+/g) || []).map(function (n) { return parseInt(n, 10); });
+        if (nums.length < 2) return null;
+        var start = nums[0];
+        var end = nums[nums.length - 1];
+        return { start: start, end: end, diff: start - end };
+      }
+
+      var s1fStructured = parseStructured(passageRaw.s1f);
+      var c3Structured = parseStructured(passageRaw.c3);
+      var c4Structured = parseStructured(passageRaw.c4);
+      var g1fStructured = parseStructured(passageRaw.g1f);
+
+      var s1fOrder = s1fStructured.order.length ? s1fStructured.order : parseOrder(passageRaw.s1f);
+      var c3Order = c3Structured.order.length ? c3Structured.order : parseOrder(passageRaw.c3);
+      var c4Order = c4Structured.order.length ? c4Structured.order : parseOrder(passageRaw.c4);
+      var g1fOrder = g1fStructured.order.length ? g1fStructured.order : parseOrder(passageRaw.g1f);
+      var s1fGroups = s1fStructured.tiers.length ? s1fStructured.tiers : parseGroups(passageRaw.s1f);
+
+      if (s1fOrder.length < 2 || c3Order.length < 2 || c4Order.length < 2 || g1fOrder.length < 2) {
+        passageFlowEl.textContent = "전개 분석: passage 데이터 형식 확인 필요";
+        passageInsightEl.textContent = "-";
+        return;
+      }
+
+      var allHorses = {};
+      [s1fOrder, c3Order, c4Order, g1fOrder].forEach(function (arr) {
+        arr.forEach(function (n) { allHorses[n] = true; });
+      });
+      var horseCount = Object.keys(allHorses).length;
+
+      var s1fLeader = leaderFrom(passageRaw.s1f, s1fOrder);
+      var c3Leader = leaderFrom(passageRaw.c3, c3Order);
+      var c4Leader = leaderFrom(passageRaw.c4, c4Order);
+      var g1fLeader = leaderFrom(passageRaw.g1f, g1fOrder);
+
+      var denseStart = s1fGroups.length && s1fGroups[0].length >= Math.max(5, Math.ceil(horseCount * 0.4));
+      var moveS3 = topMovers(s1fOrder, c3Order, 2);
+      var move34 = topMovers(c3Order, c4Order, 2);
+      var move4f = topMovers(c4Order, g1fOrder, 2);
+      var r3f = firstFloat(passageRaw.r3f);
+      var r4f = firstFloat(passageRaw.r4f);
+      var last1f = (r3f !== null && r4f !== null) ? (r4f - r3f) : null;
+      var validRows = horseRows.filter(function (r) {
+        return r.rank !== null && r.rank > 0 && r.rank < 90;
+      });
+
+      var s1fTieCount = s1fStructured.tiers.filter(function (t) { return t.length >= 2; }).length;
+      var s1fLine = "• S1F: " + (denseStart ? "초반 밀집(" + s1fGroups[0].length + "/" + horseCount + ")" : "초반 분산")
+        + " / 상위5 " + topN(s1fOrder, 5)
+        + (s1fTieCount ? " / 동군 " + s1fTieCount + "구간" : "")
+        + (s1fStructured.breaks ? " / 분절 " + s1fStructured.breaks + "회" : "");
+      var c3Line = "• 3C: 선두 " + c3Leader + "번 / 상위5 " + topN(c3Order, 5)
+        + " / S1F→3C 상승 " + moveS3.up.length + "두, 하락 " + moveS3.down.length + "두";
+      var c4Line = "• 4C: 선두 " + c4Leader + "번 / 상위5 " + topN(c4Order, 5)
+        + " / 3C→4C 상승 " + move34.up.length + "두, 하락 " + move34.down.length + "두"
+        + (move34.up.length ? " / 대표↑ " + move34.up.slice(0, 2).map(function (x) { return x.horse + "번(+" + x.diff + ")"; }).join(", ") : "");
+      var g1fLine = "• G1F: 선두 " + g1fLeader + "번 / 상위5 " + topN(g1fOrder, 5)
+        + " / 4C→G1F 상승 " + move4f.up.length + "두, 하락 " + move4f.down.length + "두"
+        + (move4f.up.length ? " / 대표↑ " + move4f.up.slice(0, 2).map(function (x) { return x.horse + "번(+" + x.diff + ")"; }).join(", ") : "");
+
+      var retentionLine = "• 선두권 유지율: Top3 유지 S1F→3C "
+        + overlapTop(s1fOrder, c3Order, 3) + "/3, 3C→4C "
+        + overlapTop(c3Order, c4Order, 3) + "/3, 4C→G1F "
+        + overlapTop(c4Order, g1fOrder, 3) + "/3";
+
+      var structure = "• 전개 구조: " + (denseStart ? "초반 완만 → 중반 정렬 → 직선 가속형" : "초반부터 포지션 경쟁형");
+      var keyA = move4f.up.length
+        ? ("• 핵심: 4C→G1F 상승마 " + move4f.up.slice(0, 3).map(function (x) { return x.horse + "번"; }).join(", "))
+        : null;
+      var keyB = "• 핵심: 선행 유지마 " + c3Leader + "번 / 결승 선두 " + g1fLeader + "번";
+      var keyC = move4f.down.length
+        ? ("• 핵심: 탄력 저하마 " + move4f.down.slice(0, 2).map(function (x) { return x.horse + "번"; }).join(", "))
+        : null;
+      var lateLine = null;
+      if (r3f !== null && r4f !== null) {
+        var last1fText = (last1f !== null) ? last1f.toFixed(1) : "-";
+        var paceType = "표준";
+        if (r3f <= 34.9) paceType = "강한 막판 탄력";
+        else if (r3f >= 37.5) paceType = "막판 둔화형";
+        var last1fEval = "보통";
+        if (last1f !== null) {
+          if (last1f <= 11.8) last1fEval = "끝걸음 우수";
+          else if (last1f >= 13.2) last1fEval = "끝걸음 약세";
+        }
+        lateLine = "• 막판 지표: R3F " + r3f.toFixed(1) + " / R4F " + r4f.toFixed(1)
+          + " / 추정 1F " + last1fText + " → " + paceType + " (" + last1fEval + ")";
+      }
+
+      var dataLine1 = null;
+      var dataLine2 = null;
+      var dataLine3 = null;
+      if (validRows.length) {
+        var winner = validRows.filter(function (r) { return r.rank === 1; })[0] || validRows[0];
+        var bestRecord = topBy(validRows, function (r) { return toSeconds(r.record); }, true);
+        var bestS1f = topBy(validRows, function (r) { return toSeconds(r.rs1f); }, true);
+        var bestG3f = topBy(validRows, function (r) { return toSeconds(r.rg3f); }, true);
+        var bestG1f = topBy(validRows, function (r) { return toSeconds(r.rg1f); }, true);
+
+        var winRec = toSeconds(winner.record);
+        var recGap = (bestRecord && winRec !== null) ? (winRec - bestRecord.v) : null;
+        dataLine1 =
+          "• 기록 근거: 우승 " + (winner.gate || "-") + "번(" + (winner.record || "-") + ")" +
+          (recGap !== null ? " / 베스트기록 대비 " + (recGap > 0 ? "+" : "") + recGap.toFixed(1) + "s" : "") +
+          " / S1F최속 " + (bestS1f ? ((bestS1f.horse || "-") + "(" + bestS1f.v.toFixed(1) + ")") : "-") +
+          " / G3F최속 " + (bestG3f ? ((bestG3f.horse || "-") + "(" + bestG3f.v.toFixed(1) + ")") : "-") +
+          " / G1F최속 " + (bestG1f ? ((bestG1f.horse || "-") + "(" + bestG1f.v.toFixed(1) + ")") : "-");
+
+        var shifts = validRows
+          .map(function (r) {
+            var s = cornerShift(r.corners);
+            if (!s) return null;
+            return { gate: r.gate, rank: r.rank, start: s.start, end: s.end, diff: s.diff };
+          })
+          .filter(Boolean);
+        if (shifts.length) {
+          var up = shifts.slice().sort(function (a, b) { return b.diff - a.diff; })[0];
+          var dn = shifts.slice().sort(function (a, b) { return a.diff - b.diff; })[0];
+          dataLine2 = "• 코너 근거: 상승 " + up.gate + "번(" + up.start + "→" + up.end + ", +" + up.diff + ", 최종 " + up.rank + "위)"
+            + " / 하락 " + dn.gate + "번(" + dn.start + "→" + dn.end + ", " + dn.diff + ", 최종 " + dn.rank + "위)";
+        }
+
+        var gapRows = validRows
+          .filter(function (r) { return r.popRank !== null; })
+          .map(function (r) { return { gate: r.gate, diff: r.popRank - r.rank }; });
+        if (gapRows.length) {
+          var underval = gapRows.slice().sort(function (a, b) { return b.diff - a.diff; })[0];
+          var overval = gapRows.slice().sort(function (a, b) { return a.diff - b.diff; })[0];
+          dataLine3 = "• 인기 괴리: 저평가 " + underval.gate + "번(" + (underval.diff >= 0 ? "+" : "") + underval.diff + ")"
+            + " / 고평가 " + overval.gate + "번(" + (overval.diff >= 0 ? "+" : "") + overval.diff + ")";
+        }
+      }
+
+      function compactLines(lines) {
+        return lines.filter(function (line) {
+          return !!(line && String(line).trim());
+        });
+      }
+
+      var flowLines = compactLines([s1fLine, c3Line, c4Line, g1fLine, retentionLine, lateLine]);
+      var insightLines = compactLines([structure, keyA, keyB, keyC, dataLine1, dataLine2, dataLine3]);
+      if (c3Leader !== c4Leader || c4Leader !== g1fLeader) {
+        insightLines.push("• 주도권 변화: " + c3Leader + " → " + c4Leader + " → " + g1fLeader);
+      }
+
+      passageFlowEl.textContent = flowLines.join("\n");
+      passageInsightEl.textContent = insightLines.join("\n");
     })();
   </script>
 

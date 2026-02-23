@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.db import connection
+from django.db.utils import OperationalError, ProgrammingError
 from django.db.models import Count, Max, Min, Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
@@ -127,14 +128,18 @@ def check_visit(request):
 
     update_visitor_count(name)
 
-    new_visitor = Visitor(
-        ip_address=name,
-        user_agent=request.META.get("HTTP_USER_AGENT"),
-        current=request.build_absolute_uri(),
-        referer=request.META.get("HTTP_REFERER", "Unknown"),
-        timestamp=timezone.now(),
-    )
-    new_visitor.save()
+    try:
+        new_visitor = Visitor(
+            ip_address=name,
+            user_agent=request.META.get("HTTP_USER_AGENT"),
+            current=request.build_absolute_uri(),
+            referer=request.META.get("HTTP_REFERER", "Unknown"),
+            timestamp=timezone.now(),
+        )
+        new_visitor.save()
+    except (OperationalError, ProgrammingError) as exc:
+        # Dev/initial DB state에서 visitor 테이블이 없으면 홈 진입만 우선 허용.
+        print(f"check_visit skipped: {exc}")
 
 
 def visitor_count():
@@ -153,6 +158,7 @@ def update_visitor_count(name):
     now = datetime.now()
     timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
 
+    cursor = None
     try:
         cursor = connection.cursor()
 
@@ -178,9 +184,9 @@ def update_visitor_count(name):
 
         connection.commit()
 
-    except:
-        print("데이터베이스 오류가 발생했습니다:")
+    except (OperationalError, ProgrammingError) as exc:
+        print(f"update_visitor_count skipped: {exc}")
 
     finally:
-        cursor.close()
-        connection.close()
+        if cursor:
+            cursor.close()

@@ -4,33 +4,6 @@
 {% load mathfilters %}
 {% load humanize %}
 
-<style>
-  .home-left-sub2-row,
-  .home-left-sub2-row td,
-  .home-left-sub2-row th {
-    border-color: var(--color-bg) !important;
-  }
-
-  /* 원래 내장된 tooltip 텍스트는 숨기고, 포탈로만 표시 */
-  .tooltip .tooltip-text { display: none !important; }
-  /* 포탈 기본 스타일 (JS에서 position과 좌표만 제어) */
-  .tooltip-portal {
-    position: fixed;
-    z-index: 99999;
-    max-width: 40rem;
-    background: rgba(18, 18, 18, 0.96);
-    color: var(--color-light-gray);
-    padding: 8px 10px;
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 8px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
-    pointer-events: none;
-    font-size: 1.1rem;
-    line-height: 1.35;
-    font-family: Arial, Helvetica, sans-serif;
-  }
-</style>
-
 <tr class="home-left-sub2-row" data-rday="{{ r_rday }}">
   
   {# 경주번호 / 경주조건 #}
@@ -38,13 +11,17 @@
     <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
       
       {% if r2alloc %}
-      <div class="tooltip" style="font-size: 1.7rem; background-color: var(--color-bg); padding: 8px 10px; border-radius: 10px; border: 1px solid var(--color-dark-light);">
+      <div class="tooltip"
+           data-tip="➡️ {{r_rcity}} {{r_rdate|slice:'4:6'}}/{{r_rdate|slice:'6:8'}} ({{r_rday}}) {{r_rno}}R"
+           style="font-size: 1.7rem; background-color: var(--color-bg); padding: 8px 10px; border-radius: 10px; border: 1px solid var(--color-dark-light);">
       {% else %}
-      <div class="tooltip" style="font-size: 1.7rem; background-color: var(--color-bg); padding: 8px 10px; border-radius: 10px; border: 1px solid var(--color-r3);">
+      <div class="tooltip"
+           data-tip="➡️ {{r_rcity}} {{r_rdate|slice:'4:6'}}/{{r_rdate|slice:'6:8'}} ({{r_rday}}) {{r_rno}}R"
+           style="font-size: 1.7rem; background-color: var(--color-bg); padding: 8px 10px; border-radius: 10px; border: 1px solid var(--color-r3);">
       {% endif %}
         
         {% ifchanged r_rday %}
-        <span style="font-size: 1.3rem; color:var(--color-r5); background-color: var(--color-dark-mid); border: 1px solid var(--color-r5); padding: 3px 5px; border-radius: 50%;">
+        <span class="js-rday-badge" style="font-size: 1.3rem; color:var(--color-r5); background-color: var(--color-dark-mid); border: 1px solid var(--color-r5); padding: 3px 5px; border-radius: 50%;">
           {{r_rday}}
         </span>
         {% endifchanged %}
@@ -54,33 +31,21 @@
           {% if r_rno|mul:1 >= 10 %}{{r_rno}}<sup style="font-size: 1.0rem;">R</sup>{% else %}&nbsp;{{r_rno}}<sup style="font-size: 1.0rem;">R</sup>{% endif %}
         </span>
 
-        <div class="tooltip-text" style="font-size: 1.1rem; text-align: left; color:var(--color-light-gray); width: 20rem; z-index:999;">
-          {% if request.user.username == 'admin' %}
-          <span style="font-size: 1.1rem; color:var(--color-light-gray);">{{r_overview|linebreaksbr}}</span>
-          <br>
-          <span class="r-guide"
-                style="font-size:1.1rem; color:var(--color-light-gray);"
-                data-guide="{{ r_guide|escape }}">
-          </span>
-
-          <script>
-            (function () {
-              document.querySelectorAll('.r-guide').forEach(el => {
-                el.innerHTML = el.dataset.guide.replace(/\|/g, '<br>');
-              });
-            })();
-          </script>
-
-          {% else %}
-          <span style="font-size: 1.1rem; color:var(--color-light-gray);">경주반호</span>
-          {% endif %}
-        </div>
       </div>
     </a>
-    
+    <button
+      type="button"
+      class="race-comment-badge js-race-comment-open"
+      data-rcity="{{ r_rcity }}"
+      data-rdate="{{ r_rdate }}"
+      data-rday="{{ r_rday }}"
+      data-rno="{{ r_rno }}"
+      aria-label="댓글달기">
+      💬 <strong class="js-race-comment-count">0</strong>
+    </button>
   </td>
 
-  <td align="right" style="border-right: 1px solid var(--color-bg); background-color: var(--color-dark-mid);">
+  <td align="right" style="background-color: var(--color-dark-mid);">
     <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
       <span>
         <div style="font-family: Arial; font-size: 1.0rem; text-align: right; color: var(--color-main);">{{rtime}}</div>
@@ -101,68 +66,7 @@
     </a>
   </td>
 
-  {# 전역 툴팁 포탈 스크립트: 여러 번 include 되어도 1회만 초기화 #}
-  <script>
-    (function () {
-      if (window.__tooltipPortalInit) return; // 중복 초기화 방지
-      window.__tooltipPortalInit = true;
-
-      var portal = null;
-      var GAP = 12;
-
-      function ensurePortal() {
-        if (!portal) {
-          portal = document.createElement('div');
-          portal.className = 'tooltip-portal';
-          document.body.appendChild(portal);
-        }
-        return portal;
-      }
-
-      function place(x, y) {
-        var vw = window.innerWidth, vh = window.innerHeight;
-        portal.style.left = Math.max(8, Math.min(x, vw - portal.offsetWidth - 8)) + 'px';
-        portal.style.top  = Math.max(8, Math.min(y, vh - portal.offsetHeight - 8)) + 'px';
-      }
-
-      function onEnter(e) {
-        var host = e.target.closest('.tooltip');
-        if (!host) return;
-        var txt = host.querySelector('.tooltip-text');
-        if (!txt) return;
-        ensurePortal();
-        portal.innerHTML = txt.innerHTML; // 기존 텍스트/HTML 유지
-
-        var r = host.getBoundingClientRect();
-        place(r.right + GAP, r.top + GAP);
-
-        // 마우스 이동에 따라 살짝 따라오도록
-        document.addEventListener('mousemove', onMove, true);
-      }
-
-      function onMove(e) {
-        if (!portal) return;
-        place(e.clientX + GAP, e.clientY + GAP);
-      }
-
-      function onLeave(e) {
-        var host = e.target.closest('.tooltip');
-        if (!host) return;
-        if (portal && portal.parentNode) {
-          portal.parentNode.removeChild(portal);
-        }
-        portal = null;
-        document.removeEventListener('mousemove', onMove, true);
-      }
-
-      // 캡처 단계에서 전역 등록: 포함 중복에도 1회만 동작
-      document.addEventListener('mouseenter', onEnter, true);
-      document.addEventListener('mouseleave', onLeave, true);
-    })();
-  </script>
-
-  
-  <td colspan="1" style="border-right: 1px solid gray; width:5.0%">
+  <td colspan="1" style="width:5.0%; background-color: var(--color-dark-mid);">
 
     <div style="text-align:center;">
 
@@ -264,30 +168,29 @@
 
   </td>
 
-  {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex, jt_per, jt_cnt, jt_3rd, s1f_rank, i_cycle, rcount, recent3, recent5, convert_r, jockey_old, reason, alloc3r, m_rank, tot_score,  s1f_per, g3f_per, g1f_per, start_score, comment_one, g2f_rank, rec_per, rec8_trend, h_weight in expects %}  
-  {% if r_rcity == rcity and r_rdate == rdate and r_rno == rno %}
+  {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex, jt_per, jt_cnt, jt_3rd, s1f_rank, i_cycle, rcount, recent3, recent5, convert_r, jockey_old, reason, alloc3r, m_rank, tot_score,  s1f_per, g3f_per, g1f_per, start_score, comment_one, g2f_rank, rec_per, rec8_trend, h_weight in expects_for_race|default_if_none:'' %}
   
-  <td align="center" {% if rank < 90 %} style="color: var(--color-main);" {% else %} style="color: var(--color-main); background-color: var(--color-dark-light);" {% endif %}>
+  <td align="center" {% if rank < 90 %} style="color: var(--color-main); background-color: var(--color-dark-mid);" {% else %} style="color: var(--color-main); background-color: var(--color-dark-light);" {% endif %}>
 
     {# 마번 #}
     {% if r_rank > 90 %}
-    <div align="center" style="font-style: italic; font-size: 1.6rem; background-color:brown; border-radius: 10px;">
+    <div align="center" class="home-left-sub2-gate-tooltip" style="font-style: italic; font-size: 1.6rem; background-color:brown; border-radius: 10px; padding-top: 2px;">
     {% elif r_rank == 0 %}
-    <div align="center" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-dark); border-radius: 15px; border: 0.5px solid var(--color-bg);">
+    <div align="center" class="home-left-sub2-gate-tooltip" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-dark); border-radius: 15px; border: 0.5px solid var(--color-bg); padding-top: 2px;">
     {% elif r_rank == 1 %}
-    <div align="center" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-bg); border-radius: 10px; border: 0.5px solid var(--color-r1);">
+    <div align="center" class="home-left-sub2-gate-tooltip" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-bg); border-radius: 10px; border: 0.5px solid var(--color-r1); padding-top: 2px;">
     {% elif r_rank == 2 %}
-    <div align="center" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-bg); border-radius: 10px; border: 0.5px solid var(--color-r2);">
+    <div align="center" class="home-left-sub2-gate-tooltip" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-bg); border-radius: 10px; border: 0.5px solid var(--color-r2); padding-top: 2px;">
     {% elif r_rank == 3 %}
-    <div align="center" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-bg); border-radius: 10px; border: 0.5px solid var(--color-r3);">
+    <div align="center" class="home-left-sub2-gate-tooltip" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-bg); border-radius: 10px; border: 0.5px solid var(--color-r3); padding-top: 2px;">
     {% elif r_rank == 4 %}
-    <div align="center" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-dark-medium); border-radius: 10px; border: 0.5px solid var(--color-bg);">
+    <div align="center" class="home-left-sub2-gate-tooltip" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-dark-medium); border-radius: 10px; border: 0.5px solid var(--color-bg); padding-top: 2px;">
     {% elif r_rank == 5 %}
-    <div align="center" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-dark-medium); border-radius: 10px; border: 0.5px solid var(--color-bg);">
+    <div align="center" class="home-left-sub2-gate-tooltip" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-dark-medium); border-radius: 10px; border: 0.5px solid var(--color-bg); padding-top: 2px;">
     {% elif r_rank == 6 %}
-    <div align="center" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-dark-medium); border-radius: 10px; border: 0.5px solid var(--color-bg);">
+    <div align="center" class="home-left-sub2-gate-tooltip" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-dark-medium); border-radius: 10px; border: 0.5px solid var(--color-bg); padding-top: 2px;">
     {% else %}
-    <div align="center" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-dark); border-radius: 10px;">
+    <div align="center" class="home-left-sub2-gate-tooltip" style="font-style: italic; font-size: 1.6rem; background-color:var(--color-dark); border-radius: 10px; padding-top: 2px;">
     {% endif %}
     
       <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
@@ -296,82 +199,104 @@
         {% if r_rank == 1 %}
         <span class="tooltip" style=" color:var(--color-r1); font-weight: normal;">
           {{gate}}<sub style="font-size: 0.9rem;">{{r_rank}}</sub>
-          <span class="tooltip-text" style="font-size: 1.1rem; font-style: normal; color:var(--color-light-gray); text-align: left; z-index:999; width:33rem">
-                    👁️‍🗨️&nbsp;&nbsp;[{{gate}}번 {{horse}}]<br>{{comment_one}}<br>{{g2f_rank|linebreaksbr}}</span></span>
+          <span class="tooltip-text" style="font-size:clamp(0.98rem, 2.45vw, 1.12rem); line-height:1.48; font-style:normal; color:#dce7f7; text-align:left; z-index:999; width:min(34rem, 88vw); max-width:88vw; padding:clamp(0.62rem, 1.6vw, 0.8rem) clamp(0.78rem, 2vw, 1rem); border-radius:10px; background:rgba(8,14,28,0.96); border:1px solid rgba(120,160,210,0.35); box-shadow:0 10px 24px rgba(0,0,0,0.35);">
+                    <span style="display:block; font-size:clamp(1.08rem, 3.1vw, 1.38rem); font-weight:800; color:#8fd8ff; letter-spacing:0.01em; margin-bottom:0.22rem;">🐎 {{gate}}번 {{horse}}</span><br><span style="display:block; font-size:1.03rem; color:#bcd0ec; margin-bottom:0.28rem;">• 기수: {{jockey}} · 조교사: {{trainer}}<br>• 마주: {{host}} · 마체중: {{h_weight}} · 부담중량: {{handycap}}</span><br>• ver2 score: {{tot_score|floatformat:1}}<br>• 초반 200m 점수: {{s1f_per|floatformat:1}}<br>• 선행시 입상기대 점수: {{start_score}}<br>• 종반 600m 점수: {{g3f_per|floatformat:1}}<br>• 종반 200m 점수: {{g1f_per|floatformat:1}}<br>• 출주주기: {% if i_cycle %}{{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.8rem;">w</sup>{% else %}신마{% endif %}<br>{% if i_prehandy %}{% with handy_diff=handycap|sub:i_prehandy %}• 부담중량 변화: {{handy_diff|floatformat:1}}<br>{% endwith %}{% else %}• 부담중량 변화: 0.0<br>{% endif %}{% if not alloc3r %}{% with h_weight|slice:"0:3"|add:0 as weight_prefix %}{% if weight_prefix %}{% with handycap|div:weight_prefix|mul:100 as handy_ratio %}• 마체중({{weight_prefix}})/부담중량({{handycap}}) 지수: {{handy_ratio|floatformat:1}}{% endwith %}{% else %}• 마체중/부담중량 지수: NA{% endif %}{% endwith %}{% endif %}</span></span>
         {% elif r_rank == 2 %}
         <span class="tooltip" style=" color:var(--color-r2); font-weight: normal;">
           {{gate}}<sub style="font-size: 0.9rem;">{{r_rank}}</sub>
-          <span class="tooltip-text" style="font-size: 1.1rem; font-style: normal; color:var(--color-light-gray); text-align: left; z-index:999; width:33rem">
-                    👁️‍🗨️&nbsp;&nbsp;[{{gate}}번 {{horse}}]<br>{{comment_one}}<br>{{g2f_rank|linebreaksbr}}</span></span>
+          <span class="tooltip-text" style="font-size:clamp(0.98rem, 2.45vw, 1.12rem); line-height:1.48; font-style:normal; color:#dce7f7; text-align:left; z-index:999; width:min(34rem, 88vw); max-width:88vw; padding:clamp(0.62rem, 1.6vw, 0.8rem) clamp(0.78rem, 2vw, 1rem); border-radius:10px; background:rgba(8,14,28,0.96); border:1px solid rgba(120,160,210,0.35); box-shadow:0 10px 24px rgba(0,0,0,0.35);">
+                    <span style="display:block; font-size:clamp(1.08rem, 3.1vw, 1.38rem); font-weight:800; color:#8fd8ff; letter-spacing:0.01em; margin-bottom:0.22rem;">🐎 {{gate}}번 {{horse}}</span><br><span style="display:block; font-size:1.03rem; color:#bcd0ec; margin-bottom:0.28rem;">• 기수: {{jockey}} · 조교사: {{trainer}}<br>• 마주: {{host}} · 마체중: {{h_weight}} · 부담중량: {{handycap}}</span><br>• ver2 score: {{tot_score|floatformat:1}}<br>• 초반 200m 점수: {{s1f_per|floatformat:1}}<br>• 선행시 입상기대 점수: {{start_score}}<br>• 종반 600m 점수: {{g3f_per|floatformat:1}}<br>• 종반 200m 점수: {{g1f_per|floatformat:1}}<br>• 출주주기: {% if i_cycle %}{{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.8rem;">w</sup>{% else %}신마{% endif %}<br>{% if i_prehandy %}{% with handy_diff=handycap|sub:i_prehandy %}• 부담중량 변화: {{handy_diff|floatformat:1}}<br>{% endwith %}{% else %}• 부담중량 변화: 0.0<br>{% endif %}{% if not alloc3r %}{% with h_weight|slice:"0:3"|add:0 as weight_prefix %}{% if weight_prefix %}{% with handycap|div:weight_prefix|mul:100 as handy_ratio %}• 마체중({{weight_prefix}})/부담중량({{handycap}}) 지수: {{handy_ratio|floatformat:1}}{% endwith %}{% else %}• 마체중/부담중량 지수: NA{% endif %}{% endwith %}{% endif %}</span></span>
         {% elif r_rank == 3 %}
         <span class="tooltip" style=" color:var(--color-r3); font-weight: normal;">
           {{gate}}<sub style="font-size: 0.9rem;">{{r_rank}}</sub>
-          <span class="tooltip-text" style="font-size: 1.1rem; font-style: normal; color:var(--color-light-gray); text-align: left; z-index:999; width:33rem">
-                    👁️‍🗨️&nbsp;&nbsp;[{{gate}}번 {{horse}}]<br>{{comment_one}}<br>{{g2f_rank|linebreaksbr}}</span></span>
+          <span class="tooltip-text" style="font-size:clamp(0.98rem, 2.45vw, 1.12rem); line-height:1.48; font-style:normal; color:#dce7f7; text-align:left; z-index:999; width:min(34rem, 88vw); max-width:88vw; padding:clamp(0.62rem, 1.6vw, 0.8rem) clamp(0.78rem, 2vw, 1rem); border-radius:10px; background:rgba(8,14,28,0.96); border:1px solid rgba(120,160,210,0.35); box-shadow:0 10px 24px rgba(0,0,0,0.35);">
+                    <span style="display:block; font-size:clamp(1.08rem, 3.1vw, 1.38rem); font-weight:800; color:#8fd8ff; letter-spacing:0.01em; margin-bottom:0.22rem;">🐎 {{gate}}번 {{horse}}</span><br><span style="display:block; font-size:1.03rem; color:#bcd0ec; margin-bottom:0.28rem;">• 기수: {{jockey}} · 조교사: {{trainer}}<br>• 마주: {{host}} · 마체중: {{h_weight}} · 부담중량: {{handycap}}</span><br>• ver2 score: {{tot_score|floatformat:1}}<br>• 초반 200m 점수: {{s1f_per|floatformat:1}}<br>• 선행시 입상기대 점수: {{start_score}}<br>• 종반 600m 점수: {{g3f_per|floatformat:1}}<br>• 종반 200m 점수: {{g1f_per|floatformat:1}}<br>• 출주주기: {% if i_cycle %}{{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.8rem;">w</sup>{% else %}신마{% endif %}<br>{% if i_prehandy %}{% with handy_diff=handycap|sub:i_prehandy %}• 부담중량 변화: {{handy_diff|floatformat:1}}<br>{% endwith %}{% else %}• 부담중량 변화: 0.0<br>{% endif %}{% if not alloc3r %}{% with h_weight|slice:"0:3"|add:0 as weight_prefix %}{% if weight_prefix %}{% with handycap|div:weight_prefix|mul:100 as handy_ratio %}• 마체중({{weight_prefix}})/부담중량({{handycap}}) 지수: {{handy_ratio|floatformat:1}}{% endwith %}{% else %}• 마체중/부담중량 지수: NA{% endif %}{% endwith %}{% endif %}</span></span>
         {% elif r_rank == 4 %}
         <span class="tooltip" style=" color:var(--color-r4); font-weight: normal;">
           {{gate}}<sub style="font-size: 0.9rem;">{{r_rank}}</sub>
-          <span class="tooltip-text" style="font-size: 1.1rem; font-style: normal; color:var(--color-light-gray); text-align: left; z-index:999; width:33rem">
-                    👁️‍🗨️&nbsp;&nbsp;[{{gate}}번 {{horse}}]<br>{{comment_one}}<br>{{g2f_rank|linebreaksbr}}</span></span>
+          <span class="tooltip-text" style="font-size:clamp(0.98rem, 2.45vw, 1.12rem); line-height:1.48; font-style:normal; color:#dce7f7; text-align:left; z-index:999; width:min(34rem, 88vw); max-width:88vw; padding:clamp(0.62rem, 1.6vw, 0.8rem) clamp(0.78rem, 2vw, 1rem); border-radius:10px; background:rgba(8,14,28,0.96); border:1px solid rgba(120,160,210,0.35); box-shadow:0 10px 24px rgba(0,0,0,0.35);">
+                    <span style="display:block; font-size:clamp(1.08rem, 3.1vw, 1.38rem); font-weight:800; color:#8fd8ff; letter-spacing:0.01em; margin-bottom:0.22rem;">🐎 {{gate}}번 {{horse}}</span><br><span style="display:block; font-size:1.03rem; color:#bcd0ec; margin-bottom:0.28rem;">• 기수: {{jockey}} · 조교사: {{trainer}}<br>• 마주: {{host}} · 마체중: {{h_weight}} · 부담중량: {{handycap}}</span><br>• ver2 score: {{tot_score|floatformat:1}}<br>• 초반 200m 점수: {{s1f_per|floatformat:1}}<br>• 선행시 입상기대 점수: {{start_score}}<br>• 종반 600m 점수: {{g3f_per|floatformat:1}}<br>• 종반 200m 점수: {{g1f_per|floatformat:1}}<br>• 출주주기: {% if i_cycle %}{{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.8rem;">w</sup>{% else %}신마{% endif %}<br>{% if i_prehandy %}{% with handy_diff=handycap|sub:i_prehandy %}• 부담중량 변화: {{handy_diff|floatformat:1}}<br>{% endwith %}{% else %}• 부담중량 변화: 0.0<br>{% endif %}{% if not alloc3r %}{% with h_weight|slice:"0:3"|add:0 as weight_prefix %}{% if weight_prefix %}{% with handycap|div:weight_prefix|mul:100 as handy_ratio %}• 마체중({{weight_prefix}})/부담중량({{handycap}}) 지수: {{handy_ratio|floatformat:1}}{% endwith %}{% else %}• 마체중/부담중량 지수: NA{% endif %}{% endwith %}{% endif %}</span></span>
         {% elif r_rank == 5 %}
         <span class="tooltip" style=" color:var(--color-r5); font-weight: normal;">
           {{gate}}<sub style="font-size: 0.9rem;">{{r_rank}}</sub>
-          <span class="tooltip-text" style="font-size: 1.1rem; font-style: normal; color:var(--color-light-gray); text-align: left; z-index:999; width:33rem">
-                    👁️‍🗨️&nbsp;&nbsp;[{{gate}}번 {{horse}}]<br>{{comment_one}}<br>{{g2f_rank|linebreaksbr}}</span></span>
+          <span class="tooltip-text" style="font-size:clamp(0.98rem, 2.45vw, 1.12rem); line-height:1.48; font-style:normal; color:#dce7f7; text-align:left; z-index:999; width:min(34rem, 88vw); max-width:88vw; padding:clamp(0.62rem, 1.6vw, 0.8rem) clamp(0.78rem, 2vw, 1rem); border-radius:10px; background:rgba(8,14,28,0.96); border:1px solid rgba(120,160,210,0.35); box-shadow:0 10px 24px rgba(0,0,0,0.35);">
+                    <span style="display:block; font-size:clamp(1.08rem, 3.1vw, 1.38rem); font-weight:800; color:#8fd8ff; letter-spacing:0.01em; margin-bottom:0.22rem;">🐎 {{gate}}번 {{horse}}</span><br><span style="display:block; font-size:1.03rem; color:#bcd0ec; margin-bottom:0.28rem;">• 기수: {{jockey}} · 조교사: {{trainer}}<br>• 마주: {{host}} · 마체중: {{h_weight}} · 부담중량: {{handycap}}</span><br>• ver2 score: {{tot_score|floatformat:1}}<br>• 초반 200m 점수: {{s1f_per|floatformat:1}}<br>• 선행시 입상기대 점수: {{start_score}}<br>• 종반 600m 점수: {{g3f_per|floatformat:1}}<br>• 종반 200m 점수: {{g1f_per|floatformat:1}}<br>• 출주주기: {% if i_cycle %}{{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.8rem;">w</sup>{% else %}신마{% endif %}<br>{% if i_prehandy %}{% with handy_diff=handycap|sub:i_prehandy %}• 부담중량 변화: {{handy_diff|floatformat:1}}<br>{% endwith %}{% else %}• 부담중량 변화: 0.0<br>{% endif %}{% if not alloc3r %}{% with h_weight|slice:"0:3"|add:0 as weight_prefix %}{% if weight_prefix %}{% with handycap|div:weight_prefix|mul:100 as handy_ratio %}• 마체중({{weight_prefix}})/부담중량({{handycap}}) 지수: {{handy_ratio|floatformat:1}}{% endwith %}{% else %}• 마체중/부담중량 지수: NA{% endif %}{% endwith %}{% endif %}</span></span>
         {% elif r_rank == 6 %}
         <span class="tooltip" style=" color:var(--color-r6); font-weight: normal;">
           {{gate}}<sub style="font-size: 0.9rem;">{{r_rank}}</sub>
-          <span class="tooltip-text" style="font-size: 1.1rem; font-style: normal; color:var(--color-light-gray); text-align: left; z-index:999; width:33rem">
-                    👁️‍🗨️&nbsp;&nbsp;[{{gate}}번 {{horse}}]<br>{{comment_one}}<br>{{g2f_rank|linebreaksbr}}</span></span>
+          <span class="tooltip-text" style="font-size:clamp(0.98rem, 2.45vw, 1.12rem); line-height:1.48; font-style:normal; color:#dce7f7; text-align:left; z-index:999; width:min(34rem, 88vw); max-width:88vw; padding:clamp(0.62rem, 1.6vw, 0.8rem) clamp(0.78rem, 2vw, 1rem); border-radius:10px; background:rgba(8,14,28,0.96); border:1px solid rgba(120,160,210,0.35); box-shadow:0 10px 24px rgba(0,0,0,0.35);">
+                    <span style="display:block; font-size:clamp(1.08rem, 3.1vw, 1.38rem); font-weight:800; color:#8fd8ff; letter-spacing:0.01em; margin-bottom:0.22rem;">🐎 {{gate}}번 {{horse}}</span><br><span style="display:block; font-size:1.03rem; color:#bcd0ec; margin-bottom:0.28rem;">• 기수: {{jockey}} · 조교사: {{trainer}}<br>• 마주: {{host}} · 마체중: {{h_weight}} · 부담중량: {{handycap}}</span><br>• ver2 score: {{tot_score|floatformat:1}}<br>• 초반 200m 점수: {{s1f_per|floatformat:1}}<br>• 선행시 입상기대 점수: {{start_score}}<br>• 종반 600m 점수: {{g3f_per|floatformat:1}}<br>• 종반 200m 점수: {{g1f_per|floatformat:1}}<br>• 출주주기: {% if i_cycle %}{{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.8rem;">w</sup>{% else %}신마{% endif %}<br>{% if i_prehandy %}{% with handy_diff=handycap|sub:i_prehandy %}• 부담중량 변화: {{handy_diff|floatformat:1}}<br>{% endwith %}{% else %}• 부담중량 변화: 0.0<br>{% endif %}{% if not alloc3r %}{% with h_weight|slice:"0:3"|add:0 as weight_prefix %}{% if weight_prefix %}{% with handycap|div:weight_prefix|mul:100 as handy_ratio %}• 마체중({{weight_prefix}})/부담중량({{handycap}}) 지수: {{handy_ratio|floatformat:1}}{% endwith %}{% else %}• 마체중/부담중량 지수: NA{% endif %}{% endwith %}{% endif %}</span></span>
         {% elif r_rank > 90 %}
         <span class="tooltip" style=" color:var(--color-gray); font-size: 1.5rem; font-weight: normal; text-decoration:line-through white;">
           {{gate}}
-          <span class="tooltip-text" style="font-size: 1.2rem; text-align: left;">
-            <span style="font-style:normal;">🐴&nbsp;&nbsp;{{horse}}</span>
+          <span class="tooltip-text" style="font-size:clamp(0.96rem, 2.3vw, 1.1rem); line-height:1.46; text-align:left; color:#dce7f7; width:min(29rem, 84vw); max-width:84vw; padding:clamp(0.58rem, 1.55vw, 0.72rem) clamp(0.72rem, 1.9vw, 0.95rem); border-radius:10px; background:rgba(18,10,10,0.96); border:1px solid rgba(238,116,116,0.42); box-shadow:0 10px 24px rgba(0,0,0,0.35);">
+            <span style="display:block; font-style:normal; font-size:clamp(1.04rem, 3vw, 1.34rem); font-weight:800; color:#ffb2b2; letter-spacing:0.01em; margin-bottom:0.26rem;">🐴 {{gate}}번 {{horse}}</span>
             <br>
+            <span style="display:block; font-size:1.03rem; color:#bcd0ec; margin-bottom:0.28rem;">• 기수: {{jockey}} · 조교사: {{trainer}}<br>• 마주: {{host}} · 마체중: {{h_weight}} · 부담중량: {{handycap}}</span>
+            <br>
+            {% if r_rank == 97 %}
+            <span style="font-style:normal;">🚫&nbsp;&nbsp;주행중지 : {{reason}}</span>
+            {% elif r_rank == 98 %}
+            <span style="font-style:normal;">🚫&nbsp;&nbsp;출주취소 : {{reason}}</span>
+            {% else %}
             <span style="font-style:normal;">🚫&nbsp;&nbsp;취소 : {{reason}}</span>
+            {% endif %}
         </span>
         </span>
         {% else %}
         <span class="tooltip" style=" color:var(--color-gray); font-size: 1.5rem;  font-weight: 350;">
           {{gate}}<sub style="font-size: 0.9rem;">&nbsp;{{r_rank}}</sub>
-          <span class="tooltip-text" style="font-size: 1.1rem; font-style: normal; color:var(--color-light-gray); text-align: left; z-index:999; width:33rem">
-                    👁️‍🗨️&nbsp;&nbsp;[{{gate}}번 {{horse}}]<br>{{comment_one}}<br>{{g2f_rank|linebreaksbr}}</span></span>
+          <span class="tooltip-text" style="font-size:clamp(0.98rem, 2.45vw, 1.12rem); line-height:1.48; font-style:normal; color:#dce7f7; text-align:left; z-index:999; width:min(34rem, 88vw); max-width:88vw; padding:clamp(0.62rem, 1.6vw, 0.8rem) clamp(0.78rem, 2vw, 1rem); border-radius:10px; background:rgba(8,14,28,0.96); border:1px solid rgba(120,160,210,0.35); box-shadow:0 10px 24px rgba(0,0,0,0.35);">
+                    <span style="display:block; font-size:clamp(1.08rem, 3.1vw, 1.38rem); font-weight:800; color:#8fd8ff; letter-spacing:0.01em; margin-bottom:0.22rem;">🐎 {{gate}}번 {{horse}}</span><br><span style="display:block; font-size:1.03rem; color:#bcd0ec; margin-bottom:0.28rem;">• 기수: {{jockey}} · 조교사: {{trainer}}<br>• 마주: {{host}} · 마체중: {{h_weight}} · 부담중량: {{handycap}}</span><br>• ver2 score: {{tot_score|floatformat:1}}<br>• 초반 200m 점수: {{s1f_per|floatformat:1}}<br>• 선행시 입상기대 점수: {{start_score}}<br>• 종반 600m 점수: {{g3f_per|floatformat:1}}<br>• 종반 200m 점수: {{g1f_per|floatformat:1}}<br>• 출주주기: {% if i_cycle %}{{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.8rem;">w</sup>{% else %}신마{% endif %}<br>{% if i_prehandy %}{% with handy_diff=handycap|sub:i_prehandy %}• 부담중량 변화: {{handy_diff|floatformat:1}}<br>{% endwith %}{% else %}• 부담중량 변화: 0.0<br>{% endif %}{% if not alloc3r %}{% with h_weight|slice:"0:3"|add:0 as weight_prefix %}{% if weight_prefix %}{% with handycap|div:weight_prefix|mul:100 as handy_ratio %}• 마체중({{weight_prefix}})/부담중량({{handycap}}) 지수: {{handy_ratio|floatformat:1}}{% endwith %}{% else %}• 마체중/부담중량 지수: NA{% endif %}{% endwith %}{% endif %}</span></span>
         {% endif %}
       {% else %}
         {% if rank == 1 %}
         <span class="tooltip" style=" color:chartreuse; font-weight: normal; font-size:1.7rem;">
-          {{gate}}<span class="tooltip-text" style="font-size: 1.1rem; font-style: normal; color:var(--color-light-gray); text-align: left; z-index:999; width:33rem">
-                    👁️‍🗨️&nbsp;&nbsp;[{{gate}}번 {{horse}}]<br>{{comment_one}}<br>{{g2f_rank|linebreaksbr}}</span></span>
+          {{gate}}<span class="tooltip-text" style="font-size:clamp(0.98rem, 2.45vw, 1.12rem); line-height:1.48; font-style:normal; color:#dce7f7; text-align:left; z-index:999; width:min(34rem, 88vw); max-width:88vw; padding:clamp(0.62rem, 1.6vw, 0.8rem) clamp(0.78rem, 2vw, 1rem); border-radius:10px; background:rgba(8,14,28,0.96); border:1px solid rgba(120,160,210,0.35); box-shadow:0 10px 24px rgba(0,0,0,0.35);">
+                    <span style="display:block; font-size:clamp(1.08rem, 3.1vw, 1.38rem); font-weight:800; color:#8fd8ff; letter-spacing:0.01em; margin-bottom:0.22rem;">🐎 {{gate}}번 {{horse}}</span><br><span style="display:block; font-size:1.03rem; color:#bcd0ec; margin-bottom:0.28rem;">• 기수: {{jockey}} · 조교사: {{trainer}}<br>• 마주: {{host}} · 마체중: {{h_weight}} · 부담중량: {{handycap}}</span><br>• ver2 score: {{tot_score|floatformat:1}}<br>• 초반 200m 점수: {{s1f_per|floatformat:1}}<br>• 선행시 입상기대 점수: {{start_score}}<br>• 종반 600m 점수: {{g3f_per|floatformat:1}}<br>• 종반 200m 점수: {{g1f_per|floatformat:1}}<br>• 출주주기: {% if i_cycle %}{{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.8rem;">w</sup>{% else %}신마{% endif %}<br>{% if i_prehandy %}{% with handy_diff=handycap|sub:i_prehandy %}• 부담중량 변화: {{handy_diff|floatformat:1}}<br>{% endwith %}{% else %}• 부담중량 변화: 0.0<br>{% endif %}{% if not alloc3r %}{% with h_weight|slice:"0:3"|add:0 as weight_prefix %}{% if weight_prefix %}{% with handycap|div:weight_prefix|mul:100 as handy_ratio %}• 마체중({{weight_prefix}})/부담중량({{handycap}}) 지수: {{handy_ratio|floatformat:1}}{% endwith %}{% else %}• 마체중/부담중량 지수: NA{% endif %}{% endwith %}{% endif %}</span></span>
         {% elif rank == 2 %}
         <span class="tooltip" style=" color:chartreuse; font-weight: normal; font-size:1.7rem;">
-          {{gate}}<span class="tooltip-text" style="font-size: 1.1rem; font-style: normal; color:var(--color-light-gray); text-align: left; z-index:999; width:33rem">
-                    👁️‍🗨️&nbsp;&nbsp;[{{gate}}번 {{horse}}]<br>{{comment_one}}<br>{{g2f_rank|linebreaksbr}}</span></span>
+          {{gate}}<span class="tooltip-text" style="font-size:clamp(0.98rem, 2.45vw, 1.12rem); line-height:1.48; font-style:normal; color:#dce7f7; text-align:left; z-index:999; width:min(34rem, 88vw); max-width:88vw; padding:clamp(0.62rem, 1.6vw, 0.8rem) clamp(0.78rem, 2vw, 1rem); border-radius:10px; background:rgba(8,14,28,0.96); border:1px solid rgba(120,160,210,0.35); box-shadow:0 10px 24px rgba(0,0,0,0.35);">
+                    <span style="display:block; font-size:clamp(1.08rem, 3.1vw, 1.38rem); font-weight:800; color:#8fd8ff; letter-spacing:0.01em; margin-bottom:0.22rem;">🐎 {{gate}}번 {{horse}}</span><br><span style="display:block; font-size:1.03rem; color:#bcd0ec; margin-bottom:0.28rem;">• 기수: {{jockey}} · 조교사: {{trainer}}<br>• 마주: {{host}} · 마체중: {{h_weight}} · 부담중량: {{handycap}}</span><br>• ver2 score: {{tot_score|floatformat:1}}<br>• 초반 200m 점수: {{s1f_per|floatformat:1}}<br>• 선행시 입상기대 점수: {{start_score}}<br>• 종반 600m 점수: {{g3f_per|floatformat:1}}<br>• 종반 200m 점수: {{g1f_per|floatformat:1}}<br>• 출주주기: {% if i_cycle %}{{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.8rem;">w</sup>{% else %}신마{% endif %}<br>{% if i_prehandy %}{% with handy_diff=handycap|sub:i_prehandy %}• 부담중량 변화: {{handy_diff|floatformat:1}}<br>{% endwith %}{% else %}• 부담중량 변화: 0.0<br>{% endif %}{% if not alloc3r %}{% with h_weight|slice:"0:3"|add:0 as weight_prefix %}{% if weight_prefix %}{% with handycap|div:weight_prefix|mul:100 as handy_ratio %}• 마체중({{weight_prefix}})/부담중량({{handycap}}) 지수: {{handy_ratio|floatformat:1}}{% endwith %}{% else %}• 마체중/부담중량 지수: NA{% endif %}{% endwith %}{% endif %}</span></span>
         {% elif rank == 3 %}
         <span class="tooltip" style=" color:chartreuse; font-weight: normal; font-size:1.7rem;">
-          {{gate}}<span class="tooltip-text" style="font-size: 1.1rem; font-style: normal; color:var(--color-light-gray); text-align: left; z-index:999; width:33rem">
-                    👁️‍🗨️&nbsp;&nbsp;[{{gate}}번 {{horse}}]<br>{{comment_one}}<br>{{g2f_rank|linebreaksbr}}</span></span>
+          {{gate}}<span class="tooltip-text" style="font-size:clamp(0.98rem, 2.45vw, 1.12rem); line-height:1.48; font-style:normal; color:#dce7f7; text-align:left; z-index:999; width:min(34rem, 88vw); max-width:88vw; padding:clamp(0.62rem, 1.6vw, 0.8rem) clamp(0.78rem, 2vw, 1rem); border-radius:10px; background:rgba(8,14,28,0.96); border:1px solid rgba(120,160,210,0.35); box-shadow:0 10px 24px rgba(0,0,0,0.35);">
+                    <span style="display:block; font-size:clamp(1.08rem, 3.1vw, 1.38rem); font-weight:800; color:#8fd8ff; letter-spacing:0.01em; margin-bottom:0.22rem;">🐎 {{gate}}번 {{horse}}</span><br><span style="display:block; font-size:1.03rem; color:#bcd0ec; margin-bottom:0.28rem;">• 기수: {{jockey}} · 조교사: {{trainer}}<br>• 마주: {{host}} · 마체중: {{h_weight}} · 부담중량: {{handycap}}</span><br>• ver2 score: {{tot_score|floatformat:1}}<br>• 초반 200m 점수: {{s1f_per|floatformat:1}}<br>• 선행시 입상기대 점수: {{start_score}}<br>• 종반 600m 점수: {{g3f_per|floatformat:1}}<br>• 종반 200m 점수: {{g1f_per|floatformat:1}}<br>• 출주주기: {% if i_cycle %}{{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.8rem;">w</sup>{% else %}신마{% endif %}<br>{% if i_prehandy %}{% with handy_diff=handycap|sub:i_prehandy %}• 부담중량 변화: {{handy_diff|floatformat:1}}<br>{% endwith %}{% else %}• 부담중량 변화: 0.0<br>{% endif %}{% if not alloc3r %}{% with h_weight|slice:"0:3"|add:0 as weight_prefix %}{% if weight_prefix %}{% with handycap|div:weight_prefix|mul:100 as handy_ratio %}• 마체중({{weight_prefix}})/부담중량({{handycap}}) 지수: {{handy_ratio|floatformat:1}}{% endwith %}{% else %}• 마체중/부담중량 지수: NA{% endif %}{% endwith %}{% endif %}</span></span>
         {% elif rank == 4 %}
         <span class="tooltip" style=" color:chartreuse; font-weight: normal; font-size:1.7rem;">
-          {{gate}}<span class="tooltip-text" style="font-size: 1.1rem; font-style: normal; color:var(--color-light-gray); text-align: left; z-index:999; width:33rem">
-                    👁️‍🗨️&nbsp;&nbsp;[{{gate}}번 {{horse}}]<br>{{comment_one}}<br>{{g2f_rank|linebreaksbr}}</span></span>
+          {{gate}}<span class="tooltip-text" style="font-size:clamp(0.98rem, 2.45vw, 1.12rem); line-height:1.48; font-style:normal; color:#dce7f7; text-align:left; z-index:999; width:min(34rem, 88vw); max-width:88vw; padding:clamp(0.62rem, 1.6vw, 0.8rem) clamp(0.78rem, 2vw, 1rem); border-radius:10px; background:rgba(8,14,28,0.96); border:1px solid rgba(120,160,210,0.35); box-shadow:0 10px 24px rgba(0,0,0,0.35);">
+                    <span style="display:block; font-size:clamp(1.08rem, 3.1vw, 1.38rem); font-weight:800; color:#8fd8ff; letter-spacing:0.01em; margin-bottom:0.22rem;">🐎 {{gate}}번 {{horse}}</span><br><span style="display:block; font-size:1.03rem; color:#bcd0ec; margin-bottom:0.28rem;">• 기수: {{jockey}} · 조교사: {{trainer}}<br>• 마주: {{host}} · 마체중: {{h_weight}} · 부담중량: {{handycap}}</span><br>• ver2 score: {{tot_score|floatformat:1}}<br>• 초반 200m 점수: {{s1f_per|floatformat:1}}<br>• 선행시 입상기대 점수: {{start_score}}<br>• 종반 600m 점수: {{g3f_per|floatformat:1}}<br>• 종반 200m 점수: {{g1f_per|floatformat:1}}<br>• 출주주기: {% if i_cycle %}{{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.8rem;">w</sup>{% else %}신마{% endif %}<br>{% if i_prehandy %}{% with handy_diff=handycap|sub:i_prehandy %}• 부담중량 변화: {{handy_diff|floatformat:1}}<br>{% endwith %}{% else %}• 부담중량 변화: 0.0<br>{% endif %}{% if not alloc3r %}{% with h_weight|slice:"0:3"|add:0 as weight_prefix %}{% if weight_prefix %}{% with handycap|div:weight_prefix|mul:100 as handy_ratio %}• 마체중({{weight_prefix}})/부담중량({{handycap}}) 지수: {{handy_ratio|floatformat:1}}{% endwith %}{% else %}• 마체중/부담중량 지수: NA{% endif %}{% endwith %}{% endif %}</span></span>
         {% elif rank == 5 %}
         <span class="tooltip" style=" color:chartreuse; font-weight: normal; font-size:1.7rem;">
-          {{gate}}<span class="tooltip-text" style="font-size: 1.1rem; font-style: normal; color:var(--color-light-gray); text-align: left; z-index:999; width:33rem">
-                    👁️‍🗨️&nbsp;&nbsp;[{{gate}}번 {{horse}}]<br>{{comment_one}}<br>{{g2f_rank|linebreaksbr}}</span></span>
+          {{gate}}<span class="tooltip-text" style="font-size:clamp(0.98rem, 2.45vw, 1.12rem); line-height:1.48; font-style:normal; color:#dce7f7; text-align:left; z-index:999; width:min(34rem, 88vw); max-width:88vw; padding:clamp(0.62rem, 1.6vw, 0.8rem) clamp(0.78rem, 2vw, 1rem); border-radius:10px; background:rgba(8,14,28,0.96); border:1px solid rgba(120,160,210,0.35); box-shadow:0 10px 24px rgba(0,0,0,0.35);">
+                    <span style="display:block; font-size:clamp(1.08rem, 3.1vw, 1.38rem); font-weight:800; color:#8fd8ff; letter-spacing:0.01em; margin-bottom:0.22rem;">🐎 {{gate}}번 {{horse}}</span><br><span style="display:block; font-size:1.03rem; color:#bcd0ec; margin-bottom:0.28rem;">• 기수: {{jockey}} · 조교사: {{trainer}}<br>• 마주: {{host}} · 마체중: {{h_weight}} · 부담중량: {{handycap}}</span><br>• ver2 score: {{tot_score|floatformat:1}}<br>• 초반 200m 점수: {{s1f_per|floatformat:1}}<br>• 선행시 입상기대 점수: {{start_score}}<br>• 종반 600m 점수: {{g3f_per|floatformat:1}}<br>• 종반 200m 점수: {{g1f_per|floatformat:1}}<br>• 출주주기: {% if i_cycle %}{{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.8rem;">w</sup>{% else %}신마{% endif %}<br>{% if i_prehandy %}{% with handy_diff=handycap|sub:i_prehandy %}• 부담중량 변화: {{handy_diff|floatformat:1}}<br>{% endwith %}{% else %}• 부담중량 변화: 0.0<br>{% endif %}{% if not alloc3r %}{% with h_weight|slice:"0:3"|add:0 as weight_prefix %}{% if weight_prefix %}{% with handycap|div:weight_prefix|mul:100 as handy_ratio %}• 마체중({{weight_prefix}})/부담중량({{handycap}}) 지수: {{handy_ratio|floatformat:1}}{% endwith %}{% else %}• 마체중/부담중량 지수: NA{% endif %}{% endwith %}{% endif %}</span></span>
         {% else %}
           {% if complex == complex5 %}
           <span class="tooltip" style=" color:chartreuse; font-weight: normal; font-size:1.7rem;">
-            {{gate}}<span class="tooltip-text" style="font-size: 1.1rem; font-style: normal; color:var(--color-light-gray); text-align: left; z-index:999; width:33rem">
-                    👁️‍🗨️&nbsp;&nbsp;[{{gate}}번 {{horse}}]<br>{{comment_one}}<br>{{g2f_rank|linebreaksbr}}</span></span>
+            {{gate}}<span class="tooltip-text" style="font-size:clamp(0.98rem, 2.45vw, 1.12rem); line-height:1.48; font-style:normal; color:#dce7f7; text-align:left; z-index:999; width:min(34rem, 88vw); max-width:88vw; padding:clamp(0.62rem, 1.6vw, 0.8rem) clamp(0.78rem, 2vw, 1rem); border-radius:10px; background:rgba(8,14,28,0.96); border:1px solid rgba(120,160,210,0.35); box-shadow:0 10px 24px rgba(0,0,0,0.35);">
+                    <span style="display:block; font-size:clamp(1.08rem, 3.1vw, 1.38rem); font-weight:800; color:#8fd8ff; letter-spacing:0.01em; margin-bottom:0.22rem;">🐎 {{gate}}번 {{horse}}</span><br><span style="display:block; font-size:1.03rem; color:#bcd0ec; margin-bottom:0.28rem;">• 기수: {{jockey}} · 조교사: {{trainer}}<br>• 마주: {{host}} · 마체중: {{h_weight}} · 부담중량: {{handycap}}</span><br>• ver2 score: {{tot_score|floatformat:1}}<br>• 초반 200m 점수: {{s1f_per|floatformat:1}}<br>• 선행시 입상기대 점수: {{start_score}}<br>• 종반 600m 점수: {{g3f_per|floatformat:1}}<br>• 종반 200m 점수: {{g1f_per|floatformat:1}}<br>• 출주주기: {% if i_cycle %}{{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.8rem;">w</sup>{% else %}신마{% endif %}<br>{% if i_prehandy %}{% with handy_diff=handycap|sub:i_prehandy %}• 부담중량 변화: {{handy_diff|floatformat:1}}<br>{% endwith %}{% else %}• 부담중량 변화: 0.0<br>{% endif %}{% if not alloc3r %}{% with h_weight|slice:"0:3"|add:0 as weight_prefix %}{% if weight_prefix %}{% with handycap|div:weight_prefix|mul:100 as handy_ratio %}• 마체중({{weight_prefix}})/부담중량({{handycap}}) 지수: {{handy_ratio|floatformat:1}}{% endwith %}{% else %}• 마체중/부담중량 지수: NA{% endif %}{% endwith %}{% endif %}</span></span>
           {% else %}
           <span class="tooltip" style=" color:var(--color-light); font-weight: normal; font-size:1.6rem;">
-            {{gate}}<span class="tooltip-text" style="font-size: 1.1rem; font-style: normal; color:var(--color-light-gray); text-align: left; z-index:999; width:33rem">
-                    👁️‍🗨️&nbsp;&nbsp;[{{gate}}번 {{horse}}]<br>{{comment_one}}<br>{{g2f_rank|linebreaksbr}}</span></span>
+            {{gate}}<span class="tooltip-text" style="font-size:clamp(0.98rem, 2.45vw, 1.12rem); line-height:1.48; font-style:normal; color:#dce7f7; text-align:left; z-index:999; width:min(34rem, 88vw); max-width:88vw; padding:clamp(0.62rem, 1.6vw, 0.8rem) clamp(0.78rem, 2vw, 1rem); border-radius:10px; background:rgba(8,14,28,0.96); border:1px solid rgba(120,160,210,0.35); box-shadow:0 10px 24px rgba(0,0,0,0.35);">
+                    <span style="display:block; font-size:clamp(1.08rem, 3.1vw, 1.38rem); font-weight:800; color:#8fd8ff; letter-spacing:0.01em; margin-bottom:0.22rem;">🐎 {{gate}}번 {{horse}}</span><br><span style="display:block; font-size:1.03rem; color:#bcd0ec; margin-bottom:0.28rem;">• 기수: {{jockey}} · 조교사: {{trainer}}<br>• 마주: {{host}} · 마체중: {{h_weight}} · 부담중량: {{handycap}}</span><br>• ver2 score: {{tot_score|floatformat:1}}<br>• 초반 200m 점수: {{s1f_per|floatformat:1}}<br>• 선행시 입상기대 점수: {{start_score}}<br>• 종반 600m 점수: {{g3f_per|floatformat:1}}<br>• 종반 200m 점수: {{g1f_per|floatformat:1}}<br>• 출주주기: {% if i_cycle %}{{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.8rem;">w</sup>{% else %}신마{% endif %}<br>{% if i_prehandy %}{% with handy_diff=handycap|sub:i_prehandy %}• 부담중량 변화: {{handy_diff|floatformat:1}}<br>{% endwith %}{% else %}• 부담중량 변화: 0.0<br>{% endif %}{% if not alloc3r %}{% with h_weight|slice:"0:3"|add:0 as weight_prefix %}{% if weight_prefix %}{% with handycap|div:weight_prefix|mul:100 as handy_ratio %}• 마체중({{weight_prefix}})/부담중량({{handycap}}) 지수: {{handy_ratio|floatformat:1}}{% endwith %}{% else %}• 마체중/부담중량 지수: NA{% endif %}{% endwith %}{% endif %}</span></span>
           {% endif %}
         {% endif %}
       {% endif %}
       </a>
+    </div>
+
+    <div style="text-align:center; font-size:0.88rem; line-height:1.15; margin-top:0.1rem;">
+      {% if i_cycle %}
+      {% if i_cycle <= 14 %}
+      <span style="color:var(--color-r1);">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.72rem;">w</sup></span>
+      {% elif i_cycle >= 70 %}
+      <span style="color:var(--color-r3);">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.72rem;">w</sup></span>
+      {% else %}
+      <span style="color:var(--color-light-gray);">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.72rem;">w</sup></span>
+      {% endif %}
+      {% else %}
+      <span style="color:var(--color-gray);">신마</span>
+      {% endif %}
     </div>
     
     <div>
@@ -379,25 +304,24 @@
     <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
 
       {% if jockey_old %}
-      <span style="font-size: 0.83rem; color:var(--color-light); background-color: var(--color-r1); border-radius: 50%; padding:2px 2px; margin: 0px;">
+      <span class="jockey-badge jockey-badge--changed">
         <span class="tooltip" style="color:var(--color-light); font-weight: normal;">
           {{jockey|slice:"-2:"}}
           <span class="tooltip-text" style="text-align: left; font-size: 1.0rem;">
             🏇&nbsp;기수 변경<br>
             변경전 : {{jockey_old}}<br>
             사유 : {{reason}}
-
           </span>
         </span>
       </span>
       {% else %}
-        <span style="font-size: 0.83rem; color:var(--color-main-light); background-color:var(--color-dark); border-radius: 50%; padding:2px 2px; margin: 0px;">{{jockey|slice:"-2:"}}</span>
+      <span class="jockey-badge">{{jockey|slice:"-2:"}}</span>
       {% endif %}
     </a>
     </div>
 
     <div style="text-align:center; font-size:0.95rem;">
-      <span class="tooltip" style="font-weight: normal;">
+      <span style="font-weight: normal;">
       {% if tot_score == 100 %}
       <span style="font-family: Arial; color: var(--color-r1); font-weight: bold;">{{tot_score|floatformat:0}}</span>
       {% elif tot_score >= 90.0 and tot_score < 100 %}
@@ -415,17 +339,16 @@
       {% else %}
       <span style="font-family: Arial; color: var(--color-gray);">{{tot_score|floatformat:1}}</span>
       {% endif %}
-      <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
-          ↪︎&nbsp;&nbsp;ver2 score: {{tot_score|floatformat:1}}</span></span>
+      </span>
     </div>
 
     
   </td>
   
-  <td align="center" {% if rank < 90 %} style="font-family: Arial; color: var(--color-main); border-right: 1px solid gray;" {% else %} style="font-family: Arial; color: var(--color-main); background-color: var(--color-dark-light); border-right: 1px solid gray;" {% endif %}>
+  <td align="center" {% if rank < 90 %} style="font-family: Arial; color: var(--color-main); background-color: var(--color-dark-mid);" {% else %} style="font-family: Arial; color: var(--color-main); background-color: var(--color-dark-light);" {% endif %}>
 
     <div style="text-align:right; font-size:0.9rem;">
-      <span class="tooltip" style="font-weight: normal;">
+      <span style="font-weight: normal;">
       {% if s1f_per == 100 %}
       <span style="font-family: Arial; color: var(--color-r1);  font-weight: bold;">⚡️</span>
       {% elif s1f_per >= 90.0 and s1f_per < 100 %}
@@ -443,12 +366,11 @@
       {% else %}
       <span style="font-family: Arial; color: var(--color-gray);">{{s1f_per|floatformat:1}}</span>
       {% endif %}
-      <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
-          ↪︎&nbsp;&nbsp;초반 200m 점수: {{s1f_per|floatformat:1}}<br>↪︎&nbsp;&nbsp;선행시 입상기대 점수: {{start_score}}</span></span>
+      </span>
     </div>
 
     <div style="text-align:right; font-size:0.9rem;">
-      <span class="tooltip" style="font-weight: normal;">
+      <span style="font-weight: normal;">
       {% if g3f_per == 100 %}
       <span style="font-family: Arial; color: var(--color-r1);  font-weight: bold;">⚡️</span>
       {% elif g3f_per >= 90.0 and g3f_per < 100 %}
@@ -466,12 +388,11 @@
       {% else %}
       <span style="font-family: Arial; color: var(--color-gray);">{{g3f_per|floatformat:1}}</span>
       {% endif %}
-      <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
-          ↪︎&nbsp;&nbsp;종반 600m 점수: {{g3f_per|floatformat:1}}</span></span>
+      </span>
     </div>
 
     <div style="text-align:right; font-size:0.9rem;">
-      <span class="tooltip" style="font-weight: normal;">
+      <span style="font-weight: normal;">
       {% if g1f_per == 100 %}
       <span style="font-family: Arial; color: var(--color-r1);  font-weight: bold;">⚡️</span>
       {% elif g1f_per >= 90.0 and g1f_per < 100 %}
@@ -489,13 +410,12 @@
       {% else %}
       <span style="font-family: Arial; color: var(--color-gray);">{{g1f_per|floatformat:1}}</span>
       {% endif %}
-      <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
-          ↪︎&nbsp;&nbsp;종반 200m 점수: {{g1f_per|floatformat:1}}</span></span>
+      </span>
     </div>
 
     {# 부담중량 #}
     <div style="text-align:right; font-size:0.9rem;">
-      <span class="tooltip" style="font-weight: normal;">
+      <span style="font-weight: normal;">
       {% if i_prehandy %}
         {% with handy_diff=handycap|sub:i_prehandy %}
           {% if handy_diff >= 2 %}
@@ -511,16 +431,13 @@
           {% else %}
           <span style="font-family: Arial; color: var(--color-gray);">{{handy_diff|floatformat:1}}</span>
           {% endif %}
-          <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
-              ↪︎&nbsp;&nbsp;부담중량 변화: {{handy_diff|floatformat:1}}</span></span>
         {% endwith %}
       {% else %}
         {% with handy_diff=0 %}
           <span style="font-family: Arial; color: var(--color-gray); ">{{handy_diff|floatformat:1}}</span>
-          <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
-              ↪︎&nbsp;&nbsp;부담중량 변화: {{handy_diff|floatformat:1}}</span></span>
         {% endwith %}
       {% endif %}
+      </span>
     </div>
     
     {% if alloc3r %}
@@ -545,7 +462,7 @@
 
     {% else %}
       <div style="text-align:right; font-size:0.9rem;">
-        <span class="tooltip" style="font-weight: normal;">
+        <span style="font-weight: normal;">
         {% with h_weight|slice:"0:3"|add:0 as weight_prefix %}
         {% if weight_prefix %}
           {% with handycap|div:weight_prefix|mul:100 as handy_ratio %}
@@ -560,26 +477,21 @@
           {% else %}
           <span style="font-family: Arial; color: var(--color-gray);">{{handycap}}</span>
           {% endif %}
-          <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
-              ↪︎&nbsp;&nbsp;마체중({{weight_prefix}})/부담중량({{handycap}}) 지수: {{handy_ratio|floatformat:1}}</span></span>
           {% endwith %}
         {% else %}
           <span style="font-family: Arial; color: var(--color-gray);">NA</span>
-          <span class="tooltip-text" style="font-size: 1.1rem; font-family: Arial; color:var(--color-light-gray); text-align: left; z-index:999; width:15rem">
-              ↪︎&nbsp;&nbsp;마체중/부담중량 지수: NA</span></span>
         {% endif %}
         {% endwith %}
+        </span>
       </div>
 
     {% endif %}
-    
     
   </td>
 
 
   
 
-  {% endif %}
   {% endfor %}
 
 

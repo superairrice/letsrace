@@ -23,6 +23,15 @@ urlpatterns = [
     
     path("pyscript_test/", views.pyscriptTest, name="pyscript_test"),
     path("exp011/<str:pk>/", views.exp011, name="exp011"),
+    path("race-comments/", views.race_comments, name="race_comments"),
+    path("race-comments/action/", views.race_comment_action, name="race_comment_action"),
+    path("race-comments/delete/", views.race_comment_delete, name="race_comment_delete"),
+    path("race-comments/counts/", views.race_comment_counts, name="race_comment_counts"),
+    path("inquiry/", views.inquiry, name="inquiry"),
+    path("partnership/", views.partnership_inquiry, name="partnership_inquiry"),
+    path("terms/", views.terms_of_service, name="terms_of_service"),
+    path("privacy/", views.privacy_policy, name="privacy_policy"),
+    path("comment-policy/", views.comment_policy, name="comment_policy"),
     path("", views.home, name="home"),
     path("send_email/", views.send_email, name="send_email"),
     # path(

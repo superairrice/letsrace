@@ -2,590 +2,832 @@
 {% load mathfilters %}
 
 <style>
-  .home-right-table {
+  .home-right-insights,
+  .home-right-top3 {
+    font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+    text-rendering: optimizeLegibility;
+  }
+
+  .home-right-insights {
+    margin-bottom: 0.75rem;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .home-right-insight {
+    border: 1px solid var(--color-dark-light);
+    border-radius: 0.7rem;
+    background: rgba(18, 24, 38, 0.72);
+    padding: 0.72rem 0.8rem;
+  }
+
+  .home-right-insight__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.45rem;
+  }
+
+  .home-right-top3 {
+    margin-bottom: 0.55rem;
+    border: 1px solid var(--color-dark-light);
+    border-radius: 0.72rem;
+    background: rgba(18, 24, 38, 0.72);
+    padding: 0.78rem 0.86rem;
+    box-shadow: none;
+  }
+
+  .home-right-top3__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.55rem;
+    gap: 0.5rem;
+  }
+
+  .home-right-top3__title {
+    font-size: 1.24rem;
+    color: var(--color-light);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  .home-right-top3__meta {
+    font-size: 1.0rem;
+    color: #9cafc8;
+  }
+
+  .home-right-top3__city-list {
+    display: grid;
+    gap: 0.46rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-right-top3__city {
+    border: none;
+    border-radius: 0.58rem;
+    background: rgba(12, 18, 31, 0.55);
+    padding: 0.58rem 0.62rem;
+    box-shadow: inset 0 0 0 1px rgba(137, 153, 184, 0.12);
+  }
+
+  .home-right-top3__city-name {
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: #7ecff3;
+    margin-bottom: 0.34rem;
+  }
+
+  .home-right-top3__rows {
+    display: grid;
+    gap: 0.24rem;
+  }
+
+  .home-right-top3__row {
+    display: flex;
+    gap: 0.45rem;
+    font-size: 1.05rem;
+    line-height: 1.38;
+    color: #d2dcef;
+    align-items: flex-start;
+  }
+
+  .home-right-top3__label {
+    flex: 0 0 2.4rem;
+    color: #a8b7cf;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    padding-top: 0.2rem;
+  }
+
+  .home-right-top3__value {
+    color: #d9e3f3;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.24rem;
+  }
+
+  .home-right-top3__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.26rem;
+    max-width: 100%;
+    padding: 0.12rem 0.44rem;
+    border-radius: 999px;
+    border: none;
+    background: rgba(30, 41, 63, 0.76);
+    color: #dce7f6;
+    font-size: 0.98rem;
+    line-height: 1.25;
+  }
+
+  .home-right-top3__pill[data-tip] {
+    cursor: help;
+  }
+
+  .home-right-top3__pill-rank {
+    min-width: 1.6rem;
+    height: 1.6rem;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999px;
+    background: rgba(66, 187, 232, 0.12);
+    border: 2px solid rgba(145, 200, 224, 0.38);
+    color: #b4eeff;
+    font-size: 1.0rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .home-right-top3__pill-rank.rank-1 {
+    border-color: var(--color-r1);
+    color: var(--color-r1);
+  }
+
+  .home-right-top3__pill-rank.rank-2 {
+    border-color: var(--color-r2);
+    color: var(--color-r2);
+  }
+
+  .home-right-top3__pill-rank.rank-3 {
+    border-color: var(--color-r3);
+    color: var(--color-r3);
+  }
+
+  .home-right-top3__pill-name {
+    color: #92dcff;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .home-right-top3__pill-detail {
+    color: #c1d0e8;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    font-size: 0.96rem;
+  }
+
+  .home-right-top3__empty {
+    font-size: 1rem;
+    color: #8ea1be;
+    padding: 0.2rem 0.1rem;
+  }
+
+  .home-right-top3__table-wrap {
+    overflow-x: auto;
+    border: 1px solid rgba(130, 151, 182, 0.2);
+    border-radius: 0.56rem;
+    background: rgba(12, 18, 31, 0.52);
+  }
+
+  .home-right-top3__city-panels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.46rem;
+  }
+
+  .home-right-top3__city-panel {
+    border: none;
+    border-radius: 0.58rem;
+    background: rgba(12, 18, 31, 0.55);
+    padding: 0.5rem 0.56rem 0.58rem;
+    box-shadow: inset 0 0 0 1px rgba(137, 153, 184, 0.12);
+  }
+
+  .home-right-top3__city-title {
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: #7ecff3;
+    margin: 0 0 0.38rem;
+    letter-spacing: 0.01em;
+  }
+
+  .home-right-top3__table {
     width: 100%;
+    border-collapse: collapse;
+    min-width: 0;
     table-layout: fixed;
-    border-collapse: separate;
-    border-spacing: 0;
-    display: block;
-    height: 60vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    border-radius: 7px;
-    border: none !important;
-    border-style: none !important;
-    outline: none;
-    box-shadow: none !important;
-    isolation: isolate;
-    -webkit-overflow-scrolling: touch;
   }
 
-  .home-right-table thead {
-    position: sticky;
-    top: 0;
-    z-index: 120;
-    background-color: var(--color-dark) !important;
-    transform: translateZ(0);
+  .home-right-top3__table th,
+  .home-right-top3__table td {
+    padding: 0.24rem 0.42rem;
+    border-bottom: 1px solid rgba(124, 145, 176, 0.16);
+    font-size: 0.92rem;
+    line-height: 1.28;
+    vertical-align: middle;
   }
 
-  .home-right-table thead tr {
-    background-color: var(--color-dark) !important;
+  .home-right-top3__table td {
+    padding-top: 0.14rem;
+    padding-bottom: 0.14rem;
   }
 
-  .home-right-table thead th {
-    background-color: var(--color-dark) !important;
-    background-image: none !important;
-    background-clip: padding-box;
-    opacity: 1;
+  .home-right-top3__table th {
+    font-size: 0.84rem;
+    color: #9aacc4;
+    background: rgba(20, 27, 43, 0.62);
+    text-align: left;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  .home-right-top3__table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .home-right-top3__table-group {
+    color: #aebfd6;
+    font-weight: 700;
+    width: 3.4rem;
+    text-align: center;
+  }
+
+  .home-right-top3__table-rank {
+    width: 3.2rem;
+    text-align: center;
+  }
+
+  .home-right-top3__table-name {
+    color: #cdd9ea;
+    font-weight: 700;
+  }
+
+  .home-right-top3__table-top3 {
+    text-align: right;
+    color: #b9cade;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .home-right-top3__rank-badge {
+    min-width: 1.48rem;
+    height: 1.48rem;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 999px;
+    border: 2px solid rgba(145, 200, 224, 0.38);
+    color: #b4eeff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .home-right-top3__rank-badge.rank-1 {
+    border-color: var(--color-r1);
+    color: var(--color-r1);
+  }
+
+  .home-right-top3__rank-badge.rank-2 {
+    border-color: var(--color-r2);
+    color: var(--color-r2);
+  }
+
+  .home-right-top3__rank-badge.rank-3 {
+    border-color: var(--color-r3);
+    color: var(--color-r3);
+  }
+
+  .home-right-insight__title {
+    font-size: 1.24rem;
+    color: var(--color-light);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+
+  .home-right-insight__meta {
+    font-size: 1.02rem;
+    color: #a5b4c8;
+  }
+
+  .home-right-insight__list {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .home-right-insight__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    color: #c8d3e2;
+    padding: 0.2rem 0;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+    line-height: 1.35;
+  }
+
+  .home-right-insight__item--button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .home-right-insight__item:last-child {
+    border-bottom: none;
+  }
+
+  .home-right-insight__item--race {
+    align-items: flex-start;
+  }
+
+  .home-right-insight__item-main {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+  }
+
+  .home-right-insight__item-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    line-height: 1.3;
+  }
+
+  .home-right-insight__item-sub {
+    font-size: 0.96rem;
+    color: #8ea0b8;
+    line-height: 1.25;
+  }
+
+  .home-right-insight__item-value {
+    color: #d2dcee;
+    font-weight: 600;
+    white-space: nowrap;
+    padding-top: 0.05rem;
+  }
+
+  .home-right-insight__comment-preview {
+    margin-top: 0.08rem;
+    font-size: 0.92rem;
+    color: #9ab0cf;
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 17rem;
+  }
+
+  .home-right-insight__item--ellipsis {
+    color: #9fb0c8;
+    font-style: italic;
+  }
+
+  .home-right-insight__item--ellipsis-btn {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .home-right-insight__extra[hidden] {
+    display: none !important;
+  }
+
+  .home-right-insight__change-inline {
+    margin-left: 0.28rem;
+    font-size: 0.92rem;
+    color: #91a4c2;
+    line-height: 1.2;
+    max-width: 15rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .home-right-insight__item strong {
+    color: var(--color-main);
+    font-weight: 700;
+  }
+
+  .home-right-insight__item--news {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .home-right-insight__news-meta {
+    font-size: 0.96rem;
+    color: #8ea0b8;
+  }
+
+  .home-right-insight__empty {
+    font-size: 1.05rem;
+    color: var(--color-gray);
+    padding: 0.2rem 0;
+  }
+
+  html[data-theme="light"] .home-right-insight {
+    border-color: #b6c6d9;
+    background: rgba(240, 246, 252, 0.92);
+  }
+
+  html[data-theme="light"] .home-right-top3 {
+    border: 1px solid #b6c6d9;
+    background: rgba(240, 246, 252, 0.92);
+    box-shadow: none;
+  }
+
+  html[data-theme="light"] .home-right-top3__title {
+    color: #173a59;
+  }
+
+  html[data-theme="light"] .home-right-top3__meta {
+    color: #5f7590;
+  }
+
+  html[data-theme="light"] .home-right-top3__city {
+    border: none;
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: inset 0 0 0 1px rgba(132, 154, 182, 0.14);
+  }
+
+  html[data-theme="light"] .home-right-top3__city-name {
+    color: #0f729f;
+  }
+
+  html[data-theme="light"] .home-right-top3__row {
+    color: #274360;
+  }
+
+  html[data-theme="light"] .home-right-top3__label {
+    color: #65809d;
+  }
+
+  html[data-theme="light"] .home-right-top3__value {
+    color: #1f3a56;
+  }
+
+  html[data-theme="light"] .home-right-top3__pill {
+    border: none;
+    background: rgba(228, 239, 251, 0.9);
+    color: #1f3d5a;
+  }
+
+  html[data-theme="light"] .home-right-top3__pill-rank {
+    background: rgba(145, 210, 237, 0.22);
+    border-color: rgba(103, 160, 191, 0.45);
+    color: #136f9b;
+  }
+
+  html[data-theme="light"] .home-right-top3__pill-rank.rank-1,
+  html[data-theme="light"] .home-right-top3__pill-rank.rank-2,
+  html[data-theme="light"] .home-right-top3__pill-rank.rank-3 {
+    background: transparent;
+  }
+
+  html[data-theme="light"] .home-right-top3__pill-name {
+    color: #0f729f;
+  }
+
+  html[data-theme="light"] .home-right-top3__pill-detail {
+    color: #476280;
+  }
+
+  html[data-theme="light"] .home-right-top3__table-wrap {
+    border-color: rgba(132, 154, 182, 0.32);
+    background: rgba(255, 255, 255, 0.78);
+  }
+
+  html[data-theme="light"] .home-right-top3__city-panel {
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: inset 0 0 0 1px rgba(132, 154, 182, 0.14);
+  }
+
+  html[data-theme="light"] .home-right-top3__city-title {
+    color: #0f729f;
+  }
+
+  html[data-theme="light"] .home-right-top3__table th {
+    color: #627994;
+    background: rgba(236, 244, 252, 0.72);
+  }
+
+  html[data-theme="light"] .home-right-top3__table th,
+  html[data-theme="light"] .home-right-top3__table td {
+    border-bottom-color: rgba(132, 154, 182, 0.22);
+  }
+
+  html[data-theme="light"] .home-right-top3__table-group {
+    color: #6d86a1;
+  }
+
+  html[data-theme="light"] .home-right-top3__table-name {
+    color: #264561;
+  }
+
+  html[data-theme="light"] .home-right-top3__table-top3 {
+    color: #52708c;
+  }
+
+  @media (max-width: 768px) {
+    .home-right-top3__city-panels {
+      grid-template-columns: 1fr;
+    }
+
+    .home-right-top3__city-list {
+      grid-template-columns: 1fr;
+    }
+
+    .home-right-top3__pill {
+      font-size: 0.92rem;
+      padding: 0.1rem 0.38rem;
+      gap: 0.2rem;
+    }
+
+    .home-right-top3__pill-rank {
+      min-width: 1.48rem;
+      height: 1.48rem;
+      font-size: 0.94rem;
+    }
+  }
+
+  html[data-theme="light"] .home-right-top3__empty {
+    color: #6a809a;
+  }
+
+  html[data-theme="light"] .home-right-insight__title {
+    color: #1a3653;
+  }
+
+  html[data-theme="light"] .home-right-insight__meta {
+    color: #5a6f88;
+  }
+
+  html[data-theme="light"] .home-right-insight__item {
+    color: #39506c;
+    border-bottom-color: rgba(77, 103, 132, 0.22);
+  }
+
+  html[data-theme="light"] .home-right-insight__item strong {
+    color: #0b77a8;
+  }
+
+  html[data-theme="light"] .home-right-insight__item-sub {
+    color: #67809c;
+  }
+
+  html[data-theme="light"] .home-right-insight__item-value {
+    color: #284a69;
+  }
+
+  html[data-theme="light"] .home-right-insight__comment-preview {
+    color: #6a83a1;
+  }
+
+  html[data-theme="light"] .home-right-insight__item--ellipsis {
+    color: #6b829d;
+  }
+
+  html[data-theme="light"] .home-right-insight__change-inline {
+    color: #6f88a4;
+  }
+
+  html[data-theme="light"] .home-right-insight__news-meta {
+    color: #7187a0;
+  }
+
+  html[data-theme="light"] .home-right-insight__empty {
+    color: #6a809a;
+  }
+
+  html[data-theme="light"] .home-right-insight {
+    background: #f8fbff;
+    border-color: #c2cfdd;
+    box-shadow: 0 5px 14px rgba(53, 78, 106, 0.08);
+  }
+
+  html[data-theme="light"] .home-right-insight__title {
+    color: #173a59;
+    font-size: 1.2rem;
+  }
+
+  html[data-theme="light"] .home-right-insight__meta {
+    color: #5d748f;
+  }
+
+  html[data-theme="light"] .home-right-insight__item {
+    color: #223f5a;
+    border-bottom-color: rgba(120, 145, 170, 0.24);
+    font-size: 1.08rem;
+  }
+
+  html[data-theme="light"] .home-right-insight__item strong {
+    color: #0f729f;
   }
 </style>
 
-<script>
-  function resizeHomeRightTableHeight() {
-    var table = document.querySelector('.tab-content1.current .home-right-table');
-    if (!table) return;
-
-    var rect = table.getBoundingClientRect();
-    var bottomGap = 16;
-    var available = window.innerHeight - rect.top - bottomGap;
-
-    table.style.height = Math.max(260, available) + 'px';
-  }
-
-  window.addEventListener('resize', resizeHomeRightTableHeight);
-  window.addEventListener('load', resizeHomeRightTableHeight);
-
-  $(document).ready(function () {
-
-    $('ul.tabs1 li').click(function () {
-      var tab_id = $(this).attr('data-tab');
-
-      $('ul.tabs1 li').removeClass('current');
-      $('.tab-content1').removeClass('current');
-
-      $(this).addClass('current');
-      $("#" + tab_id).addClass('current');
-      resizeHomeRightTableHeight();
-    })
-
-    resizeHomeRightTableHeight();
-  })
-</script>
-
-<!-- <script>
-  $(function () {
-    $(".fold-table tr.view").on("click", function () {
-      if ($(this).hasClass("open")) {
-        $(this).removeClass("open").next(".fold").removeClass("open");
-      } else {
-        $(".fold-table tr.view").removeClass("open").next(".fold").removeClass("open");
-        $(this).addClass("open").next(".fold").addClass("open");
-      }
-    });
-  });
-
-</script> -->
-
 
 <div>
+  <section class="home-right-insights">
+    <article class="home-right-insight">
+      <div class="home-right-insight__head">
+        <div class="home-right-insight__title">출발 임박 알림</div>
+        <div class="home-right-insight__meta">T-30/T-10 체크</div>
+      </div>
+      <div class="home-right-insight__list">
+        {% for r in right_imminent_races|slice:":5" %}
+        <a class="home-right-insight__item"
+           href="{% url 'race_prediction' r.rcity r.rdate r.rno 0 'awardee' %}"
+           onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
+          <span><strong>{{ r.rcity }} {{ r.rno }}R</strong> · {{ r.rtime }}</span>
+          <span>T-{{ r.minutes_left }}분</span>
+        </a>
+        {% empty %}
+        <div class="home-right-insight__empty">임박 경주 데이터가 없습니다.</div>
+        {% endfor %}
+      </div>
+    </article>
 
-  <ul class="tabs1">
-    <li class="tab-link current" data-tab="tab-right1" style="padding: 4px 25px; border-radius: 4px;">서울<sup style="font-size: 1.2rem; color: var(--color-r2);">&nbsp;</sup></li>
-    <li class="tab-link" data-tab="tab-right2" style="padding: 4px 25px; border-radius: 4px;">부산<sup style="font-size: 1.2rem; color: var(--color-r2);">&nbsp;</sup></li>
-    <li class="tab-link" data-tab="tab-right3" style="padding: 4px 25px; border-radius: 4px;">출전표변경<sup style="font-size: 1.2rem; color: var(--color-r2);">&nbsp;</sup></li>
-  </ul>
+    <article class="home-right-insight">
+      <div class="home-right-insight__head">
+        <div class="home-right-insight__title">관심도 급증</div>
+        <div class="home-right-insight__meta">최근30분 - 직전30분</div>
+      </div>
+      <div class="home-right-insight__list">
+        {% for r in right_hot_races|slice:":3" %}
+        <button type="button"
+           class="home-right-insight__item home-right-insight__item--race home-right-insight__item--button js-race-comment-open"
+           data-rcity="{{ r.rcity }}"
+           data-rdate="{{ r.rdate }}"
+           data-rday="{{ r.rday }}"
+           data-rno="{{ r.rno }}"
+           aria-label="관심도 급증 댓글 보기">
+          <span class="home-right-insight__item-main">
+            <span class="home-right-insight__item-top">
+              <strong>{{ r.rcity }} {{ r.rno }}R</strong> · {{ r.rtime }}
+              {% if r.recent_comments %}
+              <span class="home-right-insight__comment-preview">💬 {{ r.recent_comments|join:" / " }}{% if r.recent_comments_more > 0 %} / ...{% endif %}</span>
+              {% endif %}
+            </span>
+            <span class="home-right-insight__item-sub">{{ r.rdate|slice:"0:4" }}.{{ r.rdate|slice:"4:6" }}.{{ r.rdate|slice:"6:8" }} ({{ r.rday }})</span>
+          </span>
+          <span class="home-right-insight__item-value">▲ {{ r.growth }} (최근 {{ r.recent_count }})</span>
+        </button>
+        {% empty %}
+        <div class="home-right-insight__empty">댓글 집계 데이터가 없습니다.</div>
+        {% endfor %}
+      </div>
+    </article>
 
-  <div id="tab-right1" class="tab-content1 current">
-
-    <table class="fold-table home-right-table" style="border-radius: 7px;">
-      <thead>
-        <tr>
-          <th rowspan="2" colspan="2" style="width:36%; text-transform:capitalize; vertical-align: middle; padding-top: 1.00rem; padding-bottom: 1.00rem; border-right: solid 1px gray;">
-            Jockey<br>(최근1년 1위)</th>
-          <th colspan="4" style="width:32%; border-right: solid 1px gray;"><span style="text-transform:capitalize; font-family: Verdana, Geneva, Tahoma, sans-serif;">This Week</span></th>
-          <th colspan="4" style="width:32%; border-right: solid 1px gray;"><span style="text-transform:capitalize;">직전 경마주간</span></th>
-        </tr>
-
-        <tr>
-          <th style="border-right: solid 1px gray;"><span>R</span></th>
-          <th><span>1</span></th>
-          <th><span>2</span></th>
-          <th style="border-right: solid 1px gray;"><span>3</span></th>
-          <th style="border-right: solid 1px gray;"><span>R</span></th>
-          <th><span>1</span></th>
-          <th><span>2</span></th>
-          <th style="border-right: solid 1px gray;"><span>3</span></th>
-          
-        </tr>
-      </thead>
-
-      <tbody>
-        {% for rcity, jockey, rcnt, rr123cnt, rr1, rr2, rr3, wrace, w1st, w2nd, w3rd, w3, tot_1st, year_1st, from, to in award_j %}
-        {% if rcity == '서울' %}
-        
-        <tr class="view" align="center">
-          <td>
-            <div style="font-size: 1.2rem;">
-              <span>{{jockey|slice:"0:3"}}</span>
-            </div>
-          </td>
-          {# 최근 1년 1위 #}
-          <td align="right" style="border-right: solid 1px gray;">
-            <a href="{% url 'jt_analysis' '%' to|sub:10000 to jockey '%' '%' '%' '1' '99' '1' '1' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1600, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
-              {% if tot_1st|mod:100 >= 96 %}
-              <span class="tooltip" style="font-family: Arial; font-size: 1.15rem; padding: 2px 4px; color: var(--color-light); border-radius: 5px; background-color: var(--color-r1);">{{year_1st}}
-                <span class="tooltip-text" style="font-size: 1.2rem; z-index: 9;">🏇&nbsp;통산&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp; {{tot_1st}}&nbsp;승</span>
-              </span>
-              {% elif tot_1st|mod:100 >= 91 and tot_1st|mod:100 < 96 %}
-              <span class="tooltip" style="font-family: Arial; font-size: 1.15rem; padding: 2px 4px; color: var(--color-bg); border-radius: 5px; background-color: var(--color-r3);">{{year_1st}}
-                <span class="tooltip-text" style="font-size: 1.2rem; z-index: 9;">🏇&nbsp;통산&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp; {{tot_1st}}&nbsp;승</span>
-              </span>
-              {% else %}
-              <span class="tooltip" style="font-family: Arial; font-size: 1.15rem; padding: 2px 4px; color: var(--color-light-gray); border-radius: 5px; background-color: var(--color-bg);">{{year_1st}}
-                <span class="tooltip-text" style="font-size: 1.2rem; z-index: 9;">🏇&nbsp;통산&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp; {{tot_1st}}&nbsp;승</span>
-              </span>
-              {% endif %}
-            </a>
-          </td>
-          <td style="border-right: solid 1px gray;">
-            <a href="{% url 'jt_analysis_multi' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' '0' '%' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1600, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
-              <div style="font-size: 1.2rem; font-family: Arial; background-color: var(--color-bg); border-radius: 7px;">
-                <span style="font-family: Arial; border-bottom:1px solid var(--color-gray); border-radius: 5px; padding: 2px 4px;">{{rcnt}}</span>
-              </div>
-            </a>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem; padding-top: 3px;">
-              {% if rr1 == 0 %}
-              <span style="font-family: Arial; padding:2px 4px;">&nbsp;</span>
-              {% else %}
-              <span style="font-family: Arial; color:var(--color-r1); background-color: var(--color-bg); padding:2px 4px; border-radius: 50%;">{{rr1}}</span>
-              {% endif %}
-            </div>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem; padding-top: 3px;">
-              {% if rr2 == 0 %}
-              <span style="font-family: Arial; padding:2px 4px;">&nbsp;</span>
-              {% else %}
-              <span style="font-family: Arial; color:var(--color-r2); background-color: var(--color-bg); padding:2px 4px; border-radius: 50%;">{{rr2}}</span>
-              {% endif %}
-            </div>
-          </td>
-          <td style="border-right: solid 1px gray;">
-            <div style="font-size: 1.2rem; padding-top: 3px;">
-              {% if rr3 == 0 %}
-              <span style="font-family: Arial; padding:2px 4px;">&nbsp;</span>
-              {% else %}
-              <span style="font-family: Arial; color:var(--color-r3); background-color: var(--color-bg); padding:2px 4px; border-radius: 50%;">{{rr3}}</span>
-              {% endif %}
-            </div>
-          </td>
-          <td style="border-right: solid 1px gray;">
-            <a href="{% url 'jt_analysis_multi' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' '0' '%' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1600, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
-              <div style="font-size: 1.2rem; font-family: Arial; background-color: var(--color-dark); color:var(--color-main); border-radius: 7px;">
-                {% if wrace %}
-                <span style="font-family: Arial; border-bottom:1px solid var(--color-gray); border-radius: 5px; padding: 2px 4px;">{{wrace}}</span>
-                {% else %}
-                <span style="font-family: Arial; padding: 2px 4px; font-size: 0.9rem;">🚫</span>
-                {% endif %}
-              </div>
-            </a>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem; padding-top: 3px;">
-              {% if wrace %}
-                {% if w1st == 0 %}
-                <span style="font-family: Arial; padding:2px 4px;">&nbsp;</span>
-                {% else %}
-                <span style="font-family: Arial; color:var(--color-r1); background-color: var(--color-bg); padding:2px 4px; border-radius: 50%;">{{w1st}}</span>
-                {% endif %}
-              {% endif %}
-            </div>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem; padding-top: 3px;">
-              {% if wrace %}
-              {% if w2nd == 0 %}
-              <span style="font-family: Arial; padding:2px 4px;">&nbsp;</span>
-              {% else %}
-              <span style="font-family: Arial; color:var(--color-r2); background-color: var(--color-bg); padding:2px 4px; border-radius: 50%;">{{w2nd}}</span>
-              {% endif %}
-              {% endif %}
-            </div>
-          </td>
-          <td style="border-right: solid 1px gray;">
-            <div style="font-size: 1.2rem; padding-top: 3px;">
-              {% if wrace %}
-              {% if w3rd == 0 %}
-              <span style="font-family: Arial; padding:2px 4px;">&nbsp;</span>
-              {% else %}
-              <span style="font-family: Arial; color:var(--color-r3); background-color: var(--color-bg); padding:2px 4px; border-radius: 50%;">{{w3rd}}</span>
-              {% endif %}
-              {% endif %}
-            </div>
-          
-        </tr>
-
-        <tr class="fold">
-
-          <td colspan="10">
-            <div class="fold-content" style="position:static">
-              {# 재결사항 #}
-              <table class="small-friendly" style="z-index: 0;">
-                <thead>
-                  <tr style="background-color:var(--color-dark-medium); color:var(--color-light-gray);">
-                    <th width="12%"><span class="visible-big" style="padding-bottom: 3px; font-size: 1.1rem; width: 3rem;">📅</span></th>
-                    <th colspan="2">
-                      <span class="visible-big" style="padding-bottom: 3px; font-size: 1.15rem; color:var(--color-r3); text-align: left;">🐴&nbsp;{{jockey}} 기수&nbsp;&nbsp;최근 30일 재결</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for rcity, rdate, rno, horse, jockey_b, trainer, t_sort, t_type, t_detail, t_reason in judged_jockey %}
-                  {% if jockey == jockey_b %}
-              
-                  <tr>
-          
-                    <td align="left">
-                      <a style="text-decoration:underline" href="{% url 'race_result' rcity rdate rno horse 0 0 0 %}"
-                        onclick="window.open(this.href, 'w_result', 'width=1000, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
-                        <div style="font-size:1.0rem; font-family: Arial, Helvetica, sans-serif; text-align: left;">
-                          '{{rdate|slice:"2:4"}}.{{rdate|slice:"4:6"}}
-                        </div>
-                        <div style="font-size:1.1rem; font-family: Arial, Helvetica, sans-serif; text-align: right;">
-                          '{{rdate|slice:"6:8"}}
-                        </div>
-                        
-                      </a>
-                    </td>
-                    <td align="center">
-                      <div style="font-size:1.1rem;">{{t_type}}</div>
-                    </td>
-                    <td align="left">
-                      <div style="font-size:1.1rem; color:var(--color-r1);">
-                        {{t_detail}}
-                      </div>
-                      <div style="font-size:1.1rem;">
-                        {{t_reason}}
-                      </div>
-                    </td>
-                    
-                  </tr>
-                {% endif %}
-
+    <article class="home-right-insight">
+      <div class="home-right-insight__head">
+        <div class="home-right-insight__title">출전표 변경내역</div>
+        <div class="home-right-insight__meta">최근 변경 건수</div>
+      </div>
+      <div class="home-right-insight__list">
+        {% for r in right_volatile_races|slice:":3" %}
+        <a class="home-right-insight__item home-right-insight__item--race"
+           href="{% url 'race_prediction' r.rcity r.rdate r.rno 0 'awardee' %}"
+           onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
+          <span class="home-right-insight__item-main">
+            <span class="home-right-insight__item-top">
+              <strong>{{ r.rcity }} {{ r.rno }}R</strong> · {{ r.rtime }}
+              {% if r.change_details %}
+              <span class="home-right-insight__change-inline">
+                {% for detail in r.change_details %}
+                  {{ detail }}{% if not forloop.last %} / {% endif %}
                 {% endfor %}
-              
-                </tbody>
-              </table>
-
-            </div>
-          </td>
-
-        </tr>
-  
-        {%endif%}
+                {% if r.change_detail_more > 0 %} / ...{% endif %}
+              </span>
+              {% endif %}
+            </span>
+            <span class="home-right-insight__item-sub">{{ r.rdate|slice:"0:4" }}.{{ r.rdate|slice:"4:6" }}.{{ r.rdate|slice:"6:8" }} ({{ r.rday }})</span>
+          </span>
+          <span class="home-right-insight__item-value">{{ r.change_count }}건</span>
+        </a>
+        {% empty %}
+        <div class="home-right-insight__empty">변경 내역이 없습니다.</div>
         {% endfor %}
-    
-      </tbody>
-    </table>
-
-  </div>
-
-  <div id="tab-right2" class="tab-content1">
-
-    <table class="fold-table home-right-table" style="border-radius: 7px;">
-      <thead>
-        <tr>
-          <th rowspan="2" colspan="2" style="width:36%; text-transform:capitalize; vertical-align: middle; padding-top: 1.00rem; padding-bottom: 1.00rem; border-right: solid 1px gray;">
-            Jockey<br>(최근1년 1위)</th>
-          <th colspan="4" style="width:32%; border-right: solid 1px gray;"><span style="text-transform:capitalize;">This Week</span></th>
-          <th colspan="4" style="width:32%; border-right: solid 1px gray;"><span style="text-transform:capitalize;">직전 경마주간</span></th>
-        </tr>
-
-        <tr>
-          <th style="border-right: solid 1px gray;"><span>R</span></th>
-          <th><span>1</span></th>
-          <th><span>2</span></th>
-          <th style="border-right: solid 1px gray;"><span>3</span></th>
-          <th style="border-right: solid 1px gray;"><span>R</span></th>
-          <th><span>1</span></th>
-          <th><span>2</span></th>
-          <th style="border-right: solid 1px gray;"><span>3</span></th>
-          
-        </tr>
-      </thead>
-
-      <tbody>
-        {% for rcity, jockey, rcnt, rr123cnt, rr1, rr2, rr3, wrace, w1st, w2nd, w3rd, w3, tot_1st, year_1st, from, to in award_j %}
-        {% if rcity == '부산' %}
-
-        <tr class="view" align="center">
-          <td>
-            <div style="font-size: 1.2rem;">
-              <span>{{jockey|slice:"0:3"}}</span>
-            </div>
-          </td>
-          {# 최근 1년 1위 #}
-          <td align="right" style="border-right: solid 1px gray;">
-            <a href="{% url 'jt_analysis' '%' to|sub:10000 to jockey '%' '%' '%' '1' '99' '1' '1' '0' '0' '0' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1600, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
-              {% if tot_1st|mod:100 >= 96 %}
-              <span class="tooltip" style="font-family: Arial; font-size: 1.15rem; padding: 2px 4px; color: var(--color-light); border-radius: 5px; background-color: var(--color-r1);">{{year_1st}}
-                <span class="tooltip-text" style="font-size: 1.2rem; z-index: 9;">🏇&nbsp;통산&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp; {{tot_1st}}&nbsp;승</span>
-              </span>
-              {% elif tot_1st|mod:100 >= 91 and tot_1st|mod:100 < 96 %}
-              <span class="tooltip" style="font-family: Arial; font-size: 1.15rem; padding: 2px 4px; color: var(--color-bg); border-radius: 5px; background-color: var(--color-r3);">{{year_1st}}
-                <span class="tooltip-text" style="font-size: 1.2rem; z-index: 9;">🏇&nbsp;통산&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp; {{tot_1st}}&nbsp;승</span>
-              </span>
-              {% else %}
-              <span class="tooltip" style="font-family: Arial; font-size: 1.15rem; padding: 2px 4px; color: var(--color-light-gray); border-radius: 5px; background-color: var(--color-bg);">{{year_1st}}
-                <span class="tooltip-text" style="font-size: 1.2rem; z-index: 9;">🏇&nbsp;통산&nbsp;:&nbsp;&nbsp;&nbsp;&nbsp; {{tot_1st}}&nbsp;승</span>
-              </span>
-              {% endif %}
-            </a>
-          </td>
-          <td style="border-right: solid 1px gray;">
-            <a href="{% url 'jt_analysis_multi' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' '0' '%' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1600, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
-              <div style="font-size: 1.2rem; font-family: Arial; background-color: var(--color-bg); border-radius: 7px;">
-                <span style="font-family: Arial; border-bottom:1px solid var(--color-gray); border-radius: 5px; padding: 2px 4px;">{{rcnt}}</span>
-              </div>
-            </a>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem; padding-top: 3px;">
-              {% if rr1 == 0 %}
-              <span style="font-family: Arial; padding:2px 4px;">&nbsp;</span>
-              {% else %}
-              <span style="font-family: Arial; color:var(--color-r1); background-color: var(--color-bg); padding:2px 4px; border-radius: 50%;">{{rr1}}</span>
-              {% endif %}
-            </div>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem; padding-top: 3px;">
-              {% if rr2 == 0 %}
-              <span style="font-family: Arial; padding:2px 4px;">&nbsp;</span>
-              {% else %}
-              <span style="font-family: Arial; color:var(--color-r2); background-color: var(--color-bg); padding:2px 4px; border-radius: 50%;">{{rr2}}</span>
-              {% endif %}
-            </div>
-          </td>
-          <td style="border-right: solid 1px gray;">
-            <div style="font-size: 1.2rem; padding-top: 3px;">
-              {% if rr3 == 0 %}
-              <span style="font-family: Arial; padding:2px 4px;">&nbsp;</span>
-              {% else %}
-              <span style="font-family: Arial; color:var(--color-r3); background-color: var(--color-bg); padding:2px 4px; border-radius: 50%;">{{rr3}}</span>
-              {% endif %}
-            </div>
-          </td>
-          <td style="border-right: solid 1px gray;">
-            <a href="{% url 'jt_analysis_multi' '%' from to jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' '0' '%' %}" onclick="window.open(this.href, 'jt_analysis_jockey', 'width=1600, height=1400, top=0, toolbars=no, scrollbars=yes'); return false;">
-              <div style="font-size: 1.2rem; font-family: Arial; background-color: var(--color-dark); color:var(--color-main); border-radius: 7px;">
-                {% if wrace %}
-                <span style="font-family: Arial; border-bottom:1px solid var(--color-gray); border-radius: 5px; padding: 2px 4px;">{{wrace}}</span>
-                {% else %}
-                <span style="font-family: Arial; padding: 2px 4px; font-size: 0.9rem;">🚫</span>
+        {% if right_volatile_races|length > 3 %}
+        <button type="button"
+                class="home-right-insight__item home-right-insight__item--ellipsis home-right-insight__item--ellipsis-btn js-volatile-expand"
+                aria-expanded="false">
+          <span class="home-right-insight__item-main">
+            <span class="home-right-insight__item-top js-volatile-expand-label">...</span>
+          </span>
+          <span class="home-right-insight__item-value">외 {{ right_volatile_races|length|sub:3 }}경주</span>
+        </button>
+        <div id="home-right-volatile-extra" class="home-right-insight__extra" hidden>
+          {% for r in right_volatile_races|slice:"3:" %}
+          <a class="home-right-insight__item home-right-insight__item--race"
+             href="{% url 'race_prediction' r.rcity r.rdate r.rno 0 'awardee' %}"
+             onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
+            <span class="home-right-insight__item-main">
+              <span class="home-right-insight__item-top">
+                <strong>{{ r.rcity }} {{ r.rno }}R</strong> · {{ r.rtime }}
+                {% if r.change_details %}
+                <span class="home-right-insight__change-inline">
+                  {% for detail in r.change_details %}
+                    {{ detail }}{% if not forloop.last %} / {% endif %}
+                  {% endfor %}
+                  {% if r.change_detail_more > 0 %} / ...{% endif %}
+                </span>
                 {% endif %}
-              </div>
-            </a>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem; padding-top: 3px;">
-              {% if w1st == 0 %}
-              <span style="font-family: Arial; padding:2px 4px;">&nbsp;</span>
-              {% else %}
-              <span style="font-family: Arial; color:var(--color-r1); background-color: var(--color-bg); padding:2px 4px; border-radius: 50%;">{{w1st}}</span>
-              {% endif %}
-            </div>
-          </td>
-          <td>
-            <div style="font-size: 1.2rem; padding-top: 3px;">
-              {% if w2nd == 0 %}
-              <span style="font-family: Arial; padding:2px 4px;">&nbsp;</span>
-              {% else %}
-              <span style="font-family: Arial; color:var(--color-r2); background-color: var(--color-bg); padding:2px 4px; border-radius: 50%;">{{w2nd}}</span>
-              {% endif %}
-            </div>
-          </td>
-          <td style="border-right: solid 1px gray;">
-            <div style="font-size: 1.2rem; padding-top: 3px;">
-              {% if w3rd == 0 %}
-              <span style="font-family: Arial; padding:2px 4px;">&nbsp;</span>
-              {% else %}
-              <span style="font-family: Arial; color:var(--color-r3); background-color: var(--color-bg); padding:2px 4px; border-radius: 50%;">{{w3rd}}</span>
-              {% endif %}
-            </div>
-          
-        </tr>
+              </span>
+              <span class="home-right-insight__item-sub">{{ r.rdate|slice:"0:4" }}.{{ r.rdate|slice:"4:6" }}.{{ r.rdate|slice:"6:8" }} ({{ r.rday }})</span>
+            </span>
+            <span class="home-right-insight__item-value">{{ r.change_count }}건</span>
+          </a>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </article>
 
-        <tr class="fold">
+  </section>
 
-          <td colspan="10">
-            <div class="fold-content" style="position:static">
-              {# 재결사항 #}
-              <table class="small-friendly" style="z-index: 0;">
-                <thead>
-                  <tr style="background-color:var(--color-dark-medium); color:var(--color-light-gray);">
-                    <th width="12%"><span class="visible-big" style="padding-bottom: 3px; font-size: 1.1rem; width: 3rem;">📅</span></th>
-                    <th colspan="2">
-                      <span class="visible-big" style="padding-bottom: 3px; font-size: 1.15rem; color:var(--color-r3); text-align: left;">🐴&nbsp;{{jockey}} 기수&nbsp;&nbsp;최근 30일 재결</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for rcity, rdate, rno, horse, jockey_b, trainer, t_sort, t_type, t_detail, t_reason in judged_jockey %}
-                  {% if jockey == jockey_b %}
-              
-                  <tr>
-          
-                    <td align="left">
-                      <a style="text-decoration:underline" href="{% url 'race_result' rcity rdate rno horse 0 0 0 %}"
-                        onclick="window.open(this.href, 'w_result', 'width=1000, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
-                        <div style="font-size:1.0rem; font-family: Arial, Helvetica, sans-serif; text-align: left;">
-                          '{{rdate|slice:"2:4"}}.{{rdate|slice:"4:6"}}
-                        </div>
-                        <div style="font-size:1.1rem; font-family: Arial, Helvetica, sans-serif; text-align: right;">
-                          '{{rdate|slice:"6:8"}}
-                        </div>
-                        
-                      </a>
-                    </td>
-                    <td align="center">
-                      <div style="font-size:1.1rem;">{{t_type}}</div>
-                    </td>
-                    <td align="left">
-                      <div style="font-size:1.1rem; color:var(--color-r1);">
-                        {{t_detail}}
-                      </div>
-                      <div style="font-size:1.1rem;">
-                        {{t_reason}}
-                      </div>
-                    </td>
-                    
-                  </tr>
+  <section class="home-right-top3">
+    <div class="home-right-top3__head">
+      <div class="home-right-top3__title">성적 Top 3</div>
+      <div class="home-right-top3__meta">구분 · 이름 · 3위내</div>
+    </div>
+    {% if right_city_top3 %}
+    <div class="home-right-top3__city-panels">
+      {% for c in right_city_top3 %}
+      <article class="home-right-top3__city-panel">
+        <div class="home-right-top3__city-title">{{ c.rcity }}</div>
+        <div class="home-right-top3__table-wrap">
+          <table class="home-right-top3__table">
+            <thead>
+              <tr>
+                <th>구분</th>
+                <th>이름</th>
+                <th style="text-align:right;">3위내</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for x in c.jockeys %}
+              <tr>
+                {% if forloop.first %}
+                <td class="home-right-top3__table-group" rowspan="{{ c.jockeys|length }}">기수</td>
                 {% endif %}
+                <td class="home-right-top3__table-name tooltip" data-tip="기수 {{ x.name }} · 1위 {{ x.wins }}회 · 평균순위 {{ x.avg_rank|floatformat:1 }}">{{ x.name }}</td>
+                <td class="home-right-top3__table-top3">{{ x.top3 }}/{{ x.entries }}</td>
+              </tr>
+              {% endfor %}
+              {% for x in c.trainers %}
+              <tr>
+                {% if forloop.first %}
+                <td class="home-right-top3__table-group" rowspan="{{ c.trainers|length }}">마방</td>
+                {% endif %}
+                <td class="home-right-top3__table-name tooltip" data-tip="마방 {{ x.name }} · 1위 {{ x.wins }}회 · 평균순위 {{ x.avg_rank|floatformat:1 }}">{{ x.name }}</td>
+                <td class="home-right-top3__table-top3">{{ x.top3 }}/{{ x.entries }}</td>
+              </tr>
+              {% endfor %}
+              {% for x in c.gates %}
+              <tr>
+                {% if forloop.first %}
+                <td class="home-right-top3__table-group" rowspan="{{ c.gates|length }}">마번</td>
+                {% endif %}
+                <td class="home-right-top3__table-name tooltip" data-tip="마번 {{ x.name }}번 · 1위 {{ x.wins }}회 · 평균순위 {{ x.avg_rank|floatformat:1 }}">{{ x.name }}번</td>
+                <td class="home-right-top3__table-top3">{{ x.top3 }}/{{ x.entries }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="home-right-top3__empty">집계 가능한 데이터가 없습니다.</div>
+    {% endif %}
+  </section>
 
-                {% endfor %}
-              
-                </tbody>
-              </table>
-
-            </div>
-          </td>
-
-        </tr>
-  
-        {%endif%}
-        {% endfor %}
-    
-      </tbody>
-    </table>
-
-  </div>
-
-  <div id="tab-right3" class="tab-content1">
-
-    <table class="fold-table home-right-table" style="border-radius: 7px;">
-      <thead>
-        <tr>
-          <th rowspan="2" colspan="2" style="width: 42%; text-transform:capitalize; vertical-align: middle; padding-top: 2.00rem; padding-bottom: 2.00rem; border-right: solid 1px gray;">Horse</th>
-          <th crowspan="2" colspan="1" style="width: 14%; border-right: solid 1px gray;"><span style="text-transform:capitalize;">Jockey</span></th>
-          <th rowspan="2" style="width: 4%; border-right: solid 1px gray;"><span style="text-transform:capitalize;">R</span></th>
-          <th rowspan="2" style="width: 40%; border-right: solid 1px gray; vertical-align: middle;"><span style="text-transform:capitalize;">Reason</span></th>
-        </tr>
-
-      </thead>
-
-      <tbody>
-        {% for rcity, rday, rno, gate, horse, jockey_old, jockey, reason, r_rank in changed_race %}
-        <tr class="view" align="left">
-          <td>
-            <div style="font-size: 1.2rem; font-style: italic;">
-              {% if rday == '금' %}
-              <span style="font-size: 1.1rem; font-family: Arial; color: var(--color-r2);">{{rday}}</span>
-              {% elif rday == '토' %}
-              <span style="font-size: 1.1rem; font-family: Arial; color: var(--color-r4);">{{rday}}</span>
-              {% else %}
-              <span style="font-size: 1.1rem; font-family: Arial; color: var(--color-r3);">{{rday}}</span>
-              {% endif %}
-
-              {% if rcity == '서울' %}
-              <span style="font-size: 0.9rem; font-family: Arial; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg); font-style: italic; color:var(--color-r2);">
-                {{rcity|slice:"0:1"}}</span>
-              {% else %}
-                <span style="font-size: 0.9rem; font-family: Arial; border-radius: 7px; padding: 2px 4px; background-color: var(--color-bg); font-style: italic; color:var(--color-r5);">
-                {{rcity|slice:"0:1"}}</span>
-              {% endif %}
-
-            </div>
-            <div style="color: var(--color-main); font-size: 1.1rem; font-family: Arial; font-style: italic; text-align: right;">{{rno}}ᴿ</div>
-            
-          </td>
-
-          <td style="font-size: 1.2rem;">
-            <div style="text-align: left;">
-              {% if jockey_old %}
-              <span style="color: var(--color-light-gray);">{{horse|slice:"0:6"}}</span>
-              {% else %}
-              <span style="color:var(--color-r2); text-decoration: line-through;">{{horse|slice:"0:6"}}</span>
-              {% endif %}
-              
-            </div>
-          </td>
-
-          <td>
-            <div style="font-size: 1.1rem; text-align: left;">
-              <span style="color: var(--color-gray);">{% if jockey_old %}{{jockey_old|slice:"0:3"}}{% else %}{{jockey|slice:"0:3"}}{% endif %}</span>
-            </div>
-            {% if jockey_old %} 
-            <div style="font-size: 1.1rem; text-align: right;">
-              <span style="color: var(--color-main);">{{jockey|slice:"0:3"}}</span>
-            </div>
-            {% endif %}
-          </td>
-          
-          <td align="center">
-            {% if r_rank %}
-              {% if r_rank == 1 %}
-              <span style="font-family: Arial; font-size:1.0rem; color:var(--color-main-light); padding:2px 4px; border-radius: 7px; background-color: var(--color-r1);">{{r_rank}}</span>
-              {% elif r_rank == 2 %}
-              <span style="font-family: Arial; font-size:1.0rem; color:var(--color-light); padding:2px 4px; border-radius: 7px; background-color: var(--color-r2);">{{r_rank}}</span>
-              {% elif r_rank == 3 %}
-              <span style="font-family: Arial; font-size:1.0rem; color:var(--color-bg); padding:2px 4px; border-radius: 7px; background-color: var(--color-r3);">{{r_rank}}</span>
-              {% elif r_rank == 4 %}
-              <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r4); padding:2px 4px; border-radius: 7px;">{{r_rank}}</span>
-              {% elif r_rank == 5 %}
-              <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r5); padding:2px 4px; border-radius: 7px;">{{r_rank}}</span>
-              {% elif r_rank == 99 %}
-              <span style="font-family: Arial; font-size:0.8rem; color:var(--color-gray); padding:2px 4px; border-radius: 7px;">&nbsp;</span>
-              {% else %}
-              <span style="font-family: Arial; font-size:1.0rem; color:var(--color-gray); padding:2px 4px; border-radius: 7px;">{{r_rank}}</span>
-              {% endif %}
-            {% endif %}
-          </td>
-          <td>
-            <div style="font-size: 1.1rem;">
-              <span style="color: var(--color-light-gray);">{{reason}}</span>
-            </div>
-          </td>
-
-          
-        </tr>
-
-        <tr class="fold">
-
-          <td colspan="10">
-
-          </td>
-
-        </tr>
-  
-        {% endfor %}
-    
-      </tbody>
-    </table>
-
-  </div>
-
-
+  <article class="home-right-insight">
+    <div class="home-right-insight__head">
+      <div class="home-right-insight__title">경마 뉴스</div>
+      <div class="home-right-insight__meta">최근 기사</div>
+    </div>
+    <div class="home-right-insight__list">
+      {% for item in right_racing_news|slice:":3" %}
+      <a class="home-right-insight__item home-right-insight__item--news" href="{{ item.link }}" target="_blank" rel="noopener noreferrer">
+        <strong>{{ item.title }}</strong>
+        <span class="home-right-insight__news-meta">{{ item.source }}{% if item.pub_date %} · {{ item.pub_date|slice:":16" }}{% endif %}</span>
+      </a>
+      {% empty %}
+      <div class="home-right-insight__empty">뉴스를 불러오지 못했습니다.</div>
+      {% endfor %}
+    </div>
+  </article>
 </div>
+
+<script>
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest(".js-volatile-expand");
+    if (!btn) return;
+    var extra = document.getElementById("home-right-volatile-extra");
+    if (!extra) return;
+    var isOpen = !extra.hidden;
+    extra.hidden = isOpen;
+    btn.setAttribute("aria-expanded", isOpen ? "false" : "true");
+    var label = btn.querySelector(".js-volatile-expand-label");
+    if (label) label.textContent = isOpen ? "..." : "접기";
+  });
+</script>

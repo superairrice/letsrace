@@ -3620,7 +3620,7 @@ def get_prediction(i_rdate):
 
         strSql = (
             """ 
-            select a.rcity, a.rdate, a.rday, a.rno, a.rtime, a.distance, b.r2alloc, b.r333alloc, b.r123alloc, a.grade, a.dividing, a.r1award, a.r_overview, a.r_guide
+            select a.rcity, a.rdate, a.rday, a.rno, a.rtime, a.distance, b.r2alloc, b.r333alloc, b.r123alloc, a.grade, a.dividing, a.r1award,  '' r_overview, '' r_guide
             from exp010 a left outer join 
                 rec010 b on a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
             where a.rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 4 DAY), '%%Y%%m%%d')
@@ -3693,7 +3693,7 @@ def get_prediction(i_rdate):
                                     and b.wdate = ( select max(wdate) from jockey_w where wdate < date_format(DATE_ADD(  %s , INTERVAL - %s DAY), '%%Y%%m%%d') )
             where rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
             and rno < 80
-            -- and 1 <> 1
+            and 1 <> 1
             group by a.rcity, a.jockey
             order by b.year_1st desc, max(w1st) desc, max(w2nd) desc, max(w3rd) desc
             
@@ -3757,7 +3757,7 @@ def get_prediction(i_rdate):
 
         strSql = (
             """
-            SELECT rcity, rday, rno, gate, horse, jockey_old, jockey, reason, r_rank
+            SELECT rcity, rdate, rday, rno, gate, horse, jockey_old, jockey, reason, r_rank
             FROM expect
             where rdate between %s and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
             and reason is not null
@@ -4491,55 +4491,50 @@ def get_status_stable(i_rcity, i_rdate, i_rno):
 
 
 def get_jockey_trend(i_rcity, i_rdate, i_rno):
+    result = []
+    trend_title = []
+
     try:
-        cursor = connection.cursor()
+        with connection.cursor() as cursor:
+            strSql = """
+                select b.r_pop, b.gate, b.r_rank, b.m_rank, b.horse, CONCAT( RPAD(b.jockey, 5), RPAD( b.trainer, 5), b.host), a.wdate, a.year_per, CONCAT(debut, ' ', age, '_', wcnt) debut, weeks
+                from
+                (
+                    SELECT wdate, jockey,
+                    -- cast( year_3per as DECIMAL(4,1))*10 year_per,
+                    round( if ( tot_race = 0, 0, ((tot_1st + tot_2nd + tot_3rd)/ tot_race)*100 ) , 3) year_per,
 
-        strSql = (
-            """ 
-            select b.r_pop, b.gate, b.r_rank, b.m_rank, b.horse, CONCAT( RPAD(b.jockey, 5), RPAD( b.trainer, 5), b.host), a.wdate, a.year_per, CONCAT(debut, ' ', age, '_', wcnt) debut, weeks
-            from
-            (
-                SELECT wdate, jockey, 
-                -- cast( year_3per as DECIMAL(4,1))*10 year_per, 
-                round( if ( tot_race = 0, 0, ((tot_1st + tot_2nd + tot_3rd)/ tot_race)*100 ) , 3) year_per,
+                    tot_1st, debut, CONCAT(wrace, '`', w1st, '`', w2nd, '`', w3rd) weeks,
+                            ( select concat( max(age) , ' ', max(tot_1st) ) from jockey_w c where c.jockey = d.jockey and c.wdate < %s ) age,
+                            ( select concat( sum(if (r_rank = 0, 0, 1)), '`', sum(if( r_rank = 1, 1, 0)),'`', sum(if( r_rank = 2, 1, 0)), '`', sum(if( r_rank = 3, 1, 0))) from exp011
+                                where jockey = d.jockey -- and r_rank <= 3
+                                and rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and %s ) wcnt
+                    FROM jockey_w d
+                    where (( wdate between date_format(DATE_ADD(%s, INTERVAL - 71 DAY), '%%Y%%m%%d') and %s ) or
+                            ( wdate between date_format(DATE_ADD(%s, INTERVAL - 374 DAY), '%%Y%%m%%d') and  date_format(DATE_ADD(%s, INTERVAL - 360 DAY), '%%Y%%m%%d')))
+                    and wdate < %s
+                ) a  right outer join  expect b  on a.jockey = b.jockey
+                where b.rdate = %s and b.rcity = %s and b.rno = %s
+                order by b.r_pop, a.wdate desc
+                ; """
+            params = (
+                i_rdate,
+                i_rdate,
+                i_rdate,
+                i_rdate,
+                i_rdate,
+                i_rdate,
+                i_rdate,
+                i_rdate,
+                i_rdate,
+                i_rcity,
+                i_rno,
+            )
+            cursor.execute(strSql, params)
+            result = cursor.fetchall()
 
-                tot_1st, debut, CONCAT(wrace, '`', w1st, '`', w2nd, '`', w3rd) weeks, 
-                        ( select concat( max(age) , ' ', max(tot_1st) ) from jockey_w c where c.jockey = d.jockey and c.wdate < '"""
-            + i_rdate
-            + """' ) age,
-                        ( select concat( sum(if (r_rank = 0, 0, 1)), '`', sum(if( r_rank = 1, 1, 0)),'`', sum(if( r_rank = 2, 1, 0)), '`', sum(if( r_rank = 3, 1, 0))) from exp011 
-                        
-                            where jockey = d.jockey -- and r_rank <= 3 
-                            and rdate between date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 3 DAY), '%Y%m%d') and '"""
-            + i_rdate
-            + """' ) wcnt
-                FROM jockey_w d
-                where (( wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 71 DAY), '%Y%m%d') and '""" + i_rdate + """' ) or
-                        ( wdate between date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 374 DAY), '%Y%m%d') and  date_format(DATE_ADD('""" + i_rdate + """', INTERVAL - 360 DAY), '%Y%m%d'))) """
-            + """ and wdate < '"""
-            + i_rdate
-            + """'
-            ) a  right outer join  expect b  on a.jockey = b.jockey 
-            where b.rdate = '"""
-            + i_rdate
-            + """' and b.rcity = '"""
-            + i_rcity
-            + """' and b.rno = """
-            + str(i_rno)
-            + """
-            order by b.r_pop, a.wdate desc
-            ; """
-        )
-        # print(strSql)
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        result = cursor.fetchall()
-
-    except:
-        print("Failed selecting in Jockey Trend")
-    finally:
-        cursor.close()
+    except Exception as e:
+        print(f"Failed selecting in Jockey Trend: {e}")
 
     col = [
         "예상",
@@ -4577,7 +4572,10 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
     )  # 데이터로 사용할 열
 
     # pdf1.columns = ['/'.join(col) for col in pdf1.columns]
-    pdf1.columns = ["".join(col)[4:6] + "." + "".join(col)[6:8] for col in pdf1.columns]
+    pdf1.columns = [
+        f"{str(col[1])[4:6]}.{str(col[1])[6:8]}" if len(str(col[1])) >= 8 else str(col[1])
+        for col in pdf1.columns
+    ]
 
     # print(((pdf1)))
 
@@ -4586,84 +4584,68 @@ def get_jockey_trend(i_rcity, i_rdate, i_rno):
     # print(pdf1)
 
     try:
-        cursor = connection.cursor()
+        with connection.cursor() as cursor:
+            strSql = """ 
+                SELECT distinct CONCAT( substr(wdate,5,2), '.', substr(wdate,7,2) )
+                FROM jockey_w d
+                where ( ( wdate between date_format(DATE_ADD(%s, INTERVAL - 71 DAY), '%%Y%%m%%d') and %s ) or ( wdate between date_format(DATE_ADD(%s, INTERVAL - 374 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL - 360 DAY), '%%Y%%m%%d') )) 
+                and wdate < %s
+                order by wdate
+                ; """
+            cursor.execute(strSql, (i_rdate, i_rdate, i_rdate, i_rdate, i_rdate))
+            trend_title = cursor.fetchall()
 
-        strSql = """ 
-            SELECT distinct CONCAT( substr(wdate,5,2), '.', substr(wdate,7,2) )
-            FROM jockey_w d
-            where ( ( wdate between date_format(DATE_ADD(%s, INTERVAL - 71 DAY), '%%Y%%m%%d') and %s ) or ( wdate between date_format(DATE_ADD(%s, INTERVAL - 374 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL - 360 DAY), '%%Y%%m%%d') )) 
-            and wdate < %s
-            order by wdate
-            ; """
-        cursor.execute(strSql, (i_rdate, i_rdate, i_rdate, i_rdate, i_rdate))
-        trend_title = cursor.fetchall()
-
-    except:
-        print("Failed selecting in Jockey Trend Title")
-    finally:    
-        cursor.close()
+    except Exception as e:
+        print(f"Failed selecting in Jockey Trend Title: {e}")
 
     return pdf1, trend_title
 
 
 def get_trainer_trend(i_rcity, i_rdate, i_rno):
+    result = []
+    trend_title = []
+
     try:
-        cursor = connection.cursor()
+        with connection.cursor() as cursor:
+            strSql = """
+                select b.m_rank, b.gate, b.r_rank, b.r_pop, b.horse, CONCAT( RPAD(b.trainer, 5),RPAD( b.jockey, 5), b.host), a.wdate, a.year_per, CONCAT(debut, ' ', age, '_', wcnt) debut, weeks
+                from
+                (
+                    SELECT wdate, trainer,
+                    -- cast( year_3per as DECIMAL(4,1))*10 year_per,
+                    round( if ( tot_race = 0, 0, ((tot_1st + tot_2nd + tot_3rd)/ tot_race)*100 ) , 3) year_per,
 
-        strSql = (
-            """ 
-            select b.m_rank, b.gate, b.r_rank, b.r_pop, b.horse, CONCAT( RPAD(b.trainer, 5),RPAD( b.jockey, 5), b.host), a.wdate, a.year_per, CONCAT(debut, ' ', age, '_', wcnt) debut, weeks
-            from
-            (
-                SELECT wdate, trainer, 
-                -- cast( year_3per as DECIMAL(4,1))*10 year_per, 
-                round( if ( tot_race = 0, 0, ((tot_1st + tot_2nd + tot_3rd)/ tot_race)*100 ) , 3) year_per,
-                
-                tot_1st, debut, CONCAT(wrace, '`', w1st, '`', w2nd, '`', w3rd) weeks,
-                        ( select concat( max(age) , ' ', max(tot_1st) ) from trainer_w c where c.trainer = d.trainer and c.wdate < '"""
-            + i_rdate
-            + """' ) age,
-                        ( select concat( sum(if (r_rank = 0, 0, 1)), '`',  sum(if( r_rank = 1, 1, 0)),'`', sum(if( r_rank = 2, 1, 0)), '`', sum(if( r_rank = 3, 1, 0))) from exp011 
-                            where trainer = d.trainer -- and r_rank <= 3 
-                            and rdate between date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 4 DAY), '%Y%m%d') and '"""
-            + i_rdate
-            + """' ) wcnt
-                FROM trainer_w d
-                where (( wdate between date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 71 DAY), '%Y%m%d') and '"""
-            + i_rdate
-            + """' ) or
-                        ( wdate between date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 374 DAY), '%Y%m%d') and  date_format(DATE_ADD('"""
-            + i_rdate
-            + """', INTERVAL - 360 DAY), '%Y%m%d'))) """
-            + """ and wdate < '"""
-            + i_rdate
-            + """'
-              ) a  right outer join  expect b  on a.trainer = b.trainer 
-              where b.rdate = '"""
-            + i_rdate
-            + """' and b.rcity = '"""
-            + i_rcity
-            + """' and b.rno = """
-            + str(i_rno)
-            + """
-              order by b.m_rank, a.wdate desc
-              ; """
-        )
+                    tot_1st, debut, CONCAT(wrace, '`', w1st, '`', w2nd, '`', w3rd) weeks,
+                            ( select concat( max(age) , ' ', max(tot_1st) ) from trainer_w c where c.trainer = d.trainer and c.wdate < %s ) age,
+                            ( select concat( sum(if (r_rank = 0, 0, 1)), '`',  sum(if( r_rank = 1, 1, 0)),'`', sum(if( r_rank = 2, 1, 0)), '`', sum(if( r_rank = 3, 1, 0))) from exp011
+                                where trainer = d.trainer -- and r_rank <= 3
+                                and rdate between date_format(DATE_ADD(%s, INTERVAL - 4 DAY), '%%Y%%m%%d') and %s ) wcnt
+                    FROM trainer_w d
+                    where (( wdate between date_format(DATE_ADD(%s, INTERVAL - 71 DAY), '%%Y%%m%%d') and %s ) or
+                            ( wdate between date_format(DATE_ADD(%s, INTERVAL - 374 DAY), '%%Y%%m%%d') and  date_format(DATE_ADD(%s, INTERVAL - 360 DAY), '%%Y%%m%%d')))
+                    and wdate < %s
+                ) a  right outer join  expect b  on a.trainer = b.trainer
+                where b.rdate = %s and b.rcity = %s and b.rno = %s
+                order by b.m_rank, a.wdate desc
+                ; """
+            params = (
+                i_rdate,
+                i_rdate,
+                i_rdate,
+                i_rdate,
+                i_rdate,
+                i_rdate,
+                i_rdate,
+                i_rdate,
+                i_rdate,
+                i_rcity,
+                i_rno,
+            )
+            cursor.execute(strSql, params)
+            result = cursor.fetchall()
 
-        # print(strSql)
-        r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-        result = cursor.fetchall()
-
-    except:
-        print("Failed selecting in Trainer Trend")
-    finally:
-        cursor.close()
+    except Exception as e:
+        print(f"Failed selecting in Trainer Trend: {e}")
 
     col = [
         "예상",
@@ -4701,32 +4683,28 @@ def get_trainer_trend(i_rcity, i_rdate, i_rno):
     )  # 데이터로 사용할 열
 
     # pdf1.columns = ['/'.join(col) for col in pdf1.columns]
-    pdf1.columns = ["".join(col)[4:6] + "." + "".join(col)[6:8] for col in pdf1.columns]
+    pdf1.columns = [
+        f"{str(col[1])[4:6]}.{str(col[1])[6:8]}" if len(str(col[1])) >= 8 else str(col[1])
+        for col in pdf1.columns
+    ]
 
     # print(((pdf1)))
 
     try:
-        cursor = connection.cursor()
+        with connection.cursor() as cursor:
+            strSql = """ 
+                  SELECT distinct CONCAT( substr(wdate,5,2), '.', substr(wdate,7,2) )
+                    FROM trainer_w d
+                    where ( ( wdate between date_format(DATE_ADD(%s, INTERVAL - 71 DAY), '%%Y%%m%%d') and %s ) or ( wdate between date_format(DATE_ADD(%s, INTERVAL - 374 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL - 360 DAY), '%%Y%%m%%d') )) 
+                and wdate < %s
+                    order by wdate
+                  ; """
 
-        strSql = """ 
-              SELECT distinct CONCAT( substr(wdate,5,2), '.', substr(wdate,7,2) )
-                FROM jockey_w d
-                where ( ( wdate between date_format(DATE_ADD(%s, INTERVAL - 71 DAY), '%%Y%%m%%d') and %s ) or ( wdate between date_format(DATE_ADD(%s, INTERVAL - 374 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL - 360 DAY), '%%Y%%m%%d') )) 
-            and wdate < %s
-                order by wdate
-              ; """
+            cursor.execute(strSql, (i_rdate, i_rdate, i_rdate, i_rdate, i_rdate))
+            trend_title = cursor.fetchall()
 
-        cursor.execute(strSql, (i_rdate, i_rdate, i_rdate, i_rdate, i_rdate))
-        trend_title = cursor.fetchall()
-
-        # connection.commit()
-        # connection.close()
-
-    except:
-        # connection.rollback()
-        print("Failed selecting in Jockey Trend Title")
-    finally:
-        cursor.close()
+    except Exception as e:
+        print(f"Failed selecting in Trainer Trend Title: {e}")
 
 
     pdf1 = pdf1.reset_index()

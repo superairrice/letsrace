@@ -1,10 +1,12 @@
+import os
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',   # [1]
-        'NAME': 'The1',                         # [2]
-        'USER': 'letslove',                     # [3]
-        'PASSWORD': 'Ruddksp!23',               # [4]
-        'HOST': 'super007.synology.me',         # [5]
-        'PORT': '3307',                         # [6]
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": os.getenv("DB_NAME", ""),
+        "USER": os.getenv("DB_USER", ""),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
+        "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+        "PORT": os.getenv("DB_PORT", "3306"),
     }
 }

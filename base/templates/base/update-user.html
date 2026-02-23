@@ -20,29 +20,29 @@
       </div>
       
       <div class="layout__body">
-        <form class="form" action="" method="POST" enctype="multipart/form-data">
+        <form class="form update-account__form" action="" method="POST" enctype="multipart/form-data">
           {% csrf_token %}
 
           {% for field in form %}
           <div class="form__group">
-            <label for="profile_pic">{{field.label}}</label>
+            <label for="{{ field.id_for_label }}">{{field.label}}</label>
             {{field}}
+            {% if field.errors %}
+            <div class="form__field-error">{{ field.errors|striptags }}</div>
+            {% endif %}
           </div>
           {% endfor %}
 
           {% for message in messages %}
-          {{ message.tag }}
-          {{ message }}
+          <div class="form__message">{{ message }}</div>
           {% endfor %}
 
-          <a href="{% url 'password_change' %}">비밀번호 변경</a>
-          <div class="form__action">
-            <!-- <a class="btn btn--dark" href="{% url 'home' %}">Cancel</a> -->
-            <!-- <a href="javascript:window.history.go(-1);">뒤로가기</a> -->
-            <a class="btn btn--dark" href="javascript:window.history.back();">Back</a>
-            <button class="btn btn--main" type="submit">Update</button>
-
-            <!-- <button onclick="closeTabClick()">새창 닫기</button> -->
+          <div class="update-account__footer">
+            <a href="{% url 'password_change' %}" class="update-account__password-link">비밀번호 변경</a>
+            <div class="form__action">
+              <a class="btn btn--dark" href="javascript:window.history.back();">Back</a>
+              <button class="btn btn--main" type="submit">Update</button>
+            </div>
           </div>
         </form>
   

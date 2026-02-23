@@ -1,0 +1,19 @@
+[Unit]
+Description=gunicorn daemon for letsrace
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/letsrace
+Environment="DJANGO_SETTINGS_MODULE=letsrace.settings_prod"
+EnvironmentFile=-/home/ubuntu/letsrace/.env.prod
+ExecStart=/home/ubuntu/venv/bin/gunicorn letsrace.wsgi:application \
+  --bind 127.0.0.1:8000 \
+  --workers 3 \
+  --timeout 120
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

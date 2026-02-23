@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import path, include
+from django.views.generic.base import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -32,10 +33,19 @@ urlpatterns = [
 
     # path('', include('base.urls')),
 
-    path('', include('allauth.urls')),
+    path('accounts/', include('allauth.urls')),
     # path('accounts/', include('base.api.urls')),
 
     path('', include('base.urls')),
+
+    # Backward-compatible redirects for previous root-level allauth URLs.
+    path('login/', RedirectView.as_view(url='/accounts/login/', permanent=False)),
+    path('logout/', RedirectView.as_view(url='/accounts/logout/', permanent=False)),
+    path('signup/', RedirectView.as_view(url='/accounts/signup/', permanent=False)),
+    path('google/login/', RedirectView.as_view(url='/accounts/google/login/', permanent=False)),
+    path('google/login/callback/', RedirectView.as_view(url='/accounts/google/login/callback/', permanent=False)),
+    path('naver/login/', RedirectView.as_view(url='/accounts/naver/login/', permanent=False)),
+    path('naver/login/callback/', RedirectView.as_view(url='/accounts/naver/login/callback/', permanent=False)),
 
     # url(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
 
@@ -43,5 +53,10 @@ urlpatterns = [
 
 ]
 
-# urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+handler400 = "apps.core.views.error_400"
+handler403 = "apps.core.views.error_403"
+handler404 = "apps.core.views.error_404"
+handler500 = "apps.core.views.error_500"

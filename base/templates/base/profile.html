@@ -1,4 +1,5 @@
 {% extends 'main.html' %}
+{% load static %}
 
 {% block content %}
   <main class="profile-page layout layout--3">
@@ -10,9 +11,16 @@
       <!-- Room List Start -->
       <div class="roomList">
         <div class="profile">
+          {% if messages %}
+          <div class="form__message" style="margin-bottom:1.2rem;">
+            {% for message in messages %}
+            <div>{{ message }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
           <div class="profile__avatar">
             <div class="avatar avatar--large active">
-              <img src="https://randomuser.me/api/portraits/men/11.jpg" />
+              <img src="{{ user.avatar.url }}" />
             </div>
           </div>
           <div class="profile__info">
@@ -27,17 +35,18 @@
           <div class="profile__about">
             <h3>About</h3>
             <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Consequuntur illo tenetur
-              facilis sunt nemo debitis quisquam hic atque aut? Ducimus alias placeat optio
-              accusamus repudiandae quis ab ex exercitationem rem?
+              {% if user.bio %}
+                {{ user.bio }}
+              {% else %}
+                아직 소개가 없습니다.
+              {% endif %}
             </p>
           </div>
         </div>
 
         <div class="roomList__header">
           <div>
-            <h2>Study Rooms Hosted by dennis_ivy</a>
-            </h2>
+            <h2>Study Rooms Hosted by {{ user.username }}</h2>
           </div>
         </div>
 

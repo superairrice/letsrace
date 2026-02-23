@@ -1,50 +1,214 @@
 {% load humanize %}
 {% load mathfilters %}
+{% load custom_filters %}
 
 <style>
-  /* 원래 내장된 tooltip 텍스트는 숨기고, 포탈로만 표시 */
-  .tooltip .tooltip-text { display: none !important; }
-  /* 포탈 기본 스타일 (JS에서 position과 좌표만 제어) */
-  .tooltip-portal {
-    position: fixed;
-    z-index: 99999;
-    max-width: 40rem;
-    background: rgba(18, 18, 18, 0.96);
-    color: var(--color-light-gray);
-    padding: 8px 10px;
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 8px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
-    pointer-events: none;
+  .home-funnel,
+  .home-left-table,
+  .home-left-sticky-rday,
+  .race-comment-modal {
+    font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+    text-rendering: optimizeLegibility;
+  }
+
+  .home-funnel {
+    margin-bottom: 0.9rem;
+    border: 1px solid var(--color-dark-light);
+    border-radius: 0.8rem;
+    background: linear-gradient(120deg, rgba(32, 40, 62, 0.95), rgba(22, 30, 48, 0.95));
+    padding: 1rem 1.1rem;
+  }
+
+  .home-funnel__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.85rem;
+  }
+
+  .home-funnel__title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-light);
+    line-height: 1.2;
+  }
+
+  .home-funnel__sub {
     font-size: 1.1rem;
-    line-height: 1.35;
+    color: var(--color-light-gray);
+    margin-top: 0.2rem;
+  }
+
+  .home-funnel__cards {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  .home-funnel__card {
+    border: 1px solid var(--color-dark-light);
+    border-radius: 0.55rem;
+    background: rgba(10, 14, 24, 0.34);
+    padding: 0.68rem 0.75rem 0.64rem;
+    min-height: 5.9rem;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.24rem;
+  }
+
+  .home-funnel__card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-main);
+    margin-bottom: 0;
+    line-height: 1.2;
+  }
+
+  .home-funnel__day-badge {
+    display: inline-grid;
+    place-items: center;
+    width: 1.72rem;
+    height: 1.72rem;
+    flex: 0 0 1.72rem;
+    padding: 0;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    color: #6bd4ff;
+    background-color: rgba(27, 59, 95, 0.38);
+    border: 1px solid rgba(107, 212, 255, 0.72);
+    line-height: 1;
+    text-align: center;
+    box-shadow: inset 0 0 0 1px rgba(7, 16, 28, 0.28);
+  }
+
+  .home-funnel__card-meta {
+    font-size: 1.05rem;
+    color: var(--color-light-gray);
+    line-height: 1.28;
+  }
+
+  .home-funnel__empty {
+    font-size: 1.1rem;
+    color: var(--color-light-gray);
+    padding: 0.6rem 0.2rem;
+  }
+
+
+  html[data-theme="light"] .home-funnel {
+    border-color: #b7c6d8;
+    background: linear-gradient(120deg, #eef5fc, #e8f1fa);
+  }
+
+  html[data-theme="light"] .home-funnel__title {
+    color: #1a3551;
+  }
+
+  html[data-theme="light"] .home-funnel__sub {
+    color: #4f637d;
+  }
+
+  html[data-theme="light"] .home-funnel__card {
+    border-color: #c2d0e0;
+    background: rgba(255, 255, 255, 0.74);
+  }
+
+  html[data-theme="light"] .home-funnel__card-title {
+    color: #0d6f9e;
+  }
+
+  html[data-theme="light"] .home-funnel__day-badge {
+    color: #0d6a95;
+    border-color: #7eb6d3;
+    background-color: #e9f5fc;
+    box-shadow: inset 0 0 0 1px rgba(120, 167, 196, 0.24);
+  }
+
+  html[data-theme="light"] .home-funnel__card-meta {
+    color: #475d78;
+  }
+
+  @media (max-width: 980px) {
+    .home-funnel__cards {
+      grid-template-columns: 1fr;
+    }
+
+    .home-funnel__card {
+      padding: 0.64rem 0.68rem 0.6rem;
+      min-height: 5.5rem;
+    }
   }
 </style>
 
-<div class="roomListRoom" style="height:max-content; border-radius: 7px; padding: 0px; margin: 0px;">
-  <style>
+<style>
     /* home_left_sub2와 동일한 은은한 교차 배경 + 일관된 호버 */
-    tr.alt-row-odd td { background-color: rgba(255,255,255,0.03); transition: background-color .18s ease; }
-    tr.alt-row-even td { background-color: rgba(0,0,0,0.06);  transition: background-color .18s ease; }
-    tr.alt-row-odd:hover td { background-color: rgba(255,255,255,0.06); }
-    tr.alt-row-even:hover td { background-color: rgba(0,0,0,0.12); }
+    tr.alt-row-odd td { background-color: rgba(255,255,255,0.035); transition: background-color .18s ease; }
+    tr.alt-row-even td { background-color: rgba(0,0,0,0.10);  transition: background-color .18s ease; }
+    tr.alt-row-odd:hover td { background-color: rgba(255,255,255,0.08); }
+    tr.alt-row-even:hover td { background-color: rgba(0,0,0,0.16); }
     tr.alt-row-odd:hover, tr.alt-row-even:hover { filter: brightness(1.06); }
 
     .home-left-table {
       width: 100%;
       table-layout: fixed;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
       display: block;
       height: 60vh;
       overflow-y: auto;
-      overflow-x: hidden;
+      overflow-x: auto;
       border-radius: 7px;
       border: none !important;
       border-style: none !important;
       outline: none;
-      box-shadow: none !important;
+      box-shadow: inset 0 0 0 1px rgba(132, 146, 168, 0.22) !important;
+      background-color: var(--color-dark);
+      color: #d4deec;
+      font-size: 1.03rem;
       isolation: isolate;
       -webkit-overflow-scrolling: touch;
+    }
+
+    .home-left-tab-pane {
+      position: relative;
+    }
+
+    .home-left-sticky-rday {
+      position: absolute;
+      left: 0.55rem;
+      z-index: 160;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.2rem;
+      height: 2.2rem;
+      border-radius: 999px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--color-r5);
+      background-color: rgba(19, 31, 53, 0.92);
+      border: 1px solid var(--color-r5);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
+      pointer-events: none;
+    }
+
+    .home-left-sticky-rday.is-visible {
+      display: inline-flex;
+    }
+
+    html[data-theme="light"] .home-left-sticky-rday {
+      color: #0f4f87;
+      background-color: rgba(238, 245, 252, 0.98);
+      border-color: #7ea7c8;
+      box-shadow: 0 2px 8px rgba(33, 66, 98, 0.14);
     }
 
     .home-left-table thead {
@@ -52,7 +216,23 @@
       top: 0;
       z-index: 120;
       background-color: var(--color-dark) !important;
+      isolation: isolate;
       transform: translateZ(0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.16), 0 2px 0 rgba(7, 11, 19, 0.5);
+    }
+
+    .home-left-table thead::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 1px;
+      background: rgba(205, 214, 230, 0.72);
+      pointer-events: none;
+      z-index: 4;
     }
 
     .home-left-table thead tr {
@@ -64,8 +244,682 @@
       background-image: none !important;
       background-clip: padding-box;
       opacity: 1;
+      position: relative;
+      z-index: 2;
+      border-right: 1px solid rgba(165, 176, 194, 0.18);
     }
+
+    .home-left-table thead th:last-child {
+      border-right: none;
+    }
+
+    .home-left-table thead tr:first-child th {
+      border-bottom: 1px solid rgba(170, 182, 203, 0.26) !important;
+    }
+
+    html[data-theme="light"] .home-left-table {
+      border: 1px solid #afc0d2 !important;
+      box-shadow: 0 1px 4px rgba(24, 46, 70, 0.08) !important;
+      background-color: #e8eef5 !important;
+      color: #27445f;
+    }
+
+    html[data-theme="light"] .home-left-table thead th {
+      background-color: #cad7e4 !important;
+      color: #132c45 !important;
+      border-bottom: 1px solid #aebfd2 !important;
+      font-size: 1.28rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    html[data-theme="light"] .home-left-table thead {
+      box-shadow: 0 1px 0 rgba(165, 185, 208, 0.9), 0 2px 0 rgba(89, 116, 145, 0.16);
+    }
+
+    html[data-theme="light"] .home-left-table thead::after {
+      background: #9eb2c7;
+    }
+
+    html[data-theme="light"] tr.alt-row-odd td { background-color: #eef3f8; }
+    html[data-theme="light"] tr.alt-row-even td { background-color: #e6edf5; }
+    html[data-theme="light"] tr.alt-row-odd:hover td,
+    html[data-theme="light"] tr.alt-row-even:hover td { background-color: #dbe5f1; }
+
+    .home-left-sub2-row,
+    .home-left-sub2-row td,
+    .home-left-sub2-row th {
+      border-color: rgba(133, 147, 167, 0.28) !important;
+    }
+
+    /* tab 내부 표 가독성 보정 */
+    .home-left-table tbody td {
+      line-height: 1.32;
+      border-right: 1px solid rgba(136, 149, 170, 0.22);
+      border-bottom: 1px solid rgba(136, 149, 170, 0.22);
+    }
+
+    .home-left-table tbody td:last-child {
+      border-right: none;
+    }
+
+    html[data-theme="light"] .home-left-table tbody td {
+      border-right: 1px solid #c0ccda;
+      border-bottom: 1px solid #c0ccda;
+      color: #1f3852;
+      padding-top: 0.48rem;
+      padding-bottom: 0.48rem;
+    }
+
+    html[data-theme="light"] .home-left-table {
+      font-size: 1.06rem;
+      line-height: 1.42;
+      border-color: #b7c7d8 !important;
+      background-color: #edf3fa !important;
+    }
+
+    html[data-theme="light"] .home-funnel {
+      border-color: #c0cedc;
+      background: linear-gradient(120deg, #f1f6fc, #eaf2fb);
+      box-shadow: 0 5px 16px rgba(51, 76, 103, 0.08);
+    }
+
+    html[data-theme="light"] .home-funnel__card {
+      border-color: #c8d5e4;
+      background: #ffffff;
+    }
+
+    html[data-theme="light"] .home-funnel__card-title {
+      color: #126f9c;
+      font-weight: 700;
+    }
+
+    html[data-theme="light"] .home-funnel__card-meta {
+      color: #4c637e;
+      font-size: 1.08rem;
+    }
+
+    /* 좌측 경주 정보(시간/거리/조건)는 한 단계 키워서 식별성 확보 */
+    .home-left-sub2-row > td:nth-child(2) div {
+      font-size: 1.08rem !important;
+      line-height: 1.26 !important;
+      letter-spacing: 0.005em;
+    }
+
+    /* 과밀한 보조 수치(매우 작은 글자)는 살짝 줄여 밀도 완화 */
+    .home-left-table tbody [style*="font-size: 0.8rem"] {
+      font-size: 0.77rem !important;
+      line-height: 1.15 !important;
+    }
+
+    /* 우측 레이스 셀(R영역) 보조수치 가독성 개선 */
+    .home-left-sub2-row > td:nth-child(n+4) [style*="font-size: 0.8rem"] {
+      font-size: 0.82rem !important;
+      line-height: 1.2 !important;
+      opacity: 0.96;
+    }
+
+    .home-left-sub2-row > td:nth-child(n+4) [style*="var(--color-gray)"] {
+      color: #9fb1c8 !important;
+    }
+
+    html[data-theme="light"] .home-left-sub2-row > td:nth-child(n+4) [style*="var(--color-gray)"] {
+      color: #6d819a !important;
+    }
+
+    html[data-theme="light"] .home-left-sub2-row,
+    html[data-theme="light"] .home-left-sub2-row td,
+    html[data-theme="light"] .home-left-sub2-row th {
+      border-color: #adc0d4 !important;
+    }
+
+    .jockey-badge {
+      font-size: 0.83rem;
+      color: var(--color-main-light);
+      background-color: var(--color-dark);
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.15rem;
+      min-height: 1.55rem;
+      white-space: nowrap;
+      word-break: keep-all;
+      line-height: 1.12;
+      padding: 2px 4px;
+      margin: 0;
+      border: 1px solid transparent;
+      box-sizing: border-box;
+      vertical-align: middle;
+    }
+
+    .jockey-badge--changed {
+      color: var(--color-light);
+      background-color: var(--color-r1);
+    }
+
+    /* R영역 셀 가용폭 확보(기수 라벨 줄바꿈 방지) */
+    .home-left-sub2-row > td:nth-child(n+4) {
+      padding: 0.28rem 0.24rem !important;
+    }
+
+    /* R쌍(말번/지표) 내부의 가운데 세로 보더 제거 */
+    .home-left-sub2-row > td:nth-child(2n+4) {
+      border-right: none !important;
+    }
+
+    html[data-theme="light"] .jockey-badge {
+      color: #35536f !important;
+      background-color: #eef3f8 !important;
+      border-color: #c3d0dd !important;
+      font-weight: 700;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    }
+
+    html[data-theme="light"] .jockey-badge--changed {
+      color: #7a2f33 !important;
+      background-color: #f8e7e7 !important;
+      border-color: #e1b9ba !important;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    }
+
+    html[data-theme="light"] .jockey-badge--changed .tooltip {
+      color: #7a2f33 !important;
+    }
+
+    .race-comment-badge {
+      margin-top: 0.45rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      border: 1px solid var(--color-dark-light);
+      background: var(--color-dark);
+      color: var(--color-main);
+      font-size: 1.05rem;
+      line-height: 1;
+      border-radius: 999px;
+      padding: 0.25rem 0.55rem;
+      cursor: pointer;
+    }
+
+    .race-comment-badge strong {
+      color: var(--color-light);
+      font-size: 1.05rem;
+    }
+
+    .race-comment-modal {
+      --rcm-border: rgba(137, 154, 193, 0.3);
+      --rcm-panel-bg: linear-gradient(168deg, rgba(48, 56, 80, 0.95) 0%, rgba(41, 49, 72, 0.96) 100%);
+      --rcm-chip-bg: rgba(17, 24, 41, 0.36);
+      --rcm-chip-border: rgba(130, 147, 182, 0.55);
+      --rcm-text-main: #f8fbff;
+      --rcm-text-sub: #c3cde3;
+      --rcm-input-bg: rgba(17, 24, 41, 0.7);
+      --rcm-surface: rgba(22, 28, 43, 0.72);
+      --rcm-surface-border: rgba(129, 145, 178, 0.28);
+      --rcm-accent: #67e6ff;
+      position: fixed;
+      inset: 0;
+      z-index: 100001;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 14% 16%, rgba(84, 191, 255, 0.18), transparent 42%), rgba(8, 13, 25, 0.64);
+      backdrop-filter: blur(6px);
+      padding: 1.2rem;
+    }
+
+    .race-comment-modal[hidden] {
+      display: none !important;
+    }
+
+    .race-comment-modal__panel {
+      width: min(54rem, 96vw);
+      max-height: 86vh;
+      background: var(--rcm-panel-bg);
+      border: 1px solid var(--rcm-border);
+      border-radius: 1.2rem;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 18px 50px rgba(5, 9, 18, 0.55);
+    }
+
+    .race-comment-modal__header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 1.2rem 1.3rem;
+      border-bottom: 1px solid rgba(130, 145, 178, 0.34);
+      background: linear-gradient(180deg, rgba(124, 137, 171, 0.2), rgba(124, 137, 171, 0.06));
+      color: var(--rcm-text-main);
+      gap: 1rem;
+    }
+
+    .race-comment-modal__header-main {
+      min-width: 0;
+      display: grid;
+      gap: 0.48rem;
+    }
+
+    .race-comment-modal__title {
+      font-size: 1.56rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      line-height: 1.15;
+      color: var(--rcm-text-main);
+    }
+
+    #race-comment-close {
+      min-width: 6rem;
+      border-radius: 0.68rem;
+      font-size: 1.14rem;
+      border-color: rgba(136, 151, 183, 0.6);
+      background: rgba(43, 51, 71, 0.8);
+      color: #ecf2ff;
+    }
+
+    #race-comment-close:hover {
+      filter: brightness(1.06);
+    }
+
+    .race-comment-modal__meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.46rem;
+      font-size: 1.12rem;
+      color: var(--rcm-text-sub);
+    }
+
+    .race-comment-modal__meta-item {
+      display: inline-flex;
+      align-items: center;
+      min-height: 2.1rem;
+      border-radius: 999px;
+      padding: 0.18rem 0.72rem;
+      border: 1px solid var(--rcm-chip-border);
+      background: var(--rcm-chip-bg);
+      color: #dee6f8;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .race-comment-modal__meta-item--city {
+      border-color: rgba(102, 226, 255, 0.6);
+      color: #8eeaff;
+      background: rgba(59, 146, 170, 0.28);
+    }
+
+    .race-comment-modal__meta-item--race {
+      border-color: rgba(168, 179, 201, 0.62);
+      color: #f8fbff;
+      background: rgba(41, 50, 75, 0.44);
+    }
+
+    .race-comment-modal__summary {
+      padding: 0.82rem 1.3rem 0.34rem;
+      color: #c5d0e7;
+      font-size: 1.1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .race-comment-modal__summary a {
+      color: var(--rcm-accent);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .race-comment-modal__summary a:hover {
+      text-decoration: underline;
+    }
+
+    .race-comment-modal__list {
+      padding: 1.05rem 1.3rem;
+      overflow: auto;
+      max-height: 43vh;
+      display: grid;
+      gap: 0.82rem;
+    }
+
+    .race-comment-item {
+      border: 1px solid var(--rcm-surface-border);
+      border-radius: 0.8rem;
+      padding: 0.78rem 0.95rem;
+      background: var(--rcm-surface);
+      backdrop-filter: blur(2px);
+    }
+
+    .race-comment-item__meta {
+      font-size: 1.07rem;
+      color: #c7d3eb;
+      margin-bottom: 0.38rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      flex-wrap: wrap;
+    }
+
+    .race-comment-item__mine {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 0.12rem 0.54rem;
+      font-size: 0.98rem;
+      font-weight: 700;
+      line-height: 1.1;
+      border: 1px solid rgba(110, 228, 255, 0.64);
+      color: #92ecff;
+      background: rgba(42, 116, 146, 0.36);
+    }
+
+    .race-comment-item__content {
+      font-size: 1.26rem;
+      color: var(--rcm-text-main);
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.5;
+    }
+
+    .race-comment-item__footer {
+      margin-top: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.44rem;
+    }
+
+    .race-comment-item__action {
+      border: 1px solid rgba(126, 141, 174, 0.68);
+      background: rgba(38, 46, 66, 0.68);
+      color: #e3eaf9;
+      border-radius: 0.52rem;
+      padding: 0.34rem 0.72rem;
+      font-size: 1.04rem;
+      line-height: 1.2;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.31rem;
+      transition: transform 120ms ease, filter 120ms ease, border-color 120ms ease, background-color 120ms ease;
+    }
+
+    .race-comment-item__action:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .race-comment-item__action--like {
+      border-color: rgba(255, 122, 103, 0.76);
+      color: #ffbaa8;
+      background: rgba(255, 114, 90, 0.14);
+    }
+
+    .race-comment-item__action--report {
+      border-color: rgba(162, 172, 195, 0.74);
+      color: #d4dced;
+      background: rgba(169, 178, 198, 0.13);
+    }
+
+    .race-comment-item__action--like.is-active {
+      background: rgba(255, 116, 93, 0.24);
+      color: #ffe0d7;
+      border-color: rgba(255, 127, 108, 0.9);
+      font-weight: 700;
+    }
+
+    .race-comment-item__action--report.is-active {
+      background: rgba(176, 186, 204, 0.24);
+      color: #f5f8ff;
+      border-color: rgba(172, 183, 205, 0.9);
+      font-weight: 700;
+    }
+
+    .race-comment-item__action--delete {
+      border-color: rgba(225, 119, 119, 0.8);
+      color: #ffd2d2;
+      background: rgba(225, 119, 119, 0.2);
+    }
+
+    .race-comment-item__action--delete:hover {
+      filter: none;
+      transform: translateY(-1px);
+      background: rgba(225, 119, 119, 0.3);
+      color: #ffecec;
+    }
+
+    .race-comment-item__action:disabled {
+      opacity: 0.58;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .race-comment-modal__form {
+      border-top: 1px solid rgba(134, 149, 181, 0.3);
+      padding: 1rem 1.3rem 1.15rem;
+      display: grid;
+      gap: 0.72rem;
+      background: rgba(20, 26, 41, 0.38);
+    }
+
+    .race-comment-modal__form textarea {
+      width: 100%;
+      min-height: 7.4rem;
+      resize: vertical;
+      border: 1px solid rgba(136, 151, 182, 0.52);
+      border-radius: 0.72rem;
+      background: var(--rcm-input-bg);
+      color: var(--rcm-text-main);
+      padding: 0.88rem 0.95rem;
+      font-size: 1.24rem;
+      line-height: 1.45;
+      transition: border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    .race-comment-modal__form textarea::placeholder {
+      color: #aeb9d2;
+    }
+
+    .race-comment-modal__form textarea:focus {
+      outline: none;
+      border-color: rgba(106, 226, 255, 0.8);
+      box-shadow: 0 0 0 3px rgba(106, 226, 255, 0.2);
+    }
+
+    .race-comment-modal__actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .race-comment-modal__counter {
+      font-size: 1.05rem;
+      color: #c3cde3;
+      letter-spacing: 0.01em;
+    }
+
+    .race-comment-modal__counter.is-limit {
+      color: #ffd39f;
+    }
+
+    .race-comment-modal__primary {
+      min-width: 6rem;
+      border-radius: 0.68rem;
+      font-size: 1.12rem;
+    }
+
+    .race-comment-modal__notice {
+      position: absolute;
+      top: 7.2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      max-width: min(40rem, calc(100% - 2rem));
+      background: rgba(15, 26, 43, 0.94);
+      border: 1px solid rgba(130, 191, 230, 0.75);
+      color: #d8f3ff;
+      border-radius: 0.7rem;
+      padding: 0.64rem 0.95rem;
+      font-size: 1.16rem;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.36);
+      text-align: center;
+    }
+
+    .race-comment-modal__notice[hidden] {
+      display: none !important;
+    }
+
+    @media (max-width: 768px) {
+      .race-comment-modal {
+        padding: 0.6rem;
+      }
+
+      .race-comment-modal__panel {
+        width: min(100vw, 100%);
+        max-height: 92vh;
+        border-radius: 1rem;
+      }
+
+      .race-comment-modal__header,
+      .race-comment-modal__summary,
+      .race-comment-modal__list,
+      .race-comment-modal__form {
+        padding-left: 0.9rem;
+        padding-right: 0.9rem;
+      }
+
+      .race-comment-modal__title {
+        font-size: 1.36rem;
+      }
+
+      .race-comment-modal__summary {
+        font-size: 1.02rem;
+      }
+
+      .race-comment-modal__list {
+        max-height: 40vh;
+      }
+
+      .race-comment-item__content {
+        font-size: 1.19rem;
+      }
+    }
+
+    html[data-theme="light"] .race-comment-modal {
+      --rcm-border: rgba(151, 167, 199, 0.45);
+      --rcm-panel-bg: linear-gradient(164deg, rgba(242, 246, 255, 0.98) 0%, rgba(233, 239, 251, 0.98) 100%);
+      --rcm-chip-bg: rgba(255, 255, 255, 0.72);
+      --rcm-chip-border: rgba(161, 178, 208, 0.9);
+      --rcm-text-main: #1f2d45;
+      --rcm-text-sub: #4d5f80;
+      --rcm-input-bg: rgba(255, 255, 255, 0.92);
+      --rcm-surface: rgba(255, 255, 255, 0.86);
+      --rcm-surface-border: rgba(169, 183, 209, 0.65);
+      --rcm-accent: #147eb3;
+      background: radial-gradient(circle at 16% 14%, rgba(82, 180, 231, 0.2), transparent 42%), rgba(19, 25, 39, 0.36);
+    }
+
+    html[data-theme="light"] #race-comment-close {
+      border-color: rgba(152, 170, 201, 0.9);
+      background: rgba(255, 255, 255, 0.8);
+      color: #2f4567;
+    }
+
+    html[data-theme="light"] .race-comment-modal__summary {
+      color: #4f6284;
+    }
+
+    html[data-theme="light"] .race-comment-item__mine {
+      border-color: rgba(88, 176, 213, 0.8);
+      color: #0f6d98;
+      background: rgba(170, 225, 246, 0.4);
+    }
+
+    html[data-theme="light"] .race-comment-item__action {
+      background: rgba(255, 255, 255, 0.92);
+      border-color: rgba(157, 172, 199, 0.95);
+      color: #304562;
+    }
+
+    html[data-theme="light"] .race-comment-item__action--like {
+      border-color: rgba(229, 107, 90, 0.9);
+      color: #d24d36;
+      background: rgba(255, 228, 223, 0.78);
+    }
+
+    html[data-theme="light"] .race-comment-item__action--report {
+      border-color: rgba(155, 167, 191, 0.9);
+      color: #495a74;
+      background: rgba(239, 243, 250, 0.82);
+    }
+
+    html[data-theme="light"] .race-comment-item__action--like.is-active {
+      background: rgba(255, 208, 199, 0.95);
+      color: #bd3b24;
+      border-color: rgba(229, 107, 90, 0.95);
+    }
+
+    html[data-theme="light"] .race-comment-item__action--report.is-active {
+      background: rgba(224, 231, 242, 0.95);
+      color: #2f3f58;
+      border-color: rgba(144, 157, 184, 0.95);
+    }
+
+    html[data-theme="light"] .race-comment-item__action--delete {
+      border-color: rgba(210, 99, 99, 0.88);
+      color: #bf4141;
+      background: rgba(255, 229, 229, 0.88);
+    }
+
+    html[data-theme="light"] .race-comment-item__action--delete:hover {
+      background: rgba(255, 214, 214, 0.95);
+      color: #a83535;
+    }
+
+    html[data-theme="light"] .race-comment-modal__notice {
+      background: rgba(24, 45, 70, 0.96);
+      border-color: #4f83b5;
+      color: #e7f5ff;
+    }
+
   </style>
+
+<div class="roomListRoom" style="height:max-content; border-radius: 7px; padding: 0px; margin: 0px;">
+
+  <section class="home-funnel">
+    <div class="home-funnel__head">
+      <div>
+        <div class="home-funnel__title">오늘 초반 경주</div>
+      </div>
+    </div>
+
+    {% if funnel_races %}
+    <div class="home-funnel__cards">
+      {% for r_rcity, r_rdate, r_rday, r_rno, rtime, distance, r2alloc, r333alloc, r123alloc, grade, dividing, r1award, r_overview, r_guide in funnel_races %}
+      <a class="home-funnel__card js-funnel-race-link"
+         href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}"
+         data-race-label="{{ r_rday }} {{ r_rcity }} {{ r_rdate|slice:'0:4' }}.{{ r_rdate|slice:'4:6' }}.{{ r_rdate|slice:'6:8' }} {{ r_rno }}R"
+         onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
+        <div class="home-funnel__card-title">
+          <span class="home-funnel__day-badge">{{ r_rday }}</span>
+          <span>{{ r_rcity }} {{ r_rno }}R · {{ rtime }}</span>
+        </div>
+        <div class="home-funnel__card-meta">
+          {{ r_rdate|slice:"0:4" }}.{{ r_rdate|slice:"4:6" }}.{{ r_rdate|slice:"6:8" }}({{ r_rday }}) · {{ distance }}m · {{ grade|slice:"0:2" }} · {{ dividing|slice:"0:2" }}
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="home-funnel__empty">오늘 표시할 경주가 아직 없습니다.</div>
+    {% endif %}
+
+  </section>
 
   <ul class="tabs">
     
@@ -77,7 +931,8 @@
     </li>
   </ul>
 
-  <div id="tab-1" class="tab-content current">
+  <div id="tab-1" class="tab-content current home-left-tab-pane">
+    <div class="home-left-sticky-rday js-home-left-sticky-rday" aria-hidden="true"></div>
     <table class="rwd-table home-left-table" style="background-color: var(--color-dark);">
       <thead>
         {% include 'base/home_left_sub1.html' %}
@@ -85,38 +940,115 @@
       <tbody>
         {% for r_rcity, r_rdate, r_rday, r_rno, rtime, distance, r2alloc, r333alloc, r123alloc, grade, dividing, r1award, r_overview, r_guide in race %}
         {% if r_rcity == '서울' %}
-          {% include 'base/home_left_sub2.html' %}
+          {% with by_city=expects_grouped|get_item:r_rcity %}
+            {% with by_date=by_city|get_item:r_rdate %}
+              {% with expects_for_race=by_date|get_item:r_rno %}
+                {% include 'base/home_left_sub2.html' %}
+              {% endwith %}
+            {% endwith %}
+          {% endwith %}
         {% endif %}
         {% endfor %}
       
-        <tr>
-          <td colspan="31" align="center" style="font-size:6.3rem; text-transform:capitalize; border-top: 1px solid gray; background-color: var(--color-bg);">&nbsp;</td>
-        </tr>
+
       </tbody>
     </table>
     
   </div>
-  <div id="tab-2" class="tab-content">
+  <div id="tab-2" class="tab-content home-left-tab-pane">
+    <div class="home-left-sticky-rday js-home-left-sticky-rday" aria-hidden="true"></div>
     <table class="rwd-table home-left-table" style="background-color: var(--color-dark);">
       <thead>
         {% include 'base/home_left_sub1.html' %}
       </thead>
       <tbody>
         {% for r_rcity, r_rdate, r_rday, r_rno, rtime, distance, r2alloc, r333alloc, r123alloc, grade, dividing, r1award, r_overview, r_guide in race %}
-        {% if r_rcity != '서울' %}
-          {% include 'base/home_left_sub2.html' %}
+        {% if r_rcity == '부산' %}
+          {% with by_city=expects_grouped|get_item:r_rcity %}
+            {% with by_date=by_city|get_item:r_rdate %}
+              {% with expects_for_race=by_date|get_item:r_rno %}
+                {% include 'base/home_left_sub2.html' %}
+              {% endwith %}
+            {% endwith %}
+          {% endwith %}
         {% endif %}
         {% endfor %}
-      
-        <tr>
-          <td colspan="31" align="center" style="font-size:6.3rem; text-transform:capitalize; border-top: 1px solid gray; background-color: var(--color-bg);">&nbsp;</td>
-        </tr>
+
       </tbody>
     </table>
     
   </div>
 
 </div>
+
+<div id="race-comment-modal" class="race-comment-modal" hidden>
+  <div class="race-comment-modal__panel" role="dialog" aria-modal="true" aria-labelledby="race-comment-title">
+    <div class="race-comment-modal__header">
+      <div class="race-comment-modal__header-main">
+        <span id="race-comment-title" class="race-comment-modal__title">경주 댓글</span>
+        <div class="race-comment-modal__meta" aria-live="polite">
+          <span id="race-comment-meta-city" class="race-comment-modal__meta-item race-comment-modal__meta-item--city">서울</span>
+          <span id="race-comment-meta-date" class="race-comment-modal__meta-item">2026.02.14(금)</span>
+          <span id="race-comment-meta-race" class="race-comment-modal__meta-item race-comment-modal__meta-item--race">1R</span>
+        </div>
+      </div>
+      <button type="button" class="btn btn--dark" id="race-comment-close">닫기</button>
+    </div>
+    <div class="race-comment-modal__summary">
+      <span>최신순 · 짧은 의견 공유 중심</span>
+      <a href="{% url 'comment_policy' %}" target="_blank" rel="noopener">댓글 정책 요약 보기</a>
+    </div>
+    <div id="race-comment-notice" class="race-comment-modal__notice" hidden></div>
+    <div class="race-comment-modal__list" id="race-comment-list"></div>
+    <form class="race-comment-modal__form" id="race-comment-form">
+      <textarea id="race-comment-input" maxlength="300" placeholder="최대 300자까지 입력할 수 있습니다."></textarea>
+      <div class="race-comment-modal__actions">
+        <span id="race-comment-counter" class="race-comment-modal__counter" aria-live="polite">0 / 300</span>
+        {% if request.user.is_authenticated %}
+        <button type="submit" class="btn btn--main race-comment-modal__primary">등록</button>
+        {% else %}
+        <a class="btn btn--dark race-comment-modal__primary" href="{% url 'account_login' %}?next={{ request.get_full_path|urlencode }}">로그인 후 댓글쓰기</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function () {
+    var RECENT_KEY = "home_recent_race_v1";
+    var recentLink = document.getElementById("home-funnel-recent");
+    if (!recentLink) return;
+
+    function hydrateRecent() {
+      try {
+        var raw = localStorage.getItem(RECENT_KEY);
+        if (!raw) return;
+        var item = JSON.parse(raw);
+        if (!item || !item.href || !item.label) return;
+        recentLink.href = item.href;
+        recentLink.textContent = item.label;
+        recentLink.hidden = false;
+      } catch (e) {}
+    }
+
+    document.querySelectorAll(".js-funnel-race-link").forEach(function (el) {
+      el.addEventListener("click", function () {
+        try {
+          var payload = {
+            href: el.getAttribute("href"),
+            label: el.getAttribute("data-race-label") || "최근 본 경주",
+            ts: Date.now(),
+          };
+          localStorage.setItem(RECENT_KEY, JSON.stringify(payload));
+          hydrateRecent();
+        } catch (e) {}
+      });
+    });
+
+    hydrateRecent();
+  })();
+</script>
 
 <script>
   $(function () {
@@ -138,9 +1070,16 @@
     return days[new Date().getDay()];
   }
 
+  function normalizeWeekdayLabel(value) {
+    if (!value) return '';
+    var m = String(value).trim().match(/[일월화수목금토]/);
+    return m ? m[0] : '';
+  }
+
   function scrollHomeLeftByWeekday() {
     var table = document.querySelector('.tab-content.current .home-left-table');
     if (!table) return;
+    var thead = table.querySelector('thead');
 
     var today = getKoreanWeekday();
     var candidates = [];
@@ -150,20 +1089,94 @@
     } else if (today === '일') {
       candidates = ['일', '토'];
     } else if (today === '금') {
-      candidates = ['토', '일'];
+      candidates = ['금', '토', '일'];
     } else {
-      candidates = [today, '토', '일'];
+      candidates = [today];
     }
 
+    var rows = table.querySelectorAll('tbody tr[data-rday]');
     var targetRow = null;
     for (var i = 0; i < candidates.length; i++) {
-      targetRow = table.querySelector('tbody tr[data-rday="' + candidates[i] + '"]');
-      if (targetRow) break;
+      for (var j = 0; j < rows.length; j++) {
+        if (normalizeWeekdayLabel(rows[j].dataset.rday) === candidates[i]) {
+          targetRow = rows[j];
+          break;
+        }
+      }
+      if (targetRow) {
+        break;
+      }
+    }
+    if (!targetRow) {
+      targetRow = rows.length ? rows[0] : null;
     }
     if (!targetRow) return;
 
-    var top = targetRow.offsetTop - table.querySelector('thead').offsetHeight - 6;
+    // display:block table + sticky header 조합에서 offsetTop이 불안정한 경우가 있어 rect 기반으로 계산
+    var tableRect = table.getBoundingClientRect();
+    var rowRect = targetRow.getBoundingClientRect();
+    var headerHeight = thead ? thead.offsetHeight : 0;
+    var top = table.scrollTop + (rowRect.top - tableRect.top) - headerHeight - 6;
     table.scrollTop = Math.max(0, top);
+  }
+
+  function getTopVisibleRaceRow(table) {
+    if (!table) return null;
+    var thead = table.querySelector('thead');
+    var rows = table.querySelectorAll('tbody tr[data-rday]');
+    if (!rows.length) return null;
+
+    var tableRect = table.getBoundingClientRect();
+    var headerHeight = thead ? thead.offsetHeight : 0;
+    var scanTop = tableRect.top + headerHeight + 2;
+
+    for (var i = 0; i < rows.length; i++) {
+      var rect = rows[i].getBoundingClientRect();
+      if (rect.bottom > scanTop) {
+        return rows[i];
+      }
+    }
+    return rows[rows.length - 1];
+  }
+
+  function isBadgeVisibleInViewport(table, day) {
+    if (!table || !day) return false;
+    var thead = table.querySelector('thead');
+    var badges = table.querySelectorAll('.js-rday-badge');
+    if (!badges.length) return false;
+
+    var tableRect = table.getBoundingClientRect();
+    var headerBottom = tableRect.top + (thead ? thead.offsetHeight : 0);
+    var tableBottom = tableRect.bottom;
+
+    for (var i = 0; i < badges.length; i++) {
+      var badge = badges[i];
+      if (normalizeWeekdayLabel(badge.textContent) !== day) continue;
+      var rect = badge.getBoundingClientRect();
+      if (rect.bottom > headerBottom && rect.top < tableBottom) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function updateStickyWeekdayLabel() {
+    var pane = document.querySelector('.tab-content.current.home-left-tab-pane');
+    if (!pane) return;
+    var table = pane.querySelector('.home-left-table');
+    var label = pane.querySelector('.js-home-left-sticky-rday');
+    if (!table || !label) return;
+
+    var thead = table.querySelector('thead');
+    var headerHeight = thead ? thead.offsetHeight : 0;
+    label.style.top = (headerHeight + 8) + 'px';
+
+    var topRow = getTopVisibleRaceRow(table);
+    var day = topRow ? normalizeWeekdayLabel(topRow.dataset.rday) : '';
+    var shouldHide = !day || isBadgeVisibleInViewport(table, day);
+
+    label.textContent = day;
+    label.classList.toggle('is-visible', !shouldHide);
   }
 
   function resizeHomeLeftTableHeight() {
@@ -171,16 +1184,30 @@
     if (!table) return;
 
     var rect = table.getBoundingClientRect();
-    var bottomGap = 16;
+    var footer = document.querySelector('.footer');
+    var footerHeight = footer ? footer.offsetHeight : 0;
+    var bottomGap = footerHeight + 16;
     var available = window.innerHeight - rect.top - bottomGap;
 
     table.style.height = Math.max(260, available) + 'px';
+    updateStickyWeekdayLabel();
+  }
+
+  function bindHomeLeftTableScrollEvents() {
+    var tables = document.querySelectorAll('.home-left-table');
+    for (var i = 0; i < tables.length; i++) {
+      if (tables[i].dataset.stickyWeekdayBound === '1') continue;
+      tables[i].dataset.stickyWeekdayBound = '1';
+      tables[i].addEventListener('scroll', updateStickyWeekdayLabel, { passive: true });
+    }
   }
 
   window.addEventListener('resize', resizeHomeLeftTableHeight);
   window.addEventListener('load', function () {
+    bindHomeLeftTableScrollEvents();
     resizeHomeLeftTableHeight();
     scrollHomeLeftByWeekday();
+    updateStickyWeekdayLabel();
   });
 
   $(document).ready(function () {
@@ -194,10 +1221,388 @@
       $(this).addClass('current');
       $("#" + tab_id).addClass('current');
       resizeHomeLeftTableHeight();
-      scrollHomeLeftByWeekday();
+      requestAnimationFrame(function () {
+        scrollHomeLeftByWeekday();
+        updateStickyWeekdayLabel();
+      });
     })
 
+    bindHomeLeftTableScrollEvents();
     resizeHomeLeftTableHeight();
     scrollHomeLeftByWeekday();
-  })
+    updateStickyWeekdayLabel();
+  });
+
+  (function () {
+    var isAuthenticated = "{{ request.user.is_authenticated|yesno:'true,false' }}" === "true";
+    var modal = document.getElementById("race-comment-modal");
+    var listEl = document.getElementById("race-comment-list");
+    var formEl = document.getElementById("race-comment-form");
+    var inputEl = document.getElementById("race-comment-input");
+    var titleEl = document.getElementById("race-comment-title");
+    var metaCityEl = document.getElementById("race-comment-meta-city");
+    var metaDateEl = document.getElementById("race-comment-meta-date");
+    var metaRaceEl = document.getElementById("race-comment-meta-race");
+    var counterEl = document.getElementById("race-comment-counter");
+    var closeBtn = document.getElementById("race-comment-close");
+    var noticeEl = document.getElementById("race-comment-notice");
+    var current = null;
+    var noticeTimer = null;
+
+    if (!modal || !listEl || !formEl || !inputEl || !titleEl || !closeBtn || !noticeEl) {
+      return;
+    }
+
+    function updateCounter() {
+      if (!counterEl) return;
+      var len = (inputEl.value || "").length;
+      var max = Number(inputEl.getAttribute("maxlength") || 300);
+      counterEl.textContent = String(len) + " / " + String(max);
+      counterEl.classList.toggle("is-limit", len >= max);
+    }
+
+    function showNotice(message) {
+      noticeEl.textContent = message;
+      noticeEl.hidden = false;
+      if (noticeTimer) clearTimeout(noticeTimer);
+      noticeTimer = setTimeout(function () {
+        noticeEl.hidden = true;
+      }, 2200);
+    }
+
+    function getCsrfToken() {
+      var m = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+      return m ? decodeURIComponent(m[1]) : "";
+    }
+
+    function apiUrl(rcity, rdate, rno, limit) {
+      var q = new URLSearchParams({ rcity: rcity, rdate: rdate, rno: String(rno), limit: String(limit || 30) });
+      return "/race-comments/?" + q.toString();
+    }
+
+    function formatRaceDate(rdate) {
+      var s = String(rdate || "");
+      if (/^\d{8}$/.test(s)) {
+        return s.slice(0, 4) + "." + s.slice(4, 6) + "." + s.slice(6, 8);
+      }
+      return s;
+    }
+
+    function setBadgeCount(rcity, rdate, rno, count) {
+      document.querySelectorAll(".js-race-comment-open").forEach(function (btn) {
+        if (btn.dataset.rcity === rcity && btn.dataset.rdate === rdate && btn.dataset.rno === String(rno)) {
+          var countEl = btn.querySelector(".js-race-comment-count");
+          if (countEl) countEl.textContent = String(count);
+        }
+      });
+    }
+
+    function loadAllBadgeCounts() {
+      var buttons = Array.prototype.slice.call(document.querySelectorAll(".js-race-comment-open"));
+      if (!buttons.length) return;
+      var seen = {};
+      var items = [];
+
+      buttons.forEach(function (btn) {
+        var rcity = btn.dataset.rcity;
+        var rdate = btn.dataset.rdate;
+        var rno = btn.dataset.rno;
+        var key = rcity + "|" + rdate + "|" + rno;
+        if (seen[key]) return;
+        seen[key] = true;
+        items.push({ rcity: rcity, rdate: rdate, rno: rno });
+      });
+
+      fetch("/race-comments/counts/", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken()
+        },
+        body: JSON.stringify({ items: items })
+      })
+        .then(function (r) {
+          return r.json().catch(function () {
+            return { ok: false };
+          });
+        })
+        .then(function (data) {
+          if (!data || !data.ok || !data.counts) return;
+          Object.keys(data.counts).forEach(function (key) {
+            var parts = key.split("|");
+            if (parts.length !== 3) return;
+            setBadgeCount(parts[0], parts[1], parts[2], data.counts[key] || 0);
+          });
+        })
+        .catch(function () {});
+    }
+
+    function renderComments(items) {
+      if (!items || !items.length) {
+        listEl.innerHTML = '<div class="race-comment-item"><div class="race-comment-item__content">첫 댓글을 남겨보세요.</div></div>';
+        return;
+      }
+      function esc(v) {
+        return String(v == null ? "" : v).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+      listEl.innerHTML = items.map(function (c) {
+        var contentText = c.is_hidden ? "반대 누적으로 숨김 처리된 댓글입니다." : String(c.content || "");
+        var liked = !!c.liked;
+        var reported = !!c.reported;
+        var mineBadge = c.is_mine ? '<span class="race-comment-item__mine">내 댓글</span>' : "";
+        var likeCls = liked ? " is-active" : "";
+        var reportCls = reported ? " is-active" : "";
+        var deleteBtn = c.is_mine
+          ? '<button type="button" class="race-comment-item__action race-comment-item__action--delete js-race-comment-delete" data-comment-id="' + c.id + '">삭제</button>'
+          : "";
+        var likeLabel = "추천 ";
+        var reportLabel = "반대 ";
+        return (
+          '<div class="race-comment-item" data-comment-id="' + c.id + '" data-liked="' + (liked ? "1" : "0") + '" data-reported="' + (reported ? "1" : "0") + '">' +
+          '<div class="race-comment-item__meta">' + esc(c.nickname) + " · " + esc(c.created) + mineBadge + "</div>" +
+          '<div class="race-comment-item__content">' + esc(contentText) + "</div>" +
+          '<div class="race-comment-item__footer">' +
+          deleteBtn +
+          '<button type="button" class="race-comment-item__action race-comment-item__action--like js-race-comment-like' + likeCls + '" data-comment-id="' + c.id + '">👍 ' + likeLabel + Number(c.like_count || 0) + "</button>" +
+          '<button type="button" class="race-comment-item__action race-comment-item__action--report js-race-comment-report' + reportCls + '" data-comment-id="' + c.id + '">👎 ' + reportLabel + Number(c.report_count || 0) + "</button>" +
+          "</div>" +
+          "</div>"
+        );
+      }).join("");
+
+      listEl.querySelectorAll(".js-race-comment-like").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          submitCommentAction(btn, "like");
+        });
+      });
+      listEl.querySelectorAll(".js-race-comment-report").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          submitCommentAction(btn, "report");
+        });
+      });
+      listEl.querySelectorAll(".js-race-comment-delete").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          submitCommentDelete(btn);
+        });
+      });
+    }
+
+    function submitCommentAction(btn, action) {
+      var commentId = btn.getAttribute("data-comment-id");
+      if (!commentId) return;
+      var row = btn.closest(".race-comment-item");
+      var liked = row && row.dataset.liked === "1";
+      var reported = row && row.dataset.reported === "1";
+
+      // Client-side guard to avoid needless conflict requests.
+      if ((action === "like" && reported) || (action === "report" && liked)) {
+        showNotice("같은 댓글에는 좋아요와 반대를 동시에 할 수 없습니다.");
+        return;
+      }
+      if ((action === "like" && liked) || (action === "report" && reported)) {
+        showNotice("이미 처리한 요청입니다.");
+        return;
+      }
+
+      btn.disabled = true;
+      fetch("/race-comments/action/", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken()
+        },
+        body: JSON.stringify({ comment_id: commentId, action: action })
+      })
+        .then(function (r) {
+          return r.json().catch(function () {
+            return { ok: false, error: "액션 응답을 해석할 수 없습니다." };
+          });
+        })
+        .then(function (data) {
+          if (!data || !data.ok) {
+            showNotice((data && data.error) || "요청 처리에 실패했습니다.");
+            return;
+          }
+
+          var c = data.comment || {};
+          if (row) {
+            row.dataset.liked = c.liked ? "1" : "0";
+            row.dataset.reported = c.reported ? "1" : "0";
+
+            var contentEl = row.querySelector(".race-comment-item__content");
+            if (contentEl && c.is_hidden) {
+              contentEl.textContent = "반대 누적으로 숨김 처리된 댓글입니다.";
+            }
+
+            var likeBtn = row.querySelector(".js-race-comment-like");
+            if (likeBtn) {
+              likeBtn.textContent = "👍 추천 " + Number(c.like_count || 0);
+              likeBtn.classList.toggle("is-active", !!c.liked);
+            }
+            var reportBtn = row.querySelector(".js-race-comment-report");
+            if (reportBtn) {
+              reportBtn.textContent = "👎 반대 " + Number(c.report_count || 0);
+              reportBtn.classList.toggle("is-active", !!c.reported);
+            }
+          }
+        })
+        .catch(function () {
+          showNotice("요청 처리 중 오류가 발생했습니다.");
+        })
+        .finally(function () {
+          btn.disabled = false;
+        });
+    }
+
+    function submitCommentDelete(btn) {
+      var commentId = btn.getAttribute("data-comment-id");
+      if (!commentId || !current) return;
+      btn.disabled = true;
+      fetch("/race-comments/delete/", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken()
+        },
+        body: JSON.stringify({ comment_id: commentId })
+      })
+        .then(function (r) {
+          return r.json().catch(function () {
+            return { ok: false, error: "삭제 응답을 해석할 수 없습니다." };
+          });
+        })
+        .then(function (data) {
+          if (!data || !data.ok) {
+            showNotice((data && data.error) || "댓글 삭제에 실패했습니다.");
+            return;
+          }
+
+          var row = btn.closest(".race-comment-item");
+          if (row && row.parentNode) row.parentNode.removeChild(row);
+
+          var remaining = listEl.querySelectorAll(".race-comment-item").length;
+          if (!remaining) {
+            listEl.innerHTML = '<div class="race-comment-item"><div class="race-comment-item__content">첫 댓글을 남겨보세요.</div></div>';
+          }
+          setBadgeCount(current.rcity, current.rdate, current.rno, data.count || 0);
+          showNotice("댓글이 삭제되었습니다.");
+        })
+        .catch(function () {
+          showNotice("댓글 삭제 중 오류가 발생했습니다.");
+        })
+        .finally(function () {
+          btn.disabled = false;
+        });
+    }
+
+    function fetchRaceComments(rcity, rdate, rno, openModal) {
+      fetch(apiUrl(rcity, rdate, rno, openModal ? (isAuthenticated ? 50 : 20) : 1), { credentials: "same-origin" })
+        .then(function (r) {
+          return r.json().catch(function () {
+            return { ok: false, error: "댓글 조회 응답을 해석할 수 없습니다." };
+          });
+        })
+        .then(function (data) {
+          if (!data || !data.ok) return;
+          setBadgeCount(rcity, rdate, rno, data.count || 0);
+          if (openModal) renderComments(data.comments || []);
+        })
+        .catch(function () {});
+    }
+
+    function openModalFor(btn) {
+      current = {
+        rcity: btn.dataset.rcity,
+        rdate: btn.dataset.rdate,
+        rday: btn.dataset.rday,
+        rno: btn.dataset.rno
+      };
+      var dateLabel = formatRaceDate(current.rdate);
+      var dayLabel = current.rday ? "(" + current.rday + ")" : "";
+      titleEl.textContent = "경주 댓글";
+      if (metaCityEl) metaCityEl.textContent = current.rcity || "-";
+      if (metaDateEl) metaDateEl.textContent = dateLabel + dayLabel;
+      if (metaRaceEl) metaRaceEl.textContent = current.rno + "R";
+      inputEl.value = "";
+      updateCounter();
+      inputEl.disabled = !isAuthenticated;
+      inputEl.placeholder = isAuthenticated
+        ? "최대 300자까지 입력할 수 있습니다."
+        : "로그인 후 댓글을 작성할 수 있습니다.";
+      modal.hidden = false;
+      noticeEl.hidden = true;
+      fetchRaceComments(current.rcity, current.rdate, current.rno, true);
+      if (isAuthenticated) inputEl.focus();
+    }
+
+    function closeModal() {
+      modal.hidden = true;
+      current = null;
+    }
+
+    loadAllBadgeCounts();
+
+    document.addEventListener("click", function (e) {
+      var btn = e.target.closest(".js-race-comment-open");
+      if (!btn) return;
+      e.preventDefault();
+      openModalFor(btn);
+    });
+
+    closeBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) closeModal();
+    });
+
+    formEl.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!current) return;
+      if (!isAuthenticated) {
+        showNotice("로그인 후 댓글을 작성할 수 있습니다.");
+        var nextUrl = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = "{% url 'account_login' %}?next=" + nextUrl;
+        return;
+      }
+      var content = (inputEl.value || "").trim();
+      if (!content) return;
+      fetch("/race-comments/", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCsrfToken()
+        },
+        body: JSON.stringify({
+          rcity: current.rcity,
+          rdate: current.rdate,
+          rno: current.rno,
+          content: content
+        })
+      })
+        .then(function (r) {
+          return r.json().catch(function () {
+            return { ok: false, error: "댓글 등록 응답을 해석할 수 없습니다." };
+          });
+        })
+        .then(function (data) {
+          if (!data || !data.ok) {
+            showNotice((data && data.error) || "댓글 등록에 실패했습니다.");
+            return;
+          }
+          inputEl.value = "";
+          updateCounter();
+          setBadgeCount(current.rcity, current.rdate, current.rno, data.count || 0);
+          fetchRaceComments(current.rcity, current.rdate, current.rno, true);
+        })
+        .catch(function () {
+          showNotice("댓글 등록 중 오류가 발생했습니다.");
+        });
+    });
+
+    inputEl.addEventListener("input", updateCounter);
+    updateCounter();
+  })();
 </script>

@@ -1,0 +1,153 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<style>
+  .header {
+    display: none !important;
+  }
+
+  .inquiry-wrap {
+    margin-top: 1.2rem;
+  }
+
+  .inquiry-container {
+    max-width: 72rem;
+  }
+
+  .inquiry-box {
+    position: static;
+    transform: none;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .inquiry-body {
+    margin: 2rem;
+  }
+
+  .inquiry-desc {
+    margin-bottom: 1.4rem;
+    color: var(--color-light-gray);
+  }
+
+  .inquiry-alert {
+    margin-bottom: 1rem;
+    padding: 0.9rem 1rem;
+    border-radius: 0.6rem;
+  }
+
+  .inquiry-alert--ok {
+    border: 1px solid #4f8f67;
+    background: #20352a;
+    color: #cdeed8;
+  }
+
+  .inquiry-alert--error {
+    border: 1px solid #c87a63;
+    background: #3a2a23;
+    color: #ffd7c9;
+  }
+
+  .inquiry-form {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .inquiry-field {
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .inquiry-label {
+    color: var(--color-light);
+  }
+
+  .inquiry-input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: 0.6rem;
+    border: 1px solid var(--color-dark-light);
+    background: var(--color-dark);
+    color: var(--color-light);
+  }
+
+  .inquiry-submit {
+    justify-content: center;
+    width: 16rem;
+  }
+
+  @media (max-width: 768px) {
+    .inquiry-body {
+      margin: 1.6rem;
+    }
+
+    .inquiry-submit {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .inquiry-wrap {
+      margin-top: 0.8rem;
+    }
+
+    .inquiry-body {
+      margin: 1.2rem;
+    }
+  }
+</style>
+<main class="layout layout--2 inquiry-wrap">
+  <div class="container inquiry-container">
+    <div class="layout__box inquiry-box">
+      <div class="layout__boxHeader">
+        <div class="layout__boxTitle">
+          <h3>문의하기</h3>
+        </div>
+      </div>
+      <div class="layout__body inquiry-body">
+        <p class="inquiry-desc">
+          아래 폼을 작성해주시면 문의 내용을 메일로 받습니다.
+        </p>
+
+        {% if submitted %}
+        <div class="inquiry-alert inquiry-alert--ok">
+          문의가 정상 접수되었습니다. 확인 후 연락드리겠습니다.
+        </div>
+        {% endif %}
+
+        {% if errors %}
+        <div class="inquiry-alert inquiry-alert--error">
+          {% for err in errors %}
+            <div>{{ err }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <form action="{% url 'inquiry' %}" method="POST" class="inquiry-form">
+          {% csrf_token %}
+          <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off">
+
+          <label class="inquiry-field">
+            <span class="inquiry-label">이름(별칭)</span>
+            <input type="text" name="name" required value="{{ form_data.name }}" class="inquiry-input">
+          </label>
+
+          <label class="inquiry-field">
+            <span class="inquiry-label">이메일</span>
+            <input type="email" name="email" required value="{{ form_data.email }}" class="inquiry-input">
+          </label>
+
+          <label class="inquiry-field">
+            <span class="inquiry-label">문의 내용</span>
+            <textarea name="message" rows="7" required class="inquiry-input">{{ form_data.message }}</textarea>
+          </label>
+
+          <button class="btn btn--main inquiry-submit" type="submit">
+            문의 보내기
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}

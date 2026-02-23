@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 import os
-import json
 from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 
@@ -32,44 +31,65 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-secret_file = os.path.join(BASE_DIR, "secrets.json")
+def load_dotenv(dotenv_path):
+    if not os.path.exists(dotenv_path):
+        return
 
-with open(secret_file) as f:
-    secrets = json.loads(f.read())
+    with open(dotenv_path, encoding="utf-8") as env_file:
+        for raw_line in env_file:
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key:
+                os.environ.setdefault(key, value)
 
 
-def get_secret(setting, secrets=secrets):
-    try:
-        return secrets[setting]
-    except KeyError:
-        error_msg = "Set the {} environment variable".format(setting)
-        raise ImproperlyConfigured(error_msg)
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+
+
+def get_secret(setting):
+    env_value = os.getenv(setting)
+    if env_value is not None and str(env_value).strip() != "":
+        return env_value
+    error_msg = "Set the {} environment variable".format(setting)
+    raise ImproperlyConfigured(error_msg)
 
 
 SECRET_KEY = get_secret("SECRET_KEY")
 
-# Email 전송
-# 메일을 호스트하는 서버
-EMAIL_HOST = "smtp.gmail.com"
+# Email 전송 (기본: iCloud SMTP)
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.mail.me.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
 
-# gmail과의 통신하는 포트
-EMAIL_PORT = "587"
+EMAIL_HOST_USER = (
+    os.getenv("EMAIL_HOST_USER")
+    or "noreply@localhost"
+).strip()
 
-# 발신할 이메일
-# EMAIL_HOST_USER = '구글아이디@gmail.com'
-EMAIL_HOST_USER = get_secret("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+if not EMAIL_HOST_PASSWORD:
+    EMAIL_HOST_PASSWORD = get_secret("EMAIL_HOST_PASSWORD")
 
-# 발신할 메일의 비밀번호
-# EMAIL_HOST_PASSWORD = '구글비밀번호'
-EMAIL_HOST_PASSWORD = get_secret("EMAIL_HOST_PASSWORD")
-
-# TLS 보안 방법
-EMAIL_USE_TLS = True
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
 
 # 사이트와 관련한 자동응답을 받을 이메일 주소
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+# Inquiry recipient email
+INQUIRY_TO = (
+    os.getenv("INQUIRY_TO")
+    or os.getenv("PARTNERSHIP_INQUIRY_TO")
+    or EMAIL_HOST_USER
+).strip() or EMAIL_HOST_USER
+
 CSRF_TRUSTED_ORIGINS = ["http://thethe9.com", "https://thethe9.com"]
+
+# Analytics
+GA_MEASUREMENT_ID = os.getenv("GA_MEASUREMENT_ID", "G-BFZZL101LZ").strip()
+GTM_CONTAINER_ID = os.getenv("GTM_CONTAINER_ID", "").strip()
 
 ALLOWED_HOSTS = [
     ".compute.amazonaws.com",
@@ -108,7 +128,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount.providers.google",
 ]
 
-SITE_ID = 3
+SITE_ID = int(os.getenv("SITE_ID", "3"))
 
 SOCIALACCOUNT_PROVIDERS = {
     "google": {
@@ -120,14 +140,34 @@ SOCIALACCOUNT_PROVIDERS = {
             "access_type": "online",
         },
         "OAUTH_PKCE_ENABLED": True,
-    }
+    },
+    "naver": {
+        "SCOPE": [
+            "name",
+            "email",
+        ],
+    },
 }
 
 # settings.py
 ACCOUNT_SIGNUP_REDIRECT_URL = "/"
 LOGIN_REDIRECT_URL = "/"
+_settings_module = os.getenv("DJANGO_SETTINGS_MODULE", "")
+_default_protocol = "https" if _settings_module.endswith("settings_prod") else "http"
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = os.getenv(
+    "ACCOUNT_DEFAULT_HTTP_PROTOCOL",
+    _default_protocol,
+)
+ACCOUNT_FORMS = {"signup": "apps.accounts.forms.TrendSignupForm"}
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_EMAIL_VERIFICATION = os.getenv("ACCOUNT_EMAIL_VERIFICATION", "optional")
+SOCIALACCOUNT_AUTO_SIGNUP = False
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_ADAPTER = "apps.accounts.adapters.LoggingSocialAccountAdapter"
+ACCOUNT_LOGOUT_ON_GET = True
 
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # ACCOUNT_AUTHENTICATION_METHOD = 'email'  # 유저네임은 말고 email로만 인증 할것임
@@ -188,6 +228,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "django.template.context_processors.request",
+                "letsrace.context_processors.analytics_ids",
             ],
         },
     },
@@ -225,24 +266,37 @@ WSGI_APPLICATION = "letsrace.wsgi.application"
 #         "PORT": "3307",  # [6]
 #     }
 # }
-# DEBUG = True 
+# DEBUG = True
 
 DEBUG = False
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",  # [1]
-        "NAME": "The1",  # [2]
-        # "NAME": "thethe9",  # [2]
-        "USER": "letslove",  # [3]
-        "PASSWORD": "Ruddksp!23",  # [4]
-        "HOST": "database-1.c35iunxhbvd4.ap-northeast-2.rds.amazonaws.com",
-        "PORT": "3306",  # [6]
-        "OPTIONS": {
-            "init_command": "SET sql_mode='STRICT_TRANS_TABLES', autocommit=1;"
+DB_NAME = os.getenv("DB_NAME", "")
+DB_USER = os.getenv("DB_USER", "")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "")
+DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
+DB_PORT = os.getenv("DB_PORT", "3306")
+
+if DB_NAME and DB_USER and DB_PASSWORD:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": DB_NAME,
+            "USER": DB_USER,
+            "PASSWORD": DB_PASSWORD,
+            "HOST": DB_HOST,
+            "PORT": DB_PORT,
+            "OPTIONS": {
+                "init_command": "SET sql_mode='STRICT_TRANS_TABLES', autocommit=1;"
+            },
         },
-    },
-    # 'ATOMIC_REQUESTS': False,  # 중복 실행 방지
-}
+    }
+else:
+    # Safe fallback for local development when DB env vars are not set.
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 # SECRET_KEY = get_secret("SECRET_KEY")
 
@@ -284,13 +338,10 @@ USE_TZ = False  # False = 한국시간대로 설정됨
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 STATIC_ROOT = "/tmp/.static_root"  # EC2 폴더권한문제 방지 nginx
 STATIC_URL = "static/"
-MEDIA_URL = "/images/"
-
-# MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = "/media/"
 
 STATICFILES_DIRS = [BASE_DIR / "static"]
-
-MEDIA_ROOT = BASE_DIR / "static/images"
+MEDIA_ROOT = BASE_DIR / "media"
 KRAFILE_ROOT = BASE_DIR / "kradata"
 
 # Default primary key field type

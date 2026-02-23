@@ -37,6 +37,7 @@
   <style>
     body.race-related-page {
       padding: 0.2rem 2rem;
+      font-family: Arial, Helvetica, sans-serif;
     }
     body.race-related-page .container {
       max-width: none;
@@ -44,6 +45,43 @@
     }
     body.race-related-page .roomList {
       width: 100%;
+      border: 1px solid rgba(130, 149, 176, 0.28);
+      border-radius: 0;
+      background: rgba(12, 18, 30, 0.9);
+      padding: 0;
+    }
+
+    body.race-related-page .tabs {
+      margin: 0;
+      padding: 0 !important;
+    }
+
+    body.race-related-page .tab-content {
+      padding: 0 !important;
+    }
+
+    body.race-related-page table.fold-table {
+      border: 1px solid rgba(130, 149, 176, 0.38);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    body.race-related-page table.fold-table > tbody > tr.view {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body.race-related-page table.fold-table th {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.18rem;
+      letter-spacing: 0.1px;
+    }
+
+    body.race-related-page table.fold-table td {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.14rem;
+      line-height: 1.45;
+      padding-top: 0.46rem;
+      padding-bottom: 0.46rem;
     }
 
     #related-info-loader-overlay {
@@ -106,6 +144,98 @@
         transform: translateX(220%);
       }
     }
+
+    html[data-theme="light"] body.race-related-page {
+      background: #edf2f8;
+      color: #15273a;
+    }
+
+    html[data-theme="light"] body.race-related-page .roomList {
+      background: #f5f8fc;
+      border: 1px solid #c8d3df;
+      box-shadow: 0 6px 20px rgba(56, 80, 108, 0.08);
+    }
+
+    html[data-theme="light"] body.race-related-page table.fold-table {
+      background: #fbfdff;
+      border-color: #b8c8d8;
+      box-shadow: inset 0 1px 0 #ffffff;
+    }
+
+    html[data-theme="light"] body.race-related-page table.fold-table th {
+      border-bottom-color: #c3d2e2;
+      color: #17324d;
+      font-weight: 700;
+    }
+
+    html[data-theme="light"] body.race-related-page table.fold-table > tbody > tr.view td,
+    html[data-theme="light"] body.race-related-page table.fold-table > tbody > tr.view th {
+      border-bottom: 1px solid #ccd9e7;
+      color: #18344f;
+    }
+
+    html[data-theme="light"] body.race-related-page table.fold-table > tbody > tr.view:nth-child(4n-3) {
+      background: #f2f7fd;
+    }
+
+    html[data-theme="light"] body.race-related-page table.fold-table > tbody > tr.view:hover,
+    html[data-theme="light"] body.race-related-page table.fold-table > tbody > tr.view.open {
+      background: #deebf8;
+      color: #10273f;
+    }
+
+    .popup-mini-footer {
+      position: fixed;
+      left: 2rem;
+      right: 2rem;
+      bottom: 0.45rem;
+      padding: 0.45rem 0.7rem;
+      border: 1px solid rgba(130, 149, 176, 0.28);
+      border-radius: 8px;
+      background: rgba(12, 18, 30, 0.9);
+      color: var(--color-light-gray);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.02rem;
+      line-height: 1.3;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      z-index: 1200;
+    }
+
+    .popup-mini-footer button {
+      border: 1px solid rgba(130, 149, 176, 0.5);
+      background: rgba(16, 26, 44, 0.95);
+      color: var(--color-main);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.95rem;
+      border-radius: 6px;
+      padding: 0.2rem 0.55rem;
+      cursor: pointer;
+    }
+
+    .popup-mini-footer button:hover {
+      border-color: var(--color-main);
+    }
+
+    html[data-theme="light"] .popup-mini-footer {
+      background: rgba(245, 250, 255, 0.94);
+      border-color: #b8c7d8;
+      color: #243d56;
+      box-shadow: 0 4px 14px rgba(58, 83, 109, 0.14);
+    }
+
+    html[data-theme="light"] .popup-mini-footer button {
+      background: #f0f6ff;
+      border-color: #a8bfd8;
+      color: #155b84;
+    }
+
+    html[data-theme="light"] .popup-mini-footer button:hover {
+      background: #dcecff;
+      border-color: #86a9ce;
+    }
   </style>
 </head>
 
@@ -138,11 +268,7 @@
   {# Header #}
   {% include 'base/m_header_of_common.html' %}
 
-  <div class="container">
-
-    <div class="roomList" style="height: auto;">
-    <hr style="border: solid 1px black;"> 
-
+  <div class="roomList" style="height: auto;">
 
       <ul class="tabs" style="font-size: 1.4rem;">
         <li class="tab-link current" data-tab="tab-1" style="padding: 3.5px 25px; border-radius: 4px;">조교현황</li>
@@ -2473,7 +2599,6 @@
 
 
       </div>
-    </div>
   </div>
 
 
@@ -2516,8 +2641,11 @@
   })
 </script>
 
-{% endblock %}
+  <div class="popup-mini-footer">
+    <span>© {% now "Y" %} thethe9 · Race Prediction</span>
+    <button type="button" onclick="window.close();">창 닫기</button>
+  </div>
 
-{% include 'footer.html' %}
+{% endblock %}
 
 </html>

@@ -1,5 +1,7 @@
 from django.forms import ModelForm
 from django.contrib.auth.forms import UserCreationForm
+from django.core.exceptions import ValidationError
+import os
 
 from .models import Room, User
 # from django.contrib.auth.models import User
@@ -38,6 +40,29 @@ class UserForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(UserForm, self).__init__(*args, **kwargs)
         self.fields['username'].widget.attrs['maxlength'] = 15
+        # User.email is nullable in model; allow empty input in profile update form.
+        self.fields['email'].required = False
+
+    def clean_email(self):
+        email = (self.cleaned_data.get('email') or '').strip()
+        # Store empty as NULL to avoid unique collisions on empty string.
+        return email or None
+
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get("avatar")
+        if not avatar:
+            return avatar
+
+        max_size = 5 * 1024 * 1024  # 5MB
+        if avatar.size > max_size:
+            raise ValidationError("아바타 이미지는 5MB 이하만 업로드할 수 있습니다.")
+
+        ext = os.path.splitext(getattr(avatar, "name", ""))[1].lower()
+        allowed_ext = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg"}
+        if ext not in allowed_ext:
+            raise ValidationError("지원하지 않는 이미지 형식입니다. (jpg, png, gif, webp, svg)")
+
+        return avatar
 
 
 # class Racing(ModelForm):

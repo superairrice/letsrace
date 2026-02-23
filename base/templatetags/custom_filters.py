@@ -30,3 +30,16 @@ def percent1(value):
         return f"{float(value) * 100:.1f}"
     except (TypeError, ValueError):
         return ""
+
+
+@register.filter
+def get_item(value, key):
+    if value is None:
+        return None
+    try:
+        return value.get(key)
+    except Exception:
+        try:
+            return value[key]
+        except Exception:
+            return None

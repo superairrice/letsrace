@@ -9,10 +9,65 @@ class User(AbstractUser):
     email = models.EmailField(unique=True, null=True)
     bio = models.TextField(null=True)
 
-    avatar = models.ImageField(null=True, default="avatar.svg")
+    avatar = models.ImageField(upload_to="avatars/", null=True, default="avatar.svg")
 
     USERNAME_FIELS = "email"
     REQUIRED_FIELDS = []
+
+
+class RaceComment(models.Model):
+    rcity = models.CharField(max_length=4, db_index=True)
+    rdate = models.CharField(max_length=8, db_index=True)
+    rno = models.IntegerField(db_index=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    nickname = models.CharField(max_length=50)
+    content = models.TextField(max_length=1000)
+    like_count = models.PositiveIntegerField(default=0)
+    report_count = models.PositiveIntegerField(default=0)
+    created = models.DateTimeField(auto_now_add=True)
+    updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created"]
+        indexes = [
+            models.Index(fields=["rcity", "rdate", "rno"]),
+            models.Index(fields=["created"]),
+        ]
+
+    def __str__(self):
+        return f"{self.rcity}-{self.rdate}-{self.rno} {self.nickname}"
+
+
+class RaceCommentArchive(models.Model):
+    rcity = models.CharField(max_length=4, db_index=True)
+    rdate = models.CharField(max_length=8, db_index=True)
+    rno = models.IntegerField(db_index=True)
+    original_comment_id = models.BigIntegerField(db_index=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    nickname = models.CharField(max_length=50)
+    content = models.TextField(max_length=1000)
+    like_count = models.PositiveIntegerField(default=0)
+    report_count = models.PositiveIntegerField(default=0)
+    original_created = models.DateTimeField(null=True, blank=True)
+    original_updated = models.DateTimeField(null=True, blank=True)
+    archived_at = models.DateTimeField(auto_now_add=True)
+    archived_reason = models.CharField(max_length=40, default="self_delete")
+    archived_by_user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="race_comment_archives",
+    )
+    archived_by_authenticated = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-archived_at"]
+        indexes = [
+            models.Index(fields=["rcity", "rdate", "rno"]),
+            models.Index(fields=["original_comment_id"]),
+            models.Index(fields=["archived_at"]),
+        ]
 
 
 class Topic(models.Model):

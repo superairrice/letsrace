@@ -7,22 +7,33 @@
 
 {% block head_title %}{% trans "Sign In" %}{% endblock %}
 
-<head>
-  <!-- Google Tag Manager -->
-  <script>(function (w, d, s, l, i) {
-      w[l] = w[l] || []; w[l].push({
-        'gtm.start':
-          new Date().getTime(), event: 'gtm.js'
-      }); var f = d.getElementsByTagName(s)[0],
-        j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
-          'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
-    })(window, document, 'script', 'dataLayer', 'GTM-W5HDZ7Z');</script>
-  <!-- End Google Tag Manager -->
-</head>
-
 
 {% block content %}
 <main class="auth layout">
+  <style>
+    .social-login-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      width: 100%;
+      text-align: center;
+    }
+    .social-login-btn__icon {
+      display: inline-flex;
+      width: 1.6rem;
+      height: 1.6rem;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: #fff;
+      flex: 0 0 auto;
+    }
+    .social-login-btn__icon--naver {
+      border-radius: 0.35rem;
+      background: #03c75a;
+    }
+  </style>
 
   <div class="container">
     <div class="layout__box">
@@ -74,30 +85,39 @@
 
         </form>
 
-        <br>
-        
-        <div style="font-size: 1.2rem;">
-      
-          <!-- <a href="/naver/login/?process=login" role="button" class="btn btn btn-light" style="display:block"><i class="fab fa-naver"></i> Login with Naver</a> -->
-          <!-- <a href="/google/login/?process=login" role="button" class="btn btn btn-light" style="display:block"><img src="{% static 'images/web_dark_sq_SU@4x.png' %}"  /></a> -->
-
-          <!-- <a href="#/accouns/signup/?process=login&{{ redirect_field_name }}={{ redirect_field_value }}" role="button" class="btn btn btn-light my-1" style="display:block"><i class="far fa-envelope"></i> Sign
-            Up by Email</a>
-          -->
-      
+        {% if socialaccount_providers %}
+        <div style="margin-top: 1.2rem; display: grid; gap: 0.7rem;">
+          {% for provider in socialaccount_providers %}
+            {% if provider.id == "google" %}
+            <a href="{% provider_login_url 'google' process='login' %}" class="btn btn--dark social-login-btn">
+              <span class="social-login-btn__icon" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M21.6 12.23c0-.78-.07-1.53-.2-2.23H12v4.22h5.38a4.6 4.6 0 0 1-2 3.02v2.5h3.24c1.9-1.75 2.98-4.33 2.98-7.51z" fill="#4285F4"/>
+                  <path d="M12 22c2.7 0 4.97-.9 6.62-2.26l-3.24-2.5c-.9.6-2.06.96-3.38.96-2.6 0-4.8-1.76-5.58-4.12H3.06v2.58A10 10 0 0 0 12 22z" fill="#34A853"/>
+                  <path d="M6.42 14.08A6 6 0 0 1 6.1 12c0-.72.13-1.42.32-2.08V7.34H3.06A10 10 0 0 0 2 12c0 1.62.39 3.16 1.06 4.66l3.36-2.58z" fill="#FBBC05"/>
+                  <path d="M12 5.8c1.47 0 2.8.5 3.84 1.5l2.88-2.88C16.96 2.8 14.7 2 12 2A10 10 0 0 0 3.06 7.34l3.36 2.58C7.2 7.56 9.4 5.8 12 5.8z" fill="#EA4335"/>
+                </svg>
+              </span>
+              Google로 로그인
+            </a>
+            {% elif provider.id == "naver" %}
+            <a href="{% provider_login_url 'naver' process='login' %}" class="btn btn--dark social-login-btn">
+              <span class="social-login-btn__icon social-login-btn__icon--naver" aria-hidden="true">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+                  <path d="M6 5h4.3l3.4 4.87V5H18v14h-4.13l-3.57-5.12V19H6V5z" fill="#fff"/>
+                </svg>
+              </span>
+              Naver로 로그인
+            </a>
+            {% endif %}
+          {% endfor %}
         </div>
+        {% endif %}
 
         <!-- <div class="auth__action">
           <p>아직 회원가입을 안하셨다면?</p>
           <a href="{% url 'account_signup' %}" class="btn btn--link">회원 가입</a>
         </div> -->
-        <div class="auth__action">
-          <p>서버 이슈로 당분간 '신규 회원가입' 기능을 제한합니다.
-            <br>기존 회원분들은 로그인 후 이용해 주세요.
-          </p>
-          <p>&nbsp;</p>
-        </div>
-          
       </div>
 
       
