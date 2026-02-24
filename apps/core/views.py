@@ -10,7 +10,7 @@ from django.core.mail import EmailMessage as DjangoEmailMessage
 from django.core.cache import cache
 from django.http import JsonResponse
 from django.db.utils import OperationalError, ProgrammingError
-from django.db.models import Count, F, Q
+from django.db.models import Count, F, Max, Q
 from django.db import transaction
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -537,6 +537,44 @@ def home(request):
             continue
 
     # home_right 상단 카드: 경마장별 성적 우수 Top3 (마번/기수/마방)
+    # 기준 기간은 최근 14일(기준일 i_rdate 포함)
+    right_city_top3_window_days = 14
+    perf_rows = []
+    perf_cache_key = f"home:top3_perf:{i_rdate}:{right_city_top3_window_days}"
+    cached_perf_rows = _cache_copy_get(perf_cache_key)
+    if cached_perf_rows is not None:
+        perf_rows = cached_perf_rows
+    else:
+        cursor = None
+        try:
+            cursor = connection.cursor()
+            str_sql = """
+                SELECT
+                    rcity,
+                    gate,
+                    r_rank,
+                    jockey,
+                    trainer
+                FROM exp011
+                WHERE rdate BETWEEN date_format(DATE_ADD(%s, INTERVAL - %s DAY), '%%Y%%m%%d') AND %s
+                  AND r_rank BETWEEN 1 AND 12
+                  AND rno < 80
+                ORDER BY rcity, rdate, rno, gate
+            """
+            cursor.execute(str_sql, (i_rdate, right_city_top3_window_days, i_rdate))
+            perf_rows = cursor.fetchall()
+            _cache_copy_set(perf_cache_key, perf_rows, HOME_RACE_CACHE_TTL)
+        except Exception as exc:
+            print(f"Failed selecting top3 perf rows: {exc}")
+            perf_rows = []
+        finally:
+            if cursor:
+                cursor.close()
+
+    # 최근 14일 데이터가 비어 있으면 기존 expects(±3~4일)로 fallback
+    if not perf_rows:
+        perf_rows = expects
+
     city_perf_map = {}
 
     def _acc_perf(bucket, key, rank_value):
@@ -547,7 +585,15 @@ def home(request):
             return
         row = bucket.setdefault(
             k,
-            {"name": k, "entries": 0, "top3": 0, "wins": 0, "rank_sum": 0.0},
+            {
+                "name": k,
+                "entries": 0,
+                "top3": 0,
+                "wins": 0,
+                "seconds": 0,
+                "thirds": 0,
+                "rank_sum": 0.0,
+            },
         )
         row["entries"] += 1
         row["rank_sum"] += float(rank_value)
@@ -555,8 +601,12 @@ def home(request):
             row["top3"] += 1
         if rank_value == 1:
             row["wins"] += 1
+        elif rank_value == 2:
+            row["seconds"] += 1
+        elif rank_value == 3:
+            row["thirds"] += 1
 
-    for e in expects:
+    for e in perf_rows:
         try:
             if hasattr(e, "rcity"):
                 e_rcity = str(getattr(e, "rcity", "") or "").strip()
@@ -566,10 +616,18 @@ def home(request):
                 e_trainer = getattr(e, "trainer", "")
             else:
                 e_rcity = str(e[0] or "").strip()
-                e_gate = e[4] if len(e) > 4 else None
-                e_rank = e[6] if len(e) > 6 else None
-                e_jockey = e[9] if len(e) > 9 else ""
-                e_trainer = e[10] if len(e) > 10 else ""
+                # perf_rows 쿼리: (rcity, gate, r_rank, jockey, trainer)
+                if len(e) == 5:
+                    e_gate = e[1]
+                    e_rank = e[2]
+                    e_jockey = e[3]
+                    e_trainer = e[4]
+                # expects fallback: (rcity, rdate, rday, rno, gate, rank, r_rank, ..., jockey, trainer, ...)
+                else:
+                    e_gate = e[4] if len(e) > 4 else None
+                    e_rank = e[6] if len(e) > 6 else None
+                    e_jockey = e[9] if len(e) > 9 else ""
+                    e_trainer = e[10] if len(e) > 10 else ""
 
             if not e_rcity:
                 continue
@@ -598,7 +656,10 @@ def home(request):
                     "name": item.get("name", ""),
                     "entries": entries,
                     "top3": int(item.get("top3") or 0),
+                    "top3_pct": (float(item.get("top3") or 0) / entries) * 100.0,
                     "wins": int(item.get("wins") or 0),
+                    "seconds": int(item.get("seconds") or 0),
+                    "thirds": int(item.get("thirds") or 0),
                     "avg_rank": avg_rank,
                 }
             )
@@ -679,20 +740,14 @@ def home(request):
     try:
         race_dates = sorted({str(r[1]) for r in race if len(r) > 1 and r[1]})
         if race_dates:
-            recent_30m = now_dt - timedelta(minutes=30)
-            prev_30m = now_dt - timedelta(minutes=60)
             hot_qs = (
                 RaceComment.objects.filter(rdate__in=race_dates)
                 .values("rcity", "rdate", "rno")
                 .annotate(
-                    recent_count=Count("id", filter=Q(created__gte=recent_30m)),
-                    prev_count=Count(
-                        "id",
-                        filter=Q(created__lt=recent_30m, created__gte=prev_30m),
-                    ),
                     comment_count=Count("id"),
+                    latest_created=Max("created"),
                 )
-                .order_by("-recent_count", "-comment_count")[:20]
+                .order_by("-latest_created", "-comment_count")[:20]
             )
             hot_tmp = []
             for item in hot_qs:
@@ -700,19 +755,15 @@ def home(request):
                 meta = race_meta_map.get(key)
                 if not meta:
                     continue
-                recent_count = int(item.get("recent_count") or 0)
-                prev_count = int(item.get("prev_count") or 0)
-                growth = recent_count - prev_count
                 hot_tmp.append(
                     {
                         **meta,
                         "comment_count": int(item["comment_count"]),
-                        "recent_count": recent_count,
-                        "growth": growth,
+                        "latest_created": item.get("latest_created"),
                     }
                 )
             hot_tmp.sort(
-                key=lambda x: (x.get("growth", 0), x.get("recent_count", 0), x.get("comment_count", 0)),
+                key=lambda x: (x.get("latest_created") or datetime.min, x.get("comment_count", 0)),
                 reverse=True,
             )
             right_hot_races = hot_tmp[:8]
@@ -1010,6 +1061,7 @@ def home(request):
         "expects_grouped": expects_grouped,
         "funnel_races": funnel_races,
         "right_city_top3": right_city_top3,
+        "right_city_top3_window_days": right_city_top3_window_days,
         "right_imminent_races": right_imminent_races,
         "right_hot_races": right_hot_races,
         "right_volatile_races": right_volatile_races,
