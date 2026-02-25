@@ -29,10 +29,10 @@
   }
 
   .home-funnel__title {
-    font-size: 1.5rem;
-    font-weight: 800;
+    font-size: 1.24rem;
+    font-weight: 700;
     color: var(--color-light);
-    line-height: 1.2;
+    line-height: 1.25;
   }
 
   .home-funnel__sub {
@@ -63,12 +63,50 @@
   .home-funnel__card-title {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    justify-content: space-between;
+    gap: 0.5rem;
     font-size: 1.15rem;
     font-weight: 700;
     color: var(--color-main);
     margin-bottom: 0;
     line-height: 1.2;
+  }
+
+  .home-funnel__card-title-main {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .home-funnel__countdown {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 5.6rem;
+    height: 1.86rem;
+    padding: 0 0.58rem;
+    border-radius: 999px;
+    font-size: 1.0rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #ffdf9d;
+    background: rgba(153, 97, 31, 0.24);
+    border: 1px solid rgba(255, 188, 79, 0.54);
+    line-height: 1;
+  }
+
+  .home-funnel__countdown.is-imminent {
+    color: #ffd2d2;
+    background: rgba(170, 58, 58, 0.28);
+    border-color: rgba(255, 125, 125, 0.62);
+  }
+
+  .home-funnel__countdown.is-started {
+    color: #bfcde4;
+    background: rgba(78, 94, 121, 0.34);
+    border-color: rgba(145, 166, 198, 0.46);
   }
 
   .home-funnel__day-badge {
@@ -123,6 +161,24 @@
 
   html[data-theme="light"] .home-funnel__card-title {
     color: #0d6f9e;
+  }
+
+  html[data-theme="light"] .home-funnel__countdown {
+    color: #8a5c00;
+    background: rgba(245, 213, 142, 0.45);
+    border-color: rgba(201, 153, 50, 0.48);
+  }
+
+  html[data-theme="light"] .home-funnel__countdown.is-imminent {
+    color: #9d2e2e;
+    background: rgba(245, 184, 184, 0.52);
+    border-color: rgba(205, 96, 96, 0.54);
+  }
+
+  html[data-theme="light"] .home-funnel__countdown.is-started {
+    color: #465e7b;
+    background: rgba(205, 217, 234, 0.56);
+    border-color: rgba(144, 166, 196, 0.52);
   }
 
   html[data-theme="light"] .home-funnel__day-badge {
@@ -926,7 +982,13 @@
   <section class="home-funnel">
     <div class="home-funnel__head">
       <div>
-        <div class="home-funnel__title">오늘 초반 경주</div>
+        <div class="home-funnel__title">
+          {% if funnel_mode == "imminent" %}
+            마감임박
+          {% else %}
+            최근 종료
+          {% endif %}
+        </div>
       </div>
     </div>
 
@@ -938,8 +1000,11 @@
          data-race-label="{{ r_rday }} {{ r_rcity }} {{ r_rdate|slice:'0:4' }}.{{ r_rdate|slice:'4:6' }}.{{ r_rdate|slice:'6:8' }} {{ r_rno }}R"
          onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
         <div class="home-funnel__card-title">
-          <span class="home-funnel__day-badge">{{ r_rday }}</span>
-          <span>{{ r_rcity }} {{ r_rno }}R · {{ rtime }}</span>
+          <span class="home-funnel__card-title-main">
+            <span class="home-funnel__day-badge">{{ r_rday }}</span>
+            <span>{{ r_rcity }} {{ r_rno }}R · {{ rtime }}</span>
+          </span>
+          <span class="home-funnel__countdown js-funnel-countdown" data-rdate="{{ r_rdate }}" data-rtime="{{ rtime }}">계산중</span>
         </div>
         <div class="home-funnel__card-meta">
           {{ r_rdate|slice:"0:4" }}.{{ r_rdate|slice:"4:6" }}.{{ r_rdate|slice:"6:8" }}({{ r_rday }}) · {{ distance }}m · {{ grade|slice:"0:2" }} · {{ dividing|slice:"0:2" }}
@@ -1050,7 +1115,6 @@
   (function () {
     var RECENT_KEY = "home_recent_race_v1";
     var recentLink = document.getElementById("home-funnel-recent");
-    if (!recentLink) return;
 
     function hydrateRecent() {
       try {
@@ -1058,6 +1122,7 @@
         if (!raw) return;
         var item = JSON.parse(raw);
         if (!item || !item.href || !item.label) return;
+        if (!recentLink) return;
         recentLink.href = item.href;
         recentLink.textContent = item.label;
         recentLink.hidden = false;
@@ -1079,6 +1144,65 @@
     });
 
     hydrateRecent();
+  })();
+</script>
+
+<script>
+  (function () {
+    var countdownEls = document.querySelectorAll(".js-funnel-countdown");
+    if (!countdownEls.length) return;
+
+    function parseRaceDateTime(rdate, rtime) {
+      if (!rdate || !rtime) return null;
+      var d = String(rdate).trim();
+      var t = String(rtime).trim();
+      if (!/^\d{8}$/.test(d)) return null;
+      var tm = t.match(/^(\d{1,2}):(\d{2})/);
+      if (!tm) return null;
+
+      var year = parseInt(d.slice(0, 4), 10);
+      var month = parseInt(d.slice(4, 6), 10) - 1;
+      var day = parseInt(d.slice(6, 8), 10);
+      var hour = parseInt(tm[1], 10);
+      var minute = parseInt(tm[2], 10);
+      return new Date(year, month, day, hour, minute, 0, 0);
+    }
+
+    function formatRemaining(ms) {
+      var totalMinutes = Math.floor(ms / 60000);
+      if (totalMinutes < 60) return totalMinutes + "분";
+      var h = Math.floor(totalMinutes / 60);
+      var m = totalMinutes % 60;
+      return h + "시간 " + m + "분";
+    }
+
+    function updateCountdowns() {
+      var now = new Date();
+      countdownEls.forEach(function (el) {
+        var raceAt = parseRaceDateTime(el.getAttribute("data-rdate"), el.getAttribute("data-rtime"));
+        el.classList.remove("is-imminent", "is-started");
+
+        if (!raceAt || isNaN(raceAt.getTime())) {
+          el.textContent = "시간확인";
+          return;
+        }
+
+        var diff = raceAt.getTime() - now.getTime();
+        if (diff <= 0) {
+          el.textContent = "종료";
+          el.classList.add("is-started");
+        } else {
+          el.textContent = "출발까지 " + formatRemaining(diff);
+        }
+
+        if (diff > 0 && diff <= 30 * 60 * 1000) {
+          el.classList.add("is-imminent");
+        }
+      });
+    }
+
+    updateCountdowns();
+    window.setInterval(updateCountdowns, 30000);
   })();
 </script>
 

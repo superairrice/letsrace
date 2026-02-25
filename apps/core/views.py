@@ -457,49 +457,17 @@ def home(request):
             break
 
     # 홈 상단 퍼널 카드용:
-    # 1) 임박 시간순(미래 경주 우선)
-    # 2) 신마 1두 이상 출주 경주는 제외
-    newcomer_race_keys = set()
-    for e in expects:
-        try:
-            if hasattr(e, "rcity"):
-                key = (e.rcity, e.rdate, e.rno)
-                rank_val = getattr(e, "rank", None)
-                i_cycle_val = getattr(e, "i_cycle", None)
-                reason_val = getattr(e, "reason", "")
-            else:
-                key = (e[0], e[1], e[3])
-                rank_val = e[5]
-                i_cycle_val = e[23]
-                reason_val = e[29] if len(e) > 29 else ""
-
-            is_newcomer = False
-            try:
-                if rank_val is not None and int(rank_val) >= 98:
-                    is_newcomer = True
-            except Exception:
-                pass
-
-            try:
-                if i_cycle_val is not None and float(i_cycle_val) == 0.0:
-                    is_newcomer = True
-            except Exception:
-                pass
-
-            if "신마" in str(reason_val or ""):
-                is_newcomer = True
-
-            if is_newcomer:
-                newcomer_race_keys.add(key)
-        except Exception:
-            continue
-
+    # 1) 출발 전 경주가 있으면 임박 순(TOP3)
+    # 2) 출발 전 경주가 없으면 최근(최종) 경주부터 TOP3
+    # 신마 경주도 포함
     funnel_candidates = []
     for r in race:
         try:
             rcity, rdate, _, rno, rtime = r[0], r[1], r[2], r[3], r[4]
-            if (rcity, rdate, rno) in newcomer_race_keys:
-                continue
+            try:
+                rno_num = int(rno)
+            except Exception:
+                rno_num = 0
 
             time_raw = str(rtime or "").strip().replace(":", "")
             if len(time_raw) == 3:
@@ -509,15 +477,24 @@ def home(request):
             else:
                 race_dt = datetime.strptime(f"{rdate}{time_raw}", "%Y%m%d%H%M")
 
-            # 최근 경주 기준으로 정렬하기 위해 datetime 보존
+            # 임박/종료 판단을 위해 datetime 보존
             sort_dt = race_dt if race_dt is not None else datetime.min
-            funnel_candidates.append((sort_dt, r))
+            funnel_candidates.append((sort_dt, race_dt, rno_num, r))
         except Exception:
             continue
 
-    # 퍼널 카드도 홈 본문과 동일하게 일자/시간 순으로 노출
-    funnel_candidates.sort(key=lambda x: x[0])
-    funnel_races = [row for _, row in funnel_candidates[:3]]
+    now_dt = datetime.now()
+    upcoming_candidates = [item for item in funnel_candidates if item[1] is not None and item[1] >= now_dt]
+    funnel_mode = "finished"
+
+    if upcoming_candidates:
+        upcoming_candidates.sort(key=lambda x: (x[0], x[2]))
+        funnel_races = [row for _, _, _, row in upcoming_candidates[:3]]
+        funnel_mode = "imminent"
+    else:
+        finished_candidates = [item for item in funnel_candidates if item[1] is not None]
+        finished_candidates.sort(key=lambda x: (x[0], x[2]), reverse=True)
+        funnel_races = [row for _, _, _, row in finished_candidates[:3]]
 
     # home_right 정보 카드용 데이터 (가벼운 집계)
     race_meta_map = {}
@@ -537,10 +514,11 @@ def home(request):
             continue
 
     # home_right 상단 카드: 경마장별 성적 우수 Top3 (마번/기수/마방)
-    # 기준 기간은 최근 14일(기준일 i_rdate 포함)
-    right_city_top3_window_days = 14
+    # 기준 기간: i_rdate -14일 ~ i_rdate +3일
+    right_city_top3_window_days = 16
+    right_city_top3_future_days = 3
     perf_rows = []
-    perf_cache_key = f"home:top3_perf:{i_rdate}:{right_city_top3_window_days}"
+    perf_cache_key = f"home:top3_perf:{i_rdate}:{right_city_top3_window_days}:{right_city_top3_future_days}"
     cached_perf_rows = _cache_copy_get(perf_cache_key)
     if cached_perf_rows is not None:
         perf_rows = cached_perf_rows
@@ -556,12 +534,16 @@ def home(request):
                     jockey,
                     trainer
                 FROM exp011
-                WHERE rdate BETWEEN date_format(DATE_ADD(%s, INTERVAL - %s DAY), '%%Y%%m%%d') AND %s
-                  AND r_rank BETWEEN 1 AND 12
+                WHERE rdate BETWEEN date_format(DATE_ADD(%s, INTERVAL - %s DAY), '%%Y%%m%%d')
+                                AND date_format(DATE_ADD(%s, INTERVAL %s DAY), '%%Y%%m%%d')
+                  AND r_rank <= 98
                   AND rno < 80
                 ORDER BY rcity, rdate, rno, gate
             """
-            cursor.execute(str_sql, (i_rdate, right_city_top3_window_days, i_rdate))
+            cursor.execute(
+                str_sql,
+                (i_rdate, right_city_top3_window_days, i_rdate, right_city_top3_future_days),
+            )
             perf_rows = cursor.fetchall()
             _cache_copy_set(perf_cache_key, perf_rows, HOME_RACE_CACHE_TTL)
         except Exception as exc:
@@ -1060,8 +1042,10 @@ def home(request):
         "race": race,
         "expects_grouped": expects_grouped,
         "funnel_races": funnel_races,
+        "funnel_mode": funnel_mode,
         "right_city_top3": right_city_top3,
         "right_city_top3_window_days": right_city_top3_window_days,
+        "right_city_top3_future_days": right_city_top3_future_days,
         "right_imminent_races": right_imminent_races,
         "right_hot_races": right_hot_races,
         "right_volatile_races": right_volatile_races,
