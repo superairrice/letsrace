@@ -487,16 +487,6 @@
       </a>
 
       {% if request.user.username == 'admin' %}
-
-        <a class="prediction-action-link" style="font-size: 1.2rem; background-color: var(--color-bg); border: 1px solid var(--color-main);" href="{% url 'mock_audit' r_condition.rcity r_condition.rdate r_condition.rno 0 0 %}" onclick="window.open(this.href, 'w_mock_audit', 'width=900, height=1000, toolbars=no, scrollbars=yes'); return false;">
-          <span class="prediction-action-text">⚙️&nbsp;Mock Audit</span>
-        </a>
-        <a class="prediction-action-link" href="#"
-          style="font-size: 1.2rem; background-color: var(--color-bg); border: 1px solid var(--color-main);"
-          onclick="runMockAccept('{{ r_condition.rcity }}', '{{ r_condition.rdate }}', '{{ r_condition.rno }}'); return false;">
-          <span class="prediction-action-text">🤔&nbsp;Accept</span>
-        </a>
-
         <script>
         function runMockAccept(rcity, rdate, rno) {
           // ✅ Ajax나 fetch로 서버의 특정 함수만 실행
@@ -515,13 +505,6 @@
       {% endif %}
 
       {% if request.user.username == 'admin' %}
-      
-      <a class="prediction-action-link" href="#"
-        style="font-size: 1.2rem; background-color: var(--color-bg); border: 1px solid var(--color-main); color: var(--color-main);"
-        onclick="runChatGPT('{{ r_condition.rcity }}', '{{ r_condition.rdate }}', '{{ r_condition.rno }}'); return false;">
-        <span class="prediction-action-text">💬&nbsp;chatGPT</span>
-      </a>
-
         <script>
         function runChatGPT(rcity, rdate, rno) {
           // ✅ Ajax나 fetch로 서버의 특정 함수만 실행
@@ -537,6 +520,23 @@
           .catch(err => console.error(err));
         }
         </script>
+      {% endif %}
+      
+      <span class="prediction-mode-group">
+        {% if request.user.username == 'admin' %}
+        <a class="prediction-action-link" style="font-size: 1.2rem; background-color: var(--color-bg); border: 1px solid var(--color-main);" href="{% url 'mock_audit' r_condition.rcity r_condition.rdate r_condition.rno 0 0 %}" onclick="window.open(this.href, 'w_mock_audit', 'width=900, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          <span class="prediction-action-text">⚙️&nbsp;Mock Audit</span>
+        </a>
+        <a class="prediction-action-link" href="#"
+          style="font-size: 1.2rem; background-color: var(--color-bg); border: 1px solid var(--color-main);"
+          onclick="runMockAccept('{{ r_condition.rcity }}', '{{ r_condition.rdate }}', '{{ r_condition.rno }}'); return false;">
+          <span class="prediction-action-text">🤔&nbsp;Accept</span>
+        </a>
+        <a class="prediction-action-link" href="#"
+          style="font-size: 1.2rem; background-color: var(--color-bg); border: 1px solid var(--color-main); color: var(--color-main);"
+          onclick="runChatGPT('{{ r_condition.rcity }}', '{{ r_condition.rdate }}', '{{ r_condition.rno }}'); return false;">
+          <span class="prediction-action-text">💬&nbsp;chatGPT</span>
+        </a>
         <span class="prediction-action-icon" style="color: var(--color-main);">
           <a href="{% url 'race_review' r_condition.rcity r_condition.rdate r_condition.rno %}" 
                     onclick="
@@ -558,9 +558,7 @@
                     return false;"
              class="prediction-action-icon-link">🔧</a>
         </span>
-      {% endif %}
-      
-      <span class="prediction-mode-group">
+        {% endif %}
         {% if alloc.r2alloc %} {# 경주결과가 입력되었으면 #}
         <span class="prediction-action-icon" style="color: var(--color-main);">
           <a href="{% url 'race_result' r_condition.rcity r_condition.rdate r_condition.rno 0 0 0 0 %}"

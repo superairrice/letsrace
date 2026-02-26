@@ -1,6 +1,7 @@
 import datetime
 import json
-from django.db import connection
+import re
+from django.db import connection, transaction
 import pandas as pd
 import numpy as np
 from requests import session
@@ -6160,87 +6161,64 @@ def insert_train_swim(r_content):
 
 
 def insert_horse_disease(r_content):
-    # print(r_content)
-
     lines = r_content.split("\n")
+    success_cnt = 0
+    failed_cnt = 0
 
-    r_lines = 0
-    for index, line in enumerate(lines):
-        items = line.split("\t")
+    for line in lines:
+        if not line.strip():
+            continue
 
-        if len(items) == 6 and items[0] != '순':
-            r_lines = r_lines + 1
-            # print(index, items[0], items)
+        items = [item.strip() for item in line.split("\t")]
+        if len(items) != 6 or items[0] == "순":
+            continue
 
-            num = items[0]
-            tdate = items[1][0:4] + items[1][5:7] + items[1][8:10]
-            horse = items[2]
+        num = items[0]
+        date_raw = items[1]
+        horse = items[2]
+        team_raw = items[3]
+        hospital = items[4]
+        disease = items[5]
 
-            team = items[3][0:-1].zfill(2)
-            hospital = items[4]
-            disease = items[5]
+        if len(date_raw) < 10:
+            failed_cnt += 1
+            print(f"Failed parsing in treat : invalid date format - {date_raw}")
+            continue
 
-            try:
-                cursor = connection.cursor()
+        tdate = date_raw[0:4] + date_raw[5:7] + date_raw[8:10]
+        team = team_raw[:-1].zfill(2) if team_raw.endswith("조") else team_raw.zfill(2)
 
-                strSql = (
-                    """ delete from treat
-                                where horse = '"""
-                    + horse
-                    + """'
-                                and tdate = '"""
-                    + tdate
-                    + """'
-                                and hospital = '"""
-                    + hospital
-                    + """'
-                        ; """
-                )
+        try:
+            with transaction.atomic():
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        DELETE FROM treat
+                        WHERE horse = %s
+                        AND tdate = %s
+                        AND hospital = %s
+                        """,
+                        (horse, tdate, hospital),
+                    )
+                    cursor.execute(
+                        """
+                        INSERT INTO treat (rcity, horse, tdate, team, hospital, disease)
+                        VALUES (%s, %s, %s, %s, %s, %s)
+                        """,
+                        (num, horse, tdate, team, hospital, disease),
+                    )
+            success_cnt += 1
+        except Exception as e:
+            failed_cnt += 1
+            print(f"Failed upserting in treat : 말 진료현황 - {e}")
 
-                r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-                # awards = cursor.fetchall()
+    if failed_cnt:
+        print(f"insert_horse_disease finished with failures: success={success_cnt}, failed={failed_cnt}")
 
-                # connection.commit()
-                # connection.close()
-
-            except:
-                # connection.rollback()
-                print("Failed deleting in swim : 말 진료현황")
-
-            try:
-                cursor = connection.cursor()
-
-                strSql = (
-                    """ insert treat
-                                ( rcity, horse, tdate, team, hospital, disease )
-                                values ( '"""
-                    + num
-                    + """', '"""
-                    + horse
-                    + """', '"""
-                    + tdate
-                    + """', '"""
-                    + team
-                    + """', '"""
-                    + hospital
-                    + """', '"""
-                    + disease
-                    + """' )
-                        ; """
-                )
-
-                # print(strSql)
-                r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-                # awards = cursor.fetchall()
-
-                # connection.commit()
-                # connection.close()
-
-            except:
-                # connection.rollback()
-                print("Failed inserting in swim : 말 진료현황")
-
-    return r_lines
+    return {
+        "success_cnt": success_cnt,
+        "failed_cnt": failed_cnt,
+    }
 
 
 # 경주 변경 내용 update - 경주순위

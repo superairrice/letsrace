@@ -18,142 +18,302 @@
 
   <title>Race Update</title>
   <style>
-    .rbn-actions {
+    .rbn-page {
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    .rbn-form {
+      display: flex;
+      flex-direction: column;
+      padding: 1rem;
+      border-radius: 14px;
+      border: 1px solid rgba(124, 147, 182, 0.34);
+      background: linear-gradient(165deg, rgba(35, 42, 62, 0.95), rgba(28, 34, 52, 0.95));
+      box-shadow: 0 12px 26px rgba(6, 10, 18, 0.34);
+      height: calc(100dvh - 12rem);
+      min-height: 22rem;
+      overflow: hidden;
+    }
+
+    .rbn-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      align-items: center;
+      padding: 0.7rem;
+      border-radius: 10px;
+      border: 1px solid rgba(124, 147, 182, 0.28);
+      background: rgba(58, 66, 92, 0.72);
+      overflow-x: hidden;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .rbn-form .rbn-topline {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem;
-      margin-top: 0.9rem;
-      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin-bottom: 0.85rem;
+      width: 100%;
+      flex: 0 0 auto;
     }
 
-    .rbn-actions-left {
-      display: flex;
+    .rbn-city {
+      margin: 0;
+      min-width: 9.6rem;
+      border: 1px solid rgba(168, 186, 216, 0.42);
+      border-radius: 8px;
+      padding: 0.45rem 0.66rem;
+      font-size: 1.15rem;
+      color: #d8e4f7;
+      display: inline-flex;
+      gap: 0.7rem;
       align-items: center;
-      gap: 0.75rem;
-      flex-wrap: wrap;
+      justify-content: center;
     }
 
-    .rbn-close {
-      margin-left: auto;
+    .rbn-city input[type="radio"] {
+      width: 1.05rem;
+      height: 1.05rem;
+      accent-color: #43bbff;
+    }
+
+    .rbn-field {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.46rem;
+      min-width: max-content;
+    }
+
+    .rbn-field__label {
+      font-size: 0.98rem;
+      color: #b8cbeb;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+
+    .rbn-input,
+    .rbn-select {
+      width: auto;
+      min-height: 2.25rem;
+      border-radius: 8px;
+      border: 1px solid rgba(133, 155, 190, 0.48);
+      background: rgba(16, 23, 37, 0.78);
+      color: #e4eefc;
+      font-size: 1.12rem;
+      padding: 0.3rem 0.5rem;
+    }
+
+    .rbn-input[type="number"] {
+      text-align: center;
+    }
+
+    .rbn-field .rbn-input[type="date"] {
+      width: 10.4rem;
+    }
+
+    .rbn-field .rbn-input[type="number"] {
+      width: 4.8rem;
+    }
+
+    .rbn-field .rbn-select {
+      width: 11.2rem;
+    }
+
+    .rbn-form .rbn-textarea {
+      width: 100%;
+      flex: 1 1 auto;
+      min-height: 8rem !important;
+      height: auto;
+      max-height: none;
+      display: block;
+      align-self: stretch;
+      box-sizing: border-box;
+      float: none;
+      position: static;
+      border-radius: 10px;
+      border: 1px solid rgba(119, 146, 186, 0.62);
+      background: rgba(243, 247, 252, 0.96);
+      color: #1c2b40;
+      font-size: 1.14rem;
+      line-height: 1.48;
+      padding: 0.72rem 0.78rem;
+      resize: none;
+      overflow: auto;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+    }
+
+    .rbn-form .rbn-actions {
       display: flex;
-      justify-content: flex-end;
-      margin-top: 1rem;
+      justify-content: flex-start;
+      align-items: center;
+      gap: 0.72rem;
+      margin-top: 0.95rem;
+      flex-wrap: wrap;
+      width: 100%;
+      float: none;
+      padding-top: 0.4rem;
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+      background: linear-gradient(
+        to bottom,
+        rgba(28, 34, 52, 0),
+        rgba(28, 34, 52, 0.92) 35%,
+        rgba(28, 34, 52, 0.98) 100%
+      );
+    }
+
+    .rbn-btn {
+      min-height: 2.7rem;
+      padding: 0.44rem 0.95rem;
+      border-radius: 9px;
+      font-size: 1.08rem;
+      letter-spacing: 0.01em;
+      border: 1px solid rgba(112, 199, 236, 0.6);
+      background: rgba(20, 54, 77, 0.56);
+      color: #9de5ff;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .rbn-btn:hover {
+      border-color: rgba(150, 224, 255, 0.82);
+      background: rgba(28, 70, 98, 0.7);
+      color: #d1f4ff;
+    }
+
+    .rbn-btn--close {
+      border-color: rgba(140, 155, 188, 0.58);
+      background: rgba(86, 96, 130, 0.62);
+      color: #eef3ff;
+    }
+
+    .rbn-btn--close:hover {
+      border-color: rgba(171, 185, 216, 0.78);
+      background: rgba(102, 113, 151, 0.76);
+      color: #ffffff;
+    }
+
+    .rbn-form .rbn-result {
+      padding: 0.72rem 0.85rem;
+      border-radius: 10px;
+      border: 1px solid rgba(124, 147, 182, 0.38);
+      background: rgba(20, 28, 43, 0.72);
+      color: #dce7fb;
+      font-size: 1rem;
+      display: flex;
+      gap: 1rem;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+      min-height: 3.25rem;
+      align-items: center;
+      flex: 0 0 auto;
+    }
+
+    .rbn-form .rbn-result strong {
+      color: #ffffff;
+    }
+
+    @media (max-width: 940px) {
+      .rbn-form {
+        height: calc(100dvh - 10rem);
+      }
+
+      .rbn-form .rbn-topline {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .rbn-toolbar {
+        justify-content: flex-start;
+      }
+
+      .rbn-form .rbn-result {
+        min-height: auto;
+        white-space: normal;
+        flex-wrap: wrap;
+      }
+
+      .rbn-form .rbn-textarea {
+        min-height: 8rem !important;
+      }
     }
   </style>
 
 </head>
 
 {% block content %}
-<br>
 
-<div class="container">
-
-  {% if messages %}
-  <div style="margin-bottom: 0.8rem;">
-    {% for message in messages %}
-    <div style="font-size:1.2rem; padding:0.6rem 0.8rem; border-radius:0.5rem; margin-bottom:0.4rem; border:1px solid #c6d2df; background:#f2f7fc; color:#2f4a66;">
-      {{ message }}
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
+<div class="container rbn-page">
 
   <!-- <form class="header__search" method="GET" action="{% url 'race_breakingnews' %}"> -->
-  <form class="header__search" action="" method="POST">
+  <form class="header__search rbn-form" action="" method="POST">
     {% csrf_token %}
-    <label>
-      <fieldset align="center" style="width: 15rem;">
-        <input type="radio" style="font-size:1.2rem; width:1.2rem; height:1.2rem; border:1px;" name="rcity" value="서울" {% if rcity == "서울" %} checked {% endif %} checked>&nbsp;서울
-        &nbsp;
-        <input type="radio" style="font-size:1.2rem; width:1.2rem; height:1.2rem; border:1px;" name="rcity" value="부산" {% if rcity == "부산" %} checked {% endif %}>&nbsp;부산
-      </fieldset>
+    <div class="rbn-topline">
+      <div class="rbn-toolbar">
+        <fieldset class="rbn-city">
+          <label><input type="radio" name="rcity" value="서울" {% if rcity == "서울" or not rcity %} checked {% endif %}>&nbsp;서울</label>
+          <label><input type="radio" name="rcity" value="부산" {% if rcity == "부산" %} checked {% endif %}>&nbsp;부산</label>
+        </fieldset>
 
-      &nbsp;&nbsp;
+        <div class="rbn-field">
+          <span class="rbn-field__label">일자</span>
+          <input class="rbn-input" type="date" value="{{ fdate }}" name="fdate">
+        </div>
 
-      <input style="width: 12rem; font-size: 1.3rem;" type="date" value={{fdate}} name="fdate" >
+        <div class="rbn-field">
+          <span class="rbn-field__label">경주번호</span>
+          <input class="rbn-input" type="number" min="1" max="99" step="1" value="{{ rno }}" name="rno">
+        </div>
 
-      <span style="font-size: 1.3rem;">&nbsp;&nbsp;&nbsp;경주번호:&nbsp;</span>
-      <input style="text-align: center; width: 5.0rem; border-style: outset; font-size: 1.2rem;" type="number" min="1" max="99" step="1" value={{rno}} name="rno" >
+        <div class="rbn-field">
+          <span class="rbn-field__label">출주두수</span>
+          <input class="rbn-input" type="number" min="1" max="99" step="1" value="{{ rcount }}" name="rcount">
+        </div>
 
-      <span style="font-size: 1.3rem;">&nbsp;&nbsp;&nbsp;출주두수:&nbsp;</span>
-      <input style="text-align: center; width: 5.0rem; border-style: outset; font-size: 1.2rem;" type="number" min="1" max="99" step="1" value={{rcount}} name="rcount" >
+        <div class="rbn-field">
+          <span class="rbn-field__label">📚 데이터</span>
+          <select class="rbn-select" name="fdata">
+          <option value="-" {% if fdata == '-' %} selected {% endif %}>선택</option>
+          
+          <option value="출전표변경" {% if fdata == '출전표변경' %} selected {% endif %}>출전표변경</option>
+          <option value="마체중" {% if fdata == '마체중' %} selected {% endif %}>마체중</option>
+          <option value="경주순위" {% if fdata == '경주순위' %} selected {% endif %}>경주순위</option>
+          <!-- <option value="경주마취소" {% if fdata == '경주마취소' %} selected {% endif %}>경주마취소</option>
+          <option value="기수변경" {% if fdata == '기수변경' %} selected {% endif %}>기수변경</option> -->
+          <option value="수영조교" {% if fdata == '수영조교' %} selected {% endif %}>수영조교</option>
+          <option value="말진료현황" {% if fdata == '말진료현황' %} selected {% endif %}>말진료현황</option>
+          <option value="출전등록 시뮬레이션" {% if fdata == '출전등록 시뮬레이션' %} selected {% endif %}>출전등록 시뮬레이션</option>
+          <option value="심판위원 Report" {% if fdata == '심판위원 Report' %} selected {% endif %}>심판위원 Report</option>
+          <option value="출발심사(b4)" {% if fdata == '출발심사(b4)' %} selected {% endif %}>출발심사(b4)</option>
+          <option value="출발조교(b5)" {% if fdata == '출발조교(b5)' %} selected {% endif %}>출발조교(b5)</option>
+          </select>
+        </div>
+      </div>
 
-      <span style="font-size: 1.3rem;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;📚&nbsp;데이터:&nbsp;</span>
-
-      <select name="fdata" style="font-size:1.2rem; padding: 0.2rem;">
-        <option value="-" {% if fdata == '-' %} selected {% endif %}>선택</option>
-        
-        <option value="출전표변경" {% if fdata == '출전표변경' %} selected {% endif %}>출전표변경</option>
-        <option value="마체중" {% if fdata == '마체중' %} selected {% endif %}>마체중</option>
-        <option value="경주순위" {% if fdata == '경주순위' %} selected {% endif %}>경주순위</option>
-        <!-- <option value="경주마취소" {% if fdata == '경주마취소' %} selected {% endif %}>경주마취소</option>
-        <option value="기수변경" {% if fdata == '기수변경' %} selected {% endif %}>기수변경</option> -->
-        <option value="수영조교" {% if fdata == '수영조교' %} selected {% endif %}>수영조교</option>
-        <option value="말진료현황" {% if fdata == '말진료현황' %} selected {% endif %}>말진료현황</option>
-        <option value="출전등록 시뮬레이션" {% if fdata == '출전등록 시뮬레이션' %} selected {% endif %}>출전등록 시뮬레이션</option>
-        <option value="심판위원 Report" {% if fdata == '심판위원 Report' %} selected {% endif %}>심판위원 Report</option>
-        <option value="출발심사(b4)" {% if fdata == '출발심사(b4)' %} selected {% endif %}>출발심사(b4)</option>
-        <option value="출발조교(b5)" {% if fdata == '출발조교(b5)' %} selected {% endif %}>출발조교(b5)</option>
-
-      </select>
-    </label>
+      {% if show_result %}
+      <div class="rbn-result">
+        <span>처리결과</span>
+        <span>성공 <strong>{{ result_success }}</strong>건</span>
+        <span>실패 <strong>{{ result_failed }}</strong>건</span>
+      </div>
+      {% endif %}
+    </div>
     
-    <textarea name="r_content" rows="30" style="font-size: 1.2rem; position:relative; width: 100%; padding: 10px">{{ r_content|default_if_none:"" }}</textarea>
+    <textarea class="rbn-textarea" name="r_content" rows="1">{{ r_content|default_if_none:"" }}</textarea>
 
     <div class="rbn-actions">
-      <div class="rbn-actions-left">
-        <button class="btn btn--link" type="submit" name="action" value="crawl_kra" style="font-size: 1.3rem;">마사회 출전표변경 크롤링</button>
-        <button class="btn btn--link" type="submit" name="action" value="convert" style="font-size: 1.3rem;">Convert</button>
-      </div>
-    </div>
-
-    {% if crawl_source %}
-    <div style="margin-top: 0.8rem; font-size: 1.2rem; color: #39516a;">
-      source: <a href="{{ crawl_source }}" target="_blank" rel="noopener">{{ crawl_source }}</a>
-      &nbsp;|&nbsp;rows: {{ result_cnt }}
-    </div>
-    {% endif %}
-
-    {% if crawl_rows %}
-    <div style="margin-top: 1.2rem; max-height: 28rem; overflow: auto; border: 1px solid #c6d2df; border-radius: 0.6rem;">
-      <table style="width:100%; border-collapse: collapse; font-size: 1.15rem;">
-        <thead>
-          <tr style="background:#eef4fb;">
-            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">구분</th>
-            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">경주</th>
-            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">출번</th>
-            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">마명</th>
-            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">변경전</th>
-            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">변경후</th>
-            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">부중</th>
-            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">사유</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for row in crawl_rows %}
-          <tr>
-            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef;">{{ row.type }}</td>
-            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef; text-align:center;">{{ row.rno }}R</td>
-            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef; text-align:center;">{{ row.gate }}</td>
-            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef;">{{ row.horse }}</td>
-            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef;">{{ row.jockey_old }}</td>
-            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef;">{{ row.jockey_new }}</td>
-            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef; text-align:center;">{{ row.handycap }}</td>
-            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef;">{{ row.reason }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% endif %}
-
-    <div class="rbn-close">
-      <a class="btn btn--dark" onclick="window.close()">Close</a>
+      <button class="rbn-btn" type="submit">💾&nbsp;Convert</button>
+      <a class="rbn-btn rbn-btn--close" onclick="window.close()">Close</a>
     </div>
 
   </form>
-
 
 </div>
 
