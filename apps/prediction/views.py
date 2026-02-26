@@ -1,4 +1,9 @@
 from apps.common import *
+import re
+from html import unescape
+from pathlib import Path
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 from apps.domains.race.race import resultOfRace
 
 # Prediction views
@@ -385,12 +390,11 @@ def printPrediction(request):
         fdate = q
 
     rcity = request.GET.get("rcity") if request.GET.get("rcity") != None else "부산"
+    view_type = request.GET.get("view_type") if request.GET.get("view_type") != None else "2"
+    if view_type not in ("1", "2"):
+        view_type = "2"
 
-    jname1 = request.GET.get("j1") if request.GET.get("j1") != None else ""
-    jname2 = request.GET.get("j2") if request.GET.get("j2") != None else ""
-    jname3 = request.GET.get("j3") if request.GET.get("j3") != None else ""
-
-    race, expects = get_print_prediction(rcity, rdate)
+    race, expects = get_print_prediction(rcity, rdate, view_type=view_type)
 
     check_visit(request)
 
@@ -399,9 +403,7 @@ def printPrediction(request):
             "expects": expects,
             "race": race,
             "fdate": fdate,
-            "jname1": jname1,
-            "jname2": jname2,
-            "jname3": jname3,
+            "view_type": view_type,
         }
     else:
         messages.warning(request, fdate + " " + rcity + " 경마 데이터가 없습니다.")
@@ -409,9 +411,7 @@ def printPrediction(request):
             "expects": expects,
             "race": race,
             "fdate": fdate,
-            "jname1": jname1,
-            "jname2": jname2,
-            "jname3": jname3,
+            "view_type": view_type,
         }
 
     # name = get_client_ip(request)
@@ -2099,50 +2099,490 @@ def raceReview(request, rcity, rdate, rno):
     return render(request, "base/race_review.html", context)
 
 def raceBreakingNews(request):
+    def _decode_kra_bytes(body):
+        if not body:
+            return ""
+        # 1) BOM/UTF-8 우선
+        for enc in ("utf-8-sig", "utf-8"):
+            try:
+                return body.decode(enc)
+            except Exception:
+                pass
+
+        # 2) KRA 페이지에서 흔한 한글 인코딩 fallback
+        decoded_candidates = []
+        for enc in ("cp949", "euc-kr"):
+            try:
+                txt = body.decode(enc)
+                decoded_candidates.append(txt)
+            except Exception:
+                pass
+
+        if not decoded_candidates:
+            # 마지막 fallback (깨짐 방지 최소화)
+            return body.decode("latin-1", errors="ignore")
+
+        def _score(text):
+            # 한글/핵심 키워드가 많이 포함된 디코딩 결과를 우선
+            hangul_cnt = len(re.findall(r"[가-힣]", text))
+            keyword_cnt = sum(
+                text.count(k)
+                for k in (
+                    "출전표",
+                    "변경",
+                    "경주",
+                    "서울",
+                    "부산",
+                    "부경",
+                    "기수",
+                    "마필",
+                )
+            )
+            return hangul_cnt + (keyword_cnt * 20)
+
+        return max(decoded_candidates, key=_score)
+
+    def _strip_html(value):
+        if value is None:
+            return ""
+        text = str(value)
+        text = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)
+        text = re.sub(r"<[^>]+>", " ", text)
+        return re.sub(r"\s+", " ", unescape(text)).strip()
+
+    def _normalize_changed_race_text(raw_text):
+        if not raw_text:
+            return ""
+
+        def _norm_city(city):
+            city = (city or "").strip()
+            if city in ("부산경남", "부산", "부경"):
+                return "부경"
+            if city == "서울":
+                return "서울"
+            if city == "제주":
+                return "제주"
+            return city
+
+        def _norm_date(date_text):
+            m = re.search(r"(20\d{2})[./-](\d{1,2})[./-](\d{1,2})", date_text or "")
+            if not m:
+                return ""
+            return f"{m.group(1)}.{int(m.group(2)):02d}.{int(m.group(3)):02d}"
+
+        lines = [re.sub(r"\s+", " ", (ln or "")).strip() for ln in str(raw_text).splitlines()]
+        lines = [ln for ln in lines if ln]
+
+        section = ""
+        normalized_rows = []
+
+        for ln in lines:
+            if "말취소" in ln:
+                section = "cancel"
+                continue
+            if "기수변경" in ln:
+                section = "jockey"
+                continue
+            if any(k in ln for k in ("출발시각변경", "경주취소", "출전표변경", "홈 >", "Copyright")):
+                section = ""
+                continue
+
+            # 불필요 헤더/메뉴 행 스킵
+            if any(
+                key in ln
+                for key in (
+                    "경마사이트링크",
+                    "금주의경마",
+                    "출전정보",
+                    "말취소내용",
+                    "기수변경내용",
+                    "지역 경주일자",
+                    "지역\t경주일자",
+                    "경주번호",
+                    "출전번호",
+                    "변경전",
+                    "변경후",
+                )
+            ):
+                continue
+
+            if section not in ("cancel", "jockey"):
+                continue
+
+            # 첫 토큰이 지역(서울/부경/제주)이어야 실제 데이터 행으로 간주
+            if not re.match(r"^(서울|부경|부산경남|제주)\b", ln):
+                continue
+
+            # 공백 기준 토큰화(사유는 나머지 전체로 보존)
+            parts = ln.split(" ")
+            if len(parts) < 6:
+                continue
+
+            city = _norm_city(parts[0])
+            date_txt = _norm_date(parts[1])
+            if not date_txt:
+                continue
+
+            # 말취소: 지역 일자 rno gate horse trainer jockey reason
+            if section == "cancel":
+                if len(parts) < 8:
+                    continue
+                rno = re.sub(r"[^0-9]", "", parts[2]) or "0"
+                gate = re.sub(r"[^0-9]", "", parts[3]) or "0"
+                horse = parts[4]
+                trainer = parts[5]
+                jockey = parts[6]
+                reason = " ".join(parts[7:]).strip()
+                row = "\t".join([city, date_txt, rno, gate, horse, trainer, jockey, reason])
+                normalized_rows.append(row)
+                continue
+
+            # 기수변경: 지역 일자 rno gate horse old new weight reason
+            if section == "jockey":
+                if len(parts) < 9:
+                    continue
+                rno = re.sub(r"[^0-9]", "", parts[2]) or "0"
+                gate = re.sub(r"[^0-9]", "", parts[3]) or "0"
+                horse = parts[4]
+                jockey_old = parts[5]
+                jockey_new = parts[6]
+                weight = parts[7]
+                reason = " ".join(parts[8:]).strip()
+                row = "\t".join([city, date_txt, rno, gate, horse, jockey_old, jockey_new, weight, reason])
+                normalized_rows.append(row)
+
+        # 중복 제거
+        unique_rows = list(dict.fromkeys([r for r in normalized_rows if r.strip()]))
+        return "\n".join(unique_rows)
+
+    def _normalize_rdate_text(yyyymmdd):
+        if not yyyymmdd or len(yyyymmdd) != 8:
+            return yyyymmdd
+        return f"{yyyymmdd[0:4]}.{yyyymmdd[4:6]}.{yyyymmdd[6:8]}"
+
+    def _crawl_kra_changed_entries(rcity=None, rdate=None):
+        # KRA 출전표변경 페이지 후보 URL
+        # 요구사항: 조건 없이(전체) 최신 노출 데이터를 수집
+
+        url_candidates = [
+            "https://race.kra.co.kr/thisweekrace/ThisWeekChulmapyoChange.do",
+            "https://park.kra.co.kr/thisweekrace/ThisWeekChulmapyoChange.do",
+            "https://race.kra.co.kr/thisweekrace/ThisWeekChulmapyoChange.do?" + urlencode({"meet": "1"}),
+            "https://race.kra.co.kr/thisweekrace/ThisWeekChulmapyoChange.do?" + urlencode({"meet": "3"}),
+            "https://race.kra.co.kr/chulmainfo/chulmapyoChange.do?"
+            + urlencode({"Act": "02", "Sub": "1"}),
+            "https://park.kra.co.kr/chulmainfo/chulmapyoChange.do?"
+            + urlencode({"Act": "02", "Sub": "1"}),
+            "https://race.kra.co.kr/chulmainfo/chulmapyoChangeList.do?"
+            + urlencode({}),
+            "https://park.kra.co.kr/chulmainfo/chulmapyoChangeList.do?"
+            + urlencode({}),
+        ]
+
+        rows = []
+        source_url = ""
+        raw_html = ""
+        for url in url_candidates:
+            try:
+                req = Request(
+                    url,
+                    headers={
+                        "User-Agent": "Mozilla/5.0 (compatible; thethe9-bot/1.0)",
+                        "Referer": "https://race.kra.co.kr/",
+                        "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+                    },
+                )
+                with urlopen(req, timeout=6) as resp:
+                    body = resp.read()
+                decoded = _decode_kra_bytes(body)
+                if not decoded:
+                    continue
+                if "출전표" not in decoded and "기수" not in decoded and "취소" not in decoded:
+                    continue
+                raw_html = decoded
+                source_url = url
+                break
+            except Exception:
+                continue
+
+        # 로컬 저장 HTML 테스트 폴백 (개발/점검용)
+        if not raw_html:
+            local_candidates = [
+                Path("/Users/Super007/Documents/전체_출전표변경_금주의경마.htm"),
+            ]
+            for local_path in local_candidates:
+                try:
+                    if not local_path.exists() or not local_path.is_file():
+                        continue
+                    body = local_path.read_bytes()
+                    decoded = _decode_kra_bytes(body)
+                    if not decoded:
+                        continue
+                    if "출전표" not in decoded and "기수" not in decoded and "취소" not in decoded:
+                        continue
+                    raw_html = decoded
+                    source_url = str(local_path)
+                    break
+                except Exception:
+                    continue
+
+        if not raw_html:
+            return "", [], ""
+
+        tr_matches = re.findall(r"<tr[^>]*>(.*?)</tr>", raw_html, flags=re.IGNORECASE | re.DOTALL)
+        formatted_lines = []
+        preview_rows = []
+
+        def _norm_date(s):
+            x = (s or "").strip()
+            x = x.replace("-", ".").replace("/", ".")
+            m = re.search(r"(20\d{2})\.(\d{1,2})\.(\d{1,2})", x)
+            if m:
+                return f"{m.group(1)}.{int(m.group(2)):02d}.{int(m.group(3)):02d}"
+            return ""
+
+        def _norm_city(s):
+            x = (s or "").strip()
+            if "서울" in x:
+                return "서울"
+            if "부산" in x or "부경" in x:
+                return "부경"
+            if "제주" in x:
+                return "제주"
+            return x
+
+        for tr_html in tr_matches:
+            tds = re.findall(r"<t[dh][^>]*>(.*?)</t[dh]>", tr_html, flags=re.IGNORECASE | re.DOTALL)
+            cols = [_strip_html(td) for td in tds]
+            cols = [c for c in cols if c]
+            if len(cols) < 6:
+                continue
+
+            row_text = " ".join(cols).strip()
+            # 헤더/설명 행 제외
+            if any(k in row_text for k in ("경마장", "경주일", "출전표", "변경내역", "자료", "제목")):
+                continue
+
+            city = _norm_city(cols[0] if len(cols) > 0 else "")
+            date_txt = _norm_date(cols[1] if len(cols) > 1 else "")
+            if not date_txt:
+                continue
+
+            # KRA 표준 8/9 컬럼 우선 처리
+            if len(cols) >= 9:
+                rno = re.sub(r"[^0-9]", "", cols[2]) or "0"
+                gate = re.sub(r"[^0-9]", "", cols[3]) or "0"
+                horse = cols[4]
+                jockey_old = cols[5]
+                jockey_new = cols[6]
+                handycap = cols[7] if re.search(r"[0-9]", cols[7]) else "0"
+                reason = cols[8]
+                line = "\\t".join([city, date_txt, rno, gate, horse, jockey_old, jockey_new, handycap, reason])
+                formatted_lines.append(line)
+                preview_rows.append(
+                    {
+                        "type": "기수변경",
+                        "rno": rno,
+                        "gate": gate,
+                        "horse": horse,
+                        "jockey_old": jockey_old,
+                        "jockey_new": jockey_new,
+                        "handycap": handycap,
+                        "reason": reason,
+                    }
+                )
+                continue
+
+            if len(cols) == 8:
+                rno = re.sub(r"[^0-9]", "", cols[2]) or "0"
+                gate = re.sub(r"[^0-9]", "", cols[3]) or "0"
+                horse = cols[4]
+                reason = cols[7]
+                line = "\\t".join([city, date_txt, rno, gate, horse, "-", "-", reason])
+                formatted_lines.append(line)
+                preview_rows.append(
+                    {
+                        "type": "출전표변경",
+                        "rno": rno,
+                        "gate": gate,
+                        "horse": horse,
+                        "jockey_old": "",
+                        "jockey_new": "",
+                        "handycap": "",
+                        "reason": reason,
+                    }
+                )
+                continue
+
+            # 비정형 행 fallback: 핵심 정보만 채움
+            if len(cols) >= 6:
+                rno = "0"
+                gate = "0"
+                for c in cols:
+                    if rno == "0":
+                        m_r = re.search(r"(\d{1,2})\s*R", c, flags=re.IGNORECASE)
+                        if m_r:
+                            rno = str(int(m_r.group(1)))
+                    if gate == "0":
+                        m_g = re.search(r"^\d{1,2}$", c)
+                        if m_g:
+                            gate = m_g.group(0)
+                horse = cols[4] if len(cols) > 4 else ""
+                reason = cols[-1]
+                line = "\\t".join([city, date_txt, rno, gate, horse, "-", "-", reason])
+                formatted_lines.append(line)
+                preview_rows.append(
+                    {
+                        "type": "출전표변경",
+                        "rno": rno,
+                        "gate": gate,
+                        "horse": horse,
+                        "jockey_old": "",
+                        "jockey_new": "",
+                        "handycap": "",
+                        "reason": reason,
+                    }
+                )
+
+        # 중복 제거(문자열 기준)
+        unique_lines = list(dict.fromkeys([x for x in formatted_lines if x.strip()]))
+        if unique_lines and len(preview_rows) != len(unique_lines):
+            preview_rows = preview_rows[: len(unique_lines)]
+        if unique_lines:
+            return "\\n".join(unique_lines), preview_rows, source_url
+
+        # 폴백: HTML 전체 텍스트에서 한국어 포맷(말취소/기수변경) 재추출
+        text_like = raw_html
+        text_like = re.sub(r"<br\s*/?>", "\n", text_like, flags=re.IGNORECASE)
+        text_like = re.sub(r"</tr\s*>", "\n", text_like, flags=re.IGNORECASE)
+        text_like = re.sub(r"</t[dh]\s*>", " ", text_like, flags=re.IGNORECASE)
+        text_like = re.sub(r"<[^>]+>", " ", text_like)
+        text_like = unescape(text_like)
+        text_like = re.sub(r"[ \t]+", " ", text_like)
+        text_like = re.sub(r"\n{2,}", "\n", text_like)
+
+        fallback_text = _normalize_changed_race_text(text_like)
+        if not fallback_text:
+            # 파싱이 0건이어도 원문 텍스트를 화면에 보여서 즉시 확인 가능하게 반환
+            plain_preview = re.sub(r"\s+", " ", text_like).strip()
+            if len(plain_preview) > 12000:
+                plain_preview = plain_preview[:12000] + "\n...[truncated]"
+            return plain_preview, [], source_url
+
+        fallback_rows = []
+        for ln in fallback_text.splitlines():
+            parts = ln.split("\t")
+            if len(parts) == 9:
+                fallback_rows.append(
+                    {
+                        "type": "기수변경",
+                        "rno": parts[2],
+                        "gate": parts[3],
+                        "horse": parts[4],
+                        "jockey_old": parts[5],
+                        "jockey_new": parts[6],
+                        "handycap": parts[7],
+                        "reason": parts[8],
+                    }
+                )
+            elif len(parts) == 8:
+                fallback_rows.append(
+                    {
+                        "type": "출전표변경",
+                        "rno": parts[2],
+                        "gate": parts[3],
+                        "horse": parts[4],
+                        "jockey_old": "",
+                        "jockey_new": "",
+                        "handycap": "",
+                        "reason": parts[7],
+                    }
+                )
+
+        return fallback_text, fallback_rows, source_url
+
     r_content = (
         request.POST.get("r_content") if request.POST.get("r_content") != None else ""
     )
 
-    rcity = request.POST.get("rcity") if request.POST.get("rcity") != None else ""
+    rcity = request.POST.get("rcity") if request.POST.get("rcity") != None else "서울"
 
-    fdate = (
-        request.POST.get("fdate") if request.POST.get("fdate") != None else "0000-00-00"
-    )
+    fdate = request.POST.get("fdate") if request.POST.get("fdate") != None else ""
 
     rno = request.POST.get("rno") if request.POST.get("rno") != None else 99
 
     rcount = request.POST.get("rcount") if request.POST.get("rcount") != None else 30
 
     fdata = request.POST.get("fdata") if request.POST.get("fdata") != None else "-"
+    action = request.POST.get("action") if request.POST.get("action") != None else "convert"
 
-    # fdate = rdate[0:4] + '-' + rdate[4:6] + '-' + rdate[6:8]
+    # 경마일 기본값 보정: 빈 값이면 최신 경마일 자동 설정
+    if not re.match(r"^\d{4}-\d{2}-\d{2}$", str(fdate or "")):
+        try:
+            latest = (
+                Racing.objects.values("rdate")
+                .exclude(rdate__isnull=True)
+                .exclude(rdate__exact="")
+                .order_by("-rdate")
+                .first()
+            )
+            if latest and latest.get("rdate"):
+                rr = str(latest["rdate"])
+                if len(rr) == 8 and rr.isdigit():
+                    fdate = f"{rr[0:4]}-{rr[4:6]}-{rr[6:8]}"
+                else:
+                    fdate = datetime.now().strftime("%Y-%m-%d")
+            else:
+                fdate = datetime.now().strftime("%Y-%m-%d")
+        except Exception:
+            fdate = datetime.now().strftime("%Y-%m-%d")
+
     rdate = fdate[0:4] + fdate[5:7] + fdate[8:10]
 
-    if fdata == "-":
-        result_cnt = 0
-        pass
-    elif fdata == "출전표변경":
-        result_cnt = set_changed_race(rcity, rdate, rno, r_content)
-    elif fdata == "마체중":
-        result_cnt = set_changed_race_weight(rcity, rdate, rno, r_content)
-    elif fdata == "경주순위":
-        result_cnt = set_changed_race_rank(rcity, rdate, rno, r_content)
-    elif fdata == "경주마취소":
-        result_cnt = set_changed_race_horse(rcity, rdate, rno, r_content)
-    elif fdata == "기수변경":
-        result_cnt = set_changed_race_jockey(rcity, rdate, rno, r_content)
-    elif fdata == "수영조교":
-        result_cnt = insert_train_swim(r_content)
-    elif fdata == "말진료현황":
-        result_cnt = insert_horse_disease(r_content)
-    elif fdata == "출전등록 시뮬레이션":
-        result_cnt = insert_race_simulation(rcity, rcount, r_content)
-    elif fdata == "심판위원 Report":
-        result_cnt = insert_race_judged(rcity, r_content)
-    elif fdata == "출발심사(b4)":
-        result_cnt = insert_start_audit(r_content)
-    elif fdata == "출발조교(b5)":
-        result_cnt = insert_start_train(r_content)
+    result_cnt = 0
+    crawl_rows = []
+    crawl_source = ""
+
+    if request.method == "POST" and action == "crawl_kra":
+        fdata = "출전표변경"
+        r_content, crawl_rows, crawl_source = _crawl_kra_changed_entries()
+        result_cnt = len(crawl_rows)
+        if result_cnt == 0:
+            if crawl_source:
+                messages.info(request, "출전표변경 내역이 없습니다. (0건)")
+            else:
+                messages.warning(request, "마사회 출전표변경 데이터를 가져오지 못했습니다.")
+        else:
+            messages.success(request, f"출전표변경 {result_cnt}건을 크롤링했습니다. Convert를 눌러 반영하세요.")
+    else:
+        if fdata == "-":
+            result_cnt = 0
+        elif fdata == "출전표변경":
+            normalized_text = _normalize_changed_race_text(r_content)
+            apply_text = normalized_text if normalized_text else r_content
+            if normalized_text:
+                r_content = normalized_text
+            result_cnt = set_changed_race(rcity, rdate, rno, apply_text)
+        elif fdata == "마체중":
+            result_cnt = set_changed_race_weight(rcity, rdate, rno, r_content)
+        elif fdata == "경주순위":
+            result_cnt = set_changed_race_rank(rcity, rdate, rno, r_content)
+        elif fdata == "경주마취소":
+            result_cnt = set_changed_race_horse(rcity, rdate, rno, r_content)
+        elif fdata == "기수변경":
+            result_cnt = set_changed_race_jockey(rcity, rdate, rno, r_content)
+        elif fdata == "수영조교":
+            result_cnt = insert_train_swim(r_content)
+        elif fdata == "말진료현황":
+            result_cnt = insert_horse_disease(r_content)
+        elif fdata == "출전등록 시뮬레이션":
+            result_cnt = insert_race_simulation(rcity, rcount, r_content)
+        elif fdata == "심판위원 Report":
+            result_cnt = insert_race_judged(rcity, r_content)
+        elif fdata == "출발심사(b4)":
+            result_cnt = insert_start_audit(r_content)
+        elif fdata == "출발조교(b5)":
+            result_cnt = insert_start_train(r_content)
 
     exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=86)
 
@@ -2156,6 +2596,8 @@ def raceBreakingNews(request):
         "fdata": fdata,
         "fdate": fdate,
         "result_cnt": result_cnt,
+        "crawl_rows": crawl_rows,
+        "crawl_source": crawl_source,
     }
 
     # user = request.user

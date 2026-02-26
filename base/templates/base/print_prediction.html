@@ -23,59 +23,328 @@
   <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
 
   <title>{{fdate}}&nbsp;{{race.0.0}}({{race.0.2}}) Race Prediction</title>
+  <style>
+    :root {
+      --print-bg: #e9eef5;
+      --sheet-bg: #ffffff;
+      --line: #9eafc2;
+      --line-soft: #c8d4e2;
+      --head-bg: #eef4fb;
+      --head-text: #2d435c;
+      --text-main: #24364b;
+      --text-sub: #4c627a;
+    }
 
-  <div class="room__top" style="z-index:1; background: #fff;">
-  
-    <div id="room__header" class="room__topLeft">
+    html {
+      font-size: 62.5%;
+    }
 
-      <form class="header__search" method="GET" action="{% url 'print_prediction' %}">
-        <label>
-          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-            <title>search</title>
-            <path
-              d="M32 30.586l-10.845-10.845c1.771-2.092 2.845-4.791 2.845-7.741 0-6.617-5.383-12-12-12s-12 5.383-12 12c0 6.617 5.383 12 12 12 2.949 0 5.649-1.074 7.741-2.845l10.845 10.845 1.414-1.414zM12 22c-5.514 0-10-4.486-10-10s4.486-10 10-10c5.514 0 10 4.486 10 10s-4.486 10-10 10z">
-            </path>
-          </svg>
-          <fieldset align="center" style="width: 13.5rem;">
-          
-            {% if race.0.0 == '서울' %}
-              서울<input style="width: 3rem;" type="radio" name="rcity" value="서울" checked />
-              부산<input style="width: 3rem;" type="radio" name="rcity" value="부산"  />
-            {% elif race.0.0 == '부산' %}
-              서울<input style="width: 3rem;" type="radio" name="rcity" value="서울" />
-              부산<input style="width: 3rem;" type="radio" name="rcity" value="부산" checked />
-            {% else %}
-              서울<input style="width: 3rem;" type="radio" name="rcity" value="서울" />
-              부산<input style="width: 3rem;" type="radio" name="rcity" value="부산" />
-            {% endif %}
-          
-          </fieldset>
-          경마일 :
-          <input style="width: 12rem;" type="date" value={{fdate}} name="q">
-          관심기수 :
-          <input style="width: 5rem; color:var(--color-r1)" type="text" value='{{jname1}}' placeholder="세영" name="j1">
-          <input style="width: 5rem; color:var(--color-r2)" type="text" value='{{jname2}}' placeholder="안토니오" name="j2">
-          <input style="width: 5rem; color:var(--color-r3)" type="text" value='{{jname3}}' placeholder="이혁" name="j3">
-          <button class="btn" style="background: var(--color-main);">Search</button>
-      
-      
-        </label>
-      </form>
-  
-    </div>
+    body {
+      margin: 0;
+      background: var(--print-bg);
+      color: #1e2b3b;
+      font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
 
-    <div id="room__header" class="room__topRight">
-      <button class="btn" style="background: var(--color-main);" onclick="window.print();">Print</button>
-    </div>
-  
-  </div>
+    .print-toolbar {
+      max-width: 1320px;
+      margin: 8px auto 0;
+      padding: 10px 14px;
+      border: 1px solid #c4d2e0;
+      border-radius: 12px;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      box-shadow: 0 6px 18px rgba(21, 35, 52, 0.08);
+    }
 
-      {% for message in messages %}
-      {{ message.tag }}
-      {{ message }}
-      {% endfor %}
+    .print-toolbar form {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 1.26rem;
+    }
 
-  
+    .print-toolbar__group {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .print-toolbar__label {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #2f4560;
+      white-space: nowrap;
+    }
+
+    .print-toolbar fieldset {
+      border: 1px solid #d3deea;
+      border-radius: 8px;
+      padding: 5px 9px;
+      margin: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f8fbff;
+    }
+
+    .print-toolbar fieldset label {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 1.2rem;
+      color: #324a65;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .print-toolbar input[type="radio"] {
+      width: 1.32rem;
+      height: 1.32rem;
+      accent-color: #3b9bc2;
+    }
+
+    .print-toolbar input[type="date"],
+    .print-toolbar input[type="text"] {
+      border: 1px solid #c5d2df;
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-size: 1.2rem;
+      color: #1f344b;
+      background: #ffffff;
+    }
+
+    .print-toolbar input[type="date"] {
+      min-width: 14.2rem;
+    }
+
+    .print-toolbar__toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      border: 1px solid #cad7e5;
+      border-radius: 9px;
+      padding: 2px;
+      background: #f3f8ff;
+    }
+
+    .print-toolbar__toggle label {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 4px 8px;
+      border-radius: 7px;
+      font-size: 1.2rem;
+      color: #365171;
+      font-weight: 700;
+    }
+
+    .print-toolbar .btn {
+      border: 0;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: #59aeca;
+      color: #fff;
+      white-space: nowrap;
+    }
+
+    .print-toolbar .btn.btn-print {
+      background: #7286a1;
+    }
+
+    .print-sheet-wrap {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 8px 0 24px;
+    }
+
+    .a4-sheet {
+      width: calc(100vw - 12px);
+      max-width: 1320px;
+      min-height: auto;
+      margin: 0 auto;
+      background: var(--sheet-bg);
+      box-shadow: 0 8px 24px rgba(18, 30, 44, 0.15);
+      border-radius: 10px;
+      padding: 16px 14px;
+      overflow: auto;
+    }
+
+    .print-sheet-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding: 8px 10px;
+      border: 1px solid var(--line-soft);
+      border-radius: 10px;
+      background: linear-gradient(180deg, #f8fbff, #f2f7fc);
+    }
+
+    .print-sheet-head__title {
+      font-size: 1.46rem;
+      font-weight: 800;
+      color: #1f3651;
+      letter-spacing: 0.01em;
+    }
+
+    .print-sheet-head__meta {
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 1.08rem;
+      color: var(--text-sub);
+    }
+
+    .print-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border: 1px solid #c9d6e4;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #3a526d;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .print-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      background: #fff;
+      color: var(--text-main);
+      font-size: 1.08rem;
+    }
+
+    .print-table th,
+    .print-table td {
+      border: 1px solid var(--line);
+      padding: 5px 3px;
+      vertical-align: middle;
+      line-height: 1.28;
+    }
+
+    .print-table thead th {
+      background: var(--head-bg);
+      color: var(--head-text);
+      white-space: nowrap;
+    }
+
+    .print-table tbody tr:nth-child(even) td {
+      background: #fbfdff;
+    }
+
+    .print-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    /* R쌍(마번/지표) 가운데 구분선 제거 */
+    .print-table td.print-gate-td {
+      border-right: none !important;
+    }
+
+    .print-table td.print-metric-td {
+      border-left: none !important;
+    }
+
+    /* 경주번호(행 첫 번째 TD) 우측 보더 제거 */
+    .print-table td.print-rno-td {
+      border-right: none !important;
+    }
+
+    .print-table td.print-rinfo-td {
+      border-left: none !important;
+    }
+
+    @page {
+      size: A4;
+      margin: 8mm;
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .print-toolbar,
+      footer,
+      #header {
+        display: none !important;
+      }
+
+      .print-sheet-wrap {
+        padding: 0;
+        max-width: none;
+      }
+
+      .a4-sheet {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0;
+        padding: 0;
+        border-radius: 0;
+        box-shadow: none;
+        max-width: none;
+      }
+
+      .print-sheet-head {
+        margin-bottom: 6px;
+        box-shadow: none;
+      }
+
+      .print-table thead {
+        display: table-header-group;
+      }
+
+      .print-table tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+      }
+
+      .print-table thead th {
+        position: static;
+      }
+
+      .print-table th,
+      .print-table td {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .print-table tbody tr:nth-child(even) td {
+        background: #fff;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .print-toolbar {
+        margin: 8px 4px 0;
+        max-width: none;
+      }
+
+      .print-sheet-wrap {
+        max-width: none;
+      }
+
+      .a4-sheet {
+        width: calc(100vw - 8px);
+        padding: 10px 8px;
+      }
+    }
+  </style>
 
 </head>
 
@@ -83,99 +352,55 @@
 {% load humanize %}
 
 {% block content %}
+<body>
+  <div class="print-toolbar">
+    <form method="GET" action="{% url 'print_prediction' %}">
+      <div class="print-toolbar__group">
+        <span class="print-toolbar__label">경마장</span>
+        <fieldset>
+          {% if race.0.0 == '서울' %}
+            <label>서울 <input type="radio" name="rcity" value="서울" checked></label>
+            <label>부산 <input type="radio" name="rcity" value="부산"></label>
+          {% elif race.0.0 == '부산' %}
+            <label>서울 <input type="radio" name="rcity" value="서울"></label>
+            <label>부산 <input type="radio" name="rcity" value="부산" checked></label>
+          {% else %}
+            <label>서울 <input type="radio" name="rcity" value="서울"></label>
+            <label>부산 <input type="radio" name="rcity" value="부산"></label>
+          {% endif %}
+        </fieldset>
+      </div>
 
-<main class="create-room layout;" style="background: white; padding-top: 0px;">
+      <div class="print-toolbar__group">
+        <span class="print-toolbar__label">경마일</span>
+        <input type="date" value="{{ fdate }}" name="q">
+      </div>
 
-  <div class="room" style="height: 87.5vh; background: white; padding-top: 0px;">
-    
-    <style>
+      <div class="print-toolbar__group">
+        <span class="print-toolbar__label">조회기준</span>
+        <div class="print-toolbar__toggle">
+          <label>v1 <input type="radio" name="view_type" value="1" {% if view_type == "1" %}checked{% endif %}></label>
+          <label>v2 <input type="radio" name="view_type" value="2" {% if view_type != "1" %}checked{% endif %}></label>
+        </div>
+      </div>
 
-      html {
-        font-size: 59%; /* 62.5rem 1rem = 10px */
-      }
-      @media print {
-        #header, #room__header{display:none}
-        html, body {
-          width: 210mm;
-          /* height: 297mm; */
-          height: 282mm;
-          background: #fff;
-        }
-        body {
-          padding-top:10mm;
-          padding-bottom:5mm;
-        }
-        .paper {
-          margin: 0;
-          border: initial;
-          border-radius: initial;
-          width: initial;
-          min-height: initial;
-          box-shadow: initial;
-          background: initial;
-          page-break-after: always;
-          
-        }
-      }
-      @media print {
-        #header, #room__header{display:none}
-        body {
-          width: 100%;
-          height: 100%;
-          margin: 0;
-          padding: 0;
-          background-color: #ddd;
+      <button class="btn" type="submit">조회</button>
+    </form>
+    <button class="btn btn-print" type="button" onclick="window.print();">인쇄</button>
+  </div>
 
-          padding-top:10mm;
-          padding-bottom:5mm;
-        }
-      }
-      
-      * {
-        box-sizing: border-box;
-        -moz-box-sizing: border-box;
-      }
-      .paper {
-        min-height: 297mm;
-
-        width: 210mm;
-        /* height: 297mm; */
-        height: 282mm;
-        background: #fff;
-        
-        padding: 20mm;              /* set contents area */
-        margin: 10mm auto;
-        border-radius: 5px;
-        background: #fff;
-        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-      }
-      .content {
-        padding: 0;
-        /* border: 1px #888 dotted; */
-        height: 257mm;
-      }
-      @page {
-          size: A4;
-          margin: 0;
-      }
-    </style>
-
-    <div style="background: wheat; padding-top: 0px;">
-
-      <style>
-        table {
-          width: 100%;
-          border-top: 1px solid #444444;
-          border-collapse: collapse;
-        }
-
-        th,
-        td {
-          border-bottom: 1px solid #444444;
-        }
-      </style>
-      
-      <table style="background:white  ; color: black; padding-top: 0px;">
+<main class="print-sheet-wrap">
+  <div class="a4-sheet">
+      <section class="print-sheet-head">
+        <div class="print-sheet-head__title">Program Expected Ranking</div>
+        <div class="print-sheet-head__meta">
+          <span class="print-chip">경마장 {{ race.0.0|default:"-" }}</span>
+          <span class="print-chip">경마일 {{ fdate|default:"-" }}</span>
+          <span class="print-chip">조회기준 {% if view_type == "1" %}v1{% else %}v2{% endif %}</span>
+          <span class="print-chip">출력 {% now "Y.m.d H:i" %}</span>
+        </div>
+      </section>
+      <table class="print-table">
         <thead>
           <tr>
             <th width="7.0%" colspan="2" rowspan="2" align="center" style="vertical-align: middle; font-size:1.7rem; font-weight:700; color:#444444; text-transform:capitalize; border-right: 1px solid #444444;">
@@ -204,11 +429,11 @@
           {% for r_rcity, r_rdate, r_rday, r_rno, rtime, distance, grade, dividing in race %}
           
           <tr>
-            <td style="text-align: right; vertical-align: top;">
+            <td class="print-rno-td" style="text-align: right; vertical-align: top;">
               <div style="font-family: Arial; font-size:1.9rem; font-weight: 550; color:var(--color-dark);">{{r_rno}}</div>
             </td>
             
-            <td style="border-right: 1px solid #444444;">
+            <td class="print-rinfo-td" style="border-right: 1px solid #444444;">
               
               <div style="font-size:0.9rem; text-align:center; color:blue; font-family: Arial; padding-bottom: .3rem;">{{rtime}}</div>
               <div style="font-size:0.9rem; font-family: Arial; text-align:center; color: var(--color-r2);">{{distance}}</div>
@@ -223,180 +448,95 @@
             </td>
 
 
-            {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex, jt_per, jt_cnt, jt_3rd, s1f_rank, i_cycle, rcount, recent3, recent5, convert_r, disease, tcnt in expects %}  
+            {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex, jt_per, jt_cnt, jt_3rd, s1f_rank, i_cycle, rcount, recent3, recent5, convert_r, jockey_old, reason, alloc3r, m_rank, tot_score, s1f_per, g3f_per, g1f_per, start_score, comment_one, g2f_rank, rec_per, rec8_trend, h_weight, disease, tcnt in expects %}  
             {% if r_rcity == rcity and r_rdate == rdate and r_rno == rno %}
             
-            <td align="center" {% if rank < 90 %} style="font-family: Arial; color: var(--color-main);" {% else %} style="font-family: Arial; color: var(--color-main); background-color: var(--color-light);" {% endif %}>
-              
-              <div align="center" style="font-size: 1.7rem; background-color:azure; border-radius: 10px;">
-                {% if rank == 1 %}
-                <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550; padding: 0 0px;">
-                  {{gate}}
-                </span>
-                {% elif rank == 2 %}
-                <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550; padding: 0 0px;">
-                  {{gate}}
-                </span>
-                {% elif rank == 3 %}
-                <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550; padding: 0 0px;">
-                  {{gate}}
-                </span>
-                {% elif rank == 4 %}
-                <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550; padding: 0 0px;">
-                  {{gate}}
-                </span>
-                {% elif rank == 5 %}
-                <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550; padding: 0 0px;">
-                  {{gate}}
+            <td class="print-gate-td" align="center" {% if rank < 90 %} style="font-family: Arial; color: #26384d; background-color: #ffffff;" {% else %} style="font-family: Arial; color: #26384d; background-color: #f4f7fb;" {% endif %}>
+              <div align="center" style="font-style: italic; font-size: 1.55rem; border-radius: 10px; padding-top: 2px; background-color: #f8fbff; border: 1px solid #d2deea;">
+                {% if r_rank %}
+                <span style="color:#304a67; font-weight: 700;">
+                  {{gate}}<sub style="font-size: 0.8rem;">{{r_rank}}</sub>
                 </span>
                 {% else %}
-                  {% if complex == complex5 %}
-                  <span style="font-family: Arial; font-style: italic; color:black; font-weight: 550; padding: 0 0px;">{{gate}}</span>
-                  {% else %}
-                  <span style="font-family: Arial; font-style: normal; color:var(--color-main);">{{gate}}</span>
-                  {% endif %}
+                <span style="color:#4a6078;">{{gate}}</span>
                 {% endif %}
               </div>
 
-              <div style="padding: 0px 0px; font-size: 0.85rem;">
+              <div style="text-align:center; font-size:0.82rem; line-height:1.15; margin-top:0.1rem;">
                 {% if i_cycle %}
-                  {% if i_cycle <= 16 %} 
-                    <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r1); background-color:yellow; padding:2px 4px; border-radius:7px;">
-                      {{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.7rem;">w</sup>
-                    </span>
-                  {% elif i_cycle >= 68 %}
-                    <span style="font-family: Arial; font-size:1.0rem; color:var(--color-r4); background-color:yellow; padding:2px 4px; border-radius:7px;">
-                      {{i_cycle|div:7|floatformat:0}}<sup style="font-size: 0.7rem;">w</sup>
-                    </span>
+                  {% if i_cycle <= 14 %}
+                  <span style="color:#d93b3b;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
+                  {% elif i_cycle >= 70 %}
+                  <span style="color:#e08a1f;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                   {% else %}
-                    <span style="font-family: Arial; font-size:1.0rem; color:var(--color-light-gray);">{{i_cycle|div:7|floatformat:0}}<sup
-                        style="font-size: 0.7rem;">w</sup></span>
+                  <span style="color:#6a7f96;">{{i_cycle|div:7|floatformat:0}}<sup style="font-size:0.7rem;">w</sup></span>
                   {% endif %}
                 {% else %}
-                  <span style="font-family: Arial; font-size:0.7rem; color:var(--color-light);">🐥</span>
+                <span style="color:#8a9aab;">신마</span>
                 {% endif %}
               </div>
 
-              <div style="font-size: 0.85rem; color: var(--color-r1); font-weight: 550; font-style: normal;">
-                {% if jockey|slice:"-2:" == jname1|slice:"-2:" %}
-                <span style="font-size: 0.85rem; color: var(--color-r1); font-weight: 550;">{{jockey|slice:"-2:"}}</span>
-                {% elif jockey|slice:"-2:" == jname2|slice:"-2:" %}
-                <span style="font-size: 0.85rem; color: var(--color-r2); font-weight: 550;">{{jockey|slice:"-2:"}}</span>
-                {% elif jockey|slice:"-2:" == jname3|slice:"-2:" %}
-                <span style="font-size: 0.85rem; color: var(--color-r3); font-weight: 550;">{{jockey|slice:"-2:"}}</span>
+              <div style="font-size:0.86rem; font-weight:600; line-height:1.2;">
+                {% if jockey_old %}
+                <span style="display:inline-block; padding:1px 4px; border-radius:6px; color:#ffffff; background:#667d95;">{{jockey|slice:"-2:"}}</span>
                 {% else %}
-                <span style="font-size: 0.85rem; color: var(--color-dark)">{{jockey|slice:"-2:"}}</span>
+                <span style="color:#2f455d;">{{jockey|slice:"-2:"}}</span>
                 {% endif %}
               </div>
 
-              <div style="font-family: Arial; font-size: 0.85rem; text-align: center;">
-                {# 부담중량 #}
-                {% if i_prehandy == 0.0 %}
-                  <span style="color: var(--color-r5);">{{handycap}}</span>
+              <div style="text-align:center; font-size:0.88rem; line-height:1.15;">
+                {% if tot_score == 100 %}
+                <span style="font-family: Arial; color: #d93b3b; font-weight: bold;">{{tot_score|floatformat:0}}</span>
+                {% elif tot_score >= 90 and tot_score < 100 %}
+                <span style="font-family: Arial; color: #d93b3b;">{{tot_score|floatformat:1}}</span>
+                {% elif tot_score >= 80 and tot_score < 90 %}
+                <span style="font-family: Arial; color: #e08a1f;">{{tot_score|floatformat:1}}</span>
+                {% elif tot_score >= 70 and tot_score < 80 %}
+                <span style="font-family: Arial; color: #2a86d1;">{{tot_score|floatformat:1}}</span>
+                {% elif tot_score >= 60 and tot_score < 70 %}
+                <span style="font-family: Arial; color: #4d7ea8;">{{tot_score|floatformat:1}}</span>
                 {% else %}
-                  {% if handycap|sub:i_prehandy == 0 %}
-                    <span style="color: var(--color-gray);">{{handycap}}</span>
-                  {% elif handycap|sub:i_prehandy > 0 and handycap|sub:i_prehandy <= 2 %}
-                    <span style="color: var(--color-r2);">{{handycap}}</span>
-                  {% elif handycap|sub:i_prehandy < 0 and handycap|sub:i_prehandy >= -2 %}
-                    <span style="color: var(--color-r4);">{{handycap}}</span>
-                  {% elif handycap|sub:i_prehandy > 2 %}
-                    <span style="color:white; padding:1px 2px; border-radius: 7px; background-color: var(--color-r5);">{{handycap}}</span>
-                  {% elif handycap|sub:i_prehandy < -2 %}
-                    <span style="color:white; padding:1px 2px; border-radius: 7px; background-color: var(--color-r1);">{{handycap}}</span>
-                  {% else %}
-                    <span style="color: var(--color-r5);">{{handycap}}</span>
-                  {% endif %}
+                <span style="font-family: Arial; color: #7b8795;">{{tot_score|floatformat:1}}</span>
                 {% endif %}
               </div>
-              
-              
             </td>
 
-            <td align="right" {% if rank < 90 %} style="font-family: Arial; color: var(--color-main); border-right: 1px solid gray;" {% else %} style="font-family: Arial; color: var(--color-main); background-color: var(--color-light); border-right: 1px solid gray;" {% endif %}>
-
-              <!-- {% if r_pop >= 90 %}
-              <div style="font-size: 0.9rem; font-family: Arial; color:white; border-radius: 7px; background-color:var(--color-r1);">{{r_pop}}</div>
-              {% elif r_pop >= 60 and r_pop < 90 %}
-              <div style="font-size: 0.9rem; font-family: Arial; color:var(--color-bg); border-radius: 7px; background-color:var(--color-r3);">{{r_pop}}</div>
-              {% elif r_pop >= 20 and r_pop < 60 %}
-              <div style="font-size: 0.9rem; font-family: Arial; color:var(--color-bg); border-radius: 7px; background-color:yellow;">{{r_pop}}</div>
-              {% elif r_pop >= 1 and r_pop < 20 %}
-              <div style="font-size: 0.9rem; font-family: Arial; color:var(--color-bg); border-radius: 7px; background-color:beige;">{{r_pop}}</div>
-              {% else %}
-              <div style="font-size: 0.9rem; font-family: Arial; color:var(--color-light-gray);">-</div>
-              {% endif %} -->
-
-              <div style="font-size: 0.85rem; font-family: Arial; text-align: right;">
-              {% if s1f_rank %}
-                {% if s1f_rank >= 7 %}
-                <span style="font-size: 0.85rem; padding:2px 4px; font-family: Arial; color:var(--color-light-gray); ">{{s1f_rank}}</span>
-                {% elif s1f_rank >= 3 and s1f_rank < 7 %}
-                <span style="font-size: 0.85rem; padding:2px 4px; font-family: Arial; color:var(--color-r2);">{{s1f_rank}}</span>
-                {% else %}
-                <span style="font-size: 0.85rem; padding:2px 4px; font-family: Arial; color:var(--color-r1); border-radius: 10px; background-color: bisque;">{{s1f_rank}}</span>
-                {% endif %}
-              {% else %}
-                <span style="font-size: 0.85rem; padding:2px 4px; font-family: Arial; color:var(--color-light-gray);">&nbsp;</span>
-              {% endif %}
+            <td class="print-metric-td" align="right" {% if rank < 90 %} style="font-family: Arial; color: #26384d; border-right: 1px solid gray; background-color:#ffffff;" {% else %} style="font-family: Arial; color: #26384d; background-color:#f4f7fb; border-right: 1px solid gray;" {% endif %}>
+              <div style="text-align:right; font-size:0.86rem;">
+                {% if s1f_per >= 90 %}<span style="color:#d93b3b;">{{s1f_per|floatformat:1}}</span>
+                {% elif s1f_per >= 80 %}<span style="color:#e08a1f;">{{s1f_per|floatformat:1}}</span>
+                {% elif s1f_per >= 70 %}<span style="color:#2a86d1;">{{s1f_per|floatformat:1}}</span>
+                {% elif s1f_per >= 60 %}<span style="color:#4d7ea8;">{{s1f_per|floatformat:1}}</span>
+                {% else %}<span style="color:#8a97a4;">{{s1f_per|floatformat:1}}</span>{% endif %}
               </div>
 
-              {# jt_per #}
-              <div style="font-family: Arial; font-size:0.85rem; text-align: right;">
-              {% if jt_cnt == 0 %}
-                <span style="font-size: 0.7rem; padding: 1px 2px; color:var(--color-r1);">🅾️</span>
-              {%else%}
-                {% if jt_per == 100.0 %} 
-                <span style="font-size: 0.85rem; padding: 1px 2px; color:var(--color-r1);">{{jt_per|floatformat:0}}</span> 
-                {% elif jt_per >= 50 %} 
-                <span style="font-size: 0.85rem; padding: 1px 2px; color:var(--color-r1);">{{jt_per|floatformat:1}}</span>
-                {% elif jt_per >= 40 and jt_per < 50 %} 
-                <span style="font-size: 0.85rem; padding: 1px 2px; color:var(--color-r2);">{{jt_per|floatformat:1}}</span>
-                {% elif jt_per >= 30 and jt_per < 40 %} 
-                <span style="font-size: 0.85rem; padding: 1px 2px; color:var(--color-r3);">{{jt_per|floatformat:1}}</span>
-                {% elif jt_per >= 20 and jt_per < 30 %} 
-                <span style="font-size: 0.85rem; padding: 1px 2px; color:var(--color-light-gray);">{{jt_per|floatformat:1}}</span>
-                {% elif jt_per >= 10 and jt_per < 20 %} 
-                <span style="font-size: 0.85rem; padding: 1px 2px; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
-                {% elif jt_per > 0 and jt_per < 10 %} 
-                <span style="font-size: 0.85rem; padding: 1px 2px; color:var(--color-gray);">{{jt_per|floatformat:1}}</span>
-                {% else %}
-                <span style="font-size: 0.85rem; color:var(--color-light); background-color: var(--color-gray); padding: 1px 5px; border-radius: 7px;">{{jt_cnt}}</span>
-                {% endif %}
-                
-              {% endif %}
+              <div style="text-align:right; font-size:0.86rem;">
+                {% if g3f_per >= 90 %}<span style="color:#d93b3b;">{{g3f_per|floatformat:1}}</span>
+                {% elif g3f_per >= 80 %}<span style="color:#e08a1f;">{{g3f_per|floatformat:1}}</span>
+                {% elif g3f_per >= 70 %}<span style="color:#2a86d1;">{{g3f_per|floatformat:1}}</span>
+                {% elif g3f_per >= 60 %}<span style="color:#4d7ea8;">{{g3f_per|floatformat:1}}</span>
+                {% else %}<span style="color:#8a97a4;">{{g3f_per|floatformat:1}}</span>{% endif %}
               </div>
 
-              <div style="font-family: Arial; font-size: 0.85rem; text-align: left;">
-                {% if disease > 0 %}
-                <span style="font-family: Arial; font-size: 0.85rem; padding:1px 4px; background-color: var(--color-r4); color: black; border-radius: 7px;">{{disease}}</span>
-                {% else %}
-                <span style="font-family: Arial; font-size: 0.85rem; padding:1px 4px;">&nbsp;</span>
-                {% endif %}
-              </div>
-              <div style="font-family: Arial; font-size: 0.85rem; color: var(--color-r1); text-align: right;">
-                {% if tcnt == 0 %}
-                <span style="font-family: Arial; font-size: 0.85rem; padding:1px 4px;">&nbsp;</span>
-                {% elif tcnt < 7 %}
-                <span style="font-family: Arial; font-size: 0.85rem; padding:1px 4px; color:var(--color-gray); border-radius: 7px;">{{tcnt}}</span>
-                {% else %}
-                <span style="font-family: Arial; font-size: 0.85rem; padding:1px 4px; background-color: var(--color-r2); color: white; border-radius: 7px;">{{tcnt}}</span>
-                {% endif %}
-              </div>
-              
-              {# 부담중량 즘감 #}
-              <div style="font-size: 0.85rem; text-align: center;">
-                {% if handycap|sub:i_prehandy == 0 or handycap|sub:i_prehandy >= 10 %}
-                <span style="font-size: 0.85rem; font-family: Arial; color:blue; text-align: center;">&nbsp;-</span>
-                {% else %}
-                {% if handycap|sub:i_prehandy > 0 %}
-                <span style="font-size: 0.85rem; font-family: Arial; color:blue;">✚{{handycap|sub:i_prehandy}}</span>
-                {% else %}
-                <span style="font-size: 0.85rem; font-family: Arial; color:red;">⊖{{handycap|sub:i_prehandy|mul:-1}}</span>
-                {% endif %}
-                {% endif %}
+              <div style="text-align:right; font-size:0.86rem;">
+                {% if g1f_per >= 90 %}<span style="color:#d93b3b;">{{g1f_per|floatformat:1}}</span>
+                {% elif g1f_per >= 80 %}<span style="color:#e08a1f;">{{g1f_per|floatformat:1}}</span>
+                {% elif g1f_per >= 70 %}<span style="color:#2a86d1;">{{g1f_per|floatformat:1}}</span>
+                {% elif g1f_per >= 60 %}<span style="color:#4d7ea8;">{{g1f_per|floatformat:1}}</span>
+                {% else %}<span style="color:#8a97a4;">{{g1f_per|floatformat:1}}</span>{% endif %}
               </div>
 
+              <div style="text-align:right; font-size:0.86rem; margin-top:1px;">
+                {% if i_prehandy == 0.0 %}
+                <span style="color:#3c4f63;">{{handycap}}</span>
+                {% elif handycap|sub:i_prehandy == 0 %}
+                <span style="color:#6e7f91;">{{handycap}}</span>
+                {% elif handycap|sub:i_prehandy > 0 %}
+                <span style="color:#2a86d1;">{{handycap}}</span>
+                {% else %}
+                <span style="color:#d93b3b;">{{handycap}}</span>
+                {% endif %}
+              </div>
             </td>
             
 
@@ -410,9 +550,6 @@
         </tbody>
       </table>
 
-    </div>
-
-
   </div>
 
   <script src="{% static 'js/script.js' %}"></script>
@@ -423,5 +560,5 @@
 {% endblock %}
 
 {% include 'footer.html' %}
-
+ </body>
 </html>

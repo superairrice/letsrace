@@ -27,6 +27,7 @@ urlpatterns = [
     path("race-comments/action/", views.race_comment_action, name="race_comment_action"),
     path("race-comments/delete/", views.race_comment_delete, name="race_comment_delete"),
     path("race-comments/counts/", views.race_comment_counts, name="race_comment_counts"),
+    path("race-results/top5/", views.race_top5_results, name="race_top5_results"),
     path("inquiry/", views.inquiry, name="inquiry"),
     path("partnership/", views.partnership_inquiry, name="partnership_inquiry"),
     path("terms/", views.terms_of_service, name="terms_of_service"),

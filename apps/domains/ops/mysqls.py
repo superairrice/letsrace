@@ -3522,7 +3522,7 @@ def get_popularity_rate_h(i_rcity, i_rdate, i_rno):
     return popularity, award_h
 
 
-def get_print_prediction(i_rcity, i_rdate):
+def get_print_prediction(i_rcity, i_rdate, view_type="2"):
     try:
         cursor = connection.cursor()
 
@@ -3553,12 +3553,15 @@ def get_print_prediction(i_rcity, i_rdate):
     try:
         cursor = connection.cursor()
 
+        order_by_clause = "b.rank, b.gate" if str(view_type) == "1" else "b.r_pop, b.gate"
+
         strSql = (
             """
                 select a.rcity, a.rdate, a.rday, a.rno, b.gate, b.rank, b.r_rank, b.horse, b.remark, b.jockey, b.trainer, b.host, b.r_pop, a.distance, b.handycap, b.i_prehandy, b.complex,
                     b.complex5, b.gap_back, 
                     b.jt_per, b.jt_cnt, b.jt_3rd,
-                    b.s1f_rank, b.i_cycle, a.rcount, recent3, recent5, convert_r, 
+                    b.s1f_rank, b.i_cycle, a.rcount, recent3, recent5, convert_r, b.jockey_old, b.reason, b.alloc3r*1, b.m_rank, b.tot_score, b.s1f_per, b.g3f_per, b.g1f_per, b.start_score, 
+                    b.comment_one, b.g2f_rank, b.rec_per, b.rec8_trend, b.h_weight,
                     ( 
                         select count(disease) 
                         from treat
@@ -3592,7 +3595,9 @@ def get_print_prediction(i_rcity, i_rdate):
             + i_rdate
             + """' 
                 and b.rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98 )
-                order by a.rcity, a.rdate, a.rno, b.rank, b.gate
+                order by a.rcity, a.rdate, a.rno, """
+            + order_by_clause
+            + """
                 ; """
         )
 

@@ -260,15 +260,18 @@
       display: none;
       align-items: center;
       justify-content: center;
-      min-width: 2.2rem;
-      height: 2.2rem;
+      min-width: 2.45rem;
+      height: 2.45rem;
       border-radius: 999px;
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--color-r5);
-      background-color: rgba(19, 31, 53, 0.92);
-      border: 1px solid var(--color-r5);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
+      font-size: 1.26rem;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0.01em;
+      color: #9fe6ff;
+      background: radial-gradient(circle at 30% 25%, rgba(45, 75, 118, 0.98) 0%, rgba(16, 30, 50, 0.96) 70%);
+      border: 1px solid rgba(116, 204, 255, 0.95);
+      box-shadow: 0 4px 14px rgba(2, 15, 32, 0.45), 0 0 0 1px rgba(84, 171, 225, 0.28) inset;
+      backdrop-filter: blur(2px);
       pointer-events: none;
     }
 
@@ -277,10 +280,10 @@
     }
 
     html[data-theme="light"] .home-left-sticky-rday {
-      color: #0f4f87;
-      background-color: rgba(238, 245, 252, 0.98);
-      border-color: #7ea7c8;
-      box-shadow: 0 2px 8px rgba(33, 66, 98, 0.14);
+      color: #0d4f82;
+      background: radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.98) 0%, rgba(224, 239, 251, 0.98) 78%);
+      border-color: rgba(74, 142, 189, 0.95);
+      box-shadow: 0 4px 12px rgba(39, 76, 112, 0.22), 0 0 0 1px rgba(101, 160, 201, 0.22) inset;
     }
 
     .home-left-table thead {
@@ -379,6 +382,15 @@
 
     .home-left-table tbody td:last-child {
       border-right: none;
+    }
+
+    .home-left-table tbody td.home-left-gate-td {
+      border-right: none !important;
+    }
+
+    /* 경주번호(첫 번째 TD) 우측 보더 제거 */
+    .home-left-sub2-row > td:first-child {
+      border-right: none !important;
     }
 
     html[data-theme="light"] .home-left-table tbody td {
@@ -1019,16 +1031,15 @@
   </section>
 
   <ul class="tabs">
-    
-    <li class="tab-link current" data-tab="tab-1" style="padding: 4px 25px; border-radius: 4px;">
+    <li class="tab-link{% if home_default_city_tab != '부산' %} current{% endif %}" data-tab="tab-1" style="padding: 4px 25px; border-radius: 4px;">
       서울<sup style="font-size: 1.2rem; color: var(--color-r2);">&nbsp;R</sup>
     </li>
-    <li class="tab-link" data-tab="tab-2" style="padding: 4px 25px; border-radius: 4px;">
+    <li class="tab-link{% if home_default_city_tab == '부산' %} current{% endif %}" data-tab="tab-2" style="padding: 4px 25px; border-radius: 4px;">
       부산<sup style="font-size: 1.2rem; color: var(--color-r2);">&nbsp;R</sup>
     </li>
   </ul>
 
-  <div id="tab-1" class="tab-content current home-left-tab-pane">
+  <div id="tab-1" class="tab-content{% if home_default_city_tab != '부산' %} current{% endif %} home-left-tab-pane">
     <div class="home-left-sticky-rday js-home-left-sticky-rday" aria-hidden="true"></div>
     <table class="rwd-table home-left-table" style="background-color: var(--color-dark);">
       <thead>
@@ -1052,7 +1063,7 @@
     </table>
     
   </div>
-  <div id="tab-2" class="tab-content home-left-tab-pane">
+  <div id="tab-2" class="tab-content{% if home_default_city_tab == '부산' %} current{% endif %} home-left-tab-pane">
     <div class="home-left-sticky-rday js-home-left-sticky-rday" aria-hidden="true"></div>
     <table class="rwd-table home-left-table" style="background-color: var(--color-dark);">
       <thead>
@@ -1110,42 +1121,6 @@
     </form>
   </div>
 </div>
-
-<script>
-  (function () {
-    var RECENT_KEY = "home_recent_race_v1";
-    var recentLink = document.getElementById("home-funnel-recent");
-
-    function hydrateRecent() {
-      try {
-        var raw = localStorage.getItem(RECENT_KEY);
-        if (!raw) return;
-        var item = JSON.parse(raw);
-        if (!item || !item.href || !item.label) return;
-        if (!recentLink) return;
-        recentLink.href = item.href;
-        recentLink.textContent = item.label;
-        recentLink.hidden = false;
-      } catch (e) {}
-    }
-
-    document.querySelectorAll(".js-funnel-race-link").forEach(function (el) {
-      el.addEventListener("click", function () {
-        try {
-          var payload = {
-            href: el.getAttribute("href"),
-            label: el.getAttribute("data-race-label") || "최근 본 경주",
-            ts: Date.now(),
-          };
-          localStorage.setItem(RECENT_KEY, JSON.stringify(payload));
-          hydrateRecent();
-        } catch (e) {}
-      });
-    });
-
-    hydrateRecent();
-  })();
-</script>
 
 <script>
   (function () {
@@ -1404,6 +1379,8 @@
     var noticeEl = document.getElementById("race-comment-notice");
     var current = null;
     var noticeTimer = null;
+    var activeFetchToken = 0;
+    var submitInFlight = false;
 
     if (!modal || !listEl || !formEl || !inputEl || !titleEl || !closeBtn || !noticeEl) {
       return;
@@ -1434,6 +1411,10 @@
     function apiUrl(rcity, rdate, rno, limit) {
       var q = new URLSearchParams({ rcity: rcity, rdate: rdate, rno: String(rno), limit: String(limit || 30) });
       return "/race-comments/?" + q.toString();
+    }
+
+    function getRaceKey(rcity, rdate, rno) {
+      return String(rcity || "") + "|" + String(rdate || "") + "|" + String(rno || "");
     }
 
     function formatRaceDate(rdate) {
@@ -1615,6 +1596,11 @@
     function submitCommentDelete(btn) {
       var commentId = btn.getAttribute("data-comment-id");
       if (!commentId || !current) return;
+      var target = {
+        rcity: current.rcity,
+        rdate: current.rdate,
+        rno: current.rno
+      };
       btn.disabled = true;
       fetch("/race-comments/delete/", {
         method: "POST",
@@ -1643,7 +1629,7 @@
           if (!remaining) {
             listEl.innerHTML = '<div class="race-comment-item"><div class="race-comment-item__content">첫 댓글을 남겨보세요.</div></div>';
           }
-          setBadgeCount(current.rcity, current.rdate, current.rno, data.count || 0);
+          setBadgeCount(target.rcity, target.rdate, target.rno, data.count || 0);
           showNotice("댓글이 삭제되었습니다.");
         })
         .catch(function () {
@@ -1654,7 +1640,8 @@
         });
     }
 
-    function fetchRaceComments(rcity, rdate, rno, openModal) {
+    function fetchRaceComments(rcity, rdate, rno, openModal, requestToken) {
+      var requestedKey = getRaceKey(rcity, rdate, rno);
       fetch(apiUrl(rcity, rdate, rno, openModal ? (isAuthenticated ? 50 : 20) : 1), { credentials: "same-origin" })
         .then(function (r) {
           return r.json().catch(function () {
@@ -1664,7 +1651,11 @@
         .then(function (data) {
           if (!data || !data.ok) return;
           setBadgeCount(rcity, rdate, rno, data.count || 0);
-          if (openModal) renderComments(data.comments || []);
+          if (!openModal) return;
+          if (!current) return;
+          if (requestedKey !== getRaceKey(current.rcity, current.rdate, current.rno)) return;
+          if (typeof requestToken === "number" && requestToken !== activeFetchToken) return;
+          renderComments(data.comments || []);
         })
         .catch(function () {});
     }
@@ -1690,13 +1681,16 @@
         : "로그인 후 댓글을 작성할 수 있습니다.";
       modal.hidden = false;
       noticeEl.hidden = true;
-      fetchRaceComments(current.rcity, current.rdate, current.rno, true);
+      activeFetchToken += 1;
+      fetchRaceComments(current.rcity, current.rdate, current.rno, true, activeFetchToken);
       if (isAuthenticated) inputEl.focus();
     }
 
     function closeModal() {
       modal.hidden = true;
       current = null;
+      activeFetchToken += 1;
+      submitInFlight = false;
     }
 
     loadAllBadgeCounts();
@@ -1724,6 +1718,16 @@
       }
       var content = (inputEl.value || "").trim();
       if (!content) return;
+      if (submitInFlight) return;
+      var target = {
+        rcity: current.rcity,
+        rdate: current.rdate,
+        rno: current.rno
+      };
+      var targetKey = getRaceKey(target.rcity, target.rdate, target.rno);
+      var submitBtn = formEl.querySelector('button[type="submit"]');
+      submitInFlight = true;
+      if (submitBtn) submitBtn.disabled = true;
       fetch("/race-comments/", {
         method: "POST",
         credentials: "same-origin",
@@ -1732,9 +1736,9 @@
           "X-CSRFToken": getCsrfToken()
         },
         body: JSON.stringify({
-          rcity: current.rcity,
-          rdate: current.rdate,
-          rno: current.rno,
+          rcity: target.rcity,
+          rdate: target.rdate,
+          rno: target.rno,
           content: content
         })
       })
@@ -1750,11 +1754,18 @@
           }
           inputEl.value = "";
           updateCounter();
-          setBadgeCount(current.rcity, current.rdate, current.rno, data.count || 0);
-          fetchRaceComments(current.rcity, current.rdate, current.rno, true);
+          setBadgeCount(target.rcity, target.rdate, target.rno, data.count || 0);
+          if (current && getRaceKey(current.rcity, current.rdate, current.rno) === targetKey) {
+            activeFetchToken += 1;
+            fetchRaceComments(target.rcity, target.rdate, target.rno, true, activeFetchToken);
+          }
         })
         .catch(function () {
           showNotice("댓글 등록 중 오류가 발생했습니다.");
+        })
+        .finally(function () {
+          submitInFlight = false;
+          if (submitBtn) submitBtn.disabled = false;
         });
     });
 

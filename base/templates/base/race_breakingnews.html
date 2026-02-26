@@ -17,6 +17,30 @@
   <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
 
   <title>Race Update</title>
+  <style>
+    .rbn-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-top: 0.9rem;
+      flex-wrap: wrap;
+    }
+
+    .rbn-actions-left {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .rbn-close {
+      margin-left: auto;
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 1rem;
+    }
+  </style>
 
 </head>
 
@@ -24,6 +48,16 @@
 <br>
 
 <div class="container">
+
+  {% if messages %}
+  <div style="margin-bottom: 0.8rem;">
+    {% for message in messages %}
+    <div style="font-size:1.2rem; padding:0.6rem 0.8rem; border-radius:0.5rem; margin-bottom:0.4rem; border:1px solid #c6d2df; background:#f2f7fc; color:#2f4a66;">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   <!-- <form class="header__search" method="GET" action="{% url 'race_breakingnews' %}"> -->
   <form class="header__search" action="" method="POST">
@@ -65,11 +99,56 @@
       </select>
     </label>
     
-    <textarea name="r_content" rows="30" style="font-size: 1.2rem; position:relative; width: 100%; padding: 10px"></textarea>
+    <textarea name="r_content" rows="30" style="font-size: 1.2rem; position:relative; width: 100%; padding: 10px">{{ r_content|default_if_none:"" }}</textarea>
 
-    <button class="btn btn--link" type="submit" style="font-size: 1.3rem;">💾&nbsp;Convert</button>
+    <div class="rbn-actions">
+      <div class="rbn-actions-left">
+        <button class="btn btn--link" type="submit" name="action" value="crawl_kra" style="font-size: 1.3rem;">마사회 출전표변경 크롤링</button>
+        <button class="btn btn--link" type="submit" name="action" value="convert" style="font-size: 1.3rem;">Convert</button>
+      </div>
+    </div>
 
-    <div class="form__action">
+    {% if crawl_source %}
+    <div style="margin-top: 0.8rem; font-size: 1.2rem; color: #39516a;">
+      source: <a href="{{ crawl_source }}" target="_blank" rel="noopener">{{ crawl_source }}</a>
+      &nbsp;|&nbsp;rows: {{ result_cnt }}
+    </div>
+    {% endif %}
+
+    {% if crawl_rows %}
+    <div style="margin-top: 1.2rem; max-height: 28rem; overflow: auto; border: 1px solid #c6d2df; border-radius: 0.6rem;">
+      <table style="width:100%; border-collapse: collapse; font-size: 1.15rem;">
+        <thead>
+          <tr style="background:#eef4fb;">
+            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">구분</th>
+            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">경주</th>
+            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">출번</th>
+            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">마명</th>
+            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">변경전</th>
+            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">변경후</th>
+            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">부중</th>
+            <th style="padding:0.5rem; border-bottom:1px solid #c6d2df;">사유</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in crawl_rows %}
+          <tr>
+            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef;">{{ row.type }}</td>
+            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef; text-align:center;">{{ row.rno }}R</td>
+            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef; text-align:center;">{{ row.gate }}</td>
+            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef;">{{ row.horse }}</td>
+            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef;">{{ row.jockey_old }}</td>
+            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef;">{{ row.jockey_new }}</td>
+            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef; text-align:center;">{{ row.handycap }}</td>
+            <td style="padding:0.45rem; border-bottom:1px solid #e0e7ef;">{{ row.reason }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+    <div class="rbn-close">
       <a class="btn btn--dark" onclick="window.close()">Close</a>
     </div>
 

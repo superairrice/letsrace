@@ -35,12 +35,153 @@
 
   <title>Race Mock Audit '{{r_condition.rdate|slice:"2:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}}) {{r_condition.rcity}}&nbsp;&nbsp;{{r_condition.rno}}®</title>
 
+  <script>
+    (function () {
+      var saved = null;
+      try { saved = localStorage.getItem('site-theme'); } catch (e) {}
+      var theme = saved === 'light' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+
+  <style>
+    body.mock-audit-page {
+      padding: 0.2rem 2rem;
+    }
+
+    body.mock-audit-page .container {
+      max-width: none;
+      width: 100%;
+    }
+
+    body.mock-audit-page .roomList {
+      width: 100%;
+    }
+
+    .mock-audit-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.7rem 1rem;
+      padding: 0.5rem 0.2rem;
+    }
+
+    .mock-audit-field {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 1.15rem;
+      color: var(--color-main);
+    }
+
+    .mock-audit-input {
+      width: 4.2rem;
+      text-align: center;
+      border: 1px solid rgba(135, 166, 207, 0.6);
+      border-radius: 6px;
+      background: color-mix(in srgb, var(--color-dark) 82%, var(--color-bg) 18%);
+      color: var(--color-light);
+      font-size: 1.15rem;
+      padding: 0.28rem 0.2rem;
+    }
+
+    html[data-theme="light"] .mock-audit-input {
+      background: #ffffff;
+      color: #1f3551;
+      border-color: #b8c8db;
+    }
+
+    .mock-audit-actions {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .mock-audit-time {
+      font-size: 1.15rem;
+      color: var(--color-r3);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .mock-audit-message {
+      font-size: 1.1rem;
+      color: var(--color-light);
+    }
+
+    body.mock-audit-page table.fold-table th {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.18rem;
+      letter-spacing: 0.1px;
+    }
+
+    html[data-theme="light"] body.mock-audit-page table.fold-table th {
+      border-bottom-color: #c3d2e2;
+      color: #17324d;
+      font-weight: 700;
+    }
+
+    .popup-mini-footer {
+      position: fixed;
+      left: 2rem;
+      right: 2rem;
+      bottom: 0.45rem;
+      padding: 0.45rem 0.7rem;
+      border: 1px solid rgba(130, 149, 176, 0.28);
+      border-radius: 8px;
+      background: rgba(12, 18, 30, 0.9);
+      color: var(--color-light-gray);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.02rem;
+      line-height: 1.3;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      z-index: 1200;
+    }
+
+    .popup-mini-footer button {
+      border: 1px solid rgba(130, 149, 176, 0.5);
+      background: rgba(16, 26, 44, 0.95);
+      color: var(--color-main);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.95rem;
+      border-radius: 6px;
+      padding: 0.2rem 0.55rem;
+      cursor: pointer;
+    }
+
+    .popup-mini-footer button:hover {
+      border-color: var(--color-main);
+    }
+
+    html[data-theme="light"] body.mock-audit-page .popup-mini-footer {
+      border-color: rgba(135, 157, 187, 0.45);
+      background: rgba(242, 247, 254, 0.95);
+      color: #385676;
+      box-shadow: 0 8px 20px rgba(129, 152, 181, 0.25);
+    }
+
+    html[data-theme="light"] body.mock-audit-page .popup-mini-footer button {
+      border-color: rgba(120, 153, 194, 0.55);
+      background: #edf3fc;
+      color: #2e628d;
+    }
+
+    html[data-theme="light"] body.mock-audit-page .popup-mini-footer button:hover {
+      border-color: #4f8fc6;
+      color: #1f5b8f;
+    }
+  </style>
+
 </head>
 
 
 
 {% block content %}
-<body class="create-room layout" style="padding-bottom: 5px;" >
+<body class="create-room layout mock-audit-page" style="padding-bottom: 4.6rem;" >
 <!-- <main class="profile-page layout layout--2"> -->
 
   <div class="container">
@@ -49,41 +190,20 @@
       {# Header #}
       {% include 'base/m_header_of_prediction.html' %}
 
-      <hr style="border: solid 4.0px var(--color-bg);">
+      <hr style="border: solid 1px black;">
       
       <form action="" method="get">
         {% csrf_token %}
-        <label >
-          &nbsp;&nbsp;&nbsp;&nbsp;
-          <span style="font-size: 1.15rem;">평균&nbsp;:&nbsp;
-            <input id="w_avg" style="text-align: center; width: 4.0rem; border: solid 1px var(--color-r2); font-size: 1.15rem;" type="number" min="1" max="99" step="1" value={{w_avg}} name="w_avg">
-            <span>&nbsp;&nbsp;</span>
-          </span>
-          <span style="font-size: 1.15rem;">최고&nbsp;:&nbsp;
-            <input id="w_fast" style="text-align: center; width: 4.0rem; border: solid 1px var(--color-r2); font-size: 1.15rem;" type="number" min="1" max="99" step="1" value={{w_fast}} name="w_fast" >
-            <span>&nbsp;&nbsp;</span>
-          </span> 
-          <span style="font-size: 1.15rem;">최저&nbsp;:&nbsp;
-            <input id="w_slow" style="text-align: center; width: 4.0rem; border: solid 1px var(--color-r2); font-size: 1.15rem;" type="number" min="1" max="99" step="1" value={{w_slow}} name="w_slow" >
-          </span> 
+        <div class="mock-audit-toolbar">
+          <span class="mock-audit-field">평균 <input id="w_avg" class="mock-audit-input" type="number" min="1" max="99" step="1" value="{{ w_avg }}" name="w_avg"></span>
+          <span class="mock-audit-field">최고 <input id="w_fast" class="mock-audit-input" type="number" min="1" max="99" step="1" value="{{ w_fast }}" name="w_fast"></span>
+          <span class="mock-audit-field">최저 <input id="w_slow" class="mock-audit-input" type="number" min="1" max="99" step="1" value="{{ w_slow }}" name="w_slow"></span>
+          <span class="mock-audit-field">최근3R <input id="w_recent3" class="mock-audit-input" type="number" min="1" max="99" step="1" value="{{ w_recent3 }}" name="w_recent3"></span>
+          <span class="mock-audit-field">최근7R <input id="w_recent5" class="mock-audit-input" type="number" min="1" max="99" step="1" value="{{ w_recent5 }}" name="w_recent5"></span>
+          <span class="mock-audit-field">환산 <input id="w_convert" class="mock-audit-input" type="number" min="1" max="99" step="1" value="{{ w_convert }}" name="w_convert"></span>
 
-          &nbsp;&nbsp;&nbsp;&nbsp;
-
-          <span style="font-size: 1.15rem;">최근3R&nbsp;:&nbsp;
-            <input id="w_recent3" style="text-align: center; width: 4.0rem; border: solid 1px var(--color-r2); font-size: 1.15rem;" type="number" min="1" max="99" step="1" value={{w_recent3}} name="w_recent3" >
-            <span>&nbsp;&nbsp;</span>
-          </span> 
-          <span style="font-size: 1.15rem;">최근7R&nbsp;:&nbsp;
-            <input id="w_recent5" style="text-align: center; width: 4.0rem; border: solid 1px var(--color-r2); font-size: 1.15rem;" type="number" min="1" max="99" step="1" value={{w_recent5}} name="w_recent5" >
-            <span>&nbsp;&nbsp;</span>
-          </span> 
-          <span style="font-size: 1.15rem;">환산&nbsp;:&nbsp;
-            <input id="w_convert" style="text-align: center; width: 4.0rem; border: solid 1px var(--color-r2); font-size: 1.15rem;" type="number" min="1" max="99" step="1" value={{w_convert}} name="w_convert" >
-          </span> 
-          
-
-          &nbsp;&nbsp;
-          <button type="button" class="btn btn--link" style="font-size: 1.1rem;" onclick="runMockAuditCalc('{{ r_condition.rcity }}', '{{ r_condition.rdate }}', '{{ r_condition.rno }}')">💾&nbsp;Mock Audit</button>
+          <span class="mock-audit-actions">
+            <button type="button" class="btn btn--link" style="font-size: 1.1rem;" onclick="runMockAuditCalc('{{ r_condition.rcity }}', '{{ r_condition.rdate }}', '{{ r_condition.rno }}')">💾&nbsp;Mock Audit</button>
 
           <script>
           function runMockAuditCalc(rcity, rdate, rno) {
@@ -126,41 +246,30 @@
           }
           </script>
             
-          &nbsp;&nbsp;
-          <span style="font-size: 1.15rem; color:var(--color-r3); font-family: Arial, Helvetica, sans-serif;">{{wdate}}</span>
-          &nbsp;&nbsp;
-
-          <span class="btn btn--link" style="font-size: 1.2rem;">
+            <span class="mock-audit-time">{{wdate}}</span>
+            <span class="mock-audit-message">
           {% if messages %}
-          <div style="color: var(--color-light);">
             {% for message in messages %}
             {{ message.message }}
             {% endfor %}
-          </div>
           {% endif %}
+            </span>
           </span>
-
-        </label>
+        </div>
 
       </form>
 
-      <hr style="border: solid 4.0px var(--color-bg);">
+      <hr style="border: solid 1px black;">
 
       {% include 'base/m_prediction.html' %}
 
       <br>
-
-      <div class="form__action">
-        <a class="btn btn--dark" onclick="window.close()">Close</a>
-      </div>
 
     </div>
     <!-- Room End -->
 
 
   </div>
-
-  {% include 'footer.html' %}
 
   <script>
     $(function () {
@@ -197,6 +306,11 @@
       $('.loader').fadeOut();
     });
   </script>
+
+  <div class="popup-mini-footer">
+    <span>© {% now "Y" %} thethe9 · Race Prediction</span>
+    <button type="button" onclick="window.close();">창 닫기</button>
+  </div>
 
 </body>
 {% endblock %}

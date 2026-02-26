@@ -487,10 +487,18 @@ def home(request):
     upcoming_candidates = [item for item in funnel_candidates if item[1] is not None and item[1] >= now_dt]
     funnel_mode = "finished"
 
+    home_default_city_tab = "서울"
+
     if upcoming_candidates:
         upcoming_candidates.sort(key=lambda x: (x[0], x[2]))
         funnel_races = [row for _, _, _, row in upcoming_candidates[:3]]
         funnel_mode = "imminent"
+        try:
+            nearest_city = str(upcoming_candidates[0][3][0] or "").strip()
+            if nearest_city in ("서울", "부산"):
+                home_default_city_tab = nearest_city
+        except Exception:
+            pass
     else:
         finished_candidates = [item for item in funnel_candidates if item[1] is not None]
         finished_candidates.sort(key=lambda x: (x[0], x[2]), reverse=True)
@@ -517,6 +525,18 @@ def home(request):
     # 기준 기간: i_rdate -14일 ~ i_rdate +3일
     right_city_top3_window_days = 16
     right_city_top3_future_days = 3
+    right_city_top3_from = i_rdate
+    right_city_top3_to = i_rdate
+    try:
+        base_dt = datetime.strptime(i_rdate, "%Y%m%d")
+        right_city_top3_from = (
+            base_dt - timedelta(days=right_city_top3_window_days)
+        ).strftime("%Y%m%d")
+        right_city_top3_to = (
+            base_dt + timedelta(days=right_city_top3_future_days)
+        ).strftime("%Y%m%d")
+    except Exception:
+        pass
     perf_rows = []
     perf_cache_key = f"home:top3_perf:{i_rdate}:{right_city_top3_window_days}:{right_city_top3_future_days}"
     cached_perf_rows = _cache_copy_get(perf_cache_key)
@@ -1043,9 +1063,12 @@ def home(request):
         "expects_grouped": expects_grouped,
         "funnel_races": funnel_races,
         "funnel_mode": funnel_mode,
+        "home_default_city_tab": home_default_city_tab,
         "right_city_top3": right_city_top3,
         "right_city_top3_window_days": right_city_top3_window_days,
         "right_city_top3_future_days": right_city_top3_future_days,
+        "right_city_top3_from": right_city_top3_from,
+        "right_city_top3_to": right_city_top3_to,
         "right_imminent_races": right_imminent_races,
         "right_hot_races": right_hot_races,
         "right_volatile_races": right_volatile_races,
@@ -1452,6 +1475,219 @@ def race_comment_counts(request):
             requested[key] = row["count"]
 
     return JsonResponse({"ok": True, "counts": requested})
+
+
+@require_http_methods(["GET", "POST"])
+def race_top5_results(request):
+    raw_items = []
+    if request.method == "GET":
+        items_param = (request.GET.get("items") or "").strip()
+        if items_param:
+            for chunk in items_param.split(","):
+                parts = chunk.split("|")
+                if len(parts) != 3:
+                    continue
+                raw_items.append({"rcity": parts[0], "rdate": parts[1], "rno": parts[2]})
+    else:
+        try:
+            payload = json.loads(request.body.decode("utf-8") or "{}")
+        except Exception:
+            payload = {}
+        raw_items = payload.get("items") if isinstance(payload, dict) else []
+
+    if not isinstance(raw_items, list):
+        raw_items = []
+
+    keys = []
+    key_set = set()
+    for item in raw_items[:100]:
+        if not isinstance(item, dict):
+            continue
+        rcity = str(item.get("rcity") or "").strip()
+        rdate = str(item.get("rdate") or "").strip()
+        rno_raw = str(item.get("rno") or "").strip()
+        if not (rcity and rdate and rno_raw):
+            continue
+        try:
+            rno = int(rno_raw)
+        except ValueError:
+            continue
+        key = (rcity, rdate, rno)
+        if key in key_set:
+            continue
+        key_set.add(key)
+        keys.append(key)
+
+    if not keys:
+        return JsonResponse({"ok": True, "results": {}})
+
+    rcities = {k[0] for k in keys}
+    rdates = {k[1] for k in keys}
+    rnos = {k[2] for k in keys}
+    requested = {
+        f"{k[0]}|{k[1]}|{k[2]}": {
+            "expected_top5": [],
+            "actual_top3": [],
+            "newbie_count": 0,
+        }
+        for k in keys
+    }
+
+    try:
+        rows = (
+            Exp011.objects.filter(
+                rcity__in=rcities,
+                rdate__in=rdates,
+                rno__in=rnos,
+            )
+            .filter(r_pop__gte=1, r_pop__lte=5)
+            .values("rcity", "rdate", "rno", "gate", "r_pop")
+        )
+    except (OperationalError, ProgrammingError):
+        return JsonResponse(
+            {"ok": False, "error": "경주 결과 테이블이 준비되지 않았습니다."},
+            status=500,
+        )
+
+    grouped = {
+        k: {"pop_rows": [], "actual_rows": [], "newbie_count": 0, "newbie_gates": set()}
+        for k in keys
+    }
+    for row in rows:
+        try:
+            key = (row["rcity"], row["rdate"], int(row["rno"]))
+            if key not in grouped:
+                continue
+            gate = str(row.get("gate") or "").strip()
+            if not gate:
+                continue
+
+            r_pop = row.get("r_pop")
+            if r_pop is not None:
+                try:
+                    pop_int = int(r_pop)
+                    if 1 <= pop_int <= 5:
+                        grouped[key]["pop_rows"].append({"pop": pop_int, "gate": gate})
+                except Exception:
+                    pass
+        except Exception:
+            continue
+
+    # race-level 실제 순위 상위 3마번 집계 (r_rank=1,2,3)
+    try:
+        actual_rows = (
+            Exp011.objects.filter(
+                rcity__in=rcities,
+                rdate__in=rdates,
+                rno__in=rnos,
+            )
+            .filter(r_rank__gte=1, r_rank__lte=3)
+            .values("rcity", "rdate", "rno", "gate", "r_rank")
+        )
+    except (OperationalError, ProgrammingError):
+        actual_rows = []
+
+    for row in actual_rows:
+        try:
+            key = (row["rcity"], row["rdate"], int(row["rno"]))
+            if key not in grouped:
+                continue
+            gate = str(row.get("gate") or "").strip()
+            if not gate:
+                continue
+            r_rank = row.get("r_rank")
+            if r_rank is None:
+                continue
+            try:
+                r_rank_int = int(r_rank)
+            except Exception:
+                continue
+            if 1 <= r_rank_int <= 3:
+                grouped[key]["actual_rows"].append({"r_rank": r_rank_int, "gate": gate})
+        except Exception:
+            continue
+
+    # race-level 신마 출주두수 집계 (exp011.rank = 99 기준)
+    try:
+        newbie_rows = (
+            Exp011.objects.filter(
+                rcity__in=rcities,
+                rdate__in=rdates,
+                rno__in=rnos,
+            )
+            .filter(rank=99)
+            .values("rcity", "rdate", "rno", "gate")
+        )
+    except (OperationalError, ProgrammingError):
+        newbie_rows = []
+
+    for row in newbie_rows:
+        try:
+            key = (row["rcity"], row["rdate"], int(row["rno"]))
+            if key not in grouped:
+                continue
+            gate = str(row.get("gate") or "").strip()
+            if gate:
+                grouped[key]["newbie_gates"].add(gate)
+        except Exception:
+            continue
+
+    for key in keys:
+        pop_rows = grouped[key]["pop_rows"]
+        expected_rows = []
+        for row in pop_rows:
+            try:
+                pop_int = int(row.get("pop") or 0)
+            except Exception:
+                continue
+            gate = str(row.get("gate") or "").strip()
+            if not gate or pop_int < 1 or pop_int > 5:
+                continue
+            expected_rows.append({"pop": pop_int, "gate": gate})
+
+        expected_rows.sort(key=lambda x: (x["pop"], x["gate"]))
+        expected_top5 = []
+        expected_seen_gate = set()
+        for row in expected_rows:
+            gate = row["gate"]
+            if gate in expected_seen_gate:
+                continue
+            expected_seen_gate.add(gate)
+            expected_top5.append(row)
+            if len(expected_top5) >= 5:
+                break
+
+        actual_rows = grouped[key]["actual_rows"]
+        actual_rows.sort(key=lambda x: (x["r_rank"], x["gate"]))
+        actual_top3 = []
+        actual_seen_gate = set()
+        for row in actual_rows:
+            gate = row["gate"]
+            if gate in actual_seen_gate:
+                continue
+            actual_seen_gate.add(gate)
+            actual_top3.append(row)
+            if len(actual_top3) >= 3:
+                break
+
+        key_str = f"{key[0]}|{key[1]}|{key[2]}"
+        newbie_gates = grouped[key].get("newbie_gates") or set()
+        newbie_count = len(newbie_gates)
+        requested[key_str] = {
+            "expected_top5": expected_top5,
+            "actual_top3": actual_top3,
+            "newbie_count": newbie_count,
+        }
+        if settings.DEBUG:
+            try:
+                gates_sorted = sorted(newbie_gates, key=lambda x: int(x))
+            except Exception:
+                gates_sorted = sorted(newbie_gates)
+            print(
+                f"[top5] newbie key={key_str} count={newbie_count} gates={gates_sorted}"
+            )
+
+    return JsonResponse({"ok": True, "results": requested})
 
 
 def inquiry(request):

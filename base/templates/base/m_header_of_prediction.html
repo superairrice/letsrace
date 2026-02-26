@@ -38,6 +38,131 @@
       opacity: 1;
       pointer-events: auto; /* 내부 드래그/스크롤/복사 가능 */
     }
+
+    .race-list-popup {
+      background: linear-gradient(180deg, rgba(31, 38, 56, 0.98), rgba(20, 27, 43, 0.98));
+      color: var(--color-main);
+      border: 1px solid rgba(132, 156, 191, 0.38);
+      border-radius: 12px;
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.38);
+      padding: 14px 16px;
+      min-width: 40rem;
+    }
+
+    .race-list-popup__table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .race-list-popup__table > tbody > tr.view {
+      transition: background-color 0.14s ease, box-shadow 0.14s ease;
+    }
+
+    /* fold-table 기본 화살표/여백 제거(팝업 리스트 전용) */
+    .race-list-popup__table > tbody > tr.view td:first-child,
+    .race-list-popup__table > tbody > tr.view th:first-child {
+      padding-left: 0.4rem !important;
+    }
+
+    .race-list-popup__table > tbody > tr.view td:first-child:before,
+    .race-list-popup__table > tbody > tr.view th:first-child:before {
+      content: none !important;
+      display: none !important;
+    }
+
+    .race-list-popup__table thead th {
+      text-transform: none;
+      vertical-align: middle;
+      border-bottom: 1px solid rgba(120, 145, 182, 0.42);
+      padding: 0.55rem 0.4rem 0.58rem;
+    }
+
+    .race-list-popup__head-title {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.28rem;
+      text-align: left;
+      position: relative;
+      padding-right: 2.2rem;
+    }
+
+    .race-list-popup__close {
+      background: none;
+      border: none;
+      color: #dbe9ff;
+      font-size: 1.5rem;
+      cursor: pointer;
+      position: absolute;
+      right: 0.2rem;
+      top: 50%;
+      transform: translateY(-50%);
+      line-height: 1;
+    }
+
+    .race-list-popup__row td {
+      border-bottom: 1px solid rgba(98, 122, 160, 0.24);
+      padding: 0.5rem 0.4rem;
+      vertical-align: middle;
+      line-height: 1.45;
+    }
+
+    .race-list-popup__row td:first-child {
+      text-align: center;
+    }
+
+    .race-list-popup__row:last-of-type td {
+      border-bottom: none;
+    }
+
+    .race-list-popup__row:hover {
+      background: rgba(88, 127, 176, 0.2) !important;
+    }
+
+    .race-list-popup__row.is-current {
+      background: linear-gradient(90deg, rgba(64, 119, 184, 0.34), rgba(39, 73, 116, 0.2)) !important;
+      box-shadow: inset 3px 0 0 #6ed3ff, inset 0 0 0 1px rgba(124, 177, 243, 0.18);
+    }
+
+    .race-list-popup__row.is-current td {
+      color: #d8ecff;
+    }
+
+    .race-list-popup__time {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.34rem;
+      font-weight: 700;
+      color: #9ee8ff;
+      letter-spacing: 0.01em;
+      display: inline-block;
+      width: 100%;
+      text-align: center;
+    }
+
+    .race-list-popup__city,
+    .race-list-popup__meta {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.16rem;
+      color: #b5c7e0;
+    }
+
+    .race-list-popup__city--busan {
+      color: #ffd36c;
+      font-weight: 700;
+    }
+
+    .race-list-popup__rno {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.28rem;
+      font-weight: 700;
+      color: #79d9ff;
+    }
+
+    .race-list-popup__count {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.1rem;
+      color: #98adc8;
+      text-align: center;
+    }
   </style>
         
   <div class="room__topLeft">
@@ -61,39 +186,39 @@
     <span class="tooltip" id="raceListTrigger" style="font-family: Arial; font-size:1.4rem; color: var(--color-main); border-radius: 7px; padding: 4px 4px; background-color: var(--color-dark); cursor:pointer;">
       &nbsp;{{r_condition.rcity}}&nbsp;&nbsp;{{r_condition.rno}}<sup style="font-size:0.9rem">R</sup>&nbsp;
     </span>
-    <div id="raceListPopup" style="display:none; position:absolute; left:0; top:calc(100% + 12px); z-index:10000; background:rgba(18,18,18,0.98); color:var(--color-main); border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.35); padding:18px 22px; max-width:95vw; max-height:80vh; overflow:auto;">
-      <table class="fold-table" style="color:var(--color-main); width:100%;" >
+    <div id="raceListPopup" class="race-list-popup" style="display:none; position:absolute; left:0; top:calc(100% + 12px); z-index:10000; max-width:95vw; max-height:80vh; overflow:auto;">
+      <table class="fold-table race-list-popup__table">
       <thead>
         <tr>
-        <th style="font-family: Arial; vertical-align: middle;">
+        <th>
           <span style=" font-size: 1.25rem;">⏰</span>
         </th>
-        <th colspan="6" style="font-family: Arial; font-size: 1.3rem; text-transform: capitalize; vertical-align: middle; text-align: left; position:relative;">
+        <th colspan="6" class="race-list-popup__head-title">
           {{r_condition.rdate|slice:"0:4"}}.{{r_condition.rdate|slice:"4:6"}}.{{r_condition.rdate|slice:"6:8"}}&nbsp;({{r_condition.rday}})&nbsp;Race
-          <button onclick="document.getElementById('raceListPopup').style.display='none';" style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer; position:absolute; right:0.5rem; top:50%; transform:translateY(-50%);">✖</button>
+          <button class="race-list-popup__close" onclick="document.getElementById('raceListPopup').style.display='none';">✖</button>
         </th>
         </tr>
       </thead>
       <tbody>
         {% for rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing, rname, rcon1, rcon2, rtime in weeksrace %}
         {% url "race_prediction" rcity rdate rno 0 0 as url_path %}
-        <tr class="view" onclick="window.location.href='{{ url_path }}';" style="cursor:pointer; font-weight: 400;">
+        <tr class="view race-list-popup__row {% if rcity == r_condition.rcity and rdate == r_condition.rdate and rno == r_condition.rno %}is-current{% endif %}" onclick="window.location.href='{{ url_path }}';" style="cursor:pointer; font-weight: 400;">
         <td>
-          <span style="font-family: Arial; text-align: right; font-size: 1.25rem;">{{rtime}}</span>
+          <span class="race-list-popup__time">{{rtime}}</span>
         </td>
         <td>
           {% if rcity == '서울' %}
-          <span style="font-size: 1.15rem; ">{{rcity}}</span>
+          <span class="race-list-popup__city">{{rcity}}</span>
           {% else %}
-          <span style="font-size: 1.15rem; color:var(--color-r3);">{{rcity}}</span>
+          <span class="race-list-popup__city race-list-popup__city--busan">{{rcity}}</span>
           {% endif %}
         </td>
         <td align="right">
-          <span style="font-family: Arial; text-align: right; font-size: 1.25rem;">{{rno}}<sup style="font-size: 1.0rem;">R</sup>
+          <span class="race-list-popup__rno">{{rno}}<sup style="font-size: 1.0rem;">R</sup>
           </span>
         </td>
         <td>
-          <span style="font-family: Arial; text-align: right; font-size: 1.25rem;">{{distance}}<sup style="font-size:0.9rem">m</sup></span>
+          <span class="race-list-popup__meta">{{distance}}<sup style="font-size:0.9rem">m</sup></span>
         </td>
 
         <td>
@@ -114,7 +239,7 @@
           {% endif %}
         </td>
         <td align="center">
-          <span style="font-family: Arial; font-size: 1.2rem;">{{rcount}}</span>
+          <span class="race-list-popup__count">{{rcount}}</span>
         </td>
         </tr>
         <tr class="fold"></tr>
