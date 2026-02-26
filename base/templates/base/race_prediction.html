@@ -74,6 +74,19 @@
       padding: 0.42rem 0.88rem;
     }
 
+    .prediction-action-row .btn.btn--pill.prediction-action-pill {
+      border-color: rgba(102, 190, 230, 0.72) !important;
+      background: color-mix(in srgb, var(--color-bg) 84%, #143a58 16%) !important;
+      color: #9fe3ff !important;
+      box-shadow: inset 0 0 0 1px rgba(16, 32, 49, 0.28);
+    }
+
+    .prediction-action-row .btn.btn--pill.prediction-action-pill:hover {
+      border-color: rgba(132, 214, 250, 0.9) !important;
+      background: color-mix(in srgb, var(--color-bg) 76%, #184665 24%) !important;
+      color: #c8f0ff !important;
+    }
+
     .prediction-action-link {
       display: inline-flex;
       align-items: center;
@@ -151,6 +164,15 @@
       transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
       box-shadow: 0 3px 8px rgba(5, 10, 20, 0.24);
       margin-right: 0.1rem;
+    }
+
+    #prediction-theme-toggle-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.2rem;
+      line-height: 1;
+      font-family: Arial, Helvetica, sans-serif;
     }
 
     .prediction-theme-toggle:hover {
@@ -352,6 +374,19 @@
       color: #17324b !important;
     }
 
+    html[data-theme="light"] body.race-prediction-page .btn.btn--pill.prediction-action-pill {
+      border-color: #67a6cf !important;
+      background: #eaf5ff !important;
+      color: #0f5f8a !important;
+      box-shadow: inset 0 0 0 1px rgba(92, 132, 166, 0.18);
+    }
+
+    html[data-theme="light"] body.race-prediction-page .btn.btn--pill.prediction-action-pill:hover {
+      border-color: #4f97c5 !important;
+      background: #dbedfc !important;
+      color: #0c547b !important;
+    }
+
     html[data-theme="light"] body.race-prediction-page .btn.btn--pill:hover {
       background: #eaf2fb !important;
       border-color: #9fb6cf !important;
@@ -412,7 +447,7 @@
       <hr style="border: solid 1px black;">
       
       <div class="prediction-action-row">
-      <a class="btn btn--main btn--pill" style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-bg); border-color: var(--color-dark-medium);" href="{% url 'race_related' r_condition.rcity r_condition.rdate r_condition.rno %}"
+      <a class="btn btn--main btn--pill prediction-action-pill" style="font-size: 1.2rem; border-radius: 7px;" href="{% url 'race_related' r_condition.rcity r_condition.rdate r_condition.rno %}"
         onclick="
                 let monitorWidth = 1920; // 특정 모니터의 너비 (예: 1920px)
                 let monitorHeight = 1080; // 특정 모니터의 높이 (예: 1080px)
@@ -429,9 +464,9 @@
                   'w_related',
                   `width=${winWidth},height=${winHeight},toolbars=no,scrollbars=yes,left=${winLeft},top=${winTop}`
                 );
-                return false;">기수 & 마방 & 마주</a>
-      {% if request.user.username == 'admin' %}
-      <a class="btn btn--main btn--pill" style="font-size: 1.2rem; border-radius: 7px; background-color: var(--color-bg); border-color: var(--color-r5);" href="{% url 'race_related_info' r_condition.rcity r_condition.rdate r_condition.rno %}" 
+                return false;">기수·마방·마주</a>
+
+      <a class="btn btn--main btn--pill prediction-action-pill" style="font-size: 1.2rem; border-radius: 7px;" href="{% url 'race_related_info' r_condition.rcity r_condition.rdate r_condition.rno %}" 
                 onclick="
                 monitorWidth = 1920; // 특정 모니터의 너비 (예: 1920px)
                 monitorHeight = 1080; // 특정 모니터의 높이 (예: 1080px)
@@ -448,10 +483,11 @@
                   'w_related_info',
                   `width=${winWidth},height=${winHeight},toolbars=no,scrollbars=yes,left=${winLeft},top=${winTop}`
                 );
-                return false;">Related Info.
+                return false;">추가 분석
       </a>
-      {% endif %}
-      {% if request.user.is_authenticated %}
+
+      {% if request.user.username == 'admin' %}
+
         <a class="prediction-action-link" style="font-size: 1.2rem; background-color: var(--color-bg); border: 1px solid var(--color-main);" href="{% url 'mock_audit' r_condition.rcity r_condition.rdate r_condition.rno 0 0 %}" onclick="window.open(this.href, 'w_mock_audit', 'width=900, height=1000, toolbars=no, scrollbars=yes'); return false;">
           <span class="prediction-action-text">⚙️&nbsp;Mock Audit</span>
         </a>
@@ -529,14 +565,14 @@
         <span class="prediction-action-icon" style="color: var(--color-main);">
           <a href="{% url 'race_result' r_condition.rcity r_condition.rdate r_condition.rno 0 0 0 0 %}"
             onclick="window.open(this.href, 'w_result', 'width=900, height=1000, toolbars=no, scrollbars=yes'); return false;">
-            <span class="tooltip" style="font-size: 1.35rem;">📃
-              <span class="tooltip-text" style="width:11rem; text-align: center;">📃&nbsp;Race Result</span>
+            <span class="tooltip prediction-action-icon-link" style="font-size: 1.35rem;">📃
+              <span class="tooltip-text" style="width:11rem; text-align: center;">📃&nbsp;경주결과</span>
             </span>
           </a>
         </span>
         {% endif %}
         <button type="button" id="prediction-theme-toggle" class="prediction-theme-toggle" aria-label="모드 전환" aria-pressed="false" title="모드 전환">
-          <span id="prediction-theme-toggle-icon">☀</span>
+          <span id="prediction-theme-toggle-icon">☼</span>
         </button>
       </span>
       </div>
@@ -627,7 +663,7 @@
         try {
           localStorage.setItem('site-theme', theme);
         } catch (e) {}
-        icon.textContent = theme === 'dark' ? '☀' : '☾';
+        icon.textContent = theme === 'dark' ? '☼' : '◐';
         btn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
       }
 
