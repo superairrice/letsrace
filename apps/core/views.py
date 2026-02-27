@@ -2,13 +2,14 @@ from apps.common import *
 import json
 import logging
 import copy
+import hashlib
 from time import perf_counter
 from django.conf import settings
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMessage as DjangoEmailMessage
 from django.core.cache import cache
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db.utils import OperationalError, ProgrammingError
 from django.db.models import Count, F, Max, Q
 from django.db import transaction
@@ -32,11 +33,17 @@ def _env_int(name, default):
         return int(default)
 
 
-HOME_DEFAULT_RDATE_CACHE_TTL = _env_int("HOME_DEFAULT_RDATE_CACHE_TTL", 120)
-HOME_RACE_CACHE_TTL = _env_int("HOME_RACE_CACHE_TTL", 30)
+HOME_DEFAULT_RDATE_CACHE_TTL = _env_int("HOME_DEFAULT_RDATE_CACHE_TTL", 600)
+HOME_RACE_CACHE_TTL = _env_int("HOME_RACE_CACHE_TTL", 300)
 HOME_NEWS_CACHE_TTL = _env_int("HOME_NEWS_CACHE_TTL", 1800)
 HOME_NEWS_STALE_TTL = _env_int("HOME_NEWS_STALE_TTL", 21600)
 HOME_NEWS_TIMEOUT_SEC = float(os.getenv("HOME_NEWS_TIMEOUT_SEC", "1.6"))
+HOME_REFUND_CACHE_TTL = _env_int("HOME_REFUND_CACHE_TTL", 180)
+HOME_RENDER_CACHE_TTL = _env_int("HOME_RENDER_CACHE_TTL", 20)
+HOME_COMMENT_COUNT_CACHE_TTL = _env_int("HOME_COMMENT_COUNT_CACHE_TTL", 15)
+HOME_TOP5_CACHE_TTL = _env_int("HOME_TOP5_CACHE_TTL", 20)
+HOME_TOP5_DEBUG = os.getenv("HOME_TOP5_DEBUG", "false").lower() == "true"
+HOME_RPOP2_DEBUG = os.getenv("HOME_RPOP2_DEBUG", "false").lower() == "true"
 
 
 def _cache_copy_get(key):
@@ -417,34 +424,8 @@ def home(request):
         except Exception:
             continue
 
-    # expects Query
-    cursor = None
-    try:
-        cursor = connection.cursor()
-
-        strSql = (
-            """
-            select a.rcity, a.rdate, a.rday, a.rno, b.gate, b.rank, b.r_rank, b.horse, b.remark, b.jockey, b.trainer, b.host, b.r_pop, a.distance, b.handycap, b.i_prehandy, b.complex,
-                b.complex5, b.gap_back, 
-                b.jt_per, b.jt_cnt, b.jt_3rd,
-                b.s1f_rank, b.i_cycle, a.rcount, recent3, recent5, convert_r, jockey_old, reason, b.alloc3r*1
-            
-            from exp010 a, exp011 b
-            where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
-            and a.rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 4 DAY), '%%Y%%m%%d')
-            and b.rank in ( 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 98, 99 ) 
-            order by b.rcity, b.rdate, b.rno, b.rank, b.gate 
-            ; """
-        )
-        cursor.execute(strSql, (i_rdate, i_rdate))
-        results = cursor.fetchall()
-
-    except Exception as exc:
-        # connection.rollback()
-        print(f"Failed selecting in expect: {exc}")
-    finally:
-        if cursor:
-            cursor.close()
+    # legacy results 조회는 홈 템플릿에서 사용하지 않아 제거(쿼리 비용 절감)
+    results = []
     mark_timing("load_expect_rows")
 
     # loadin = get_last2weeks_loadin(i_rdate)
@@ -890,84 +871,126 @@ def home(request):
         right_humor_items = []
     mark_timing("fetch_news")
 
-    try:
-        check_visit(request)
-    except Exception as exc:
-        print(f"check_visit failed: {exc}")
-
-    race_df = None
     summary = {}
     from_date = None
     to_date = None
-    if request.user.is_authenticated and request.user.username == "admin":
-        base_dt = datetime.strptime(i_rdate, "%Y%m%d")
-        from_date = (base_dt - timedelta(days=3)).strftime("%Y%m%d")
-        to_date = (base_dt + timedelta(days=4)).strftime("%Y%m%d")
-        try:
-            race_df, summary = calc_rpop_anchor_26_trifecta(
-                from_date=from_date,
-                to_date=to_date,
-                bet_unit=100,
-            )
-        except Exception as exc:
-            print(f"[rpop2] calc failed: {exc}")
-    mark_timing("calc_refund_summary")
-    
-    
-    
-    if from_date and to_date:
-        try:
-            summary_keys = list(summary.keys()) if isinstance(summary, dict) else []
-            race_rows = len(race_df) if race_df is not None else 0
-            day_summary_len = (
-                len(summary.get("day_summary", {})) if isinstance(summary, dict) else 0
-            )
-            print(
-                "[rpop2] from_date=%s to_date=%s summary_type=%s summary_keys=%s "
-                "race_rows=%s day_summary_len=%s"
-                % (
-                    from_date,
-                    to_date,
-                    type(summary).__name__,
-                    summary_keys,
-                    race_rows,
-                    day_summary_len,
-                )
-            )
-        except Exception as exc:
-            print(f"[rpop2] debug failed: {exc}")
-
-    summary_display = []
-    summary_total = None
+    race_rows = 0
     method_bet_totals = []
     method_bet_total_sum = 0.0
     method_refund_total_sum = 0.0
     method_profit_total_sum = 0.0
-
-    if race_df is not None and hasattr(race_df, "columns") and not race_df.empty:
-        method_columns = [
-            ("1축 2~4 5~7", "1축_2~4_5~7_베팅액", "1축_2~4_5~7_환수액"),
-            ("1축 2~4", "1축_2~4_베팅액", "1축_2~4_환수액"),
-            ("1축 2~6 삼복", "1축_2~6_삼복_베팅액", "1축_2~6_삼복_환수액"),
-            ("1~2복조 3~8 삼복", "1~2복조_3~8_삼복_베팅액", "1~2복조_3~8_삼복_환수액"),
-            ("BOX4 삼복", "BOX4_삼복_베팅액", "BOX4_삼복_환수액"),
-        ]
-        for label, bet_col, refund_col in method_columns:
-            if bet_col in race_df.columns and refund_col in race_df.columns:
-                bet_amount = float(race_df[bet_col].fillna(0).sum())
-                refund_amount = float(race_df[refund_col].fillna(0).sum())
-                profit_amount = refund_amount - bet_amount
-                method_bet_totals.append(
-                    {
-                        "label": label,
-                        "amount": bet_amount,
-                        "refund": refund_amount,
-                        "profit": profit_amount,
-                    }
+    if request.user.is_authenticated and request.user.username == "admin":
+        base_dt = datetime.strptime(i_rdate, "%Y%m%d")
+        from_date = (base_dt - timedelta(days=3)).strftime("%Y%m%d")
+        to_date = (base_dt + timedelta(days=4)).strftime("%Y%m%d")
+        refund_cache_key = f"home:rpop2:{from_date}:{to_date}:100"
+        cached_refund = _cache_copy_get(refund_cache_key)
+        if isinstance(cached_refund, dict):
+            summary = cached_refund.get("summary", {})
+            race_rows = int(cached_refund.get("race_rows", 0) or 0)
+            method_bet_totals = cached_refund.get("method_bet_totals", [])
+            method_bet_total_sum = float(cached_refund.get("method_bet_total_sum", 0.0) or 0.0)
+            method_refund_total_sum = float(cached_refund.get("method_refund_total_sum", 0.0) or 0.0)
+            method_profit_total_sum = float(cached_refund.get("method_profit_total_sum", 0.0) or 0.0)
+        else:
+            race_df = None
+            has_refund_base = False
+            cursor = None
+            try:
+                cursor = connection.cursor()
+                cursor.execute(
+                    """
+                    SELECT 1
+                    FROM The1.rec010
+                    WHERE rdate BETWEEN %s AND %s
+                      AND r123alloc IS NOT NULL AND r123alloc <> '' AND r123alloc <> '0.00'
+                      AND r333alloc IS NOT NULL AND r333alloc <> '' AND r333alloc <> '0.00'
+                    LIMIT 1
+                    """,
+                    (from_date, to_date),
                 )
-                method_bet_total_sum += bet_amount
-                method_refund_total_sum += refund_amount
-                method_profit_total_sum += profit_amount
+                has_refund_base = cursor.fetchone() is not None
+            except Exception as exc:
+                print(f"[rpop2] precheck failed: {exc}")
+                has_refund_base = True  # precheck 실패 시 기존 계산 경로 유지
+            finally:
+                if cursor:
+                    cursor.close()
+
+            if has_refund_base:
+                try:
+                    race_df, summary = calc_rpop_anchor_26_trifecta(
+                        from_date=from_date,
+                        to_date=to_date,
+                        bet_unit=100,
+                    )
+                except Exception as exc:
+                    print(f"[rpop2] calc failed: {exc}")
+            else:
+                summary = {}
+
+            method_columns = [
+                ("1축 2~4 5~7", "1축_2~4_5~7_베팅액", "1축_2~4_5~7_환수액"),
+                ("1축 2~4", "1축_2~4_베팅액", "1축_2~4_환수액"),
+                ("1축 2~6 삼복", "1축_2~6_삼복_베팅액", "1축_2~6_삼복_환수액"),
+                ("1~2복조 3~8 삼복", "1~2복조_3~8_삼복_베팅액", "1~2복조_3~8_삼복_환수액"),
+                ("BOX4 삼복", "BOX4_삼복_베팅액", "BOX4_삼복_환수액"),
+            ]
+            if race_df is not None and hasattr(race_df, "columns") and not race_df.empty:
+                race_rows = len(race_df)
+                for label, bet_col, refund_col in method_columns:
+                    if bet_col in race_df.columns and refund_col in race_df.columns:
+                        bet_amount = float(race_df[bet_col].fillna(0).sum())
+                        refund_amount = float(race_df[refund_col].fillna(0).sum())
+                        profit_amount = refund_amount - bet_amount
+                        method_bet_totals.append(
+                            {
+                                "label": label,
+                                "amount": bet_amount,
+                                "refund": refund_amount,
+                                "profit": profit_amount,
+                            }
+                        )
+                        method_bet_total_sum += bet_amount
+                        method_refund_total_sum += refund_amount
+                        method_profit_total_sum += profit_amount
+            _cache_copy_set(
+                refund_cache_key,
+                {
+                    "summary": summary if isinstance(summary, dict) else {},
+                    "race_rows": race_rows,
+                    "method_bet_totals": method_bet_totals,
+                    "method_bet_total_sum": method_bet_total_sum,
+                    "method_refund_total_sum": method_refund_total_sum,
+                    "method_profit_total_sum": method_profit_total_sum,
+                },
+                HOME_REFUND_CACHE_TTL,
+            )
+    mark_timing("calc_refund_summary")
+    
+    
+    
+    if from_date and to_date and (settings.DEBUG or HOME_RPOP2_DEBUG):
+        try:
+            summary_keys = list(summary.keys()) if isinstance(summary, dict) else []
+            day_summary_len = (
+                len(summary.get("day_summary", {})) if isinstance(summary, dict) else 0
+            )
+            logger.debug(
+                "[rpop2] from_date=%s to_date=%s summary_type=%s summary_keys=%s "
+                "race_rows=%s day_summary_len=%s",
+                from_date,
+                to_date,
+                type(summary).__name__,
+                summary_keys,
+                race_rows,
+                day_summary_len,
+            )
+        except Exception as exc:
+            logger.debug("[rpop2] debug failed: %s", exc)
+
+    summary_display = []
+    summary_total = None
 
     if isinstance(summary, dict):
         day_summary = summary.get("day_summary", {})
@@ -1090,8 +1113,34 @@ def home(request):
 
     }
 
-    response = render(request, "base/home.html", context)
-    mark_timing("render_template")
+    render_cache_key = None
+    use_render_cache = request.method == "GET"
+    if use_render_cache:
+        user_key = f"u{request.user.id}" if request.user.is_authenticated else "anon"
+        q_key = (request.GET.get("q") or "").strip()
+        view_type_key = (request.GET.get("view_type") or "").strip()
+        render_cache_key = f"home:render:v3:{user_key}:{i_rdate}:{q_key}:{view_type_key}"
+        cached_render = cache.get(render_cache_key)
+        if isinstance(cached_render, dict) and cached_render.get("content") is not None:
+            response = HttpResponse(
+                cached_render.get("content"),
+                content_type=cached_render.get("content_type") or "text/html; charset=utf-8",
+            )
+            mark_timing("render_template")
+        else:
+            response = render(request, "base/home.html", context)
+            mark_timing("render_template")
+            cache.set(
+                render_cache_key,
+                {
+                    "content": bytes(response.content),
+                    "content_type": response.get("Content-Type", "text/html; charset=utf-8"),
+                },
+                HOME_RENDER_CACHE_TTL,
+            )
+    else:
+        response = render(request, "base/home.html", context)
+        mark_timing("render_template")
 
     total_ms = (perf_counter() - t_home_start) * 1000.0
     steps_msg = ", ".join(f"{name}={elapsed:.1f}ms" for name, elapsed in timing_steps)
@@ -1455,6 +1504,14 @@ def race_comment_counts(request):
     if not keys:
         return JsonResponse({"ok": True, "counts": {}})
 
+    key_parts = sorted(f"{k[0]}|{k[1]}|{k[2]}" for k in keys)
+    key_raw = ",".join(key_parts)
+    key_hash = hashlib.md5(key_raw.encode("utf-8")).hexdigest()
+    cache_key = f"home:race_comment_counts:{key_hash}"
+    cached_counts = cache.get(cache_key)
+    if isinstance(cached_counts, dict):
+        return JsonResponse({"ok": True, "counts": cached_counts})
+
     rcities = {k[0] for k in keys}
     rdates = {k[1] for k in keys}
     rnos = {k[2] for k in keys}
@@ -1474,6 +1531,7 @@ def race_comment_counts(request):
         if key in requested:
             requested[key] = row["count"]
 
+    cache.set(cache_key, requested, HOME_COMMENT_COUNT_CACHE_TTL)
     return JsonResponse({"ok": True, "counts": requested})
 
 
@@ -1520,6 +1578,14 @@ def race_top5_results(request):
 
     if not keys:
         return JsonResponse({"ok": True, "results": {}})
+
+    key_parts = sorted(f"{k[0]}|{k[1]}|{k[2]}" for k in keys)
+    key_raw = ",".join(key_parts)
+    key_hash = hashlib.md5(key_raw.encode("utf-8")).hexdigest()
+    cache_key = f"home:race_top5_results:{key_hash}"
+    cached_results = cache.get(cache_key)
+    if isinstance(cached_results, dict):
+        return JsonResponse({"ok": True, "results": cached_results})
 
     rcities = {k[0] for k in keys}
     rdates = {k[1] for k in keys}
@@ -1678,15 +1744,16 @@ def race_top5_results(request):
             "actual_top3": actual_top3,
             "newbie_count": newbie_count,
         }
-        if settings.DEBUG:
+        if settings.DEBUG and HOME_TOP5_DEBUG:
             try:
                 gates_sorted = sorted(newbie_gates, key=lambda x: int(x))
             except Exception:
                 gates_sorted = sorted(newbie_gates)
-            print(
+            logger.debug(
                 f"[top5] newbie key={key_str} count={newbie_count} gates={gates_sorted}"
             )
 
+    cache.set(cache_key, requested, HOME_TOP5_CACHE_TTL)
     return JsonResponse({"ok": True, "results": requested})
 
 

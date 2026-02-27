@@ -1,9 +1,11 @@
 from apps.common import *
 import re
 from html import unescape
+from django.core.cache import cache
 from apps.domains.race.race import resultOfRace
 
 # Prediction views
+RACE_PREDICTION_CACHE_TTL = 30
 
 def racePrediction(request, rcity, rdate, rno, hname, awardee):
 
@@ -11,16 +13,13 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         request.GET.get("view_type") if request.GET.get("view_type") != None else ""
     )  # 정렬방식
 
+    base_qs = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno)
     if view_type == "1":
-        exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
-            "rank", "gate"
-        )
+        exp011s = list(base_qs.order_by("rank", "gate"))
     else:
-        exp011s = Exp011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
-            "r_pop", "gate"
-        )
+        exp011s = list(base_qs.order_by("r_pop", "gate"))
         
-    compare_r = exp011s.aggregate(
+    compare_r = base_qs.aggregate(
         Min("i_s1f"),
         Min("i_g1f"),
         Min("i_g2f"),
@@ -37,9 +36,16 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
         Min("s1f_rank"),
     )
 
-    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).first()
+    if r_condition is None:
+        return render(request, "base/home.html")
 
-    hr_records = recordsByHorse(rcity, rdate, rno, 'None')
+    cache_prefix = f"race_prediction:{rcity}:{rdate}:{rno}"
+
+    hr_records = cache.get(f"{cache_prefix}:hr_records")
+    if hr_records is None:
+        hr_records = recordsByHorse(rcity, rdate, rno, "None")
+        cache.set(f"{cache_prefix}:hr_records", hr_records, RACE_PREDICTION_CACHE_TTL)
     # print(hr_records)
 
     try:
@@ -50,58 +56,108 @@ def racePrediction(request, rcity, rdate, rno, hname, awardee):
     # paternal = get_paternal(rcity, rdate, rno, r_condition.distance)  # 부마 3착 성적
     # paternal_dist = get_paternal_dist(rcity, rdate, rno)  # 부마 거리별 3착 성적
 
-    loadin = get_loadin(rcity, rdate, rno)
-    disease = get_disease(rcity, rdate, rno)
+    loadin = cache.get(f"{cache_prefix}:loadin")
+    if loadin is None:
+        loadin = get_loadin(rcity, rdate, rno)
+        cache.set(f"{cache_prefix}:loadin", loadin, RACE_PREDICTION_CACHE_TTL)
 
-    trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
-    judged_list, judged = get_judged(rcity, rdate, rno)
+    disease = cache.get(f"{cache_prefix}:disease")
+    if disease is None:
+        disease = get_disease(rcity, rdate, rno)
+        cache.set(f"{cache_prefix}:disease", disease, RACE_PREDICTION_CACHE_TTL)
+    disease = disease or []
+
+    trainer_training = cache.get(f"{cache_prefix}:trainer_training")
+    if trainer_training is None:
+        trainer_training = get_trainer_double_check(rcity, rdate, rno)
+        cache.set(
+            f"{cache_prefix}:trainer_training",
+            trainer_training,
+            RACE_PREDICTION_CACHE_TTL,
+        )
+    trainer_double_check, training_cnt = trainer_training
+
+    judged_data = cache.get(f"{cache_prefix}:judged")
+    if judged_data is None:
+        judged_data = get_judged(rcity, rdate, rno)
+        cache.set(f"{cache_prefix}:judged", judged_data, RACE_PREDICTION_CACHE_TTL)
+    judged_list, judged = judged_data
+
+    loadin = loadin or []
+    trainer_double_check = trainer_double_check or []
+    training_cnt = training_cnt or []
+    judged_list = judged_list or []
+    judged = judged or []
 
     # # # axis = get_axis(rcity, rdate, rno)
     # axis1 = get_axis_rank(rcity, rdate, rno, 1)
     # axis2 = get_axis_rank(rcity, rdate, rno, 2)
     # axis3 = get_axis_rank(rcity, rdate, rno, 3)
 
-    track = get_track_record(
-        rcity, rdate, rno
-    )  # 경주거리별 등급별 평균기록, 최고기록, 최저기록
+    track = cache.get(f"{cache_prefix}:track")
+    if track is None:
+        track = get_track_record(
+            rcity, rdate, rno
+        )  # 경주거리별 등급별 평균기록, 최고기록, 최저기록
+        cache.set(f"{cache_prefix}:track", track, RACE_PREDICTION_CACHE_TTL)
 
     # 경주 메모 Query
-    try:
-        with connection.cursor() as cursor:
-            query = """
-                SELECT replace( replace( horse, '[서]', ''), '[부]', ''), r_etc, r_flag, judge
-                FROM rec011 
-                WHERE rcity = %s
-                AND rdate = %s
-                AND rno = %s;
-            """
-            cursor.execute(query, (rcity, rdate, rno))
-            r_memo = cursor.fetchall()
-
-    except Exception as e:
-        print(f"❌ Failed selecting in 경주 메모: {e}")
-    finally:
-        cursor.close()
+    r_memo = cache.get(f"{cache_prefix}:r_memo")
+    if r_memo is None:
+        r_memo = []
+        try:
+            with connection.cursor() as cursor:
+                query = """
+                    SELECT replace( replace( horse, '[서]', ''), '[부]', ''), r_etc, r_flag, judge
+                    FROM rec011 
+                    WHERE rcity = %s
+                    AND rdate = %s
+                    AND rno = %s;
+                """
+                cursor.execute(query, (rcity, rdate, rno))
+                r_memo = cursor.fetchall()
+        except Exception as e:
+            print(f"❌ Failed selecting in 경주 메모: {e}")
+        cache.set(f"{cache_prefix}:r_memo", r_memo, RACE_PREDICTION_CACHE_TTL)
 
     # 경주일 - 출주정보
-    try:
-        with connection.cursor() as cursor:
-            query = """
-                SELECT rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing,
-                    rname, rcon1, rcon2, rtime
-                FROM exp010 
-                WHERE rdate = %s
-                ORDER BY rdate, rtime;
-            """
-            cursor.execute(query, (rdate,))
-            weeksrace = cursor.fetchall()
+    weeksrace = cache.get(f"race_prediction:weeksrace:{rdate}")
+    if weeksrace is None:
+        weeksrace = []
+        try:
+            with connection.cursor() as cursor:
+                query = """
+                    SELECT rcity, rdate, rno, rday, rseq, distance, rcount, grade, dividing,
+                        rname, rcon1, rcon2, rtime
+                    FROM exp010 
+                    WHERE rdate = %s
+                    ORDER BY rdate, rtime;
+                """
+                cursor.execute(query, (rdate,))
+                weeksrace = cursor.fetchall()
+        except Exception as e:
+            print(f"❌ Failed selecting in exp010 : 주별 경주현황 - {e}")
+        cache.set(
+            f"race_prediction:weeksrace:{rdate}",
+            weeksrace,
+            RACE_PREDICTION_CACHE_TTL,
+        )
 
-    except Exception as e:
-        print(f"❌ Failed selecting in exp010 : 주별 경주현황 - {e}")
+    memo_map = {horse: (memo, flag, judge) for horse, memo, flag, judge in r_memo}
+    loadin_map = {jname: (load_in, tot_1st) for jname, load_in, tot_1st in loadin}
+    training_cnt_map = {jockey: cnt for jockey, cnt in training_cnt}
+    disease_map = {horse: (max_date, cnt) for horse, max_date, cnt in disease}
+    for row in exp011s:
+        memo_data = memo_map.get(row.horse, (None, None, None))
+        row.r_etc = memo_data[0]
+        row.r_flag = memo_data[1]
+        row.judge = memo_data[2]
+        row.load_in = loadin_map.get(row.jockey, (None, None))[0]
+        row.training_cnt = training_cnt_map.get(row.jockey)
+        row.disease_cnt = disease_map.get(row.horse, (None, None))[1]
 
     recovery_cnt, start_cnt, audit_cnt = countOfRace(rcity, rdate, rno)
 
-    check_visit(request)
 
     context = {
         "exp011s": exp011s,
@@ -393,7 +449,6 @@ def printPrediction(request):
 
     race, expects = get_print_prediction(rcity, rdate, view_type=view_type)
 
-    check_visit(request)
 
     if race:
         context = {
@@ -437,7 +492,12 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     # records = RecordS.objects.filter(rcity=rcity, rdate=rdate, rno=rno).order_by(
     #     "rank", "gate"
     # )
-    records = resultOfRace(rcity, rdate, rno)
+    cache_prefix = f"race_result:{rcity}:{rdate}:{rno}"
+
+    records = cache.get(f"{cache_prefix}:records")
+    if records is None:
+        records = resultOfRace(rcity, rdate, rno)
+        cache.set(f"{cache_prefix}:records", records, RACE_PREDICTION_CACHE_TTL)
     if not records:
         return render(request, "base/home.html")
 
@@ -454,16 +514,22 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     #     rdate__lt=rdate, horse__in=records.values("horse")
     # ).order_by("horse", "-rdate")
 
-    hr_records = recordsByHorse(rcity, rdate, rno, "None")
+    hr_records = cache.get(f"{cache_prefix}:hr_records")
+    if hr_records is None:
+        hr_records = recordsByHorse(rcity, rdate, rno, "None")
+        cache.set(f"{cache_prefix}:hr_records", hr_records, RACE_PREDICTION_CACHE_TTL)
 
-    compare_r = Rec011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).aggregate(
+    compare_r = cache.get(f"{cache_prefix}:compare_r")
+    if compare_r is None:
+        compare_r = Rec011.objects.filter(rcity=rcity, rdate=rdate, rno=rno).aggregate(
         compare_i_s1f__min=Min("i_s1f"),
         compare_i_g1f__min=Min("i_g1f"),
         compare_i_g2f__min=Min("i_g2f"),
         compare_i_g3f__min=Min("i_g3f"),
         compare_handycap__max=Max("handycap"),
         compare_rating__max=Max("rating"),
-    )
+        )
+        cache.set(f"{cache_prefix}:compare_r", compare_r, RACE_PREDICTION_CACHE_TTL)
 
     # rec011 모델에 없는 필드(recent3/recent5/convert_r)는 resultOfRace 튜플에서 직접 산출
     def _min_tuple_value(rows, idx):
@@ -486,23 +552,57 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     compare_r["compare_recent5__min"] = _min_tuple_value(records, 75)
     compare_r["compare_convert_r__min"] = _min_tuple_value(records, 79)
 
-    judged_list, judged = get_judged(rcity, rdate, rno)
-    track = get_track_record(rcity, rdate, rno)  # 경주 등급 평균
+    judged_data = cache.get(f"{cache_prefix}:judged")
+    if judged_data is None:
+        judged_data = get_judged(rcity, rdate, rno)
+        cache.set(f"{cache_prefix}:judged", judged_data, RACE_PREDICTION_CACHE_TTL)
+    judged_list, judged = judged_data
 
-    trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
+    track = cache.get(f"{cache_prefix}:track")
+    if track is None:
+        track = get_track_record(rcity, rdate, rno)  # 경주 등급 평균
+        cache.set(f"{cache_prefix}:track", track, RACE_PREDICTION_CACHE_TTL)
 
-    disease = get_disease(rcity, rdate, rno)
+    trainer_training = cache.get(f"{cache_prefix}:trainer_training")
+    if trainer_training is None:
+        trainer_training = get_trainer_double_check(rcity, rdate, rno)
+        cache.set(
+            f"{cache_prefix}:trainer_training",
+            trainer_training,
+            RACE_PREDICTION_CACHE_TTL,
+        )
+    trainer_double_check, training_cnt = trainer_training
+
+    disease = cache.get(f"{cache_prefix}:disease")
+    if disease is None:
+        disease = get_disease(rcity, rdate, rno)
+        cache.set(f"{cache_prefix}:disease", disease, RACE_PREDICTION_CACHE_TTL)
+    disease = disease or []
+
+    trainer_double_check = trainer_double_check or []
+    training_cnt = training_cnt or []
+    judged_list = judged_list or []
+    judged = judged or []
 
     # if len(judged) > 0:
     #     judged = judged[0][0]
 
-    horses = Exp011.objects.values("horse").filter(rcity=rcity1, rdate=rdate1, rno=rno1)
+    horse_set = cache.get(f"race_result:{rcity1}:{rdate1}:{rno1}:horse_set")
+    if horse_set is None:
+        horse_set = set(
+            Exp011.objects.filter(rcity=rcity1, rdate=rdate1, rno=rno1).values_list(
+                "horse", flat=True
+            )
+        )
+        cache.set(
+            f"race_result:{rcity1}:{rdate1}:{rno1}:horse_set",
+            horse_set,
+            RACE_PREDICTION_CACHE_TTL,
+        )
 
-    try:
-        alloc = Rec010.objects.get(rcity=rcity, rdate=rdate, rno=rno)
-    except Rec010.DoesNotExist:
-        alloc = None
+    alloc = r_condition
 
+    weeksrace = []
     try:
         with connection.cursor() as cursor:
             query = """
@@ -517,8 +617,10 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
     except Exception as e:
         print(f"❌ Failed selecting in exp010 : 주별 경주현황 - {e}")
 
+    training_cnt_map = {jname: cnt for jname, cnt in training_cnt}
+    disease_map = {hname: cnt for hname, _max_date, cnt in disease}
+
     recovery_cnt, start_cnt, audit_cnt = countOfRace(rcity, rdate, rno)
-    check_visit(request)
 
     context = {
         "records": records,
@@ -528,13 +630,15 @@ def raceResult(request, rcity, rdate, rno, hname, rcity1, rdate1, rno1):
         "hname": hname,
         "judged_list": judged_list,
         "judged": " ".join(str(item) for sublist in judged for item in sublist),
-        "horses": horses,
+        "horse_set": horse_set,
         "alloc": alloc,
         "weeksrace": weeksrace,
         "track": track,
-        "trainer_double_check": str(trainer_double_check),
+        "trainer_double_check": trainer_double_check,
         "training_cnt": training_cnt,
+        "training_cnt_map": training_cnt_map,
         "disease": disease,
+        "disease_map": disease_map,
         "recovery_cnt": recovery_cnt,
         "start_cnt": start_cnt,
         "audit_cnt": audit_cnt,
@@ -606,7 +710,6 @@ def raceResultHorse(request, rcity, rdate, rno, hname):
     # train = get_train_horse1(rdate, hname)
     hr_records = recordsByHorse(rcity, rdate, rno, hname)
 
-    check_visit(request)
 
     # print(hr_records)
     # print(hname in h_names)
@@ -658,7 +761,6 @@ def raceTraining(request, rcity, rdate, rno):
 
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
-    check_visit(request)
 
     context = {
         "train": train,
@@ -681,7 +783,6 @@ def raceJudged(request, rcity, rdate, rno):
 
     r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
 
-    check_visit(request)
 
     context = {
         "pedigree": pedigree,
@@ -696,18 +797,56 @@ def raceJudged(request, rcity, rdate, rno):
     return render(request, "base/race_judged.html", context)
 
 def raceRelated(request, rcity, rdate, rno):
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).first()
+    if r_condition is None:
+        return render(request, "base/home.html")
 
-    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+    cache_prefix = f"race_related:{rcity}:{rdate}:{rno}"
 
-    award_j, award_t, award_h, race_detail = get_race_related(rcity, rdate, rno)
-    
-    loadin = get_loadin(rcity, rdate, rno)
+    race_related_data = cache.get(f"{cache_prefix}:race_related_data")
+    if race_related_data is None:
+        race_related_data = get_race_related(rcity, rdate, rno)
+        cache.set(
+            f"{cache_prefix}:race_related_data",
+            race_related_data,
+            RACE_PREDICTION_CACHE_TTL,
+        )
+    award_j, award_t, award_h, race_detail = race_related_data
 
-    judged_jockey = get_judged_jockey(rcity, rdate, rno)
+    loadin = cache.get(f"{cache_prefix}:loadin")
+    if loadin is None:
+        loadin = get_loadin(rcity, rdate, rno)
+        cache.set(f"{cache_prefix}:loadin", loadin, RACE_PREDICTION_CACHE_TTL)
 
-    trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
+    judged_jockey = cache.get(f"{cache_prefix}:judged_jockey")
+    if judged_jockey is None:
+        judged_jockey = get_judged_jockey(rcity, rdate, rno)
+        cache.set(
+            f"{cache_prefix}:judged_jockey",
+            judged_jockey,
+            RACE_PREDICTION_CACHE_TTL,
+        )
 
-    check_visit(request)
+    trainer_training = cache.get(f"{cache_prefix}:trainer_training")
+    if trainer_training is None:
+        trainer_training = get_trainer_double_check(rcity, rdate, rno)
+        cache.set(
+            f"{cache_prefix}:trainer_training",
+            trainer_training,
+            RACE_PREDICTION_CACHE_TTL,
+        )
+    trainer_double_check, training_cnt = trainer_training
+
+    award_j = award_j or []
+    award_t = award_t or []
+    award_h = award_h or []
+    race_detail = race_detail or []
+    loadin = loadin or []
+    judged_jockey = judged_jockey or []
+    trainer_double_check = trainer_double_check or []
+    training_cnt = training_cnt or []
+    loadin_map = {jname: load_in for jname, load_in, _tot_1st in loadin}
+
 
     context = {
         "r_condition": r_condition,  # 기수 기승가능 부딤중량
@@ -718,58 +857,126 @@ def raceRelated(request, rcity, rdate, rno):
         "award_t": award_t,
         "award_h": award_h,
         "training_cnt": training_cnt,
-        "trainer_double_check": str(trainer_double_check),
+        "trainer_double_check": trainer_double_check,
+        "loadin_map": loadin_map,
     }
 
     return render(request, "base/race_related.html", context)
 
 def raceRelatedInfo(request, rcity, rdate, rno):
+    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).first()
+    if r_condition is None:
+        return render(request, "base/home.html")
 
-    r_condition = Exp010.objects.filter(rcity=rcity, rdate=rdate, rno=rno).get()
+    cache_prefix = f"race_related_info:{rcity}:{rdate}:{rno}"
 
-    train = get_train_horse(rcity, rdate, rno)
+    train = cache.get(f"{cache_prefix}:train")
+    if train is None:
+        train = get_train_horse(rcity, rdate, rno)
+        cache.set(f"{cache_prefix}:train", train, RACE_PREDICTION_CACHE_TTL)
 
     train_title = trend_title(rdate)
 
-    trainer_double_check, training_cnt = get_trainer_double_check(rcity, rdate, rno)
+    trainer_training = cache.get(f"{cache_prefix}:trainer_training")
+    if trainer_training is None:
+        trainer_training = get_trainer_double_check(rcity, rdate, rno)
+        cache.set(
+            f"{cache_prefix}:trainer_training",
+            trainer_training,
+            RACE_PREDICTION_CACHE_TTL,
+        )
+    trainer_double_check, training_cnt = trainer_training
 
-    pedigree = get_pedigree(rcity, rdate, rno)  # 병력
-    treat = get_treat_horse(rcity, rdate, rno)
-    judged_horse = get_judged_horse(rcity, rdate, rno)
-    judged_jockey = get_judged_jockey(rcity, rdate, rno)
+    pedigree = cache.get(f"{cache_prefix}:pedigree")
+    if pedigree is None:
+        pedigree = get_pedigree(rcity, rdate, rno)  # 병력
+        cache.set(f"{cache_prefix}:pedigree", pedigree, RACE_PREDICTION_CACHE_TTL)
+
+    treat = cache.get(f"{cache_prefix}:treat")
+    if treat is None:
+        treat = get_treat_horse(rcity, rdate, rno)
+        cache.set(f"{cache_prefix}:treat", treat, RACE_PREDICTION_CACHE_TTL)
+
+    judged_horse = cache.get(f"{cache_prefix}:judged_horse")
+    if judged_horse is None:
+        judged_horse = get_judged_horse(rcity, rdate, rno)
+        cache.set(
+            f"{cache_prefix}:judged_horse",
+            judged_horse,
+            RACE_PREDICTION_CACHE_TTL,
+        )
+
+    judged_jockey = cache.get(f"{cache_prefix}:judged_jockey")
+    if judged_jockey is None:
+        judged_jockey = get_judged_jockey(rcity, rdate, rno)
+        cache.set(
+            f"{cache_prefix}:judged_jockey",
+            judged_jockey,
+            RACE_PREDICTION_CACHE_TTL,
+        )
 
     # award_j, award_t, award_h, race_detail = get_race_related(rcity, rdate, rno)
 
-    paternal = get_paternal(rcity, rdate, rno, r_condition.distance)  # 부마 3착 성적
-    paternal_dist = get_paternal_dist(rcity, rdate, rno)  # 부마 거리별 3착 성적
+    paternal = cache.get(f"{cache_prefix}:paternal")
+    if paternal is None:
+        paternal = get_paternal(rcity, rdate, rno, r_condition.distance)  # 부마 3착 성적
+        cache.set(f"{cache_prefix}:paternal", paternal, RACE_PREDICTION_CACHE_TTL)
 
-    loadin = get_loadin(rcity, rdate, rno)
-    disease = get_disease(rcity, rdate, rno)
-
-    try:
-        cursor = connection.cursor()
-        strSql = """ 
-            select host, horse, trainer, birthplace, sex, age, grade, tot_race, tot_1st, tot_2nd, tot_3rd, year_race, year_1st, year_2nd, year_3rd, tot_prize/1000, rating, price/1000
-            from horse_w
-            where wdate = ( select max(wdate) from The1.horse_w where wdate < %s )  
-            and host in  ( select host from exp011 where rcity =  %s and rdate = %s and rno =  %s )
-            order by host, trainer, horse
-        """
-        # 안전한 SQL 파라미터 바인딩
-        params = (
-            rdate,
-            rcity,
-            rdate,
-            rno,
+    paternal_dist = cache.get(f"{cache_prefix}:paternal_dist")
+    if paternal_dist is None:
+        paternal_dist = get_paternal_dist(rcity, rdate, rno)  # 부마 거리별 3착 성적
+        cache.set(
+            f"{cache_prefix}:paternal_dist",
+            paternal_dist,
+            RACE_PREDICTION_CACHE_TTL,
         )
 
-        cursor.execute(strSql, params)
-        horses = cursor.fetchall()
+    loadin = cache.get(f"{cache_prefix}:loadin")
+    if loadin is None:
+        loadin = get_loadin(rcity, rdate, rno)
+        cache.set(f"{cache_prefix}:loadin", loadin, RACE_PREDICTION_CACHE_TTL)
+
+    disease = cache.get(f"{cache_prefix}:disease")
+    if disease is None:
+        disease = get_disease(rcity, rdate, rno)
+        cache.set(f"{cache_prefix}:disease", disease, RACE_PREDICTION_CACHE_TTL)
+
+    horses = []
+    try:
+        with connection.cursor() as cursor:
+            strSql = """ 
+                select host, horse, trainer, birthplace, sex, age, grade, tot_race, tot_1st, tot_2nd, tot_3rd, year_race, year_1st, year_2nd, year_3rd, tot_prize/1000, rating, price/1000
+                from horse_w
+                where wdate = ( select max(wdate) from The1.horse_w where wdate < %s )  
+                and host in  ( select host from exp011 where rcity =  %s and rdate = %s and rno =  %s )
+                order by host, trainer, horse
+            """
+            # 안전한 SQL 파라미터 바인딩
+            params = (
+                rdate,
+                rcity,
+                rdate,
+                rno,
+            )
+
+            cursor.execute(strSql, params)
+            horses = cursor.fetchall()
 
     except:
         print(f"❌ Failed selecting in horses:")  # 오류 메시지 출력
-    finally:
-        cursor.close()
+    
+    train = train or []
+    trainer_double_check = trainer_double_check or []
+    training_cnt = training_cnt or []
+    pedigree = pedigree or []
+    treat = treat or []
+    judged_horse = judged_horse or []
+    judged_jockey = judged_jockey or []
+    paternal = paternal or []
+    paternal_dist = paternal_dist or []
+    loadin = loadin or []
+    disease = disease or []
+    horses = horses or []
 
     recovery_cnt, start_cnt, audit_cnt = countOfRace(rcity, rdate, rno)
 
@@ -796,7 +1003,7 @@ def raceRelatedInfo(request, rcity, rdate, rno):
         "r_condition": r_condition,  # 기수 기승가능 부딤중량
         "train": train,  # 기수 기승가능 부딤중량
         "train_title": train_title,  # 기수 기승가능 부딤중량
-        "trainer_double_check": str(trainer_double_check),
+        "trainer_double_check": trainer_double_check,
         "training_cnt": training_cnt,
         "pedigree": pedigree,  # 기수 기승가능 부딤중량
         "treat": treat,  # 기수 기승가능 부딤중량
@@ -946,7 +1153,6 @@ def trainingHorse(request, rcity, rdate, rno, hname):
         print("Failed selecting in 게이트별 출주마")
 
     train = get_train_horse1(rdate, hname)
-    check_visit(request)
 
     # print(exp011s.rdate)
     # print(hname in h_names)
@@ -968,7 +1174,6 @@ def trainingHorse(request, rcity, rdate, rno, hname):
 def jtCollaboration(request, rcity, rdate, rno, jockey, trainer):
 
     collaboration = get_jt_collaboration(rcity, rdate, rno, jockey, trainer)
-    check_visit(request)
 
     context = {
         "collaboration": collaboration,
@@ -1418,7 +1623,6 @@ def jtAnalysisJockey(
         print("Failed selecting in 기승가능중량")
 
     # print(jockeys)
-    check_visit(request)
 
     context = {
         "status": status,
@@ -1581,7 +1785,6 @@ def jtAnalysisMulti(
         t_string = t_string + j[2]
         h_string = h_string + j[3]
 
-    check_visit(request)
 
     context = {
         "status": status,
@@ -2398,7 +2601,6 @@ def awardStatusTrainer(request):
     )
     loadin = get_last2weeks_loadin(friday)
 
-    check_visit(request)
     
     context = {
         "weeks": weeks,
@@ -2456,7 +2658,6 @@ def awardStatusJockey(request):
 
     loadin = get_last2weeks_loadin(friday)
 
-    check_visit(request)
 
     context = {
         "weeks": weeks,
@@ -2512,7 +2713,6 @@ def awardStatusWeek(request):
 
     loadin = get_last2weeks_loadin(friday)
 
-    check_visit(request)
 
     context = {
         "week": week,

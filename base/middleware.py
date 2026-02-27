@@ -49,3 +49,42 @@ class BlockGoHttpClientMiddleware:
 
         response = self.get_response(request)
         return response
+
+
+class VisitTrackingMiddleware:
+    """
+    Track visits once per request at middleware level.
+    - GET HTML page only
+    - Skip static/media/admin/api endpoints
+    - Track only successful responses (< 400)
+    """
+
+    SKIP_PREFIXES = ("/static/", "/media/", "/admin/", "/api/", "/__debug__/")
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+
+        if request.method != "GET":
+            return response
+        if request.path.startswith(self.SKIP_PREFIXES):
+            return response
+        if getattr(response, "status_code", 500) >= 400:
+            return response
+
+        content_type = (response.get("Content-Type") or "").lower()
+        if "text/html" not in content_type:
+            return response
+
+        try:
+            # Lazy import to avoid heavy import cost at startup and circular deps.
+            from apps.common import check_visit
+
+            check_visit(request)
+        except Exception:
+            # Visit tracking must never break the main response.
+            pass
+
+        return response

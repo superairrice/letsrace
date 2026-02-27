@@ -336,13 +336,7 @@
 
             <a href="{% url 'write_significant' r.rdate r.horse %}" 
                     onclick="window.open(this.href, 'write_significant', 'top=' + window.screenTop + ', left=' + window.screen.width + ', width=500, height=570, toolbars=no, scrollbars=yes'); return false;">
-              {% for hname, r_etc, r_flag, judge in r_memo %}
-                {% if hname == r.horse %}
-
-                  {% include 'base/m_memo.html' with size='1.3rem' color='var(--color-r4)' %}
-
-                {% endif %}
-              {% endfor %}
+              {% include 'base/m_memo.html' with size='1.3rem' color='var(--color-r4)' %}
             </a>
 
             <!-- <span class="tooltip" style="font-family: Arial; color:var(--color-light-gray); position: relative; ">
@@ -571,17 +565,17 @@
           {% if r.handycap == compare_r.handycap__max %}
           <span style="padding:2px 2px; font-family: Arial; color:var(--color-r1); border-radius:7px; background-color:var(--color-bg); border-bottom: solid 1px var(--color-r1);">{{r.handycap}}</span>
           {% else %}
-            {% for jname, load_in, tot_1st in loadin %}
-            {% if jname == r.jockey %}
-              {% if r.handycap|mul:1|floatformat:0 <= load_in|mul:1|floatformat:0 %}
+            {% if r.load_in %}
+              {% if r.handycap|mul:1|floatformat:0 <= r.load_in|mul:1|floatformat:0 %}
               <span style="padding:2px 2px; font-family: Arial; font-style:italic; font-size:1.1rem; color:var(--color-r3); border-radius:7px; background-color:var(--color-bg);">{{r.handycap}}</span>
-              {% elif r.handycap|mul:1|floatformat:0 <= load_in|mul:1|add:1|floatformat:0 %}
+              {% elif r.handycap|mul:1|floatformat:0 <= r.load_in|mul:1|add:1|floatformat:0 %}
               <span style="padding:2px 2px; font-family: Arial; font-style:italic; font-size:1.1rem; color:var(--color-light-gray); border-radius:7px; background-color:var(--color-bg);">{{r.handycap}}</span>
               {% else %}
               <span style="padding:2px 2px; font-family: Arial; color:var(--color-light-gray);">{{r.handycap}}</span>
               {% endif %}
+            {% else %}
+              <span style="padding:2px 2px; font-family: Arial; color:var(--color-light-gray);">{{r.handycap}}</span>
             {% endif %}
-            {% endfor %}
           {% endif %}
         </div>
 
@@ -644,27 +638,25 @@
               {% endif %}
             {% endif %}
 
-            {% for jockey, cnt in training_cnt %}
-              {% if r.jockey == jockey %}
-                {% if cnt|mul:1 <= 4 %}
-                <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-bg);">{{cnt}}</span>
-                {% elif cnt|mul:1 == 5 %}
-                <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r5);">{{cnt}}</span>
-                {% elif cnt|mul:1 == 6 %}
-                <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r4);">{{cnt}}</span>
-                {% elif cnt|mul:1 == 7 %}
-                <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r3);">{{cnt}}</span>
-                {% elif cnt|mul:1 == 8 %}
-                <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r2);">{{cnt}}</span>
-                {% elif cnt|mul:1 == 9 %}
-                <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r2);">{{cnt}}</span>
-                {% elif cnt|mul:1 >= 10 %}
-                <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:2px 2px; background-color: var(--color-r1);">{{cnt}}</span>
-                {% else %}
-                <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r1);">{{cnt}}</span>
-                {% endif %}
+            {% if r.training_cnt %}
+              {% if r.training_cnt|mul:1 <= 4 %}
+              <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-bg);">{{r.training_cnt}}</span>
+              {% elif r.training_cnt|mul:1 == 5 %}
+              <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r5);">{{r.training_cnt}}</span>
+              {% elif r.training_cnt|mul:1 == 6 %}
+              <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r4);">{{r.training_cnt}}</span>
+              {% elif r.training_cnt|mul:1 == 7 %}
+              <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r3);">{{r.training_cnt}}</span>
+              {% elif r.training_cnt|mul:1 == 8 %}
+              <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r2);">{{r.training_cnt}}</span>
+              {% elif r.training_cnt|mul:1 == 9 %}
+              <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r2);">{{r.training_cnt}}</span>
+              {% elif r.training_cnt|mul:1 >= 10 %}
+              <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:2px 2px; background-color: var(--color-r1);">{{r.training_cnt}}</span>
+              {% else %}
+              <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r1);">{{r.training_cnt}}</span>
               {% endif %}
-            {% endfor %}
+            {% endif %}
           </a>
           
         </div>
@@ -672,15 +664,13 @@
         {% if r.trainer in trainer_double_check %}
         <div style="font-size: 1.2rem; text-align: right;">
           <a href="{% url 'jt_analysis_multi' r.rno r.rdate|mul:1|sub:10000 r.rdate '%' r.trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
-          {% for hname, max_date, cnt in disease %}
-            {% if r.horse == hname %}
-              {% if cnt >= 10 %}
-              <span style="font-family: Arial; font-size: 0.9rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 2px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{cnt}}</span>
-              {% else %}
-              <span style="font-family: Arial; font-size: 1.1rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 4px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{cnt}}</span>
-              {% endif %}
+          {% if r.disease_cnt %}
+            {% if r.disease_cnt >= 10 %}
+            <span style="font-family: Arial; font-size: 0.9rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 2px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{r.disease_cnt}}</span>
+            {% else %}
+            <span style="font-family: Arial; font-size: 1.1rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 4px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{r.disease_cnt}}</span>
             {% endif %}
-          {% endfor %}  
+          {% endif %}
           
           <span style="color:var(--color-r3); border-bottom:1px solid var(--color-gray);">{{r.trainer}}</span>
           </a>
@@ -688,15 +678,13 @@
         {% else %}
         <div style="font-size: 1.2rem; text-align: right;">
           <a href="{% url 'jt_analysis_multi' r.rno r.rdate|mul:1|sub:10000 r.rdate '%' r.trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
-          {% for hname, max_date, cnt in disease %}
-            {% if r.horse == hname %}
-              {% if cnt >= 10 %}
-              <span style="font-family: Arial; font-size: 0.9rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 2px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{cnt}}</span>
-              {% else %}
-              <span style="font-family: Arial; font-size: 1.1rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 4px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{cnt}}</span>
-              {% endif %}
+          {% if r.disease_cnt %}
+            {% if r.disease_cnt >= 10 %}
+            <span style="font-family: Arial; font-size: 0.9rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 2px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{r.disease_cnt}}</span>
+            {% else %}
+            <span style="font-family: Arial; font-size: 1.1rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 4px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{r.disease_cnt}}</span>
             {% endif %}
-          {% endfor %}  
+          {% endif %}
           <span style="color:var(--color-gray); border-bottom:1px solid var(--color-gray);">{{r.trainer}}</span>
           </a>
         </div>

@@ -1,16 +1,19 @@
 from datetime import datetime, timedelta
 from datetime import date, datetime
 from email.message import EmailMessage
+import logging
 import os
+from urllib.parse import unquote
 
 from django.contrib import messages
 
 # from django.contrib.auth.models import User
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from django.db import connection
+from django.core.cache import cache
+from django.db import connection, DatabaseError, DataError, IntegrityError, transaction
 from django.db.utils import OperationalError, ProgrammingError
-from django.db.models import Count, Max, Min, Q
+from django.db.models import Count, F, Max, Min, Q
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
@@ -99,6 +102,7 @@ from base.models import (
     Topic,
     User,
     Visitor,
+    VisitorCount,
     VisitorLog,
 )
 
@@ -110,36 +114,59 @@ from django.contrib.auth.forms import PasswordChangeForm
 
 from django.utils import timezone
 
+logger = logging.getLogger(__name__)
+
+VISIT_TRACKING_ENABLED = os.getenv("VISIT_TRACKING_ENABLED", "true").lower() == "true"
+VISIT_THROTTLE_SECONDS = int(os.getenv("VISIT_THROTTLE_SECONDS", "60"))
+TRUSTED_PROXY_IPS = {
+    ip.strip() for ip in os.getenv("TRUSTED_PROXY_IPS", "").split(",") if ip.strip()
+}
+
 
 def get_client_ip(request):
+    remote_addr = request.META.get("REMOTE_ADDR", "")
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(",")[0]
+    # 신뢰 프록시에서 전달된 경우에만 X-Forwarded-For를 사용한다.
+    if x_forwarded_for and remote_addr in TRUSTED_PROXY_IPS:
+        ip = x_forwarded_for.split(",")[0].strip()
     else:
-        ip = request.META.get("REMOTE_ADDR")
-    return ip
+        ip = remote_addr.strip()
+    return ip or "unknown"
 
 
 def check_visit(request):
+    if not VISIT_TRACKING_ENABLED:
+        return
+
     name = get_client_ip(request)
 
     if name.startswith("15.177"):
         return
 
+    # 요청 폭주 시 동일 방문에 대한 중복 DB write를 줄인다.
+    if VISIT_THROTTLE_SECONDS > 0:
+        throttle_key = f"visit:throttle:{name}:{request.path}"
+        if cache.get(throttle_key):
+            return
+        cache.set(throttle_key, 1, VISIT_THROTTLE_SECONDS)
+
     update_visitor_count(name)
 
     try:
+        current_url = unquote(request.build_absolute_uri() or "")
+        referer_url = unquote(request.META.get("HTTP_REFERER", "Unknown") or "Unknown")
+
         new_visitor = Visitor(
             ip_address=name,
-            user_agent=request.META.get("HTTP_USER_AGENT"),
-            current=request.build_absolute_uri(),
-            referer=request.META.get("HTTP_REFERER", "Unknown"),
+            user_agent=(request.META.get("HTTP_USER_AGENT") or "")[:500],
+            current=current_url[:500],
+            referer=referer_url[:500],
             timestamp=timezone.now(),
         )
         new_visitor.save()
-    except (OperationalError, ProgrammingError) as exc:
+    except (OperationalError, ProgrammingError, DataError, IntegrityError, DatabaseError) as exc:
         # Dev/initial DB state에서 visitor 테이블이 없으면 홈 진입만 우선 허용.
-        print(f"check_visit skipped: {exc}")
+        logger.warning("check_visit skipped: %s", exc)
 
 
 def visitor_count():
@@ -155,38 +182,16 @@ def visitor_count():
 
 def update_visitor_count(name):
     today = date.today()
-    now = datetime.now()
-    timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
-
-    cursor = None
     try:
-        cursor = connection.cursor()
+        with transaction.atomic():
+            updated = VisitorCount.objects.filter(date=today).update(count=F("count") + 1)
+            if updated == 0:
+                VisitorCount.objects.create(date=today, count=1)
 
-        cursor.execute(
-            "SELECT COUNT(*) FROM base_visitorcount WHERE date = %s", (today,)
-        )
-        result = cursor.fetchone()
-
-        if result[0] > 0:
-            cursor.execute(
-                "UPDATE base_visitorcount SET count = count + 1 WHERE date = %s",
-                (today,),
+            VisitorLog.objects.create(
+                name=name,
+                date=today,
+                timestamp=timezone.now(),
             )
-        else:
-            cursor.execute(
-                "INSERT INTO base_visitorcount (date, count) VALUES (%s, %s)",
-                (today, 1),
-            )
-
-        sql = "INSERT INTO base_visitorlog (name, date, timestamp) VALUES (%s, %s, %s)"
-        val = (name, today, timestamp)
-        cursor.execute(sql, val)
-
-        connection.commit()
-
-    except (OperationalError, ProgrammingError) as exc:
-        print(f"update_visitor_count skipped: {exc}")
-
-    finally:
-        if cursor:
-            cursor.close()
+    except (OperationalError, ProgrammingError, DataError, IntegrityError, DatabaseError) as exc:
+        logger.warning("update_visitor_count skipped: %s", exc)

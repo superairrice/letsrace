@@ -3,6 +3,7 @@
 
 {% load mathfilters %}
 {% load humanize %}
+{% load custom_filters %}
 
 <html lang="en">
 
@@ -509,7 +510,7 @@
                 </span>&nbsp;
                 {% endif %} -->
 
-                {% if request.useusername == 'admin' %}
+                {% if request.user.username == 'admin' %}
 
                 <a href="{% url 'write_significant' rdate horse %}" 
                         onclick="window.open(this.href, 'write_significant', 'top=' + window.screenTop + ', left=' + window.screen.width + ', width=500, height=550, toolbars=no, scrollbars=yes'); return false;">
@@ -521,13 +522,10 @@
 
                 {% if horse == hname %}
                 <span style="font-size:1.25rem; font-style: italic; color:var(--color-bg); background-color: var(--color-r3); border-radius: 7px; padding: 1px 4px;">{{horse|slice:"0:6"}}</span>
+                {% elif horse in horse_set %}
+                <span style="font-size:1.25rem; font-style: italic; color:var(--color-bg); background-color: var(--color-r5); border-radius: 7px; padding: 1px 4px;">{{horse|slice:"0:6"}}</span>
                 {% else %}
-                  {% for rr in horses %}
-                    {% if rr.horse == horse %}
-                    <span style="font-size:1.25rem; font-style: italic; color:var(--color-bg); background-color: var(--color-r5); border-radius: 7px; padding: 1px 4px;">
-                    {% endif %}
-                  {% endfor %}
-                  {{horse|slice:"0:6"}}</span>
+                <span style="font-size:1.25rem; font-style: italic; color:var(--color-light-gray);">{{horse|slice:"0:6"}}</span>
                 {% endif %}
           
               </div>
@@ -665,8 +663,8 @@
                   <span style="color:var(--color-light-gray); border-bottom:1px solid var(--color-gray);">{{jockey|slice:"0:3"}}</span>
                 {%endif %}
 
-                {% for jname, cnt in training_cnt %}
-                  {% if jockey == jname %}
+                {% with cnt=training_cnt_map|get_item:jockey %}
+                  {% if cnt != None %}
                     {% if cnt|mul:1 <= 4 %}
                     <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-bg);">{{cnt}}</span>
                     {% elif cnt|mul:1 == 5 %}
@@ -681,7 +679,7 @@
                     <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r1);">{{cnt}}</span>
                     {% endif %}
                   {% endif %}
-                {% endfor %}
+                {% endwith %}
               </a>
                 
               </div>
@@ -689,11 +687,11 @@
               {% if trainer in trainer_double_check %}
               <div style="font-size: 1.2rem; text-align: right;">
                 <a href="{% url 'jt_analysis_multi' rno rdate|mul:1|sub:10000 rdate '%' trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
-                {% for hname, max_date, cnt in disease %}
-                  {% if horse == hname %}
+                {% with cnt=disease_map|get_item:horse %}
+                  {% if cnt != None %}
                   <span style="font-family: Arial; font-size: 1.1rem; border-radius: 10px; background-color: var(--color-bg); padding:2px 4px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{cnt}}</span>
                   {% endif %}
-                {% endfor %}  
+                {% endwith %}
                 
                 <span style="color:var(--color-r3); border-bottom:1px solid var(--color-gray);">{{trainer}}</span>
                 </a>
@@ -701,11 +699,11 @@
               {% else %}
               <div style="font-size: 1.2rem; text-align: right;">
                 <a href="{% url 'jt_analysis_multi' rno rdate|mul:1|sub:10000 rdate '%' trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
-                {% for hname, max_date, cnt in disease %}
-                  {% if horse == hname %}
+                {% with cnt=disease_map|get_item:horse %}
+                  {% if cnt != None %}
                   <span style="font-family: Arial; font-size: 1.1rem; border-radius: 10px; background-color: var(--color-bg); padding:2px 4px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{cnt}}</span>
                   {% endif %}
-                {% endfor %}  
+                {% endwith %}
                 <span style="color:var(--color-gray); border-bottom:1px solid var(--color-gray);">{{trainer}}</span>
                 </a>
               </div>

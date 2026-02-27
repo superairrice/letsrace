@@ -216,6 +216,7 @@ MIDDLEWARE = [
     # 우리가 만든 BlockIPMiddleware 추가
     "base.middleware.BlockIPMiddleware",
     "base.middleware.BlockGoHttpClientMiddleware",
+    "base.middleware.VisitTrackingMiddleware",
 ]
 
 INTERNAL_IPS = [

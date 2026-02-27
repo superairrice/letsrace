@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.templatetags.static import static
 
 from django.utils import timezone
 
@@ -13,6 +14,15 @@ class User(AbstractUser):
 
     USERNAME_FIELS = "email"
     REQUIRED_FIELDS = []
+
+    @property
+    def avatar_safe_url(self):
+        try:
+            if self.avatar and self.avatar.name and self.avatar.storage.exists(self.avatar.name):
+                return self.avatar.url
+        except Exception:
+            pass
+        return static("images/avatar.svg")
 
 
 class RaceComment(models.Model):
