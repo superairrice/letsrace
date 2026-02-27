@@ -3,7 +3,7 @@ from datetime import date, datetime
 from email.message import EmailMessage
 import logging
 import os
-from urllib.parse import unquote
+from urllib.parse import unquote, urlsplit, urlunsplit
 
 from django.contrib import messages
 
@@ -126,8 +126,17 @@ TRUSTED_PROXY_IPS = {
 def get_client_ip(request):
     remote_addr = request.META.get("REMOTE_ADDR", "")
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    x_real_ip = (request.META.get("HTTP_X_REAL_IP") or "").strip()
+    cf_connecting_ip = (request.META.get("HTTP_CF_CONNECTING_IP") or "").strip()
     # 신뢰 프록시에서 전달된 경우에만 X-Forwarded-For를 사용한다.
     if x_forwarded_for and remote_addr in TRUSTED_PROXY_IPS:
+        ip = x_forwarded_for.split(",")[0].strip()
+    elif x_real_ip:
+        ip = x_real_ip
+    elif cf_connecting_ip:
+        ip = cf_connecting_ip
+    elif x_forwarded_for and (not remote_addr or remote_addr in ("127.0.0.1", "::1")):
+        # 로컬/프록시 개발환경 fallback
         ip = x_forwarded_for.split(",")[0].strip()
     else:
         ip = remote_addr.strip()
@@ -154,7 +163,26 @@ def check_visit(request):
 
     try:
         current_url = unquote(request.build_absolute_uri() or "")
-        referer_url = unquote(request.META.get("HTTP_REFERER", "Unknown") or "Unknown")
+        referer_raw = request.META.get("HTTP_REFERER") or ""
+        referer_url = unquote(referer_raw).strip() if referer_raw else "직접접속"
+
+        # 프록시 환경에서 build_absolute_uri()가 http로 생성되는 경우를 보정한다.
+        forwarded_proto = (request.META.get("HTTP_X_FORWARDED_PROTO") or "").split(",")[0].strip().lower()
+        if current_url and forwarded_proto in ("http", "https"):
+            split_url = urlsplit(current_url)
+            if split_url.scheme and split_url.scheme != forwarded_proto:
+                current_url = urlunsplit(
+                    (
+                        forwarded_proto,
+                        split_url.netloc,
+                        split_url.path,
+                        split_url.query,
+                        split_url.fragment,
+                    )
+                )
+
+        if referer_url.lower() == "unknown":
+            referer_url = "직접접속"
 
         new_visitor = Visitor(
             ip_address=name,
