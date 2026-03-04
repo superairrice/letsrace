@@ -1220,6 +1220,14 @@ def set_record(connection, rcity, rdate, distance, horse, i_jockey, weight, i_av
                 ) a
             ;
         """
+
+        # -- date_format(DATE_ADD( %s, INTERVAL - 3 DAY), '%%Y%%m%%d')
+        # print(
+        #     "Executing SQL (jockey/trainer 1y stats):",
+        #     strSql,
+        #     (rdate, rdate, rdate, horse, rdate, horse),
+        # )
+
         r_cnt = cursor.execute(
             strSql,
             (rdate,
@@ -1376,7 +1384,8 @@ def set_record(connection, rcity, rdate, distance, horse, i_jockey, weight, i_av
 
     try:
 
-        print(g2f_rank)
+        # print(g2f_rank)
+        
         cursor = connection.cursor()
         strSql = """
             UPDATE exp011 a

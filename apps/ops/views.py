@@ -979,11 +979,11 @@ def execChatGPT(request, rcity, rdate, rno):
 
         print("✅ ChatGPT 예측 완료:")
         # 도표 형태로 출력 (콘솔)
-        print(
-            f"{'순위':^3} | {'마번':^3} | {'종합':^3} | "
-            f"{'s1f':^5} | {'g3f':^5} | {'g1f':^5} | {'기록':^5} | {'최근8r':^5} | {'연대':^3} | {'선행%':^3} | {'마명':^10} | {'트렌드':^6} | {'코멘트':^6}"
-        )
-        print("-" * 100)
+        # print(
+        #     f"{'순위':^3} | {'마번':^3} | {'종합':^3} | "
+        #     f"{'s1f':^5} | {'g3f':^5} | {'g1f':^5} | {'기록':^5} | {'최근8r':^5} | {'연대':^3} | {'선행%':^3} | {'마명':^10} | {'트렌드':^6} | {'코멘트':^6}"
+        # )
+        # print("-" * 100)
 
         if predictions:
             for p in predictions:
@@ -1066,11 +1066,11 @@ def execChatGPT(request, rcity, rdate, rno):
                 )
                 reason_display = p["reason"] if p["reason"] is not None else ""
 
-                print(
-                    f"{p['expected_rank']:^4} | {p['gate']:^6} | "
-                    f"{score_display:^6.2f} | {early_display:^5.1f} | {late_display:^5.1f} | {late200_display:^5.1f} | "
-                    f"{speed_display:^6.1f} | {form_display:^6.1f} | {conn_display:^6.1f} | {front_display:^6.1f} | {p['horse']:10} | {one_line_display:^60} | {reason_display:^1000}"
-                )
+                # print(
+                #     f"{p['expected_rank']:^4} | {p['gate']:^6} | "
+                #     f"{score_display:^6.2f} | {early_display:^5.1f} | {late_display:^5.1f} | {late200_display:^5.1f} | "
+                #     f"{speed_display:^6.1f} | {form_display:^6.1f} | {conn_display:^6.1f} | {front_display:^6.1f} | {p['horse']:10} | {one_line_display:^60} | {reason_display:^1000}"
+                # )
 
     except Exception as e:
         # 에러 내용도 같이 내려주면 디버깅 편함

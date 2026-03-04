@@ -2596,6 +2596,7 @@ def _run_race_calculation_job(job_id, payload):
                                     job_id, f"[실패] {rcity} {rdate} {rno}경주 - 조건 데이터 없음"
                                 )
                             else:
+                                print(f"Calculating record for {rcity} {rdate} {rno} with weight {weight}")
                                 create_record(connection, r_condition, weight)
                                 execChatGPT(None, rcity=rcity, rdate=rdate, rno=rno)
                                 done += 1

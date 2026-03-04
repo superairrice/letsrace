@@ -274,7 +274,7 @@ WSGI_APPLICATION = "letsrace.wsgi.application"
 #         "PASSWORD": "Ruddksp!23",  # [4]
 #         # "HOST": "super007.synology.me",  # [5]
 #         "HOST": "192.168.219.111",  # [5]
-#         # 'HOST': '123.111.131.8',         # [5]
+#         # 'HOST': '112.152.252.174',         # [5]
 #         "PORT": "3307",  # [6]
 #     }
 # }
