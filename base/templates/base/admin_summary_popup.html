@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+{% load static %}
+{% load humanize %}
+
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" type="image/x-icon" href="{% static '/images/number-9.png' %}" />
+  <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
+  <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
+  <title>관리자 요약</title>
+  <style>
+    body.admin-summary-page {
+      margin: 0;
+      padding: 0.7rem;
+      background: #1f2436;
+      color: #d9e4f2;
+      font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+      font-size: 1.62rem;
+      line-height: 1.48;
+    }
+
+    .admin-summary {
+      border: 1px solid rgba(132, 148, 178, 0.38);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(27, 36, 56, 0.96) 0%, rgba(22, 30, 47, 0.96) 100%);
+      padding: 1rem;
+    }
+
+    .admin-summary__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .admin-summary__title {
+      font-size: 1.95rem;
+      font-weight: 750;
+      letter-spacing: 0.01em;
+      line-height: 1.15;
+      color: #f0f6ff;
+    }
+
+    .admin-summary__meta {
+      font-size: 1.45rem;
+      color: #9fb3cf;
+      font-weight: 600;
+      letter-spacing: 0.015em;
+      text-align: right;
+    }
+
+    .admin-summary__meta strong {
+      color: #7dd6ef;
+      font-weight: 700;
+    }
+
+    .admin-summary__kpis {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.66rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .admin-summary__kpi {
+      border: 1px solid rgba(122, 143, 175, 0.48);
+      border-radius: 8px;
+      background: rgba(17, 28, 44, 0.78);
+      padding: 0.62rem 0.78rem;
+    }
+
+    .admin-summary__kpi-label {
+      display: block;
+      font-size: 1.52rem;
+      color: #8ca5c2;
+      margin-bottom: 0.24rem;
+    }
+
+    .admin-summary__kpi-value {
+      display: block;
+      text-align: right;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.84rem;
+      font-variant-numeric: tabular-nums;
+      color: #e7f2ff;
+      font-weight: 400;
+    }
+
+    .admin-summary__kpi-value.is-profit-plus { color: #41db8c; }
+    .admin-summary__kpi-value.is-profit-minus { color: #ff6f6f; }
+
+    .admin-summary__ops {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.5rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .admin-summary__ops-item {
+      border: 1px solid rgba(105, 133, 171, 0.46);
+      border-radius: 8px;
+      background: rgba(14, 24, 40, 0.65);
+      padding: 0.36rem 0.5rem;
+    }
+
+    .admin-summary__ops-label {
+      display: block;
+      font-size: 1.14rem;
+      color: #8ca5c2;
+      margin-bottom: 0.08rem;
+    }
+
+    .admin-summary__ops-value {
+      display: block;
+      text-align: right;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.34rem;
+      color: #dff0ff;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.2;
+    }
+
+    .admin-summary__ops-value.is-good { color: #47d78c; }
+    .admin-summary__ops-value.is-bad { color: #ff6f6f; }
+
+    .admin-summary__track {
+      border: 1px solid rgba(117, 140, 171, 0.4);
+      border-radius: 8px;
+      background: rgba(16, 25, 41, 0.72);
+      padding: 0.6rem 0.7rem;
+      margin-bottom: 0.66rem;
+    }
+
+    .admin-summary__track:last-child { margin-bottom: 0; }
+
+    .admin-summary__track-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.36rem;
+      font-size: 1.52rem;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .admin-summary__track-name {
+      color: #f0f6ff;
+      font-weight: 700;
+    }
+
+    .admin-summary__track-right {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.72rem;
+    }
+
+    .admin-summary__track-roi {
+      color: #b9cce2;
+      font-variant-numeric: tabular-nums;
+      font-size: 1.25rem;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .admin-summary__track-roi.is-good { color: #47d78c; }
+    .admin-summary__track-roi.is-bad { color: #ff6f6f; }
+
+    .admin-summary__track-races {
+      color: #9fb8d6;
+      font-variant-numeric: tabular-nums;
+      font-size: 1.2rem;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .admin-summary__track-pop {
+      color: #9ec7e9;
+      font-variant-numeric: tabular-nums;
+      font-size: 1.15rem;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .admin-summary__track-pop.is-good {
+      color: #47d78c;
+    }
+
+    .admin-summary__track-total {
+      color: #b9cce2;
+      font-variant-numeric: tabular-nums;
+      font-size: 1.35rem;
+    }
+
+    .admin-summary__track-total.is-profit-plus { color: #47d78c; }
+    .admin-summary__track-total.is-profit-minus { color: #ff6f6f; }
+
+    .admin-summary__head-row,
+    .admin-summary__row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.58fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: 0.62rem;
+      align-items: center;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.34rem;
+    }
+
+    .admin-summary__head-row {
+      color: #8198b4;
+      border-bottom: 1px dashed rgba(116, 138, 168, 0.42);
+      padding-bottom: 0.3rem;
+      margin-bottom: 0.16rem;
+    }
+
+    .admin-summary__row {
+      padding: 0.22rem 0;
+    }
+
+    .admin-summary__row + .admin-summary__row {
+      border-top: 1px dotted rgba(109, 129, 156, 0.24);
+    }
+
+    .admin-summary__method { color: #d0ddee; }
+    .admin-summary__num {
+      text-align: right;
+      color: #9db6d6;
+      font-variant-numeric: tabular-nums;
+    }
+    .admin-summary__num.is-profit-plus { color: #47d78c; }
+    .admin-summary__num.is-profit-minus { color: #ff6f6f; }
+
+    .admin-summary__hit {
+      text-align: center;
+    }
+
+    .admin-summary__hit-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.4rem;
+      padding: 0.04rem 0.34rem;
+      border-radius: 999px;
+      border: 1px solid rgba(112, 135, 168, 0.52);
+      color: #8ea4be;
+      background: rgba(28, 39, 61, 0.78);
+      font-size: 1.14rem;
+      line-height: 1.1;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .admin-summary__hit-badge.is-hit {
+      border-color: rgba(74, 197, 118, 0.72);
+      color: #40dc86;
+      background: rgba(18, 56, 36, 0.55);
+    }
+
+    .admin-summary__footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      margin-top: 0.72rem;
+      font-size: 1.36rem;
+      color: #8da4bf;
+    }
+
+    .admin-summary__controls {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-left: auto;
+    }
+
+    .admin-summary__controls button {
+      border: 1px solid rgba(127, 147, 179, 0.62);
+      border-radius: 6px;
+      background: rgba(18, 28, 44, 0.86);
+      color: #b8deff;
+      font-size: 1.24rem;
+      padding: 0.28rem 0.7rem;
+      cursor: pointer;
+    }
+
+    .admin-summary__gate {
+      margin-top: 0.72rem;
+      border: 1px solid rgba(117, 140, 171, 0.4);
+      border-radius: 8px;
+      background: rgba(16, 25, 41, 0.72);
+      padding: 0.6rem 0.7rem;
+    }
+
+    .admin-summary__gate-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.36rem;
+      font-size: 1.34rem;
+      color: #b8d5f0;
+      font-weight: 650;
+    }
+
+    .admin-summary__gate-period {
+      font-size: 1.08rem;
+      color: #88a3c2;
+      font-weight: 500;
+    }
+
+    .admin-summary__gate-city {
+      margin-top: 0.42rem;
+      border: 1px solid rgba(104, 132, 169, 0.35);
+      border-radius: 8px;
+      background: rgba(11, 20, 34, 0.58);
+      padding: 0.36rem 0.44rem;
+    }
+
+    .admin-summary__gate-city-title {
+      font-size: 1.36rem;
+      color: #d6e9ff;
+      font-weight: 560;
+      margin-bottom: 0.16rem;
+      letter-spacing: 0.01em;
+    }
+
+    .admin-summary__gate-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .admin-summary__gate-table th,
+    .admin-summary__gate-table td {
+      padding: 0.3rem 0.12rem;
+      border-bottom: 1px dotted rgba(109, 129, 156, 0.24);
+      vertical-align: middle;
+      line-height: 1.34;
+    }
+
+    .admin-summary__gate-table th {
+      font-size: 1.24rem;
+      color: #8ea8c8;
+      text-align: left;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      border-bottom: 1px dashed rgba(109, 129, 156, 0.34);
+    }
+
+    .admin-summary__gate-rank {
+      text-align: center;
+      color: #9bb5d2;
+      font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      font-size: 1.26rem;
+      font-weight: 500;
+    }
+
+    .admin-summary__gate-table tbody tr:nth-child(odd) {
+      background: rgba(24, 36, 57, 0.38);
+    }
+
+    .admin-summary__gate-table tbody tr:nth-child(even) {
+      background: rgba(13, 24, 40, 0.26);
+    }
+
+    .admin-summary__gate-name {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2.2rem;
+      padding: 0.06rem 0.44rem;
+      border-radius: 999px;
+      border: 1px solid rgba(120, 154, 198, 0.58);
+      background: rgba(31, 47, 74, 0.62);
+      color: #d7e9ff;
+      font-weight: 400;
+      white-space: nowrap;
+      font-size: 1.22rem;
+      letter-spacing: 0.005em;
+      text-align: center;
+    }
+
+    .admin-summary__gate-rank-num {
+      text-align: center;
+      font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      font-size: 0.94rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .admin-summary__gate-r123 {
+      text-align: center;
+      font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      font-size: 1.26rem;
+      font-weight: 520;
+      color: #c7dcf6;
+      white-space: nowrap;
+      letter-spacing: 0.02em;
+    }
+
+    .admin-summary__gate-score {
+      text-align: right;
+      color: #92e4ff;
+      font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      font-size: 1.26rem;
+      font-weight: 560;
+      letter-spacing: 0.015em;
+      white-space: nowrap;
+    }
+
+    .admin-summary__gate-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+
+<body class="admin-summary-page">
+  <section class="admin-summary">
+    <div class="admin-summary__head">
+      <div class="admin-summary__title">관리자 요약</div>
+      <div class="admin-summary__meta">
+        기준일 <strong>{{ fdate }}</strong><br>
+        자동갱신 {{ refresh_sec }}초
+      </div>
+    </div>
+
+    {% if summary_total %}
+    <div class="admin-summary__kpis">
+      <div class="admin-summary__kpi">
+        <span class="admin-summary__kpi-label">총 베팅</span>
+        <span class="admin-summary__kpi-value">{{ summary_total.total_bet|floatformat:0|intcomma }}</span>
+      </div>
+      <div class="admin-summary__kpi">
+        <span class="admin-summary__kpi-label">총 환수</span>
+        <span class="admin-summary__kpi-value">{{ summary_total.total_refund|floatformat:0|intcomma }}</span>
+      </div>
+      <div class="admin-summary__kpi">
+        <span class="admin-summary__kpi-label">손익</span>
+        <span class="admin-summary__kpi-value {% if summary_total.profit >= 0 %}is-profit-plus{% else %}is-profit-minus{% endif %}">
+          {{ summary_total.profit|floatformat:0|intcomma }}
+        </span>
+      </div>
+    </div>
+    {% endif %}
+    <div class="admin-summary__ops">
+      <div class="admin-summary__ops-item">
+        <span class="admin-summary__ops-label">ROI</span>
+        <span class="admin-summary__ops-value {% if metrics.roi >= 1 %}is-good{% else %}is-bad{% endif %}">
+          {{ metrics.roi_pct|floatformat:1 }}%
+        </span>
+      </div>
+      <div class="admin-summary__ops-item">
+        <span class="admin-summary__ops-label">적중률</span>
+        <span class="admin-summary__ops-value {% if metrics.hit_rate >= 0.3 %}is-good{% else %}is-bad{% endif %}">
+          {{ metrics.hit_rate_pct|floatformat:1 }}%
+        </span>
+      </div>
+      <div class="admin-summary__ops-item">
+        <span class="admin-summary__ops-label">MDD</span>
+        <span class="admin-summary__ops-value {% if metrics.mdd < 0 %}is-bad{% endif %}">
+          {{ metrics.mdd|floatformat:0|intcomma }}
+        </span>
+      </div>
+      <div class="admin-summary__ops-item">
+        <span class="admin-summary__ops-label">r_pop1 3착내</span>
+        <span class="admin-summary__ops-value {% if metrics.r_pop1_top3_rate >= 0.5 %}is-good{% endif %}">
+          {{ metrics.r_pop1_top3_rate_pct|floatformat:1 }}%
+        </span>
+      </div>
+      <div class="admin-summary__ops-item">
+        <span class="admin-summary__ops-label">r_pop1 1위</span>
+        <span class="admin-summary__ops-value {% if metrics.r_pop1_top1_rate >= 0.25 %}is-good{% endif %}">
+          {{ metrics.r_pop1_top1_rate_pct|floatformat:1 }}%
+        </span>
+      </div>
+    </div>
+
+    {% if method_bet_by_track %}
+      {% for t in method_bet_by_track %}
+      <article class="admin-summary__track">
+        <div class="admin-summary__track-head">
+          <span class="admin-summary__track-name">{{ t.track }}</span>
+          <span class="admin-summary__track-right">
+            <span class="admin-summary__track-races">경주수 {{ t.total_races|default:0 }}</span>
+            <span class="admin-summary__track-pop {% if t.r_pop1_top3_rate >= 0.5 %}is-good{% endif %}">
+              r1 3착 {{ t.r_pop1_top3_rate_pct|floatformat:1 }}%
+            </span>
+            <span class="admin-summary__track-pop {% if t.r_pop1_top1_rate >= 0.25 %}is-good{% endif %}">
+              r1 1위 {{ t.r_pop1_top1_rate_pct|floatformat:1 }}%
+            </span>
+            <span class="admin-summary__track-roi {% if t.roi >= 1 %}is-good{% else %}is-bad{% endif %}">
+              ROI {{ t.roi_pct|floatformat:1 }}%
+            </span>
+            <span class="admin-summary__track-total {% if t.total_profit >= 0 %}is-profit-plus{% else %}is-profit-minus{% endif %}">
+              합계 {{ t.total_profit|floatformat:0|intcomma }}
+            </span>
+          </span>
+        </div>
+        <div class="admin-summary__head-row">
+          <span>방법</span><span style="text-align:center;">적중</span><span style="text-align:right;">베팅</span><span style="text-align:right;">환수</span><span style="text-align:right;">이익</span>
+        </div>
+        {% for m in t.methods %}
+        <div class="admin-summary__row">
+          <span class="admin-summary__method">{{ m.label }}</span>
+          <span class="admin-summary__hit"><span class="admin-summary__hit-badge {% if m.hits|default:0 > 0 %}is-hit{% endif %}">{{ m.hits|default:0 }}</span></span>
+          <span class="admin-summary__num">{{ m.amount|floatformat:0|intcomma }}</span>
+          <span class="admin-summary__num">{{ m.refund|floatformat:0|intcomma }}</span>
+          <span class="admin-summary__num {% if m.profit >= 0 %}is-profit-plus{% else %}is-profit-minus{% endif %}">{{ m.profit|floatformat:0|intcomma }}</span>
+        </div>
+        {% endfor %}
+      </article>
+      {% endfor %}
+    {% elif method_bet_totals %}
+      <article class="admin-summary__track">
+        <div class="admin-summary__head-row">
+          <span>방법</span><span style="text-align:center;">적중</span><span style="text-align:right;">베팅</span><span style="text-align:right;">환수</span><span style="text-align:right;">이익</span>
+        </div>
+        {% for m in method_bet_totals %}
+        <div class="admin-summary__row">
+          <span class="admin-summary__method">{{ m.label }}</span>
+          <span class="admin-summary__hit"><span class="admin-summary__hit-badge {% if m.hits|default:0 > 0 %}is-hit{% endif %}">{{ m.hits|default:0 }}</span></span>
+          <span class="admin-summary__num">{{ m.amount|floatformat:0|intcomma }}</span>
+          <span class="admin-summary__num">{{ m.refund|floatformat:0|intcomma }}</span>
+          <span class="admin-summary__num {% if m.profit >= 0 %}is-profit-plus{% else %}is-profit-minus{% endif %}">{{ m.profit|floatformat:0|intcomma }}</span>
+        </div>
+        {% endfor %}
+      </article>
+    {% else %}
+      <article class="admin-summary__track">
+        요약 데이터가 없습니다.
+      </article>
+    {% endif %}
+
+    <section class="admin-summary__gate">
+      <div class="admin-summary__gate-head">
+        <span>마번 Top5</span>
+        <span class="admin-summary__gate-period">{{ gate_top3_period_label }} (토±2일)</span>
+      </div>
+      {% if gate_top3_by_city %}
+        <div class="admin-summary__gate-grid">
+          {% for c in gate_top3_by_city %}
+          <div class="admin-summary__gate-city">
+            <div class="admin-summary__gate-city-title">{{ c.rcity }}</div>
+            <table class="admin-summary__gate-table">
+              <thead>
+                <tr>
+                  <th style="width: 14%; text-align:center;">순위</th>
+                  <th style="width: 18%;">마번</th>
+                  <th style="width: 28%; text-align:center;">1·2·3위</th>
+                  <th style="width: 40%; text-align:right;">3위내</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for g in c.gates %}
+                <tr>
+                  <td class="admin-summary__gate-rank">{{ forloop.counter }}</td>
+                  <td class="admin-summary__gate-name">{{ g.name }}</td>
+                  <td class="admin-summary__gate-r123">{{ g.wins }} · {{ g.seconds }} · {{ g.thirds }}</td>
+                  <td class="admin-summary__gate-score">{{ g.top3 }}/{{ g.entries }} ({{ g.top3_pct|floatformat:1 }}%)</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="admin-summary__gate-name">집계 가능한 데이터가 없습니다.</div>
+      {% endif %}
+    </section>
+
+    <div class="admin-summary__footer">
+      <span>최근 갱신 {{ updated_at|date:"Y-m-d H:i:s" }}</span>
+      <div class="admin-summary__controls">
+        <button type="button" id="manual-refresh">새로고침</button>
+        <button type="button" onclick="window.close()">닫기</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (function () {
+      var refreshSec = Number("{{ refresh_sec|default:'30' }}");
+      var timer = Math.max(10, Number(refreshSec) || 30) * 1000;
+      var manualRefreshBtn = document.getElementById('manual-refresh');
+      if (manualRefreshBtn) {
+        manualRefreshBtn.addEventListener('click', function () {
+          window.location.reload();
+        });
+      }
+      window.setInterval(function () {
+        window.location.reload();
+      }, timer);
+    })();
+  </script>
+</body>
+</html>

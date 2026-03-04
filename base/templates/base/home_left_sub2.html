@@ -10,7 +10,7 @@
   <td style="vertical-align: middle; background-color: var(--color-dark-mid);">
     <a href="{% url 'race_prediction' r_rcity r_rdate r_rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
       
-      {% if r2alloc %}
+      {% if r2alloc or r333alloc or r123alloc %}
       <div class="tooltip"
            data-tip="➡️ {{r_rcity}} {{r_rdate|slice:'4:6'}}/{{r_rdate|slice:'6:8'}} ({{r_rday}}) {{r_rno}}R"
            style="font-size: 1.7rem; background-color: var(--color-bg); padding: 8px 10px; border-radius: 10px; border: 1px solid var(--color-dark-light);">
@@ -78,12 +78,13 @@
       </a>
     </div>
 
-    {% if r2alloc %}
+    {% if r2alloc or r333alloc or r123alloc %}
     
     <div align="right" style="padding-top: 4px;">
       <a href="{% url 'race_result' r_rcity r_rdate r_rno 0 0 0 0 %}"
         onclick="window.open(this.href, 'w_result', 'width=900, height=1000, top=10,left=10 toolbars=no, scrollbars=yes' ); return false;">
         <div class="tooltip" style="font-size: 1.0rem; font-family: Arial; color:var(--color-r3); font-weight: normal;">
+          {% if r2alloc %}
           {% with r2alloc|slice:"2:"|mul:1 as r2 %}
               {% if r2 < 10 %}
                 <span style="font-size: 1.0rem; font-family: Arial; color:var(--color-r4); font-weight: normal;">{{r2alloc|slice:"2:9"}}</span>
@@ -94,8 +95,12 @@
               {% else %}
                 <span style="font-size: 1.0rem; font-family: Arial; color:var(--color-r1); font-weight: normal;">{{r2alloc|slice:"2:9"}}</span>
               {% endif %}
-            {% endwith %}
+          {% endwith %}
+          {% else %}
+            <span style="font-size: 1.0rem; font-family: Arial; color:var(--color-gray); font-weight: normal;">-</span>
+          {% endif %}
           <div align="right" style="line-height: 110%;">
+            {% if r333alloc %}
             {% with r333alloc|slice:"3:"|mul:1 as r333_val %}
               {% if r333_val < 10 %}
                 <span style="font-size: 1.0rem; font-family: Arial; color:var(--color-r4); font-weight: normal;">{{r333alloc|slice:"3:10"}}</span>
@@ -107,8 +112,12 @@
                 <span style="font-size: 1.0rem; font-family: Arial; color:var(--color-r1); font-weight: normal;">{{r333alloc|slice:"3:10"}}</span>
               {% endif %}
             {% endwith %}
+            {% else %}
+              <span style="font-size: 1.0rem; font-family: Arial; color:var(--color-gray); font-weight: normal;">-</span>
+            {% endif %}
           </div>
           <div align="right" style="line-height: 150%;">
+            {% if r123alloc %}
             {% with r123alloc|slice:"3:"|mul:1 as r123_val %}
               {% if r123_val < 10 %}
                 <span style="font-size: 1.0rem; font-family: Arial; color:var(--color-r4); font-weight: normal;">{{r123alloc|slice:"3:10"}}</span>
@@ -120,6 +129,9 @@
                 <span style="font-size: 1.0rem; font-family: Arial; color:var(--color-main); font-weight: normal;">{{r123alloc|slice:"3:10"}}</span>
               {% endif %}
             {% endwith %}
+            {% else %}
+              <span style="font-size: 1.0rem; font-family: Arial; color:var(--color-gray); font-weight: normal;">-</span>
+            {% endif %}
           </div>
 
           <span class="tooltip-text" style="font-family: Arial; font-size: 1.1rem; text-align: left; width: 130px; z-index: 9;">
@@ -131,15 +143,15 @@
               </tr>
               <tr>
                 <td style="text-align: center; font-size: 1.1rem;">복승</td>
-                <td style="font-family: Arial; font-size: 1.1rem; text-align: right;">{{r2alloc|slice:"2:"}}</td>
+                <td style="font-family: Arial; font-size: 1.1rem; text-align: right;">{% if r2alloc %}{{r2alloc|slice:"2:"}}{% else %}-{% endif %}</td>
               </tr>
               <tr>
                 <td style="font-size: 1.1rem;">삼복승</td>
-                <td style="font-family: Arial; font-size: 1.1rem; text-align: right;">{{r333alloc|slice:"3:"}}</td>
+                <td style="font-family: Arial; font-size: 1.1rem; text-align: right;">{% if r333alloc %}{{r333alloc|slice:"3:"}}{% else %}-{% endif %}</td>
               </tr>
               <tr>
                 <td style="font-size: 1.1rem;">삼쌍승</td>
-                <td style="font-family: Arial; font-size: 1.1rem; text-align: right;">{{r123alloc|slice:"3:"}}</td>
+                <td style="font-family: Arial; font-size: 1.1rem; text-align: right;">{% if r123alloc %}{{r123alloc|slice:"3:"}}{% else %}-{% endif %}</td>
               </tr>
       
             </table>

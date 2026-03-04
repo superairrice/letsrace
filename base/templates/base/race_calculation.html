@@ -26,127 +26,426 @@
           $(this).addClass("open").next(".fold").addClass("open");
         }
       });
+
+      // 경주 선택 체크박스 전체선택/해제
+      var $all = $("#check-all-races");
+      var $rows = $("input[name='rcheck']");
+
+      function syncAllState() {
+        var total = $rows.length;
+        var checked = $rows.filter(":checked").length;
+        if (total === 0) {
+          $all.prop("checked", false).prop("indeterminate", false);
+          return;
+        }
+        $all.prop("checked", checked === total);
+        $all.prop("indeterminate", checked > 0 && checked < total);
+      }
+
+      $all.on("change", function () {
+        $rows.prop("checked", $(this).is(":checked"));
+        syncAllState();
+      });
+
+      $rows.on("change", syncAllState);
+      syncAllState();
+
+      // 비동기 집계 로그 폴링
+      var $calcForm = $(".calc-form");
+      var activeJobId = ($calcForm.data("job-id") || "").toString().trim();
+      var statusUrlTemplate = ($calcForm.data("status-url-template") || "").toString();
+      var $logHead = $("#calc-log-head");
+      var $logBody = $("#calc-log-body");
+
+      function escapeHtml(s) {
+        return String(s || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function renderLogs(lines) {
+        var arr = Array.isArray(lines) ? lines : [];
+        if (!arr.length) {
+          $logBody.html('<div class="calc-log__line">집계 실행 후 메시지가 여기에 표시됩니다.</div>');
+          return;
+        }
+        var html = arr.map(function (line) {
+          return '<div class="calc-log__line">' + escapeHtml(line) + '</div>';
+        }).join("");
+        $logBody.html(html);
+        $logBody.scrollTop($logBody[0].scrollHeight);
+      }
+
+      function pollStatus(jobId) {
+        if (!jobId || !statusUrlTemplate) return;
+        var statusUrl = statusUrlTemplate.replace("JOB_ID_PLACEHOLDER", encodeURIComponent(jobId));
+        var timerId = null;
+
+        function tick() {
+          $.getJSON(statusUrl)
+            .done(function (res) {
+              if (!res || !res.ok) return;
+              renderLogs(res.logs || []);
+
+              var status = (res.status || "").toString();
+              var done = Number(res.done || 0);
+              var total = Number(res.total || 0);
+              var errors = Number(res.errors || 0);
+              var progress = Number(res.progress || 0);
+              var text = "집계 로그";
+              if (status) {
+                text += " - " + status.toUpperCase();
+              }
+              if (total > 0) {
+                text += " (" + done + "/" + total + ", " + progress + "%";
+                if (errors > 0) text += ", err " + errors;
+                text += ")";
+              }
+              $logHead.text(text);
+
+              if (status === "success" || status === "failed" || status === "partial") {
+                if (timerId) {
+                  clearInterval(timerId);
+                  timerId = null;
+                }
+              }
+            })
+            .fail(function () {
+              // 배포 환경 안정성: 폴링 실패 시에도 UI/서버 흐름 중단 없이 계속 시도
+            });
+        }
+
+        tick();
+        timerId = setInterval(tick, 1500);
+      }
+
+      if (activeJobId) {
+        pollStatus(activeJobId);
+      }
     });
   </script>
+  <style>
+    .calc-page {
+      background: linear-gradient(180deg, #252a3f 0%, #20263a 100%);
+      min-height: 100vh;
+      font-size: 1.14rem;
+    }
+
+    .calc-main {
+      padding: 0.4rem 1rem 1rem;
+    }
+
+    .calc-search {
+      margin: 0.2rem 1rem 0;
+      border-radius: 10px;
+      border: 1px solid rgba(130, 154, 188, 0.35);
+      background: rgba(73, 82, 109, 0.75);
+      padding: 0.7rem 0.9rem;
+    }
+
+    .calc-search__inner {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+
+    .calc-search__inner input[type="date"] {
+      width: 11.2rem;
+      min-height: 2.2rem;
+      border-radius: 8px;
+      border: 1px solid rgba(127, 149, 182, 0.48);
+      background: rgba(18, 25, 41, 0.65);
+      color: #e1ebfb;
+      padding: 0.2rem 0.5rem;
+      font-size: 1.14rem;
+    }
+
+    .calc-card {
+      width: min(600px, 100%);
+      margin-top: 0.35rem;
+    }
+
+    .calc-form {
+      border-radius: 10px;
+      background: rgba(53, 61, 87, 0.72);
+      border: 1px solid rgba(130, 154, 188, 0.3);
+      padding: 0.72rem;
+    }
+
+    .calc-form__top {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    .calc-check {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.44rem;
+      color: #bdcee7;
+      font-size: 1.14rem;
+      font-weight: 600;
+    }
+
+    .calc-btn {
+      border: 1px solid rgba(118, 203, 236, 0.78);
+      border-radius: 8px;
+      background: linear-gradient(180deg, #7fd7ef 0%, #68bdd8 100%);
+      color: #0d1f30;
+      font-size: 1.14rem;
+      font-weight: 700;
+      line-height: 1;
+      min-height: 2.2rem;
+      padding: 0.35rem 0.95rem;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+
+    .calc-btn:hover {
+      filter: brightness(1.05);
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .calc-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 1.14rem;
+      color: #d8e5f8;
+    }
+
+    .calc-table-wrap {
+      max-height: 340px;
+      overflow: auto;
+      border: 1px solid rgba(129, 148, 182, 0.26);
+      border-radius: 8px;
+    }
+
+    .calc-table thead th {
+      background: rgba(77, 87, 115, 0.82);
+      color: #f0f6ff;
+      font-size: 1.18rem;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(176, 192, 221, 0.5);
+      padding: 0.36rem 0.28rem;
+      text-align: center;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .calc-table tbody td {
+      border-bottom: 1px solid rgba(129, 148, 182, 0.26);
+      border-right: 1px solid rgba(129, 148, 182, 0.22);
+      padding: 0.28rem 0.26rem;
+      line-height: 1.28;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .calc-table tbody tr:nth-child(odd) {
+      background: rgba(57, 66, 92, 0.8);
+    }
+
+    .calc-table tbody tr:nth-child(even) {
+      background: rgba(73, 82, 109, 0.68);
+    }
+
+    .calc-table tbody tr:hover {
+      background: rgba(96, 108, 140, 0.55);
+    }
+
+    .calc-center {
+      text-align: center;
+    }
+
+    .calc-date-chip {
+      font-size: 1.14rem;
+      font-weight: 500;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .calc-date-chip.is-upcoming {
+      color: var(--color-r4);
+      border-radius: 7px;
+      background-color: var(--color-bg);
+      padding: 2px 4px;
+    }
+
+    .calc-distance {
+      font-size: 1.14rem;
+      color: var(--color-light);
+      margin-left: 0.2rem;
+    }
+
+    .calc-grade-open {
+      color: var(--color-r1);
+      font-weight: 700;
+    }
+
+    .calc-log {
+      margin-top: 0.72rem;
+      border: 1px solid rgba(129, 148, 182, 0.3);
+      border-radius: 8px;
+      background: rgba(26, 34, 54, 0.7);
+    }
+
+    .calc-log__head {
+      font-size: 1.02rem;
+      font-weight: 700;
+      color: #cfe3ff;
+      padding: 0.5rem 0.65rem;
+      border-bottom: 1px solid rgba(129, 148, 182, 0.26);
+    }
+
+    .calc-log__body {
+      max-height: 180px;
+      overflow: auto;
+      padding: 0.48rem 0.65rem;
+      font-size: 0.96rem;
+      line-height: 1.45;
+      color: #d9e7fb;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+
+    .calc-log__line {
+      padding: 0.12rem 0;
+      border-bottom: 1px dotted rgba(129, 148, 182, 0.2);
+    }
+
+    .calc-log__line:last-child {
+      border-bottom: 0;
+    }
+  </style>
 </head>
 
-<body>
+<body class="calc-page">
   <!-- ✅ 검색용 GET 폼 -->
   <header>
-    <form class="header__search" method="GET" action="{% url 'race_calculation' %}">
-      <label>
+    <form class="header__search calc-search" method="GET" action="{% url 'race_calculation' %}">
+      <div class="calc-search__inner">
         <a href="{% url 'home' %}" class="header__logo">
           <img src="{% static 'images/number-9.png' %}" />
         </a>
 
-        <input style="width: 12rem;" type="date" value={{fdate1}} name="q1" >
-        <input style="width: 12rem;" type="date" value={{fdate2}} name="q2" >
+        <input type="date" value="{{ fdate1 }}" name="q1" />
+        <input type="date" value="{{ fdate2 }}" name="q2" />
 
-        <button class="btn" style="background: var(--color-main);">Search</button>
+        <button class="calc-btn" type="submit">Search</button>
 
         {% for message in messages %}
           <div class="message {{ message.tags }}">{{ message }}</div>
         {% endfor %}
-      </label>
+      </div>
     </form>
   </header>
 
-  <main>
-    <div style="width:800px; margin-top: 2px;">
+  <main class="calc-main">
+    <div class="calc-card">
 
       <!-- ✅ POST 실행용 폼 -->
-      <form method="POST" enctype="multipart/form-data" action="{% url 'race_calculation' %}">
+      <form class="calc-form" method="POST" enctype="multipart/form-data" action="{% url 'race_calculation' %}" data-job-id="{{ job_id|default:'' }}" data-status-url-template="{% url 'race_calculation_job_status' 'JOB_ID_PLACEHOLDER' %}">
 
-        <input type="checkbox" name="rcheck1" value="ON" checked />&nbsp;&nbsp;기준정보 집계여부&nbsp;&nbsp;&nbsp;&nbsp;
         {% csrf_token %}
+        <div class="calc-form__top">
+          <label class="calc-check">
+            <input type="checkbox" name="rcheck1" value="ON" checked />
+            기준정보 집계여부
+          </label>
+          <button class="calc-btn" type="submit">경주 집계</button>
+        </div>
 
         <!-- ✅ GET으로 검색한 q1, q2 값을 hidden input으로 넘김 -->
-        <input type="hidden" name="rdate1" value="{{ rdate1 }}" name="rdate1">
-        <input type="hidden" name="rdate2" value="{{ rdate2 }}" name="rdate2">
+        <input type="hidden" name="rdate1" value="{{ rdate1 }}">
+        <input type="hidden" name="rdate2" value="{{ rdate2 }}">
 
-        <input type="hidden" name="q1" value={{fdate1}} name="q1" >
-        <input type="hidden" name="q2" value={{fdate2}} name="q2" >
+        <input type="hidden" name="q1" value="{{ fdate1 }}">
+        <input type="hidden" name="q2" value="{{ fdate2 }}">
 
-        <style>
-          .btn {
-            background-color: #87CEEB;
-            padding: 5px 10px;
-            margin: 5px;
-            border: none;
-            color: black;
-            text-align: center;
-            text-decoration: none;
-            font-size: 1.4rem;
-            display: inline-block;
-            cursor: pointer;
-            transition-duration: 0.4s;
-          }
-          .btn1, .btn2:hover {
-            box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2),
-                        0 6px 20px 0 rgba(0,0,0,0.19);
-          }
-        </style>
+        <div class="calc-table-wrap">
+          <table class="tt9dark-table calc-table">
+            <colgroup>
+              <col style="width: 8%;">
+              <col style="width: 30%;">
+              <col style="width: 11%;">
+              <col style="width: 10%;">
+              <col style="width: 14%;">
+              <col style="width: 14%;">
+              <col style="width: 13%;">
+            </colgroup>
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="check-all-races" checked title="전체선택/해제"></th>
+                <th>경주일</th>
+                <th>경마장</th>
+                <th>경주번호</th>
+                <th>경주등급</th>
+                <th>경주거리</th>
+                <th>출주마수</th>
+              </tr>
+            </thead>
 
-        <button class="btn btn1" type="submit">경주 집계</button>
+            <tbody>
+              {% for rcity, rdate, rno, grade, rname, distance, dividing, rcount in exp010s %}
+              <tr class="view">
+                <td class="calc-center">
+                  <input type="checkbox" name="rcheck" value="{{ rcity }}|{{ rdate }}|{{ rno }}" checked />
+                </td>
+                <td>
+                <div style="font-style: italic;">
+                  <a href="{% url 'race_prediction' rcity rdate rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
+                    <span class="tooltip">
+                      {% if today <= rdate %}
+                      <span class="calc-date-chip is-upcoming">{{rdate|slice:"0:4"}}.{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
+                      {% else %}
+                      <span class="calc-date-chip">{{rdate|slice:"0:4"}}.{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
+                      {% endif %}
 
-        <table class="tt9dark-table">
-          <thead>
-            <tr>
-              <th>선택</th>
-              <th>경주일</th>
-              <th>경마장</th>
-              <th>경주번호</th>
-              <th>경주등급</th>
-              <th>경주거리</th>
-              <th>출주마수</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {% for rcity, rdate, rno, grade, rname, distance, dividing, rcount in exp010s %}
-            <tr class="view">
-              <td align="center">
-                                  <input type="checkbox" name="rcheck" value="1" checked />
-              </td>
-              <td>
-              <div style="font-style: italic;">
-                <a href="{% url 'race_prediction' rcity rdate rno 0 'awardee' %}" onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
-                  <span class="tooltip">
-                    {% if today <= rdate %}
-                    <span style="font-size: 1.2rem; font-weight:normal; font-family: Arial; color: var(--color-r4); border-radius: 7px; background-color: var(--color-bg); padding: 2px 4px;">'{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
-                    {% else %}
-                    <span style="font-size: 1.2rem; font-weight:normal; font-family: Arial;">'{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
-                    {% endif %}
-
-                    <span style="font-size: 1.2rem; font-weight:normal; font-family: Arial; color:var(--color-light);">{{distance}}</span>
-
-                    {% if 'OPEN' in grade %}
-                    <span style="font-size: 1.2rem; font-family: Arial; color:var(--color-r1);">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}</span>
-                    {% else %}
-                    <span style="font-size: 1.2rem; font-family: Arial;">{{grade|slice:"0:2"}}{{dividing|slice:"0:1"}}</span>
-                    {% endif %}
-
-                    <span class="tooltip-text" style="font-size: 1.2rem; font-weight:normal; text-align: left; z-index: 9;">
-                      <span style="font-size: 1.2rem; font-weight:normal; padding-bottom: 0.5rem;">🐴&nbsp;Race Info.</span>
-                      &nbsp;&nbsp;
-                      <span style="font-size: 1.2rem; font-weight:normal; font-family: Arial;">{{rdate|slice:"0:4"}}.{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
-                      
-                      <br>
-                      &nbsp;&nbsp;&nbsp;&nbsp;
-                      <span style="font-size: 1.2rem; font-weight:normal;">{{dividing}}</span>
+                      <span class="tooltip-text" style="font-size: 1.2rem; font-weight:normal; text-align: left; z-index: 9;">
+                        <span style="font-size: 1.2rem; font-weight:normal; padding-bottom: 0.5rem;">🐴&nbsp;Race Info.</span>
+                        &nbsp;&nbsp;
+                        <span style="font-size: 1.2rem; font-weight:normal; font-family: Arial;">{{rdate|slice:"0:4"}}.{{rdate|slice:"4:6"}}.{{rdate|slice:"6:8"}}</span>
+                        
+                        <br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <span style="font-size: 1.2rem; font-weight:normal;">{{dividing}}</span>
+                      </span>
                     </span>
-                  </span>
-                </a>
-              </div>
-              </td>
-              <td align="center">{{ distance }}</td>
-              <td align="center">{{ rcount }}</td>
-            </tr>
+                  </a>
+                </div>
+                </td>
+                <td class="calc-center">{{ rcity }}</td>
+                <td class="calc-center">{{ rno }}</td>
+                <td class="calc-center">{% if 'OPEN' in grade %}<span class="calc-grade-open">{{ grade|slice:"0:2" }}{{ dividing|slice:"0:1" }}</span>{% else %}{{ grade|slice:"0:2" }}{{ dividing|slice:"0:1" }}{% endif %}</td>
+                <td class="calc-center">{{ distance }}</td>
+                <td class="calc-center">{{ rcount }}</td>
+              </tr>
 
-            {% endfor %}
-          </tbody>
-        </table>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
 
+        <section class="calc-log">
+          <div class="calc-log__head" id="calc-log-head">집계 로그</div>
+          <div class="calc-log__body" id="calc-log-body">
+            {% if calc_logs %}
+              {% for line in calc_logs %}
+              <div class="calc-log__line">{{ line }}</div>
+              {% endfor %}
+            {% else %}
+              <div class="calc-log__line">집계 실행 후 메시지가 여기에 표시됩니다.</div>
+            {% endif %}
+          </div>
+        </section>
 
       </form>
 

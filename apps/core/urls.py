@@ -35,6 +35,7 @@ urlpatterns = [
     path("comment-policy/", views.comment_policy, name="comment_policy"),
     path("", views.home, name="home"),
     path("send_email/", views.send_email, name="send_email"),
+    path("admin-summary-popup/", views.admin_summary_popup, name="admin_summary_popup"),
     # path(
     #     "thethe9_ranks/<str:rcity>/<str:fdate>/<str:tdate>/<str:jockey>/<str:trainer>/<str:host>/<str:horse>/<int:r1>/<int:r2>/<int:rr1>/<int:rr2>/<int:gate>",
     #     views.thethe9Ranks,

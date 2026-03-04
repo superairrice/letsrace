@@ -1,8 +1,14 @@
 from apps.common import *
 import re
+import threading
+import traceback
+import uuid
+from contextlib import redirect_stderr, redirect_stdout
 from html import unescape
+from django.http import JsonResponse
 from django.core.cache import cache
 from apps.domains.race.race import resultOfRace
+from django.db import close_old_connections
 
 # Prediction views
 RACE_PREDICTION_CACHE_TTL = 30
@@ -2404,148 +2410,385 @@ def raceBreakingNews(request):
 
 # record calculation 기준정보 Setup
 
+RACE_CALC_JOB_TTL = 60 * 60
+
+
+def _race_calc_job_key(job_id):
+    return f"race_calc:job:{job_id}"
+
+
+def _race_calc_job_get(job_id):
+    if not job_id:
+        return None
+    try:
+        return cache.get(_race_calc_job_key(job_id))
+    except Exception:
+        return None
+
+
+def _race_calc_job_set(job_id, state):
+    if not job_id:
+        return
+    try:
+        cache.set(_race_calc_job_key(job_id), state, RACE_CALC_JOB_TTL)
+    except Exception:
+        pass
+
+
+def _race_calc_job_update(job_id, **kwargs):
+    state = _race_calc_job_get(job_id) or {}
+    state.update(kwargs)
+    state["updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    _race_calc_job_set(job_id, state)
+
+
+def _race_calc_job_log(job_id, message):
+    state = _race_calc_job_get(job_id) or {}
+    logs = list(state.get("logs", []))
+    logs.append(f"[{datetime.now().strftime('%H:%M:%S')}] {message}")
+    if len(logs) > 300:
+        logs = logs[-300:]
+    state["logs"] = logs
+    state["updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    _race_calc_job_set(job_id, state)
+
+
+class _RaceCalcJobLogStream:
+    def __init__(self, job_id):
+        self.job_id = job_id
+        self._buf = ""
+
+    def write(self, data):
+        text = str(data or "")
+        if not text:
+            return 0
+        self._buf += text
+        while "\n" in self._buf:
+            line, self._buf = self._buf.split("\n", 1)
+            line = line.strip()
+            if line:
+                _race_calc_job_log(self.job_id, line)
+        return len(text)
+
+    def flush(self):
+        line = self._buf.strip()
+        if line:
+            _race_calc_job_log(self.job_id, line)
+        self._buf = ""
+
+
+def _run_race_calculation_job(job_id, payload):
+    from apps.ops.views import execChatGPT
+
+    close_old_connections()
+    _stdout_stream = _RaceCalcJobLogStream(job_id)
+    _stderr_stream = _RaceCalcJobLogStream(job_id)
+    try:
+        with redirect_stdout(_stdout_stream), redirect_stderr(_stderr_stream):
+            rdate1 = payload.get("rdate1", "")
+            rdate2 = payload.get("rdate2", "")
+            selected_exp010s = payload.get("selected_exp010s", [])
+            do_baseline = bool(payload.get("rcheck1"))
+
+            _race_calc_job_update(
+                job_id,
+                status="running",
+                started_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                done=0,
+                total=len(selected_exp010s),
+                errors=0,
+                progress=0,
+            )
+            _race_calc_job_log(
+                job_id,
+                f"집계 시작 / 기간 {rdate1}~{rdate2} / 대상 {len(selected_exp010s)}건",
+            )
+
+            baseline_errors = 0
+            if do_baseline:
+                try:
+                    # 누수 방지 목적: 기준정보 집계 기준일을 기간 시작일의 전일로 맞춘다.
+                    try:
+                        baseline_rdate = (
+                            datetime.strptime(str(rdate1), "%Y%m%d") - timedelta(days=1)
+                        ).strftime("%Y%m%d")
+                    except Exception:
+                        baseline_rdate = rdate1
+
+                    ret = baseline_compute(connection, baseline_rdate)
+                    if ret == 1:
+                        _race_calc_job_log(job_id, f"기준정보 계산 완료: {baseline_rdate}")
+                        renew_stats = renewal_record_s(connection, baseline_rdate) or {}
+                        renew_errors = int(renew_stats.get("errors", 0) or 0)
+                        if renew_errors > 0:
+                            baseline_errors += renew_errors
+                            _race_calc_job_update(job_id, errors=baseline_errors)
+                            _race_calc_job_log(
+                                job_id,
+                                (
+                                    f"기준정보 갱신 부분실패: {baseline_rdate} "
+                                    f"(clear={renew_stats.get('clear_xyz', 0)}, "
+                                    f"x={renew_stats.get('set_x', 0)}, y={renew_stats.get('set_y', 0)}, "
+                                    f"z={renew_stats.get('set_z', 0)}, "
+                                    f"insert={renew_stats.get('insert_record_s', 0)}, "
+                                    f"errors={renew_errors})"
+                                ),
+                            )
+                        else:
+                            _race_calc_job_log(
+                                job_id,
+                                (
+                                    f"기준정보 갱신 완료: {baseline_rdate} "
+                                    f"(clear={renew_stats.get('clear_xyz', 0)}, "
+                                    f"x={renew_stats.get('set_x', 0)}, y={renew_stats.get('set_y', 0)}, "
+                                    f"z={renew_stats.get('set_z', 0)}, "
+                                    f"insert={renew_stats.get('insert_record_s', 0)})"
+                                ),
+                            )
+                    else:
+                        baseline_errors += 1
+                        _race_calc_job_update(job_id, errors=baseline_errors)
+                        _race_calc_job_log(job_id, f"기준정보 계산 오류: {baseline_rdate}")
+                        _race_calc_job_log(
+                            job_id,
+                            "기준정보 계산 실패로 기준정보 갱신 단계를 건너뜀",
+                        )
+                except Exception as e:
+                    baseline_errors += 1
+                    _race_calc_job_update(job_id, errors=baseline_errors)
+                    _race_calc_job_log(job_id, f"기준정보 단계 실패: {e}")
+
+            if not selected_exp010s:
+                _race_calc_job_log(job_id, "선택된 경주가 없어 경주별 집계를 건너뜀")
+            else:
+                weight = []
+                try:
+                    with connection.cursor() as cursor:
+                        cursor.execute(
+                            """
+                            SELECT w_avg, w_fast, w_slow, w_recent3, w_recent5, w_convert, 1 w_flag
+                            FROM weight
+                            WHERE wdate = (SELECT MAX(wdate) FROM weight);
+                            """
+                        )
+                        weight = cursor.fetchall()
+                except Exception as e:
+                    _race_calc_job_log(job_id, f"가중치 조회 실패: {e}")
+
+                if not weight:
+                    baseline_errors += 1
+                    _race_calc_job_update(job_id, errors=baseline_errors)
+                    _race_calc_job_log(job_id, "가중치(weight) 데이터가 없어 집계를 중단")
+                else:
+                    done = 0
+                    errors = baseline_errors
+                    total = len(selected_exp010s)
+                    for exp010 in selected_exp010s:
+                        rcity, rdate, rno = exp010[0], exp010[1], exp010[2]
+                        _race_calc_job_log(job_id, f"[시작] {rcity} {rdate} {rno}경주")
+                        try:
+                            r_condition = Exp010.objects.filter(
+                                rcity=rcity, rdate=rdate, rno=rno
+                            ).first()
+                            if r_condition is None:
+                                errors += 1
+                                _race_calc_job_log(
+                                    job_id, f"[실패] {rcity} {rdate} {rno}경주 - 조건 데이터 없음"
+                                )
+                            else:
+                                create_record(connection, r_condition, weight)
+                                execChatGPT(None, rcity=rcity, rdate=rdate, rno=rno)
+                                done += 1
+                                _race_calc_job_log(job_id, f"[완료] {rcity} {rdate} {rno}경주")
+                        except Exception as e:
+                            errors += 1
+                            _race_calc_job_log(
+                                job_id, f"[실패] {rcity} {rdate} {rno}경주 - {e}"
+                            )
+
+                        progress = int(((done + errors) / total) * 100) if total > 0 else 100
+                        _race_calc_job_update(
+                            job_id,
+                            done=done,
+                            errors=errors,
+                            total=total,
+                            progress=progress,
+                        )
+
+                    # try:
+                    #     update_m_rank_score_for_period(
+                    #         rdate1,
+                    #         rdate2,
+                    #         model_name=f"sb_top3_roll12_{rdate1[0:6]}",
+                    #     )
+                    #     _race_calc_job_log(job_id, "m_rank/m_score 갱신 완료")
+                    # except Exception as e:
+                    #     _race_calc_job_log(job_id, f"m_rank/m_score 갱신 실패: {e}")
+                        
+                        
+                    # try:
+                    #     update_exp011_for_period(rdate1, rdate2)
+                    #     _race_calc_job_log(job_id, "exp011 점수 갱신 완료")
+                    # except Exception as e:
+                    #     _race_calc_job_log(job_id, f"exp011 점수 갱신 실패: {e}")
+                    # try:
+                    #     run_rguide_update(from_date=rdate1, to_date=rdate2, dry_run=False)
+                    #     _race_calc_job_log(job_id, "r_guide 업데이트 완료")
+                    # except Exception as e:
+                    #     _race_calc_job_log(job_id, f"r_guide 업데이트 실패: {e}")
+
+            state = _race_calc_job_get(job_id) or {}
+            final_errors = int(state.get("errors", 0) or 0)
+            final_done = int(state.get("done", 0) or 0)
+            final_status = "success"
+            if final_errors > 0 and final_done > 0:
+                final_status = "partial"
+            elif final_errors > 0 and final_done == 0:
+                final_status = "failed"
+
+            _race_calc_job_update(
+                job_id,
+                status=final_status,
+                done=final_done,
+                errors=final_errors,
+                progress=100,
+                finished_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            )
+            _race_calc_job_log(job_id, "집계 작업 종료")
+    except Exception as e:
+        _race_calc_job_update(
+            job_id,
+            status="failed",
+            progress=100,
+            finished_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        )
+        _race_calc_job_log(job_id, f"치명적 오류: {e}")
+        _race_calc_job_log(job_id, traceback.format_exc())
+    finally:
+        _stdout_stream.flush()
+        _stderr_stream.flush()
+        close_old_connections()
+
+
+@login_required
 def raceCalculation(request):
+    if not (request.user.username == "admin" or request.user.is_superuser):
+        return HttpResponse(status=403)
 
-    if request.method == "GET":
-        q1 = request.GET.get("q1") if request.GET.get("q1") != None else ""
-        q2 = request.GET.get("q2") if request.GET.get("q2") != None else ""
+    def _to_ymd(raw):
+        v = (raw or "").strip()
+        if len(v) == 8 and v.isdigit():
+            return v
+        if len(v) == 10 and v[4] == "-" and v[7] == "-":
+            return v[0:4] + v[5:7] + v[8:10]
+        return ""
 
-        if q1 == "":
-            rday1 = Racing.objects.values("rdate").distinct()[0]["rdate"]  # weeks 기준일
+    def _to_date_dash(raw):
+        ymd = _to_ymd(raw)
+        if len(ymd) == 8:
+            return f"{ymd[0:4]}-{ymd[4:6]}-{ymd[6:8]}"
+        return ""
 
-            rday3 = Racing.objects.values("rdate").distinct()[2]["rdate"]  # weeks 기준일
+    q1 = request.GET.get("q1", "") if request.method == "GET" else request.POST.get("q1", "")
+    q2 = request.GET.get("q2", "") if request.method == "GET" else request.POST.get("q2", "")
+    job_id = (request.GET.get("job_id", "") if request.method == "GET" else "").strip()
+    calc_logs = []
 
-            rdate1 = rday1[0:4] + rday1[4:6] + rday1[6:8]
-            rdate2 = rday3[0:4] + rday3[4:6] + rday3[6:8]
+    rdate1 = _to_ymd(q1)
+    rdate2 = _to_ymd(q2)
 
-            fdate1 = rday1[0:4] + "-" + rday1[4:6] + "-" + rday1[6:8]
-            fdate2 = rday3[0:4] + "-" + rday3[4:6] + "-" + rday3[6:8]
+    if not rdate1 or not rdate2:
+        rdates = list(Racing.objects.values("rdate").order_by("-rdate").distinct()[:3])
+        if len(rdates) < 3:
+            messages.error(request, "집계 기준 경주일 데이터가 부족합니다.")
+            calc_logs.append("집계 기준 경주일 데이터가 부족하여 목록을 생성하지 못했습니다.")
+            context = {
+                "q1": q1,
+                "q2": q2,
+                "rdate1": "",
+                "rdate2": "",
+                "fdate1": "",
+                "fdate2": "",
+                "exp010s": [],
+                "calc_logs": calc_logs,
+            }
+            return render(request, "base/race_calculation.html", context)
+        rdate1 = rdates[0]["rdate"]
+        rdate2 = rdates[2]["rdate"]
 
-        else:
-            rdate1 = q1[0:4] + q1[5:7] + q1[8:10]
-            rdate2 = q2[0:4] + q2[5:7] + q2[8:10]
+    if rdate1 > rdate2:
+        rdate1, rdate2 = rdate2, rdate1
 
-            fdate1 = q1[0:4] + "-" + q1[5:7] + "-" + q1[8:10]
-            fdate2 = q2[0:4] + "-" + q2[5:7] + "-" + q2[8:10]
+    fdate1 = _to_date_dash(rdate1)
+    fdate2 = _to_date_dash(rdate2)
 
-        # print(rdate1, rdate2)
-        exp010s = []
-
-        # exp011 조회
-        try:
-            with connection.cursor() as cursor:
-                query = """
-                    SELECT rcity, rdate, rno, grade, rname, distance, dividing, rcount
-                    FROM exp010
-                    WHERE rdate between %s and %s
-                    ORDER BY rcity, rdate, rno;
-                """
-                cursor.execute(query, (rdate1, rdate2))
-                exp010s = cursor.fetchall()
-
-        except Exception as e:
-            print(f"❌ Failed selecting in 경주 메모: {e}")
-        finally:
-            cursor.close()
+    exp010s = []
+    try:
+        with connection.cursor() as cursor:
+            query = """
+                SELECT rcity, rdate, rno, grade, rname, distance, dividing, rcount
+                FROM exp010
+                WHERE rdate between %s and %s
+                ORDER BY rcity, rdate, rno;
+            """
+            cursor.execute(query, (rdate1, rdate2))
+            exp010s = cursor.fetchall()
+    except Exception as e:
+        print(f"❌ Failed selecting in 경주 메모: {e}")
+        calc_logs.append(f"목록 조회 실패: {e}")
 
     if request.method == "POST":
-        from apps.ops.views import execChatGPT
 
-        rdate1 = request.POST.get("rdate1") 
-        rdate2 = request.POST.get("rdate2")
-
-        q1 = request.POST.get("q1")
-        q2 = request.POST.get("q2")
-
-        fdate1 = q1[0:4] + "-" + q1[5:7] + "-" + q1[8:10]
-        fdate2 = q2[0:4] + "-" + q2[5:7] + "-" + q2[8:10]
-
-        rcheck1 = request.POST.get("rcheck1")
-
-        # print(rdate1, rdate2, q1, q2, rcheck1)
-
-        if rcheck1:
-
-            # print("POST", rdate1, rdate2)
-            # print("경주 기준정보 계산 시작", rdate1)
-
-            ret = baseline_compute(connection, rdate1)
-            if ret == 1:
-                messages.success(request, "경주 기준정보 계산 완료.")
-            else:
-                messages.error(request, "경주 기준정보 계산 오류 발생.")
-
-            renewal_record_s(connection, rdate1)
-
-        else:
-
-            print("집계안함", rdate1, rdate2)
-
-        # exp011 조회
-        try:
-            with connection.cursor() as cursor:
-                query = """
-                    SELECT rcity, rdate, rno, grade, rname, distance, dividing, rcount
-                    FROM exp010
-                    WHERE rdate between %s and %s
-                    ORDER BY rcity, rdate, rno;
-                """
-                cursor.execute(query, (rdate1, rdate2))
-                exp010s = cursor.fetchall()
-
-        except Exception as e:
-            print(f"❌ Failed selecting in 경주 메모: {e}")
-        finally:
-            cursor.close()
-
-        try:
-            cursor = connection.cursor()
-
-            strSql = """ 
-                select w_avg, w_fast, w_slow, w_recent3, w_recent5, w_convert, 1 w_flag
-                from weight
-                where wdate = ( select max(wdate) from weight )
-                
-                ; """
-
-            r_cnt = cursor.execute(strSql)  # 결과값 개수 반환
-            weight = cursor.fetchall()
-
-            # connection.commit()
-            # connection.close()
-
-        except:
-            # connection.rollback()
-            print("Failed inserting in weight")
-
-        # print(weight)
-
-        for index, exp010 in enumerate(exp010s):
-
-            print(exp010[0], exp010[1], exp010[2], "경주 Mock Audit 시작")
-
-            r_condition = Exp010.objects.filter(rcity=exp010[0], rdate=exp010[1], rno=exp010[2]).get()
-
-            create_record(connection, r_condition, weight)
-
-            execChatGPT(request, rcity=exp010[0], rdate=exp010[1], rno=exp010[2])
-
-            print(exp010, "경주 집계 완료")
-
-            # if exp010[2] == 1:
-            #     break
-
-        # m_rank m_score 갱신
-        update_m_rank_score_for_period(
-            rdate1,
-            rdate2,
-            # model_name="sb_top3_20241129_20251130",
-            model_name=f"sb_top3_roll12_{rdate1[0:6]}"
+        selected_keys = set(request.POST.getlist("rcheck"))
+        selected_exp010s = []
+        if selected_keys:
+            for row in exp010s:
+                row_key = f"{row[0]}|{row[1]}|{row[2]}"
+                if row_key in selected_keys:
+                    selected_exp010s.append(row)
+        job_id = uuid.uuid4().hex
+        initial_state = {
+            "job_id": job_id,
+            "status": "queued",
+            "logs": [],
+            "done": 0,
+            "errors": 0,
+            "total": len(selected_exp010s),
+            "progress": 0,
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        _race_calc_job_set(job_id, initial_state)
+        _race_calc_job_log(
+            job_id,
+            f"집계 요청 수신 / 기간 {rdate1}~{rdate2} / 대상 {len(selected_exp010s)}건",
         )
 
-        update_exp011_for_period(rdate1, rdate2)         #f_score, f_rank 점수 갱신  
-        # exp010 r_guide 업데이트 (기간)
-        run_rguide_update(from_date=rdate1, to_date=rdate2, dry_run=False)
+        payload = {
+            "rdate1": rdate1,
+            "rdate2": rdate2,
+            "rcheck1": bool(request.POST.get("rcheck1")),
+            "selected_exp010s": selected_exp010s,
+        }
+        try:
+            t = threading.Thread(
+                target=_run_race_calculation_job,
+                args=(job_id, payload),
+                daemon=True,
+            )
+            t.start()
+            messages.info(request, f"집계 작업을 시작했습니다. (job: {job_id[:8]})")
+        except Exception as e:
+            _race_calc_job_update(job_id, status="failed", progress=100)
+            _race_calc_job_log(job_id, f"작업 스레드 시작 실패: {e}")
+            messages.error(request, "집계 작업 시작에 실패했습니다.")
+        return redirect(f"{request.path}?q1={fdate1}&q2={fdate2}&job_id={job_id}")
+
+    if job_id:
+        state = _race_calc_job_get(job_id) or {}
+        calc_logs = list(state.get("logs", []))
+    else:
+        calc_logs = []
 
     context = {
         "q1": q1,
@@ -2555,9 +2798,27 @@ def raceCalculation(request):
         "fdate1": fdate1,
         "fdate2": fdate2,
         "exp010s": exp010s,
+        "calc_logs": calc_logs,
+        "job_id": job_id,
+        "today": datetime.now().strftime("%Y%m%d"),
     }
-
     return render(request, "base/race_calculation.html", context)
+
+
+@login_required
+def raceCalculationJobStatus(request, job_id):
+    # Defensive local import: prevents NameError even if module globals are stale.
+    from django.http import JsonResponse as _JsonResponse
+
+    if not (request.user.username == "admin" or request.user.is_superuser):
+        return _JsonResponse({"ok": False, "message": "forbidden"}, status=403)
+    try:
+        state = _race_calc_job_get(job_id)
+        if not state:
+            return _JsonResponse({"ok": False, "message": "not_found"}, status=404)
+        return _JsonResponse({"ok": True, **state})
+    except Exception as e:
+        return _JsonResponse({"ok": False, "message": str(e)}, status=200)
 
 def awardStatusTrainer(request):
     q = request.GET.get("q") if request.GET.get("q") != None else ""

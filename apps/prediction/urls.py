@@ -12,6 +12,11 @@ urlpatterns = [
     path("data_management/", views.dataManagement, name="data_management"),
     path("race_breakingnews/", views.raceBreakingNews, name="race_breakingnews"),
     path("race_calculation", views.raceCalculation, name="race_calculation"),
+    path(
+        "race_calculation/job-status/<str:job_id>",
+        views.raceCalculationJobStatus,
+        name="race_calculation_job_status",
+    ),
     path("krafile_input/", views.krafileInput, name="krafile_input"),
     path("breakingnews_input/", views.BreakingNewsInput, name="breakingnews_input"),
     path(

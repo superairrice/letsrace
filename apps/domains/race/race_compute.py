@@ -17,16 +17,15 @@ def baseline_compute(connection, as_rdate):
         cursor = connection.cursor()
 
         ls_to = as_rdate
-
-        # 3일 전 날짜 (PowerBuilder의 subdate 3일)
-        cursor.execute(
-            "SELECT DATE_FORMAT(SUBDATE(STR_TO_DATE(%s, '%%Y%%m%%d'), 3), '%%Y%%m%%d')",
-            (as_rdate,),
-        )
-
-        print("ls_to:", ls_to)
-        ls_to = cursor.fetchone()[0]
-        # ls_from = cursor.fetchone()[0]
+        # # 3일 전 날짜 (PowerBuilder의 subdate 3일)
+        # cursor.execute(
+        #     "SELECT DATE_FORMAT(SUBDATE(STR_TO_DATE(%s, '%%Y%%m%%d'), 3), '%%Y%%m%%d')",
+        #     (as_rdate,),
+        # )
+        # row = cursor.fetchone()
+        # if row and row[0]:
+        #     ls_to = row[0]
+        # # ls_from = cursor.fetchone()[0]
 
         ls_from = '20180101'
 
@@ -324,172 +323,176 @@ def renewal_record_s(connection, as_rdate):
     rec011 테이블의 adv_jockey, adv_track, i_convert 컬럼을 record_s 테이블에 업데이트
     :param connection: pymysql.connect()로 생성된 연결 객체
     :param as_rdate: 기준일자 (예: '20251019')
-    :return: 없음
+    :return: 단계별 반영 건수/오류 건수(dict)
     """
+    stats = {
+        "clear_xyz": 0,
+        "set_x": 0,
+        "set_y": 0,
+        "set_z": 0,
+        "truncate_record_s": 0,
+        "insert_record_s": 0,
+        "errors": 0,
+    }
+
     try:
-        cursor = connection.cursor()
-
-        update_sql = """
-        update rec011 a set r_flag = '0'
-        where rdate <= %s --  and rno = 1
-        and r_flag in ( 'X', 'Y', 'Z' ) 
-        """
-
-        r_cnt = cursor.execute(update_sql, (as_rdate,))
-        print(f"Updated {r_cnt} rows in rec011 table 'X', 'Y', 'Z' Clear")
-        connection.commit()
-
+        with connection.cursor() as cursor:
+            update_sql = """
+            update rec011 a set r_flag = '0'
+            where rdate <= %s --  and rno = 1
+            and r_flag in ( 'X', 'Y', 'Z' ) 
+            """
+            r_cnt = cursor.execute(update_sql, (as_rdate,))
+            stats["clear_xyz"] = r_cnt
+            print(f"Updated {r_cnt} rows in rec011 table 'X', 'Y', 'Z' Clear")
+            connection.commit()
     except Exception as e:
+        stats["errors"] += 1
         print("❌ Error in rec011 table 'X', 'Y', 'Z' Clear:", e)
         connection.rollback()
 
-    finally:
-        cursor.close()
-
     try:
-        cursor = connection.cursor()
-
-        update_sql = """
-        update The1.rec011 a set r_flag = 'X'
-        where rdate <= %s --  and rno = 1
-        and ( rcity, rdate, rno ) in ( select rcity, rdate, rno from The1.rec010 where race_speed in ( '①', '②' ))
-        and ( adv_track >= 50 )
-        and ( r_flag = '0' or r_flag is null ) 
-        """
-
-        r_cnt = cursor.execute(update_sql, (as_rdate,))
-        print(f"Updated {r_cnt} rows in rec011 table 'X' Set")
-        connection.commit()
-
+        with connection.cursor() as cursor:
+            update_sql = """
+            update The1.rec011 a set r_flag = 'X'
+            where rdate <= %s --  and rno = 1
+            and ( rcity, rdate, rno ) in ( select rcity, rdate, rno from The1.rec010 where race_speed in ( '①', '②' ))
+            and ( adv_track >= 50 )
+            and ( r_flag = '0' or r_flag is null ) 
+            """
+            r_cnt = cursor.execute(update_sql, (as_rdate,))
+            stats["set_x"] = r_cnt
+            print(f"Updated {r_cnt} rows in rec011 table 'X' Set")
+            connection.commit()
     except Exception as e:
+        stats["errors"] += 1
         print("❌ Error in rec011 table 'X' Set", e)
         connection.rollback()
 
-    finally:
-        cursor.close()
     try:
-        cursor = connection.cursor()
-
-        update_sql = """
-        update The1.rec011 a set r_flag = 'Y'
-        where rdate <= %s --  and rno = 1
-        and ( rcity, rdate, rno ) in ( select rcity, rdate, rno from The1.rec010 where race_speed in ( '⑨', '⑩') )
-        and ( adv_track <= -50 )
-        and ( r_flag = '0' or r_flag is null ) 
-        """
-
-        r_cnt = cursor.execute(update_sql, (as_rdate,))
-        print(f"Updated {r_cnt} rows in rec011 table 'Y' Set")
-        connection.commit()
-
+        with connection.cursor() as cursor:
+            update_sql = """
+            update The1.rec011 a set r_flag = 'Y'
+            where rdate <= %s --  and rno = 1
+            and ( rcity, rdate, rno ) in ( select rcity, rdate, rno from The1.rec010 where race_speed in ( '⑨', '⑩') )
+            and ( adv_track <= -50 )
+            and ( r_flag = '0' or r_flag is null ) 
+            """
+            r_cnt = cursor.execute(update_sql, (as_rdate,))
+            stats["set_y"] = r_cnt
+            print(f"Updated {r_cnt} rows in rec011 table 'Y' Set")
+            connection.commit()
     except Exception as e:
+        stats["errors"] += 1
         print("❌ Error in rec011 table 'Y' Set", e)
         connection.rollback()
 
-    finally:
-        cursor.close()
     try:
-        cursor = connection.cursor()
-
-        update_sql = """
-        update The1.rec011 a set r_flag = 'Z'
-        where rdate <= %s --  and rno = 1
-        and i_convert -  ( select min(i_convert) from The1.rec011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = 1  ) > 300 
-        and ( r_flag = '0' or r_flag is null ) 
-        """
-
-        r_cnt = cursor.execute(update_sql, (as_rdate,))
-        print(f"Updated {r_cnt} rows in rec011 table 'Z' Set")
-        connection.commit()
-
+        with connection.cursor() as cursor:
+            update_sql = """
+            update The1.rec011 a set r_flag = 'Z'
+            where rdate <= %s --  and rno = 1
+            and i_convert -  ( select min(i_convert) from The1.rec011 where rcity = a.rcity and rdate = a.rdate and rno = a.rno and rank = 1  ) > 300 
+            and ( r_flag = '0' or r_flag is null ) 
+            """
+            r_cnt = cursor.execute(update_sql, (as_rdate,))
+            stats["set_z"] = r_cnt
+            print(f"Updated {r_cnt} rows in rec011 table 'Z' Set")
+            connection.commit()
     except Exception as e:
+        stats["errors"] += 1
         print("❌ Error in rec011 table 'Z' Set:", e)
         connection.rollback()
 
-    finally:
-        cursor.close()
-
-    print("truncate table The1.record_s;")
-    cursor = connection.cursor()
-    cursor.execute("truncate table record_s")
-    connection.commit()
+    try:
+        print("truncate table The1.record_s;")
+        with connection.cursor() as cursor:
+            cursor.execute("truncate table record_s")
+            stats["truncate_record_s"] = 1
+            connection.commit()
+    except Exception as e:
+        stats["errors"] += 1
+        print("❌ Error in record_s table Truncate", e)
+        connection.rollback()
 
     try:
-        cursor = connection.cursor()
-
-        update_sql = """
-        insert into The1.record_s 
-        SELECT rcity,
-            rdate,
-            rno,
-            rday,
-            rseq,
-            distance,
-            grade,
-            dividing,
-            rname,
-            rcon1,
-            rcon2,
-            weather,
-            rstate,
-            rmoisture,
-            rtime,
-            gate,
-            rank,
-            horse,
-            birthplace,
-            h_sex,
-            h_age,
-            handycap,
-            jockey,
-            joc_adv,
-            trainer,
-            host,
-            rating,
-            h_weight,
-            w_change,
-            record,
-            gap,
-            corners,
-            rs1f,
-            r1c,
-            r2c,
-            r3c,
-            r4c,
-            rg3f,
-            rg2f,
-            rg1f,
-            i_s1f,
-            i_r1c,
-            i_r2c,
-            i_r3c,
-            i_r4c,
-            i_g3f,
-            i_g2f,
-            i_g1f,
-            i_record,
-            jockey_w,
-            burden_w,
-            adv_jockey,
-            adv_track,
-            i_convert, if( isnull(r_flag), '0', r_flag), race_speed
-        FROM The1.record
-        where rname <> '주행검사'
-        and rank < 90
-        and rdate between '20140101' and %s
-
-        """
-
-        r_cnt = cursor.execute(update_sql, (as_rdate,))
-        print(f"Insert {r_cnt} rows in record_s table")
-        connection.commit()
-
+        with connection.cursor() as cursor:
+            update_sql = """
+            insert into The1.record_s 
+            SELECT rcity,
+                rdate,
+                rno,
+                rday,
+                rseq,
+                distance,
+                grade,
+                dividing,
+                rname,
+                rcon1,
+                rcon2,
+                weather,
+                rstate,
+                rmoisture,
+                rtime,
+                gate,
+                rank,
+                horse,
+                birthplace,
+                h_sex,
+                h_age,
+                handycap,
+                jockey,
+                joc_adv,
+                trainer,
+                host,
+                rating,
+                h_weight,
+                w_change,
+                record,
+                gap,
+                corners,
+                rs1f,
+                r1c,
+                r2c,
+                r3c,
+                r4c,
+                rg3f,
+                rg2f,
+                rg1f,
+                i_s1f,
+                i_r1c,
+                i_r2c,
+                i_r3c,
+                i_r4c,
+                i_g3f,
+                i_g2f,
+                i_g1f,
+                i_record,
+                jockey_w,
+                burden_w,
+                adv_jockey,
+                adv_track,
+                i_convert, if( isnull(r_flag), '0', r_flag), race_speed
+            FROM The1.record
+            where rname <> '주행검사'
+            and rank < 90
+            and rdate between '20140101' and %s
+            """
+            r_cnt = cursor.execute(update_sql, (as_rdate,))
+            stats["insert_record_s"] = r_cnt
+            print(f"Insert {r_cnt} rows in record_s table")
+            connection.commit()
     except Exception as e:
+        stats["errors"] += 1
         print("❌ Error in record_s table Insert", e)
         connection.rollback()
 
-    finally:
-        cursor.close()
+    print(
+        "renewal_record_s summary:",
+        f"clear={stats['clear_xyz']}, x={stats['set_x']}, y={stats['set_y']}, z={stats['set_z']},",
+        f"truncate={stats['truncate_record_s']}, insert={stats['insert_record_s']}, errors={stats['errors']}",
+    )
+    return stats
 
 
 def create_record(connection, r_condition, weight):
@@ -1207,7 +1210,8 @@ def set_record(connection, rcity, rdate, distance, horse, i_jockey, weight, i_av
                 where  (a.rcity,a.rdate,a.rno) in (
                                     select rcity, rdate,rno
                                     from rec010
-                                    where rdate between date_format(DATE_ADD( %s, INTERVAL - 372 DAY), '%%Y%%m%%d') and %s
+                                    where rdate between date_format(DATE_ADD( %s, INTERVAL - 372 DAY), '%%Y%%m%%d') 
+                                    and date_format(DATE_ADD( %s, INTERVAL - 3 DAY), '%%Y%%m%%d')
                                     and grade <> '주행검사'
                                 )
                 and a.rank <= 20
@@ -1299,7 +1303,7 @@ def set_record(connection, rcity, rdate, distance, horse, i_jockey, weight, i_av
             ),
         )  # 결과값 개수 반환
         races = cursor.fetchall()
-        
+
         (trend, trend_numeric), detail = judge_horse_trend_7level(races)
 
         # print(horse, trend_numeric)

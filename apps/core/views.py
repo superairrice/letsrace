@@ -19,7 +19,7 @@ from base.models import RaceComment, RaceCommentArchive
 import smtplib
 import re
 from urllib.request import Request, urlopen
-from urllib.parse import quote, urlparse
+from urllib.parse import quote, urlparse, parse_qs
 import xml.etree.ElementTree as ET
 from html import unescape
 
@@ -61,6 +61,471 @@ def _cache_copy_set(key, value, ttl):
         cache.set(key, copy.deepcopy(value), ttl)
     except Exception:
         cache.set(key, value, ttl)
+
+
+def _resolve_home_rdate(q_value):
+    q = (q_value or "").strip()
+    today_ymd = datetime.now().strftime("%Y%m%d")
+    if q:
+        if len(q) == 10 and q[4] == "-" and q[7] == "-":
+            return q[0:4] + q[5:7] + q[8:10]
+        if len(q) == 8 and q.isdigit():
+            return q
+
+    cached = cache.get("home:default_rdate")
+    if cached:
+        return str(cached)
+    return today_ymd
+
+
+def _build_admin_summary_payload(i_rdate):
+    summary = {}
+    summary_total = None
+    method_bet_totals = []
+    method_bet_by_track = []
+    gate_top3_by_city = []
+    gate_top3_period_label = i_rdate
+    method_bet_total_sum = 0.0
+    method_refund_total_sum = 0.0
+    method_profit_total_sum = 0.0
+    metrics = {
+        "roi": 0.0,
+        "hit_rate": 0.0,
+        "r_pop1_top3_rate": 0.0,
+        "r_pop1_top1_rate": 0.0,
+        "mdd": 0.0,
+        "data_age_sec": None,
+        "is_cached": False,
+    }
+
+    try:
+        base_dt = datetime.strptime(i_rdate, "%Y%m%d")
+    except Exception:
+        return {
+            "i_rdate": i_rdate,
+            "from_date": None,
+            "to_date": None,
+            "summary": summary,
+            "summary_total": summary_total,
+            "method_bet_totals": method_bet_totals,
+            "method_bet_by_track": method_bet_by_track,
+            "gate_top3_by_city": gate_top3_by_city,
+            "gate_top3_period_label": gate_top3_period_label,
+            "method_bet_total_sum": method_bet_total_sum,
+            "method_refund_total_sum": method_refund_total_sum,
+            "method_profit_total_sum": method_profit_total_sum,
+            "metrics": metrics,
+        }
+
+    def _nearest_saturday(dt):
+        # 기준일과 가장 가까운 토요일을 앵커로 사용한다.
+        # (동일 거리면 과거 토요일 우선)
+        days_since_sat = (dt.weekday() - 5) % 7
+        prev_sat = dt - timedelta(days=days_since_sat)
+        next_sat = prev_sat + timedelta(days=7)
+        if (dt - prev_sat) <= (next_sat - dt):
+            return prev_sat
+        return next_sat
+
+    sat_dt = _nearest_saturday(base_dt)
+    from_dt = sat_dt - timedelta(days=2)
+    to_dt = sat_dt + timedelta(days=2)
+    from_date = from_dt.strftime("%Y%m%d")
+    to_date = to_dt.strftime("%Y%m%d")
+    refund_cache_key = f"home:rpop2:v2:{from_date}:{to_date}:100"
+    cached_refund = _cache_copy_get(refund_cache_key)
+
+    if isinstance(cached_refund, dict):
+        summary = cached_refund.get("summary", {})
+        method_bet_totals = cached_refund.get("method_bet_totals", [])
+        method_bet_by_track = cached_refund.get("method_bet_by_track", [])
+        method_bet_total_sum = float(cached_refund.get("method_bet_total_sum", 0.0) or 0.0)
+        method_refund_total_sum = float(cached_refund.get("method_refund_total_sum", 0.0) or 0.0)
+        method_profit_total_sum = float(cached_refund.get("method_profit_total_sum", 0.0) or 0.0)
+        cached_metrics = cached_refund.get("metrics")
+        if isinstance(cached_metrics, dict):
+            metrics.update(cached_metrics)
+        metrics["is_cached"] = True
+        computed_at = cached_refund.get("computed_at")
+        if computed_at:
+            try:
+                computed_dt = datetime.fromisoformat(str(computed_at))
+                if timezone.is_naive(computed_dt):
+                    computed_dt = timezone.make_aware(computed_dt, timezone.get_current_timezone())
+                metrics["data_age_sec"] = max(
+                    0, int((timezone.now() - computed_dt).total_seconds())
+                )
+            except Exception:
+                metrics["data_age_sec"] = None
+    else:
+        race_df = None
+        has_refund_base = False
+        cursor = None
+        try:
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                SELECT 1
+                FROM The1.rec010
+                WHERE rdate BETWEEN %s AND %s
+                  AND r123alloc IS NOT NULL AND r123alloc <> '' AND r123alloc <> '0.00'
+                  AND r333alloc IS NOT NULL AND r333alloc <> '' AND r333alloc <> '0.00'
+                LIMIT 1
+                """,
+                (from_date, to_date),
+            )
+            has_refund_base = cursor.fetchone() is not None
+        except Exception:
+            has_refund_base = True
+        finally:
+            if cursor:
+                cursor.close()
+
+        if has_refund_base:
+            try:
+                race_df, summary = calc_rpop_anchor_26_trifecta(
+                    from_date=from_date,
+                    to_date=to_date,
+                    bet_unit=100,
+                )
+            except Exception as exc:
+                print(f"[admin_summary_popup] calc failed: {exc}")
+        else:
+            summary = {}
+
+        method_columns = [
+            ("1축 2~4 5~7", "1축_2~4_5~7_베팅액", "1축_2~4_5~7_환수액", "r_pop1_축_2~4_5~7_적중"),
+            ("1축 2~4", "1축_2~4_베팅액", "1축_2~4_환수액", "r_pop1_축_2~4_적중"),
+            ("1축 2~6 삼복", "1축_2~6_삼복_베팅액", "1축_2~6_삼복_환수액", "r_pop1_축_2~6_삼복_적중"),
+            ("1~2복조 3~8 삼복", "1~2복조_3~8_삼복_베팅액", "1~2복조_3~8_삼복_환수액", "r_pop1~2_복조_3~8_삼복_적중"),
+            ("BOX4 삼복", "BOX4_삼복_베팅액", "BOX4_삼복_환수액", "r_pop1~4_BOX4_삼복_적중"),
+        ]
+
+        if race_df is not None and hasattr(race_df, "columns") and not race_df.empty:
+            # cumulative PnL 기준 최대 낙폭(MDD)
+            try:
+                if {"총베팅액", "총환수액"}.issubset(set(race_df.columns)):
+                    sort_cols = [c for c in ["경주일", "경마장", "경주번호"] if c in race_df.columns]
+                    calc_df = race_df.sort_values(sort_cols) if sort_cols else race_df
+                    pnl = (
+                        calc_df["총환수액"].fillna(0).astype(float)
+                        - calc_df["총베팅액"].fillna(0).astype(float)
+                    )
+                    if not pnl.empty:
+                        equity = pnl.cumsum()
+                        drawdown = equity - equity.cummax()
+                        metrics["mdd"] = float(drawdown.min())
+            except Exception:
+                metrics["mdd"] = 0.0
+
+            for label, bet_col, refund_col, hit_col in method_columns:
+                if bet_col in race_df.columns and refund_col in race_df.columns:
+                    bet_amount = float(race_df[bet_col].fillna(0).sum())
+                    refund_amount = float(race_df[refund_col].fillna(0).sum())
+                    profit_amount = refund_amount - bet_amount
+                    hit_count = (
+                        int(race_df[hit_col].fillna(0).astype(int).sum())
+                        if hit_col in race_df.columns
+                        else 0
+                    )
+                    method_bet_totals.append(
+                        {
+                            "label": label,
+                            "amount": bet_amount,
+                            "refund": refund_amount,
+                            "profit": profit_amount,
+                            "hits": hit_count,
+                        }
+                    )
+                    method_bet_total_sum += bet_amount
+                    method_refund_total_sum += refund_amount
+                    method_profit_total_sum += profit_amount
+
+            if "경마장" in race_df.columns:
+                try:
+                    grouped = race_df.groupby("경마장", dropna=False)
+                    for track, gdf in grouped:
+                        track_name = str(track or "").strip() or "기타"
+                        methods = []
+                        track_bet = 0.0
+                        track_refund = 0.0
+                        track_profit = 0.0
+                        if "경주일" in gdf.columns and "경주번호" in gdf.columns:
+                            track_races = int(
+                                gdf[["경주일", "경주번호"]].drop_duplicates().shape[0]
+                            )
+                        elif "경주번호" in gdf.columns:
+                            track_races = int(gdf["경주번호"].dropna().nunique())
+                        else:
+                            track_races = int(len(gdf))
+                        for label, bet_col, refund_col, hit_col in method_columns:
+                            if bet_col not in gdf.columns or refund_col not in gdf.columns:
+                                continue
+                            bet_amount = float(gdf[bet_col].fillna(0).sum())
+                            refund_amount = float(gdf[refund_col].fillna(0).sum())
+                            profit_amount = refund_amount - bet_amount
+                            hit_count = (
+                                int(gdf[hit_col].fillna(0).astype(int).sum())
+                                if hit_col in gdf.columns
+                                else 0
+                            )
+                            methods.append(
+                                {
+                                    "label": label,
+                                    "amount": bet_amount,
+                                    "refund": refund_amount,
+                                    "profit": profit_amount,
+                                    "hits": hit_count,
+                                }
+                            )
+                            track_bet += bet_amount
+                            track_refund += refund_amount
+                            track_profit += profit_amount
+                        if methods:
+                            method_bet_by_track.append(
+                                {
+                                    "track": track_name,
+                                    "methods": methods,
+                                    "total_races": track_races,
+                                    "total_bet": track_bet,
+                                    "total_refund": track_refund,
+                                    "total_profit": track_profit,
+                                }
+                            )
+                except Exception as exc:
+                    print(f"[admin_summary_popup] track grouping failed: {exc}")
+
+        if method_bet_by_track:
+            preferred_track_order = {"서울": 0, "부산": 1}
+            method_bet_by_track.sort(
+                key=lambda x: (
+                    preferred_track_order.get(str(x.get("track") or "").strip(), 9),
+                    str(x.get("track") or ""),
+                )
+            )
+
+    # 경마장별 부가 지표(r_pop1 1위/3착내) 매핑
+    track_stat_map = {}
+    if isinstance(summary, dict):
+        raw_track_summary = summary.get("track_summary", {}) or {}
+        for tk, d in raw_track_summary.items():
+            track_name = str(tk or "").strip() or "기타"
+            races = int(d.get("races", 0) or 0)
+            top3_hits = int(d.get("r_pop1_top3_hits", 0) or 0)
+            top1_hits = int(d.get("r_pop1_top1_hits", 0) or 0)
+            track_stat_map[track_name] = {
+                "races": races,
+                "r_pop1_top3_hits": top3_hits,
+                "r_pop1_top3_rate": (top3_hits / races) if races > 0 else 0.0,
+                "r_pop1_top1_hits": top1_hits,
+                "r_pop1_top1_rate": (top1_hits / races) if races > 0 else 0.0,
+            }
+
+    # 경마장별 ROI(환수율) 보강: 캐시/실시간 공통 처리
+    for t in method_bet_by_track:
+        try:
+            t_bet = float(t.get("total_bet", 0.0) or 0.0)
+            t_refund = float(t.get("total_refund", 0.0) or 0.0)
+            t_roi = (t_refund / t_bet) if t_bet > 0 else 0.0
+            t["roi"] = t_roi
+            t["roi_pct"] = t_roi * 100.0
+            t_name = str(t.get("track") or "").strip() or "기타"
+            ts = track_stat_map.get(t_name, {})
+            t["r_pop1_top3_rate"] = float(ts.get("r_pop1_top3_rate", 0.0) or 0.0)
+            t["r_pop1_top1_rate"] = float(ts.get("r_pop1_top1_rate", 0.0) or 0.0)
+            t["r_pop1_top3_rate_pct"] = t["r_pop1_top3_rate"] * 100.0
+            t["r_pop1_top1_rate_pct"] = t["r_pop1_top1_rate"] * 100.0
+        except Exception:
+            t["roi"] = 0.0
+            t["roi_pct"] = 0.0
+            t["r_pop1_top3_rate"] = 0.0
+            t["r_pop1_top1_rate"] = 0.0
+            t["r_pop1_top3_rate_pct"] = 0.0
+            t["r_pop1_top1_rate_pct"] = 0.0
+
+    if method_bet_by_track and not any(
+        str(x.get("track") or "").strip() in {"서울", "부산"} for x in method_bet_by_track
+    ):
+        method_bet_by_track.sort(key=lambda x: str(x.get("track") or ""))
+
+    _cache_copy_set(
+        refund_cache_key,
+        {
+            "summary": summary if isinstance(summary, dict) else {},
+            "method_bet_totals": method_bet_totals,
+            "method_bet_by_track": method_bet_by_track,
+            "method_bet_total_sum": method_bet_total_sum,
+            "method_refund_total_sum": method_refund_total_sum,
+            "method_profit_total_sum": method_profit_total_sum,
+            "metrics": metrics,
+            "computed_at": timezone.now().isoformat(),
+        },
+        HOME_REFUND_CACHE_TTL,
+    )
+
+    if isinstance(summary, dict):
+        track_summary = summary.get("track_summary", {})
+        total_races = 0
+        total_bet = 0.0
+        total_refund = 0.0
+        total_hits = 0
+        total_r_pop1_top1_hits = 0
+        total_r_pop1_top3_hits = 0
+        for key in sorted(track_summary.keys()):
+            d = track_summary[key]
+            total_races += d.get("races", 0)
+            total_bet += d.get("total_bet", 0.0)
+            total_refund += d.get("total_refund", 0.0)
+            total_hits += d.get("hits", 0)
+            total_r_pop1_top1_hits += d.get("r_pop1_top1_hits", 0)
+            total_r_pop1_top3_hits += d.get("r_pop1_top3_hits", 0)
+
+        if total_races > 0:
+            summary_total = {
+                "races": total_races,
+                "total_bet": total_bet,
+                "total_refund": total_refund,
+                "profit": total_refund - total_bet,
+                "hits": total_hits,
+                "hit_rate": total_hits / total_races if total_races > 0 else 0.0,
+                "r_pop1_top1_hits": total_r_pop1_top1_hits,
+                "r_pop1_top1_rate": total_r_pop1_top1_hits / total_races if total_races > 0 else 0.0,
+                "r_pop1_top3_hits": total_r_pop1_top3_hits,
+                "r_pop1_top3_rate": total_r_pop1_top3_hits / total_races if total_races > 0 else 0.0,
+                "refund_rate": total_refund / total_bet if total_bet > 0 else 0.0,
+                "avg_bet": total_bet / total_races if total_races > 0 else 0.0,
+            }
+
+    if summary_total:
+        metrics["roi"] = float(summary_total.get("refund_rate", 0.0) or 0.0)
+        metrics["hit_rate"] = float(summary_total.get("hit_rate", 0.0) or 0.0)
+        metrics["r_pop1_top3_rate"] = float(summary_total.get("r_pop1_top3_rate", 0.0) or 0.0)
+        metrics["r_pop1_top1_rate"] = float(summary_total.get("r_pop1_top1_rate", 0.0) or 0.0)
+    elif method_bet_total_sum > 0:
+        metrics["roi"] = method_refund_total_sum / method_bet_total_sum
+    if metrics.get("data_age_sec") is None and not metrics.get("is_cached"):
+        metrics["data_age_sec"] = 0
+    metrics["roi_pct"] = float(metrics.get("roi", 0.0) or 0.0) * 100.0
+    metrics["hit_rate_pct"] = float(metrics.get("hit_rate", 0.0) or 0.0) * 100.0
+    metrics["r_pop1_top3_rate_pct"] = float(metrics.get("r_pop1_top3_rate", 0.0) or 0.0) * 100.0
+    metrics["r_pop1_top1_rate_pct"] = float(metrics.get("r_pop1_top1_rate", 0.0) or 0.0) * 100.0
+    metrics["mdd_abs"] = abs(float(metrics.get("mdd", 0.0) or 0.0))
+
+    # 관리자 팝업 하단용: 경마장별 마번 Top5 (앵커 토요일 기준 ±2일)
+    try:
+        gate_from_dt = sat_dt - timedelta(days=2)
+        gate_to_dt = sat_dt + timedelta(days=2)
+        gate_from = gate_from_dt.strftime("%Y%m%d")
+        gate_to = gate_to_dt.strftime("%Y%m%d")
+        gate_top3_period_label = (
+            f"{gate_from_dt.strftime('%Y.%m.%d')} ~ {gate_to_dt.strftime('%Y.%m.%d')}"
+        )
+
+        gate_rows = []
+        cursor = None
+        try:
+            cursor = connection.cursor()
+            cursor.execute(
+                """
+                SELECT rcity, gate, r_rank
+                FROM exp011
+                WHERE rdate BETWEEN %s AND %s
+                  AND r_rank <= 98
+                  AND rno < 80
+                ORDER BY rcity, rdate, rno, gate
+                """,
+                (gate_from, gate_to),
+            )
+            gate_rows = cursor.fetchall()
+        finally:
+            if cursor:
+                cursor.close()
+
+        city_gate_map = {}
+        for row in gate_rows:
+            try:
+                rcity = str(row[0] or "").strip()
+                gate = str(row[1] or "").strip()
+                rank = int(row[2])
+                if not rcity or not gate or rank < 1 or rank > 12:
+                    continue
+                bucket = city_gate_map.setdefault(rcity, {})
+                item = bucket.setdefault(
+                    gate,
+                    {
+                        "name": gate,
+                        "entries": 0,
+                        "top3": 0,
+                        "wins": 0,
+                        "seconds": 0,
+                        "thirds": 0,
+                        "rank_sum": 0.0,
+                    },
+                )
+                item["entries"] += 1
+                item["rank_sum"] += float(rank)
+                if rank <= 3:
+                    item["top3"] += 1
+                if rank == 1:
+                    item["wins"] += 1
+                elif rank == 2:
+                    item["seconds"] += 1
+                elif rank == 3:
+                    item["thirds"] += 1
+            except Exception:
+                continue
+
+        preferred_city_order = ["서울", "부산"]
+        ordered_cities = [c for c in preferred_city_order if c in city_gate_map]
+        ordered_cities.extend(
+            sorted([c for c in city_gate_map.keys() if c not in preferred_city_order])
+        )
+        for city in ordered_cities:
+            rows = []
+            for it in city_gate_map.get(city, {}).values():
+                entries = int(it.get("entries") or 0)
+                if entries <= 0:
+                    continue
+                rows.append(
+                    {
+                        "name": it.get("name", ""),
+                        "entries": entries,
+                        "top3": int(it.get("top3") or 0),
+                        "top3_pct": (float(it.get("top3") or 0) / entries) * 100.0,
+                        "wins": int(it.get("wins") or 0),
+                        "seconds": int(it.get("seconds") or 0),
+                        "thirds": int(it.get("thirds") or 0),
+                        "avg_rank": float(it.get("rank_sum") or 0.0) / entries,
+                    }
+                )
+            rows.sort(
+                key=lambda x: (
+                    -x["top3"],
+                    -x["wins"],
+                    x["avg_rank"],
+                    -x["entries"],
+                    str(x["name"]),
+                )
+            )
+            gate_top3_by_city.append({"rcity": city, "gates": rows[:5]})
+    except Exception:
+        gate_top3_by_city = []
+
+    return {
+        "i_rdate": i_rdate,
+        "from_date": from_date,
+        "to_date": to_date,
+        "summary": summary,
+        "summary_total": summary_total,
+        "method_bet_totals": method_bet_totals,
+        "method_bet_by_track": method_bet_by_track,
+        "gate_top3_by_city": gate_top3_by_city,
+        "gate_top3_period_label": gate_top3_period_label,
+        "method_bet_total_sum": method_bet_total_sum,
+        "method_refund_total_sum": method_refund_total_sum,
+        "method_profit_total_sum": method_profit_total_sum,
+        "metrics": metrics,
+    }
 
 
 def _extract_image_src(html_text):
@@ -503,11 +968,15 @@ def home(request):
             continue
 
     # home_right 상단 카드: 경마장별 성적 우수 Top3 (마번/기수/마방)
-    # 기준 기간: i_rdate -14일 ~ i_rdate +3일
+    # 기수/마방 기준 기간: i_rdate -16일 ~ i_rdate +3일
+    # 마번 기준 기간: 이번주 토요일 기준 ±2일
     right_city_top3_window_days = 16
     right_city_top3_future_days = 3
     right_city_top3_from = i_rdate
     right_city_top3_to = i_rdate
+    right_city_top3_gate_from = i_rdate
+    right_city_top3_gate_to = i_rdate
+    right_city_top3_gate_label = i_rdate
     try:
         base_dt = datetime.strptime(i_rdate, "%Y%m%d")
         right_city_top3_from = (
@@ -516,18 +985,29 @@ def home(request):
         right_city_top3_to = (
             base_dt + timedelta(days=right_city_top3_future_days)
         ).strftime("%Y%m%d")
+        sat_dt = base_dt + timedelta(days=(5 - base_dt.weekday()))
+        gate_from_dt = sat_dt - timedelta(days=2)
+        gate_to_dt = sat_dt + timedelta(days=2)
+        right_city_top3_gate_from = gate_from_dt.strftime("%Y%m%d")
+        right_city_top3_gate_to = gate_to_dt.strftime("%Y%m%d")
+        right_city_top3_gate_label = (
+            f"{gate_from_dt.strftime('%Y.%m.%d')} ~ {gate_to_dt.strftime('%Y.%m.%d')}"
+        )
     except Exception:
         pass
     perf_rows = []
+    gate_perf_rows = []
     perf_cache_key = f"home:top3_perf:{i_rdate}:{right_city_top3_window_days}:{right_city_top3_future_days}"
+    gate_perf_cache_key = f"home:top3_gate_perf:{right_city_top3_gate_from}:{right_city_top3_gate_to}"
     cached_perf_rows = _cache_copy_get(perf_cache_key)
+    cached_gate_perf_rows = _cache_copy_get(gate_perf_cache_key)
     if cached_perf_rows is not None:
         perf_rows = cached_perf_rows
     else:
         cursor = None
         try:
             cursor = connection.cursor()
-            str_sql = """
+            str_sql_common = """
                 SELECT
                     rcity,
                     gate,
@@ -542,7 +1022,7 @@ def home(request):
                 ORDER BY rcity, rdate, rno, gate
             """
             cursor.execute(
-                str_sql,
+                str_sql_common,
                 (i_rdate, right_city_top3_window_days, i_rdate, right_city_top3_future_days),
             )
             perf_rows = cursor.fetchall()
@@ -553,10 +1033,42 @@ def home(request):
         finally:
             if cursor:
                 cursor.close()
+    if cached_gate_perf_rows is not None:
+        gate_perf_rows = cached_gate_perf_rows
+    else:
+        cursor = None
+        try:
+            cursor = connection.cursor()
+            str_sql_gate = """
+                SELECT
+                    rcity,
+                    gate,
+                    r_rank
+                FROM exp011
+                WHERE rdate BETWEEN %s AND %s
+                  AND r_rank <= 98
+                  AND rno < 80
+                ORDER BY rcity, rdate, rno, gate
+            """
+            cursor.execute(
+                str_sql_gate,
+                (right_city_top3_gate_from, right_city_top3_gate_to),
+            )
+            gate_perf_rows = cursor.fetchall()
+            _cache_copy_set(gate_perf_cache_key, gate_perf_rows, HOME_RACE_CACHE_TTL)
+        except Exception as exc:
+            print(f"Failed selecting top3 gate rows: {exc}")
+            gate_perf_rows = []
+        finally:
+            if cursor:
+                cursor.close()
 
-    # 최근 14일 데이터가 비어 있으면 기존 expects(±3~4일)로 fallback
+    # 기수/마방 데이터가 비어 있으면 기존 expects로 fallback
     if not perf_rows:
         perf_rows = expects
+    # 마번 데이터가 비어 있으면 기대데이터로 fallback(집계는 동일 키: gate/r_rank 사용)
+    if not gate_perf_rows:
+        gate_perf_rows = expects
 
     city_perf_map = {}
 
@@ -621,9 +1133,38 @@ def home(request):
             city_bucket = city_perf_map.setdefault(
                 e_rcity, {"gate": {}, "jockey": {}, "trainer": {}}
             )
-            _acc_perf(city_bucket["gate"], e_gate, rank_int)
             _acc_perf(city_bucket["jockey"], e_jockey, rank_int)
             _acc_perf(city_bucket["trainer"], e_trainer, rank_int)
+        except Exception:
+            continue
+
+    for e in gate_perf_rows:
+        try:
+            if hasattr(e, "rcity"):
+                e_rcity = str(getattr(e, "rcity", "") or "").strip()
+                e_gate = getattr(e, "gate", None)
+                e_rank = getattr(e, "r_rank", None)
+            else:
+                e_rcity = str(e[0] or "").strip()
+                # gate 전용 쿼리: (rcity, gate, r_rank)
+                if len(e) == 3:
+                    e_gate = e[1]
+                    e_rank = e[2]
+                # expects fallback: (rcity, rdate, rday, rno, gate, rank, r_rank, ...)
+                else:
+                    e_gate = e[4] if len(e) > 4 else None
+                    e_rank = e[6] if len(e) > 6 else None
+
+            if not e_rcity:
+                continue
+            rank_int = int(e_rank)
+            if rank_int < 1 or rank_int > 12:
+                continue
+
+            city_bucket = city_perf_map.setdefault(
+                e_rcity, {"gate": {}, "jockey": {}, "trainer": {}}
+            )
+            _acc_perf(city_bucket["gate"], e_gate, rank_int)
         except Exception:
             continue
 
@@ -655,7 +1196,7 @@ def home(request):
                 str(x["name"]),
             )
         )
-        return rows[:3]
+        return rows[:5]
 
     city_order = []
     seen_city = set()
@@ -871,201 +1412,7 @@ def home(request):
         right_humor_items = []
     mark_timing("fetch_news")
 
-    summary = {}
-    from_date = None
-    to_date = None
-    race_rows = 0
-    method_bet_totals = []
-    method_bet_total_sum = 0.0
-    method_refund_total_sum = 0.0
-    method_profit_total_sum = 0.0
-    if request.user.is_authenticated and request.user.username == "admin":
-        base_dt = datetime.strptime(i_rdate, "%Y%m%d")
-        from_date = (base_dt - timedelta(days=3)).strftime("%Y%m%d")
-        to_date = (base_dt + timedelta(days=4)).strftime("%Y%m%d")
-        refund_cache_key = f"home:rpop2:{from_date}:{to_date}:100"
-        cached_refund = _cache_copy_get(refund_cache_key)
-        if isinstance(cached_refund, dict):
-            summary = cached_refund.get("summary", {})
-            race_rows = int(cached_refund.get("race_rows", 0) or 0)
-            method_bet_totals = cached_refund.get("method_bet_totals", [])
-            method_bet_total_sum = float(cached_refund.get("method_bet_total_sum", 0.0) or 0.0)
-            method_refund_total_sum = float(cached_refund.get("method_refund_total_sum", 0.0) or 0.0)
-            method_profit_total_sum = float(cached_refund.get("method_profit_total_sum", 0.0) or 0.0)
-        else:
-            race_df = None
-            has_refund_base = False
-            cursor = None
-            try:
-                cursor = connection.cursor()
-                cursor.execute(
-                    """
-                    SELECT 1
-                    FROM The1.rec010
-                    WHERE rdate BETWEEN %s AND %s
-                      AND r123alloc IS NOT NULL AND r123alloc <> '' AND r123alloc <> '0.00'
-                      AND r333alloc IS NOT NULL AND r333alloc <> '' AND r333alloc <> '0.00'
-                    LIMIT 1
-                    """,
-                    (from_date, to_date),
-                )
-                has_refund_base = cursor.fetchone() is not None
-            except Exception as exc:
-                print(f"[rpop2] precheck failed: {exc}")
-                has_refund_base = True  # precheck 실패 시 기존 계산 경로 유지
-            finally:
-                if cursor:
-                    cursor.close()
-
-            if has_refund_base:
-                try:
-                    race_df, summary = calc_rpop_anchor_26_trifecta(
-                        from_date=from_date,
-                        to_date=to_date,
-                        bet_unit=100,
-                    )
-                except Exception as exc:
-                    print(f"[rpop2] calc failed: {exc}")
-            else:
-                summary = {}
-
-            method_columns = [
-                ("1축 2~4 5~7", "1축_2~4_5~7_베팅액", "1축_2~4_5~7_환수액"),
-                ("1축 2~4", "1축_2~4_베팅액", "1축_2~4_환수액"),
-                ("1축 2~6 삼복", "1축_2~6_삼복_베팅액", "1축_2~6_삼복_환수액"),
-                ("1~2복조 3~8 삼복", "1~2복조_3~8_삼복_베팅액", "1~2복조_3~8_삼복_환수액"),
-                ("BOX4 삼복", "BOX4_삼복_베팅액", "BOX4_삼복_환수액"),
-            ]
-            if race_df is not None and hasattr(race_df, "columns") and not race_df.empty:
-                race_rows = len(race_df)
-                for label, bet_col, refund_col in method_columns:
-                    if bet_col in race_df.columns and refund_col in race_df.columns:
-                        bet_amount = float(race_df[bet_col].fillna(0).sum())
-                        refund_amount = float(race_df[refund_col].fillna(0).sum())
-                        profit_amount = refund_amount - bet_amount
-                        method_bet_totals.append(
-                            {
-                                "label": label,
-                                "amount": bet_amount,
-                                "refund": refund_amount,
-                                "profit": profit_amount,
-                            }
-                        )
-                        method_bet_total_sum += bet_amount
-                        method_refund_total_sum += refund_amount
-                        method_profit_total_sum += profit_amount
-            _cache_copy_set(
-                refund_cache_key,
-                {
-                    "summary": summary if isinstance(summary, dict) else {},
-                    "race_rows": race_rows,
-                    "method_bet_totals": method_bet_totals,
-                    "method_bet_total_sum": method_bet_total_sum,
-                    "method_refund_total_sum": method_refund_total_sum,
-                    "method_profit_total_sum": method_profit_total_sum,
-                },
-                HOME_REFUND_CACHE_TTL,
-            )
     mark_timing("calc_refund_summary")
-    
-    
-    
-    if from_date and to_date and (settings.DEBUG or HOME_RPOP2_DEBUG):
-        try:
-            summary_keys = list(summary.keys()) if isinstance(summary, dict) else []
-            day_summary_len = (
-                len(summary.get("day_summary", {})) if isinstance(summary, dict) else 0
-            )
-            logger.debug(
-                "[rpop2] from_date=%s to_date=%s summary_type=%s summary_keys=%s "
-                "race_rows=%s day_summary_len=%s",
-                from_date,
-                to_date,
-                type(summary).__name__,
-                summary_keys,
-                race_rows,
-                day_summary_len,
-            )
-        except Exception as exc:
-            logger.debug("[rpop2] debug failed: %s", exc)
-
-    summary_display = []
-    summary_total = None
-
-    if isinstance(summary, dict):
-        day_summary = summary.get("day_summary", {})
-        track_summary = summary.get("track_summary", {})
-        day_hit_summary = summary.get("day_hit_summary", {})
-        track_hit_summary = summary.get("track_hit_summary", {})
-        use_track = bool(track_summary)
-        summary_source = track_summary if use_track else day_summary
-        hit_source = track_hit_summary if use_track else day_hit_summary
-        total_races = 0
-        total_bet = 0.0
-        total_refund = 0.0
-        total_hits = 0
-        total_r_pop1_top3_hits = 0
-        for key in sorted(summary_source.keys()):
-            d = summary_source[key]
-            hits_detail = hit_source.get(key, [])
-            refund_rate = (
-                d["total_refund"] / d["total_bet"] if d["total_bet"] > 0 else 0.0
-            )
-            hit_rate = d["hits"] / d["races"] if d["races"] > 0 else 0.0
-            profit = d["total_refund"] - d["total_bet"]
-            avg_bet = d["total_bet"] / d["races"] if d["races"] > 0 else 0.0
-            summary_display.append(
-                {
-                    "label": key,
-                    "races": d["races"],
-                    "refund_rate": refund_rate,
-                    "total_bet": d["total_bet"],
-                    "total_refund": d["total_refund"],
-                    "profit": profit,
-                    "hits": d["hits"],
-                    "hit_rate": hit_rate,
-                    "avg_bet": avg_bet,
-                    "hit_details": hits_detail,
-                }
-            )
-            total_races += d["races"]
-            total_bet += d["total_bet"]
-            total_refund += d["total_refund"]
-            total_hits += d["hits"]
-            total_r_pop1_top3_hits += d.get("r_pop1_top3_hits", 0)
-        if total_races > 0:
-            total_profit = total_refund - total_bet
-            total_refund_rate = total_refund / total_bet if total_bet > 0 else 0.0
-            total_hit_rate = total_hits / total_races if total_races > 0 else 0.0
-            total_avg_bet = total_bet / total_races if total_races > 0 else 0.0
-            total_r_pop1_top3_rate = (
-                total_r_pop1_top3_hits / total_races if total_races > 0 else 0.0
-            )
-            summary_total = {
-                "races": total_races,
-                "total_bet": total_bet,
-                "total_refund": total_refund,
-                "profit": total_profit,
-                "hits": total_hits,
-                "hit_rate": total_hit_rate,
-                "r_pop1_top3_hits": total_r_pop1_top3_hits,
-                "r_pop1_top3_rate": total_r_pop1_top3_rate,
-                "refund_rate": total_refund_rate,
-                "avg_bet": total_avg_bet,
-            }
-        else:
-            summary_total = {
-                "races": 0,
-                "total_bet": 0.0,
-                "total_refund": 0.0,
-                "profit": 0.0,
-                "hits": 0,
-                "hit_rate": 0.0,
-                "r_pop1_top3_hits": 0,
-                "r_pop1_top3_rate": 0.0,
-                "refund_rate": 0.0,
-                "avg_bet": 0.0,
-            }
     mark_timing("aggregate_summary")
 
     # print(summary_display)
@@ -1092,6 +1439,7 @@ def home(request):
         "right_city_top3_future_days": right_city_top3_future_days,
         "right_city_top3_from": right_city_top3_from,
         "right_city_top3_to": right_city_top3_to,
+        "right_city_top3_gate_label": right_city_top3_gate_label,
         "right_imminent_races": right_imminent_races,
         "right_hot_races": right_hot_races,
         "right_volatile_races": right_volatile_races,
@@ -1103,14 +1451,6 @@ def home(request):
         "changed_race": changed_race,               #출마표 젼경
         "rflag": rflag,  # 경마일, 비경마일 구분
         "view_type": view_type,
-        "summary": summary,
-        "summary_display": summary_display,
-        "summary_total": summary_total,
-        "method_bet_totals": method_bet_totals,
-        "method_bet_total_sum": method_bet_total_sum,
-        "method_refund_total_sum": method_refund_total_sum,
-        "method_profit_total_sum": method_profit_total_sum,
-
     }
 
     render_cache_key = None
@@ -1223,6 +1563,43 @@ def send_email():
     from_email = "id@gmail.com"
     message = "메지시 테스트"
     DjangoEmailMessage(subject=subject, body=message, to=to, from_email=from_email).send()
+
+
+@login_required
+def admin_summary_popup(request):
+    if not (request.user.username == "admin" or request.user.is_superuser):
+        return HttpResponse(status=403)
+
+    q_in_request = (request.GET.get("q", "") or "").strip()
+    q = q_in_request
+    if not q:
+        ref = (request.META.get("HTTP_REFERER", "") or "").strip()
+        if ref:
+            try:
+                ref_q = parse_qs(urlparse(ref).query).get("q", [""])[0]
+                q = (ref_q or "").strip()
+            except Exception:
+                q = ""
+    i_rdate = _resolve_home_rdate(q)
+    refresh_sec = 30
+    try:
+        refresh_sec = int(request.GET.get("refresh", "30"))
+    except Exception:
+        refresh_sec = 30
+    refresh_sec = max(10, min(refresh_sec, 300))
+
+    # 새로고침/자동갱신 시 기준일이 흔들리지 않도록 URL을 q 포함 형태로 정규화
+    if not q_in_request and len(i_rdate) == 8 and i_rdate.isdigit():
+        return redirect(f"{request.path}?q={i_rdate}&refresh={refresh_sec}")
+
+    payload = _build_admin_summary_payload(i_rdate)
+    context = {
+        **payload,
+        "refresh_sec": refresh_sec,
+        "fdate": f"{i_rdate[0:4]}-{i_rdate[4:6]}-{i_rdate[6:8]}" if len(i_rdate) == 8 else i_rdate,
+        "updated_at": timezone.now(),
+    }
+    return render(request, "base/admin_summary_popup.html", context)
 
 
 @require_http_methods(["GET", "POST"])

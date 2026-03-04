@@ -344,6 +344,7 @@ def calc_rpop_anchor_26_trifecta(
                 "total_bet": 0.0,
                 "total_refund": 0.0,
                 "hits": 0,
+                "r_pop1_top1_hits": 0,
                 "r_pop1_top3_hits": 0,
             }
         track_summary[track]["races"] += 1
@@ -362,6 +363,7 @@ def calc_rpop_anchor_26_trifecta(
             + box4_trio_refund
         )
         track_summary[track]["hits"] += hit_any
+        track_summary[track]["r_pop1_top1_hits"] += r_pop1_top1_hit
         track_summary[track]["r_pop1_top3_hits"] += r_pop1_top3_hit
         race_rows.append(
             {
@@ -428,30 +430,6 @@ def calc_rpop_anchor_26_trifecta(
         "track_hit_summary": track_hit_summary,
     }
     # total summary values no longer used in return or output
-
-    print("===================================")
-    for track in sorted(track_summary.keys()):
-        d = track_summary[track]
-        track_refund_rate = (
-            d["total_refund"] / d["total_bet"] if d["total_bet"] > 0 else 0.0
-        )
-        track_hit_rate = d["hits"] / d["races"] if d["races"] > 0 else 0.0
-        track_profit = d["total_refund"] - d["total_bet"]
-        print(
-            f"[경마장 {track}]  경주수: {d['races']}  "
-            f"총베팅액: {int(d['total_bet']):,}원  총환수액: {d['total_refund']:,.1f}원  "
-            f"이익금액: {track_profit:,.1f}원  "
-            f"환수율: {track_refund_rate:.3f}  적중경주수: {d['hits']}  적중율: {track_hit_rate:.3f}"
-        )
-        for hit in track_hit_summary.get(track, []):
-            print(
-                f"  - {hit['경마장']} {hit['경주번호']}R  "
-                f"r_pop_top4: {hit['r_pop_top4_마번']}  "
-                f"실제_top3: {hit['실제_top3_마번']}  "
-                f"총베팅액: {hit['총베팅액']:,.0f}  "
-                f"총환수액: {hit['총환수액']:,.1f}"
-            )
-    print("===================================")
 
     return race_df, summary
 

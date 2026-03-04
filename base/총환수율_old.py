@@ -674,7 +674,7 @@ def calc_rpop_anchor_26_trifecta(
 
 
 if __name__ == "__main__":
-    from_date = "20250101"
+    from_date = "20260101"
 
     to_date = "20260209"
 
