@@ -48,8 +48,8 @@ def load_result_data_from_db(
         e.rank       AS rank,       -- 예상순위(rank)
         e.r_pop      AS r_pop,      -- 예상순위(r_pop)
         e.r_rank     AS r_rank,     -- 실제순위
-        CAST(SUBSTRING(r.r333alloc, 4) AS DECIMAL(10, 0)) AS 삼복승식배당율,
-        CAST(SUBSTRING(r.r123alloc, 4) AS DECIMAL(10, 0)) AS 삼쌍승식배당율
+        CAST(SUBSTRING(r.r333alloc, 4) AS DECIMAL(10, 1)) AS 삼복승식배당율,
+        CAST(SUBSTRING(r.r123alloc, 4) AS DECIMAL(10, 1)) AS 삼쌍승식배당율
     FROM The1.exp011 AS e
     LEFT JOIN The1.rec010 AS r
            ON r.rcity = e.rcity
@@ -212,7 +212,7 @@ def calc_rpop_anchor_26_trifecta(
     from_date: str,
     to_date: str,
     bet_unit: int = 100,
-    apply_odds_filter: bool = True,
+    apply_odds_filter: bool = False,
 ) -> tuple[pd.DataFrame, dict]:
     """
     기간(from_date ~ to_date) 동안,
@@ -921,39 +921,19 @@ def calc_rpop_anchor_26_trifecta(
 
 
 if __name__ == "__main__":
-    from_date = "20260101"
+    from_date = "20251101"
 
-    to_date = "20260209"
+    to_date = "20260331"
+
+
+
+
 
     race_df, summary = calc_rpop_anchor_26_trifecta(
         from_date=from_date,
         to_date=to_date,
         bet_unit=100,
-        apply_odds_filter=True,
-    )
-
-    race_df_all, summary_all = calc_rpop_anchor_26_trifecta(
-        from_date=from_date,
-        to_date=to_date,
-        bet_unit=100,
         apply_odds_filter=False,
-    )
-
-    print("===================================")
-    print("[배당율 조건 비교]")
-    print(
-        f"제외 적용: 경주수 {summary['races']}  제외 {summary['excluded_races']}  "
-        f"총베팅액 {int(summary['total_bet_all']):,}  "
-        f"총환수액 {summary['total_refund_all']:,.1f}  "
-        f"환수율 {summary['total_refund_rate_all']:.3f}  "
-        f"적중율 {summary['total_hit_rate_all']:.3f}"
-    )
-    print(
-        f"제외 미적용: 경주수 {summary_all['races']}  제외 {summary_all['excluded_races']}  "
-        f"총베팅액 {int(summary_all['total_bet_all']):,}  "
-        f"총환수액 {summary_all['total_refund_all']:,.1f}  "
-        f"환수율 {summary_all['total_refund_rate_all']:.3f}  "
-        f"적중율 {summary_all['total_hit_rate_all']:.3f}"
     )
 
     out_path = "/Users/Super007/Documents/r_pop_total_new.csv"

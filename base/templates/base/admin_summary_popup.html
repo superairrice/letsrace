@@ -528,47 +528,14 @@
       </article>
     {% endif %}
 
-    <section class="admin-summary__gate">
-      <div class="admin-summary__gate-head">
-        <span>마번 Top5</span>
-        <span class="admin-summary__gate-period">{{ gate_top3_period_label }} (토±2일)</span>
-      </div>
-      {% if gate_top3_by_city %}
-        <div class="admin-summary__gate-grid">
-          {% for c in gate_top3_by_city %}
-          <div class="admin-summary__gate-city">
-            <div class="admin-summary__gate-city-title">{{ c.rcity }}</div>
-            <table class="admin-summary__gate-table">
-              <thead>
-                <tr>
-                  <th style="width: 14%; text-align:center;">순위</th>
-                  <th style="width: 18%;">마번</th>
-                  <th style="width: 28%; text-align:center;">1·2·3위</th>
-                  <th style="width: 40%; text-align:right;">3위내</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for g in c.gates %}
-                <tr>
-                  <td class="admin-summary__gate-rank">{{ forloop.counter }}</td>
-                  <td class="admin-summary__gate-name">{{ g.name }}</td>
-                  <td class="admin-summary__gate-r123">{{ g.wins }} · {{ g.seconds }} · {{ g.thirds }}</td>
-                  <td class="admin-summary__gate-score">{{ g.top3 }}/{{ g.entries }} ({{ g.top3_pct|floatformat:1 }}%)</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="admin-summary__gate-name">집계 가능한 데이터가 없습니다.</div>
-      {% endif %}
-    </section>
-
     <div class="admin-summary__footer">
       <span>최근 갱신 {{ updated_at|date:"Y-m-d H:i:s" }}</span>
       <div class="admin-summary__controls">
+        <button
+          id="open-gate-popup"
+          type="button"
+          data-popup-url="{% url 'admin_summary_gate_popup' %}?q={{ i_rdate }}&refresh={{ refresh_sec }}"
+        >마번 TOP5</button>
         <button type="button" id="manual-refresh">새로고침</button>
         <button type="button" onclick="window.close()">닫기</button>
       </div>
@@ -580,6 +547,18 @@
       var refreshSec = Number("{{ refresh_sec|default:'30' }}");
       var timer = Math.max(10, Number(refreshSec) || 30) * 1000;
       var manualRefreshBtn = document.getElementById('manual-refresh');
+      var openGatePopupBtn = document.getElementById('open-gate-popup');
+      if (openGatePopupBtn) {
+        openGatePopupBtn.addEventListener('click', function () {
+          var popupUrl = openGatePopupBtn.getAttribute('data-popup-url');
+          if (!popupUrl) return;
+          window.open(
+            popupUrl,
+            'w_admin_summary_gate_popup',
+            'width=490,height=680,top=20,left=20,toolbars=no,scrollbars=yes'
+          );
+        });
+      }
       if (manualRefreshBtn) {
         manualRefreshBtn.addEventListener('click', function () {
           window.location.reload();

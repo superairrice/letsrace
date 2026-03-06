@@ -817,7 +817,10 @@ def raceRelated(request, rcity, rdate, rno):
             race_related_data,
             RACE_PREDICTION_CACHE_TTL,
         )
-    award_j, award_t, award_h, race_detail = race_related_data
+    if not race_related_data or len(race_related_data) != 4:
+        award_j, award_t, award_h, race_detail = [], [], [], []
+    else:
+        award_j, award_t, award_h, race_detail = race_related_data
 
     loadin = cache.get(f"{cache_prefix}:loadin")
     if loadin is None:
@@ -853,6 +856,21 @@ def raceRelated(request, rcity, rdate, rno):
     training_cnt = training_cnt or []
     loadin_map = {jname: load_in for jname, load_in, _tot_1st in loadin}
 
+    # race_detail 튜플 인덱스: 12=j_name, 13=t_name, 14=h_name
+    race_detail_by_jockey = {}
+    race_detail_by_trainer = {}
+    race_detail_by_host = {}
+    for row in race_detail:
+        try:
+            j_name = row[12]
+            t_name = row[13]
+            h_name = row[14]
+            race_detail_by_jockey.setdefault(j_name, []).append(row)
+            race_detail_by_trainer.setdefault(t_name, []).append(row)
+            race_detail_by_host.setdefault(h_name, []).append(row)
+        except Exception:
+            continue
+
 
     context = {
         "r_condition": r_condition,  # 기수 기승가능 부딤중량
@@ -865,6 +883,9 @@ def raceRelated(request, rcity, rdate, rno):
         "training_cnt": training_cnt,
         "trainer_double_check": trainer_double_check,
         "loadin_map": loadin_map,
+        "race_detail_by_jockey": race_detail_by_jockey,
+        "race_detail_by_trainer": race_detail_by_trainer,
+        "race_detail_by_host": race_detail_by_host,
     }
 
     return render(request, "base/race_related.html", context)

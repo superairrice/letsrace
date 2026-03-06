@@ -128,16 +128,15 @@ def get_client_ip(request):
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     x_real_ip = (request.META.get("HTTP_X_REAL_IP") or "").strip()
     cf_connecting_ip = (request.META.get("HTTP_CF_CONNECTING_IP") or "").strip()
+    is_trusted_proxy = remote_addr in TRUSTED_PROXY_IPS
+    is_local_fallback = (not remote_addr) or (remote_addr in ("127.0.0.1", "::1"))
     # 신뢰 프록시에서 전달된 경우에만 X-Forwarded-For를 사용한다.
-    if x_forwarded_for and remote_addr in TRUSTED_PROXY_IPS:
+    if x_forwarded_for and (is_trusted_proxy or is_local_fallback):
         ip = x_forwarded_for.split(",")[0].strip()
-    elif x_real_ip:
+    elif x_real_ip and (is_trusted_proxy or is_local_fallback):
         ip = x_real_ip
-    elif cf_connecting_ip:
+    elif cf_connecting_ip and (is_trusted_proxy or is_local_fallback):
         ip = cf_connecting_ip
-    elif x_forwarded_for and (not remote_addr or remote_addr in ("127.0.0.1", "::1")):
-        # 로컬/프록시 개발환경 fallback
-        ip = x_forwarded_for.split(",")[0].strip()
     else:
         ip = remote_addr.strip()
     return ip or "unknown"
@@ -214,7 +213,11 @@ def update_visitor_count(name):
         with transaction.atomic():
             updated = VisitorCount.objects.filter(date=today).update(count=F("count") + 1)
             if updated == 0:
-                VisitorCount.objects.create(date=today, count=1)
+                try:
+                    VisitorCount.objects.create(date=today, count=1)
+                except IntegrityError:
+                    # 동시 요청으로 이미 생성된 경우 안전하게 재시도한다.
+                    VisitorCount.objects.filter(date=today).update(count=F("count") + 1)
 
             VisitorLog.objects.create(
                 name=name,

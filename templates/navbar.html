@@ -67,6 +67,70 @@
     align-items: center;
     gap: 0.68rem;
     margin: 0 auto;
+    padding: 0.35rem 0.5rem;
+    border-radius: 12px;
+    background: linear-gradient(180deg, rgba(28, 36, 55, 0.72), rgba(22, 29, 44, 0.66));
+    border: 1px solid rgba(130, 152, 187, 0.25);
+  }
+
+  .header-search-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.42rem;
+    min-height: 3.2rem;
+    border-radius: 10px;
+    border: 1px solid rgba(129, 154, 190, 0.38);
+    transition: all 0.16s ease;
+  }
+
+  .header-search-action:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 14px rgba(6, 12, 24, 0.22);
+  }
+
+  .header-search-action svg {
+    width: 1.35rem;
+    height: 1.35rem;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex: 0 0 auto;
+  }
+
+  .header-search-submit.header-search-action {
+    padding: 0.45rem 1.35rem;
+    background: linear-gradient(180deg, #74d8f5 0%, #5bc3e4 100%);
+    color: #0f2235;
+    border-color: rgba(128, 217, 242, 0.92);
+    font-weight: 760;
+  }
+
+  .header-search-admin {
+    width: 3.4rem;
+    min-width: 3.4rem;
+    padding: 0;
+    background: linear-gradient(180deg, rgba(92, 106, 141, 0.95), rgba(74, 84, 114, 0.92));
+    color: #dbe8ff;
+    border-color: rgba(162, 182, 225, 0.66);
+  }
+
+  .header-search-admin:hover {
+    background: linear-gradient(180deg, rgba(109, 125, 164, 0.98), rgba(81, 93, 126, 0.95));
+    border-color: rgba(191, 211, 250, 0.82);
+  }
+
+  html[data-theme="light"] .header__search--compact {
+    background: linear-gradient(180deg, rgba(241, 246, 253, 0.95), rgba(233, 240, 250, 0.93));
+    border-color: rgba(141, 164, 197, 0.36);
+  }
+
+  html[data-theme="light"] .header-search-admin {
+    background: linear-gradient(180deg, #6d7ca5 0%, #5a698f 100%);
+    color: #eef4ff;
+    border-color: rgba(109, 124, 165, 0.76);
   }
 
   .thethe9-navbar-logo {
@@ -662,7 +726,26 @@
       <input style="width: 15rem; color:var(--color-r1)" type="text" value='{{jname1}}' placeholder="세영" name="j1">
       &nbsp;&nbsp;&nbsp; -->
       
-      <button class="btn btn--main header-search-submit">검색</button>
+      <button class="btn btn--main header-search-submit header-search-action" type="submit">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5"></circle>
+          <path d="M16 16l4.5 4.5"></path>
+        </svg>
+        <span>검색</span>
+      </button>
+      {% if request.user.username == 'admin' or request.user.is_superuser %}
+      <a class="btn btn--dark header-search-action header-search-admin"
+         href="{% url 'admin_summary_popup' %}{% if fdate %}?q={{ fdate|cut:'-'|cut:'.' }}{% endif %}"
+         aria-label="관리자 요약 팝업 열기"
+         onclick="window.open(this.href, 'w_admin_summary_popup_call_nav', 'width=440, height=780, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 20h16"></path>
+          <path d="M7 17V10"></path>
+          <path d="M12 17V6"></path>
+          <path d="M17 17V13"></path>
+        </svg>
+      </a>
+      {% endif %}
     
     </form>
 

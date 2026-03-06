@@ -52,10 +52,22 @@
 
       // 비동기 집계 로그 폴링
       var $calcForm = $(".calc-form");
+      var $calcSubmitBtn = $calcForm.find("button[type='submit']").first();
+      var calcSubmitBtnLabel = $calcSubmitBtn.text();
       var activeJobId = ($calcForm.data("job-id") || "").toString().trim();
       var statusUrlTemplate = ($calcForm.data("status-url-template") || "").toString();
       var $logHead = $("#calc-log-head");
       var $logBody = $("#calc-log-body");
+
+      function setCalcButtonDisabled(disabled, label) {
+        if (!$calcSubmitBtn.length) return;
+        $calcSubmitBtn.prop("disabled", !!disabled);
+        if (disabled) {
+          $calcSubmitBtn.text(label || "집계 진행중...");
+        } else {
+          $calcSubmitBtn.text(calcSubmitBtnLabel);
+        }
+      }
 
       function escapeHtml(s) {
         return String(s || "")
@@ -95,6 +107,8 @@
               var total = Number(res.total || 0);
               var errors = Number(res.errors || 0);
               var progress = Number(res.progress || 0);
+              var isRunning = (status === "queued" || status === "running");
+              setCalcButtonDisabled(isRunning, "집계 진행중...");
               var text = "집계 로그";
               if (status) {
                 text += " - " + status.toUpperCase();
@@ -107,6 +121,7 @@
               $logHead.text(text);
 
               if (status === "success" || status === "failed" || status === "partial") {
+                setCalcButtonDisabled(false);
                 if (timerId) {
                   clearInterval(timerId);
                   timerId = null;
@@ -123,8 +138,16 @@
       }
 
       if (activeJobId) {
+        setCalcButtonDisabled(true, "집계 진행중...");
         pollStatus(activeJobId);
       }
+
+      $calcForm.on("submit", function () {
+        if ($calcSubmitBtn.prop("disabled")) {
+          return false;
+        }
+        setCalcButtonDisabled(true, "집계 요청중...");
+      });
     });
   </script>
   <style>
@@ -210,6 +233,13 @@
     .calc-btn:hover {
       filter: brightness(1.05);
       box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .calc-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.62;
+      filter: grayscale(0.2);
+      box-shadow: none;
     }
 
     .calc-table {

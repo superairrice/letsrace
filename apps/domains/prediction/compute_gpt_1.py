@@ -694,9 +694,7 @@ def compute_connection_scores(rows: List[Tuple[Any, ...]]) -> Dict[int, float]:
             v = float(v)
             if 0.0 <= v <= 1.0:
                 return v * 100.0
-            if v < 0.0:
-                return None
-            return max(0.0, min(100.0, v))
+            return v
 
         j_per = to_percent(j_per)
         t_per = to_percent(t_per)
@@ -716,10 +714,9 @@ def compute_connection_scores(rows: List[Tuple[Any, ...]]) -> Dict[int, float]:
         else:
             vals = []
             weights = []
-
-            j_ok = j_per is not None
-            t_ok = t_per is not None
-            jt_ok = jt_per is not None
+            j_ok = j_per is not None and j_per >= 0
+            t_ok = t_per is not None and t_per >= 0
+            jt_ok = jt_per is not None and jt_per >= 0
 
             base_pair = None
             if j_ok and t_ok:
@@ -729,6 +726,7 @@ def compute_connection_scores(rows: List[Tuple[Any, ...]]) -> Dict[int, float]:
             elif t_ok:
                 base_pair = t_per
 
+            # jt_per 표본 수 수축: jt_cnt가 작으면 50으로 당겨 과신 방지
             jt_shrunk = None
             if jt_ok:
                 jt_cnt = safe_float(row[IDX_JT_CNT], 0.0)
@@ -748,6 +746,7 @@ def compute_connection_scores(rows: List[Tuple[Any, ...]]) -> Dict[int, float]:
             if vals:
                 wsum = sum(weights)
                 conn_raw = sum(v * w for v, w in zip(vals, weights)) / wsum
+                # jt_per가 j/t 평균 대비 추가로 주는 정보만 제한적으로 반영
                 if base_pair is not None and jt_shrunk is not None:
                     delta = jt_shrunk - base_pair
                     delta_clipped = max(-15.0, min(15.0, delta))
@@ -755,7 +754,7 @@ def compute_connection_scores(rows: List[Tuple[Any, ...]]) -> Dict[int, float]:
                 else:
                     base = conn_raw
             else:
-                base = 10.0  # 혹시라도 전부 결측이면
+                base = 10.0  # 혹시라도 전부 결측/비정상이면
 
         base = max(0.0, min(100.0, base))
         raw_base[gate] = base
@@ -1002,31 +1001,31 @@ def process_race(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
     #     W_SPEED = 0.15
     #     W_FORM = 0.20
     #     W_CONN = 0.05
-
+    
     distance = to_optional_float(exp011_rows[0][IDX_DISTANCE])
     if distance is None:
         distance = 1400.0  # fallback to mid-distance weights if data missing
 
     if distance <= 1200:
-        W_EARLY = 0.30
-        W_LATE = 0.10
-        W_SPEED = 0.30
-        W_FORM = 0.10
-        W_CONN = 0.20
+        W_EARLY = 0.33
+        W_LATE = 0.11
+        W_SPEED = 0.33
+        W_FORM = 0.11
+        W_CONN = 0.12
 
     elif 1300 <= distance <= 1700:
-        W_EARLY = 0.20
-        W_LATE = 0.20
-        W_SPEED = 0.20
-        W_FORM = 0.20
-        W_CONN = 0.20
+        W_EARLY = 0.225
+        W_LATE = 0.225
+        W_SPEED = 0.225
+        W_FORM = 0.225
+        W_CONN = 0.10
 
     elif distance >= 1800:
-        W_EARLY = 0.10
-        W_LATE = 0.30
-        W_SPEED = 0.30
-        W_FORM = 0.10
-        W_CONN = 0.20
+        W_EARLY = 0.115
+        W_LATE = 0.345
+        W_SPEED = 0.345
+        W_FORM = 0.115
+        W_CONN = 0.08
 
     # if distance <= 1200:
     #     return dict(W_EARLY=0.40, W_LATE=0.20, W_SPEED=0.25, W_FORM=0.10, W_CONN=0.05)

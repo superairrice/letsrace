@@ -81,7 +81,7 @@ def calc_rpop_anchor_26_trifecta(
     from_date: str,
     to_date: str,
     bet_unit: int = 100,
-    apply_odds_filter: bool = True,
+    apply_odds_filter: bool = False,
 ) -> tuple[pd.DataFrame, dict]:
     """
     기간(from_date ~ to_date) 동안,
@@ -676,37 +676,13 @@ def calc_rpop_anchor_26_trifecta(
 if __name__ == "__main__":
     from_date = "20260101"
 
-    to_date = "20260209"
+    to_date = "20260331"
 
     race_df, summary = calc_rpop_anchor_26_trifecta(
         from_date=from_date,
         to_date=to_date,
         bet_unit=100,
-        apply_odds_filter=True,
-    )
-
-    race_df_all, summary_all = calc_rpop_anchor_26_trifecta(
-        from_date=from_date,
-        to_date=to_date,
-        bet_unit=100,
         apply_odds_filter=False,
-    )
-
-    print("===================================")
-    print("[배당율 조건 비교]")
-    print(
-        f"제외 적용: 경주수 {summary['races']}  제외 {summary['excluded_races']}  "
-        f"총베팅액 {int(summary['total_bet_all']):,}  "
-        f"총환수액 {summary['total_refund_all']:,.1f}  "
-        f"환수율 {summary['total_refund_rate_all']:.3f}  "
-        f"적중율 {summary['total_hit_rate_all']:.3f}"
-    )
-    print(
-        f"제외 미적용: 경주수 {summary_all['races']}  제외 {summary_all['excluded_races']}  "
-        f"총베팅액 {int(summary_all['total_bet_all']):,}  "
-        f"총환수액 {summary_all['total_refund_all']:,.1f}  "
-        f"환수율 {summary_all['total_refund_rate_all']:.3f}  "
-        f"적중율 {summary_all['total_hit_rate_all']:.3f}"
     )
 
     out_path = "/Users/Super007/Documents/r_pop_total_old.csv"

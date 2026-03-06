@@ -163,6 +163,102 @@
       color: #98adc8;
       text-align: center;
     }
+
+    .prediction-navbar {
+      display: inline-flex;
+      align-items: stretch;
+      flex-wrap: nowrap;
+      gap: 0.46rem;
+      padding: 0.26rem 0.36rem;
+      border-radius: 12px;
+      border: 1px solid rgba(113, 139, 180, 0.46);
+      background: linear-gradient(135deg, rgba(40, 52, 76, 0.92), rgba(29, 39, 60, 0.92));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 16px rgba(4, 8, 16, 0.35);
+    }
+
+    .prediction-navbar__distance {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.28rem;
+      color: #8ed3ff;
+      letter-spacing: 0.02em;
+      padding: 0.3rem 0.62rem;
+      border-radius: 9px;
+      border: 1px solid rgba(98, 134, 178, 0.42);
+      background: rgba(18, 27, 43, 0.88);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .prediction-navbar__search {
+      margin: 0;
+    }
+
+    .prediction-navbar__switch {
+      font-size: 1.1rem;
+      color: #ffe082;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.34rem;
+      height: 2.35rem;
+      border: 1.5px solid rgba(255, 180, 68, 0.82);
+      border-radius: 10px;
+      padding: 0.24rem 0.7rem;
+      background: transparent;
+      box-shadow: inset 0 1px 0 rgba(255, 245, 215, 0.13), 0 6px 12px rgba(0, 0, 0, 0.27);
+      white-space: nowrap;
+      box-sizing: border-box;
+    }
+
+    .prediction-navbar__switch label {
+      display: inline-flex;
+      align-items: center;
+      font-weight: 500;
+      color: #f9d583;
+      letter-spacing: 0.01em;
+    }
+
+    .prediction-navbar__switch input[type="radio"] {
+      accent-color: #ffb148;
+      width: 2.1rem;
+      height: 1.2em;
+      cursor: pointer;
+    }
+
+    .prediction-navbar__time {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.34rem;
+      height: 2.35rem;
+      padding: 0.24rem 0.72rem;
+      border-radius: 10px;
+      border: 1px solid rgba(86, 126, 172, 0.52);
+      background: transparent;
+      color: #98ddff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      box-sizing: border-box;
+    }
+
+    .prediction-navbar-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin-left: auto;
+    }
+
+    @media (max-width: 980px) {
+      .prediction-navbar {
+        width: auto;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+      }
+    }
   </style>
         
   <div class="room__topLeft">
@@ -361,36 +457,30 @@
       {%endif%}
     </div>
     
-    <span style="font-size:1.4rem; color: var(--color-main-light); font-family: Arial; padding:0.4rem; ">{{r_condition.distance}}𝓂</span>
-
-    
-
+    <span class="prediction-navbar__distance">{{r_condition.distance}}𝓂</span>
     
   </div>
+  <div class="room__topRight prediction-navbar-wrap">
+    <div class="prediction-navbar">
+      <form class="header__search prediction-navbar__search" method="GET" action="{% url 'race_prediction' r_condition.rcity r_condition.rdate r_condition.rno 0 0 %}">
+        <span class="tooltip prediction-navbar__switch">
+        <label>
+          <input type="radio" name="view_type" value="1" {% if view_type == "1" %}checked{% endif %} onchange="this.form.submit();">
+          v1
+        </label>
+        <label>
+          <input type="radio" name="view_type" value="2" {% if view_type == "2" or not view_type %}checked{% endif %} onchange="this.form.submit();">
+          v2
+        </label>
+        <span class="tooltip-text" style="font-family: Arial, Helvetica, sans-serif; z-index: 9; font-size: 1.3rem;"> - v1:   기존 예상순위 기준 <br> - v2:  최근 Form & Trend
+        </span>
+        </span>
+      </form>
 
-  
-
-  <div class="room__topRight">
-
-    <form class="header__search" style="padding-top: 2px;" method="GET" action="{% url 'race_prediction' r_condition.rcity r_condition.rdate r_condition.rno 0 0 %}">
-      <span class="tooltip" style="font-size:1.1rem; color:#ffe082; font-weight:500; display: inline-flex; align-items: center; height: 100%; border: 1.5px solid orange; border-radius: 6px; padding: 0.2em 0.8em; background: #23272f;">
-      <label style="display:inline-flex; align-items:center; font-weight:400;">
-        <input type="radio" name="view_type" value="1" {% if view_type == "1" %}checked{% endif %} style="accent-color:orange; width:2.5rem; height:1.2em;" onchange="this.form.submit();">
-        v1
-      </label>
-      <label style="display:inline-flex; align-items:center; font-weight:400;">
-        <input type="radio" name="view_type" value="2" {% if view_type == "2" or not view_type %}checked{% endif %} style="accent-color:orange; width:2.5rem; height:1.2em;" onchange="this.form.submit();">
-        v2
-      </label>
-      <span class="tooltip-text" style="font-family: Arial, Helvetica, sans-serif; z-index: 9; font-size: 1.3rem;"> - v1:   기존 예상순위 기준 <br> - v2:  최근 Form & Trend
+      <span class="prediction-navbar__time">
+        ⏰ {{r_condition.rtime}}
       </span>
-      </span>
-    </form>
-
-    <span style="font-family: Arial; color: var(--color-main); padding:0.4rem;">
-      ⏰&nbsp;&nbsp;{{r_condition.rtime}}
-    </span>
-    
+    </div>
   </div>
 
 </div>

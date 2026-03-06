@@ -1204,7 +1204,7 @@ class Visitor(models.Model):
 
 
 class VisitorCount(models.Model):
-    date = models.DateField(default=timezone.now)
+    date = models.DateField(default=timezone.now, unique=True)
     count = models.IntegerField(default=0)
 
 

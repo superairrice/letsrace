@@ -445,9 +445,9 @@ def calc_top6_trifecta_raw(
 # =========================
 if __name__ == "__main__":
     # 예시: 2023-12-01 ~ 2025-11-30
-    from_date = "20231201"
+    from_date = "20260101"
 
-    to_date = "20251231"
+    to_date = "20261231"
 
     race_df, summary = calc_top6_trifecta_raw(
         from_date=from_date,

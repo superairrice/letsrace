@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 import re
 from django.db import connection, transaction
 import pandas as pd
@@ -8,6 +9,8 @@ from requests import session
 
 from django.db.models import Count, Max, Min, Q
 from base.models import Exp011
+
+logger = logging.getLogger(__name__)
 
 def get_paternal_dist(rcity, rdate, rno):
     try:
@@ -2801,247 +2804,284 @@ def get_training_awardee(i_rdate, i_awardee, i_name):
 # race related Query
 def get_race_related(i_rcity, i_rdate, i_rno):
 
+    award_j, award_t, award_h, race_detail = [], [], [], []
     try:
-        cursor = connection.cursor()
-
-        strSql = """
-            select b.m_rank as rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
-                ,c.wrace, c.w1st, c.w2nd, c.w3rd, c.tot_1st, c.year_1st, c.year_per, c.year_3per
-                ,d.wrace, d.w1st, d.w2nd, d.w3rd
-            from
-            (
-            select jockey, count(*) rcnt, 
-                sum(if(r_pop = 1, 1, 0)) r1, 
-                sum(if(r_pop = 2, 1, 0)) r2, 
-                sum(if(r_pop = 3, 1, 0)) r3,
-                sum(if(r_pop = 4, 1, 0)) r4,
-                sum(if(r_pop = 5, 1, 0)) r5,
-                sum(if(r_pop = 6, 1, 0)) r6,
-                sum(if(r_pop = 7, 1, 0)) r7,
-                sum(if(r_pop = 8, 1, 0)) r8,
-                sum(if(r_pop = 9, 1, 0)) r9,
-                sum(if(r_pop = 10, 1, 0)) r10,
-                sum(if(r_pop = 11, 1, 0)) r11,
-                sum(if(r_pop >= 12, 1, 0)) r12,
-                
-                sum(if(r_rank > 0, 1, 0 )) rrcnt,
-                sum(if(r_rank = 1, 1, 0)) rr1, 
-                sum(if(r_rank = 2, 1, 0)) rr2, 
-                sum(if(r_rank = 3, 1, 0)) rr3,
-                sum(if(r_rank = 4, 1, 0)) rr4,
-                sum(if(r_rank = 5, 1, 0)) rr5,
-                sum(if(r_rank = 6, 1, 0)) rr6,
-                sum(if(r_rank = 7, 1, 0)) rr7,
-                sum(if(r_rank = 8, 1, 0)) rr8,
-                sum(if(r_rank = 9, 1, 0)) rr9,
-                sum(if(r_rank = 10, 1, 0)) rr10,
-                sum(if(r_rank = 11, 1, 0)) rr11,
-                sum(if(r_rank >= 12, 1, 0)) rr12
-            from exp011 a
-            where rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
-            and rno < 80
-            group by jockey
-            
-            ) a right outer join  exp011 b  on a.jockey = b.jockey
-                right outer join  ( select jockey, wdate, wrace, w1st, w2nd, w3rd, tot_1st, year_1st, year_per, year_3per from jockey_w where wdate = ( select max(wdate) from jockey_w where wdate < %s ) ) c  on c.jockey = b.jockey 
-                right outer join  ( select jockey, wdate, wrace, w1st, w2nd, w3rd, tot_1st, year_1st, year_per, year_3per from jockey_w where wdate = ( select max(wdate) from jockey_w where wdate < date_format(DATE_ADD(%s, INTERVAL - 7 DAY), '%%Y%%m%%d') ) ) d  on d.jockey = b.jockey 
-            where b.rcity =  %s
-                and b.rdate = %s
-                and b.rno =  %s
-                order by b.r_pop, b.gate
-            ; """
-
-        # print(strSql % (i_rdate, i_rdate, i_rdate, i_rdate, i_rcity, i_rdate, i_rno))  # SQL문 출력
-        cursor.execute(
-            strSql, (i_rdate, i_rdate, i_rdate,i_rdate, i_rcity, i_rdate, i_rno)
-        )  # SQL문 실행
-        award_j = cursor.fetchall()
-
-    except:
-        print("Failed selecting in Award_j")
-    finally:
-        cursor.close()
-
-    try:
-        cursor = connection.cursor()
-
-        strSql = """
-            select b.m_rank as rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
-                ,c.wrace, c.w1st, c.w2nd, c.w3rd, c.tot_1st, c.year_1st, c.year_per, c.year_3per
-                ,d.wrace, d.w1st, d.w2nd, d.w3rd
-            from
-            (
-            select trainer, count(*) rcnt, 
-                sum(if(r_pop = 1, 1, 0)) r1, 
-                sum(if(r_pop = 2, 1, 0)) r2, 
-                sum(if(r_pop = 3, 1, 0)) r3,
-                sum(if(r_pop = 4, 1, 0)) r4,
-                sum(if(r_pop = 5, 1, 0)) r5,
-                sum(if(r_pop = 6, 1, 0)) r6,
-                sum(if(r_pop = 7, 1, 0)) r7,
-                sum(if(r_pop = 8, 1, 0)) r8,
-                sum(if(r_pop = 9, 1, 0)) r9,
-                sum(if(r_pop = 10, 1, 0)) r10,
-                sum(if(r_pop = 11, 1, 0)) r11,
-                sum(if(r_pop >= 12, 1, 0)) r12,
-                
-                sum(if(r_rank > 0, 1, 0 )) rrcnt,
-                sum(if(r_rank = 1, 1, 0)) rr1, 
-                sum(if(r_rank = 2, 1, 0)) rr2, 
-                sum(if(r_rank = 3, 1, 0)) rr3,
-                sum(if(r_rank = 4, 1, 0)) rr4,
-                sum(if(r_rank = 5, 1, 0)) rr5,
-                sum(if(r_rank = 6, 1, 0)) rr6,
-                sum(if(r_rank = 7, 1, 0)) rr7,
-                sum(if(r_rank = 8, 1, 0)) rr8,
-                sum(if(r_rank = 9, 1, 0)) rr9,
-                sum(if(r_rank = 10, 1, 0)) rr10,
-                sum(if(r_rank = 11, 1, 0)) rr11,
-                sum(if(r_rank >= 12, 1, 0)) rr12
-            from expect a
-            where rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
-            and rno < 80
-            group by trainer
-            
-            ) a right outer join  exp011 b  on a.trainer = b.trainer
-                right outer join  ( select trainer, wdate, wrace, w1st, w2nd, w3rd, tot_1st, year_1st, year_per, year_3per from trainer_w where wdate = ( select max(wdate) from trainer_w where wdate < %s ) ) c  on c.trainer = b.trainer 
-                right outer join  ( select trainer, wdate, wrace, w1st, w2nd, w3rd, tot_1st, year_1st, year_per, year_3per from trainer_w where wdate = ( select max(wdate) from trainer_w where wdate < date_format(DATE_ADD(%s, INTERVAL - 7 DAY), '%%Y%%m%%d') ) ) d  on d.trainer = b.trainer 
-            where b.rcity = %s
-                and b.rdate = %s
-                and b.rno = %s
-                order by b.r_pop, b.gate
-            ; """ 
-        cursor.execute(strSql, (i_rdate, i_rdate, i_rdate, i_rdate, i_rcity, i_rdate, i_rno))
-        award_t = cursor.fetchall()
-
-    except:
-        print("Failed selecting in Award_t")
-    finally:
-        cursor.close()
-
-    try:
-        cursor = connection.cursor()
-
-        strSql = """
-            select b.m_rank as rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5, rcnt, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, rrcnt, rr1, rr2, rr3, rr4, rr5, rr6, rr7, rr8, rr9, rr10, rr11, rr12
-                ,c.h_total, c.h_cancel, c.h_current, c.debut, 
-                replace ( replace ( replace( c.year_race, '(', ' " '), '/', ' ` ' ), ')', '' ),
-                c.year_prize/1000000, 
-                replace ( replace ( replace( c.tot_race, '(', ' " '), '/', ' ` ' ), ')', '' ), 
-                c.tot_prize/1000000
-            from
-            (
-            select host, count(*) rcnt, 
-                sum(if(r_pop = 1, 1, 0)) r1, 
-                sum(if(r_pop = 2, 1, 0)) r2, 
-                sum(if(r_pop = 3, 1, 0)) r3,
-                sum(if(r_pop = 4, 1, 0)) r4,
-                sum(if(r_pop = 5, 1, 0)) r5,
-                sum(if(r_pop = 6, 1, 0)) r6,
-                sum(if(r_pop = 7, 1, 0)) r7,
-                sum(if(r_pop = 8, 1, 0)) r8,
-                sum(if(r_pop = 9, 1, 0)) r9,
-                sum(if(r_pop = 10, 1, 0)) r10,
-                sum(if(r_pop = 11, 1, 0)) r11,
-                sum(if(r_pop >= 12, 1, 0)) r12,
-                
-                sum(if(r_rank > 0, 1, 0 )) rrcnt,
-                sum(if(r_rank = 1, 1, 0)) rr1, 
-                sum(if(r_rank = 2, 1, 0)) rr2, 
-                sum(if(r_rank = 3, 1, 0)) rr3,
-                sum(if(r_rank = 4, 1, 0)) rr4,
-                sum(if(r_rank = 5, 1, 0)) rr5,
-                sum(if(r_rank = 6, 1, 0)) rr6,
-                sum(if(r_rank = 7, 1, 0)) rr7,
-                sum(if(r_rank = 8, 1, 0)) rr8,
-                sum(if(r_rank = 9, 1, 0)) rr9,
-                sum(if(r_rank = 10, 1, 0)) rr10,
-                sum(if(r_rank = 11, 1, 0)) rr11,
-                sum(if(r_rank >= 12, 1, 0)) rr12
-            from exp011 a
-            where rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d') 
-            and rno < 80
-            group by host
-            
-            ) a right outer join  exp011 b  on a.host = b.host 
-                left outer join  
-                ( select distinct bb.rcity, aa.host, 
-                        aa.h_total, 
-                        aa.h_cancel, 
-                        aa.h_current, 
-                        aa.debut, 
-                        aa.year_race, 
-                        aa.tot_race, 
-                        aa.year_prize, 
-                        aa.tot_prize 
-                    from host aa, horse bb
-                    where aa.rcity = bb.rcity and aa.host = bb.host
-                    and bb.horse in ( select horse from exp011 where rcity =  %s and rdate = %s and rno =  %s )
-                    
-                ) c  on c.host = b.host 
-            where b.rcity =  %s
-                and b.rdate = %s
-                and b.rno =  %s
-                order by b.r_pop, b.gate
-            ; """
-        # print(
-        #     strSql
-        #     % (i_rdate, i_rdate, i_rcity, i_rdate, i_rno, i_rcity, i_rdate, i_rno)
-        # )  # SQL문 출력
-        cursor.execute(
-            strSql, (i_rdate, i_rdate, i_rcity, i_rdate, i_rno, i_rcity, i_rdate, i_rno)
+        with connection.cursor() as cursor:
+            strSql = """
+                select b.m_rank as rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5,
+                       a.rcnt, a.r1, a.r2, a.r3, a.r4, a.r5, a.r6, a.r7, a.r8, a.r9, a.r10, a.r11, a.r12,
+                       a.rrcnt, a.rr1, a.rr2, a.rr3, a.rr4, a.rr5, a.rr6, a.rr7, a.rr8, a.rr9, a.rr10, a.rr11, a.rr12,
+                       c.wrace, c.w1st, c.w2nd, c.w3rd, c.tot_1st, c.year_1st, c.year_per, c.year_3per,
+                       d.wrace, d.w1st, d.w2nd, d.w3rd
+                from (
+                    select * from exp011
+                    where rcity = %s and rdate = %s and rno = %s
+                ) b
+                left join (
+                    select jockey, count(*) rcnt,
+                           sum(if(r_pop = 1, 1, 0)) r1,
+                           sum(if(r_pop = 2, 1, 0)) r2,
+                           sum(if(r_pop = 3, 1, 0)) r3,
+                           sum(if(r_pop = 4, 1, 0)) r4,
+                           sum(if(r_pop = 5, 1, 0)) r5,
+                           sum(if(r_pop = 6, 1, 0)) r6,
+                           sum(if(r_pop = 7, 1, 0)) r7,
+                           sum(if(r_pop = 8, 1, 0)) r8,
+                           sum(if(r_pop = 9, 1, 0)) r9,
+                           sum(if(r_pop = 10, 1, 0)) r10,
+                           sum(if(r_pop = 11, 1, 0)) r11,
+                           sum(if(r_pop >= 12, 1, 0)) r12,
+                           sum(if(r_rank > 0, 1, 0 )) rrcnt,
+                           sum(if(r_rank = 1, 1, 0)) rr1,
+                           sum(if(r_rank = 2, 1, 0)) rr2,
+                           sum(if(r_rank = 3, 1, 0)) rr3,
+                           sum(if(r_rank = 4, 1, 0)) rr4,
+                           sum(if(r_rank = 5, 1, 0)) rr5,
+                           sum(if(r_rank = 6, 1, 0)) rr6,
+                           sum(if(r_rank = 7, 1, 0)) rr7,
+                           sum(if(r_rank = 8, 1, 0)) rr8,
+                           sum(if(r_rank = 9, 1, 0)) rr9,
+                           sum(if(r_rank = 10, 1, 0)) rr10,
+                           sum(if(r_rank = 11, 1, 0)) rr11,
+                           sum(if(r_rank >= 12, 1, 0)) rr12
+                    from exp011
+                    where rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d')
+                                   and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
+                      and rno < 80
+                    group by jockey
+                ) a on a.jockey = b.jockey
+                left join (
+                    select jockey, wdate, wrace, w1st, w2nd, w3rd, tot_1st, year_1st, year_per, year_3per
+                    from jockey_w
+                    where wdate = (select max(wdate) from jockey_w where wdate < %s)
+                ) c on c.jockey = b.jockey
+                left join (
+                    select jockey, wdate, wrace, w1st, w2nd, w3rd, tot_1st, year_1st, year_per, year_3per
+                    from jockey_w
+                    where wdate = (
+                        select max(wdate) from jockey_w
+                        where wdate < date_format(DATE_ADD(%s, INTERVAL - 7 DAY), '%%Y%%m%%d')
+                    )
+                ) d on d.jockey = b.jockey
+                order by b.r_pop, b.gate;
+            """
+            cursor.execute(
+                strSql,
+                (i_rcity, i_rdate, i_rno, i_rdate, i_rdate, i_rdate, i_rdate),
+            )
+            award_j = cursor.fetchall()
+    except Exception:
+        logger.exception(
+            "Failed selecting in Award_j (rcity=%s, rdate=%s, rno=%s)",
+            i_rcity,
+            i_rdate,
+            i_rno,
         )
-        award_h = cursor.fetchall()
-
-    except:
-        print("Failed selecting in Award_h")
-    finally:
-        cursor.close()
 
     try:
-        cursor = connection.cursor()
+        with connection.cursor() as cursor:
+            strSql = """
+                select b.m_rank as rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5,
+                       a.rcnt, a.r1, a.r2, a.r3, a.r4, a.r5, a.r6, a.r7, a.r8, a.r9, a.r10, a.r11, a.r12,
+                       a.rrcnt, a.rr1, a.rr2, a.rr3, a.rr4, a.rr5, a.rr6, a.rr7, a.rr8, a.rr9, a.rr10, a.rr11, a.rr12,
+                       c.wrace, c.w1st, c.w2nd, c.w3rd, c.tot_1st, c.year_1st, c.year_per, c.year_3per,
+                       d.wrace, d.w1st, d.w2nd, d.w3rd
+                from (
+                    select * from exp011
+                    where rcity = %s and rdate = %s and rno = %s
+                ) b
+                left join (
+                    select trainer, count(*) rcnt,
+                           sum(if(r_pop = 1, 1, 0)) r1,
+                           sum(if(r_pop = 2, 1, 0)) r2,
+                           sum(if(r_pop = 3, 1, 0)) r3,
+                           sum(if(r_pop = 4, 1, 0)) r4,
+                           sum(if(r_pop = 5, 1, 0)) r5,
+                           sum(if(r_pop = 6, 1, 0)) r6,
+                           sum(if(r_pop = 7, 1, 0)) r7,
+                           sum(if(r_pop = 8, 1, 0)) r8,
+                           sum(if(r_pop = 9, 1, 0)) r9,
+                           sum(if(r_pop = 10, 1, 0)) r10,
+                           sum(if(r_pop = 11, 1, 0)) r11,
+                           sum(if(r_pop >= 12, 1, 0)) r12,
+                           sum(if(r_rank > 0, 1, 0 )) rrcnt,
+                           sum(if(r_rank = 1, 1, 0)) rr1,
+                           sum(if(r_rank = 2, 1, 0)) rr2,
+                           sum(if(r_rank = 3, 1, 0)) rr3,
+                           sum(if(r_rank = 4, 1, 0)) rr4,
+                           sum(if(r_rank = 5, 1, 0)) rr5,
+                           sum(if(r_rank = 6, 1, 0)) rr6,
+                           sum(if(r_rank = 7, 1, 0)) rr7,
+                           sum(if(r_rank = 8, 1, 0)) rr8,
+                           sum(if(r_rank = 9, 1, 0)) rr9,
+                           sum(if(r_rank = 10, 1, 0)) rr10,
+                           sum(if(r_rank = 11, 1, 0)) rr11,
+                           sum(if(r_rank >= 12, 1, 0)) rr12
+                    from exp011
+                    where rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d')
+                                   and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
+                      and rno < 80
+                    group by trainer
+                ) a on a.trainer = b.trainer
+                left join (
+                    select trainer, wdate, wrace, w1st, w2nd, w3rd, tot_1st, year_1st, year_per, year_3per
+                    from trainer_w
+                    where wdate = (select max(wdate) from trainer_w where wdate < %s)
+                ) c on c.trainer = b.trainer
+                left join (
+                    select trainer, wdate, wrace, w1st, w2nd, w3rd, tot_1st, year_1st, year_per, year_3per
+                    from trainer_w
+                    where wdate = (
+                        select max(wdate) from trainer_w
+                        where wdate < date_format(DATE_ADD(%s, INTERVAL - 7 DAY), '%%Y%%m%%d')
+                    )
+                ) d on d.trainer = b.trainer
+                order by b.r_pop, b.gate;
+            """
+            cursor.execute(
+                strSql,
+                (i_rcity, i_rdate, i_rno, i_rdate, i_rdate, i_rdate, i_rdate),
+            )
+            award_t = cursor.fetchall()
+    except Exception:
+        logger.exception(
+            "Failed selecting in Award_t (rcity=%s, rdate=%s, rno=%s)",
+            i_rcity,
+            i_rdate,
+            i_rno,
+        )
 
-        strSql = """  
-            select b.rcity,
-                b.jockey awardee,
-                b.rdate,
-                a.rday,
-                b.rno,
-                a.grade,
-                dividing,
-                b.gate,
-                b.r_pop as rank,
-                b.r_rank,
-                b.horse,
-                b.remark,
-                b.jockey j_name,
-                b.trainer t_name, b.host h_name,
-                r_pop,
-                a.distance,
-                handycap,
-                jt_per,
-                jt_cnt,
-                remark,
-                s1f_rank,
-                replace( corners, ' ', '') corners,
-                g3f_rank,
-                g1f_rank,
-                alloc3r,
-                jockey_old,
-                reason
-            from The1.exp010 a, The1.exp011 b 
-            where a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
-            and a.rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d') and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
-            and a.rno < 80
-            order by a.rdate, a.rtime, gate
-            ; """
-        cursor.execute(strSql, (i_rdate, i_rdate))
-        race_detail = cursor.fetchall()
+    try:
+        with connection.cursor() as cursor:
+            strSql = """
+                select b.m_rank as rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5,
+                       a.rcnt, a.r1, a.r2, a.r3, a.r4, a.r5, a.r6, a.r7, a.r8, a.r9, a.r10, a.r11, a.r12,
+                       a.rrcnt, a.rr1, a.rr2, a.rr3, a.rr4, a.rr5, a.rr6, a.rr7, a.rr8, a.rr9, a.rr10, a.rr11, a.rr12,
+                       c.h_total, c.h_cancel, c.h_current, c.debut,
+                       replace(replace(replace(c.year_race, '(', ' " '), '/', ' ` '), ')', ''),
+                       c.year_prize / 1000000,
+                       replace(replace(replace(c.tot_race, '(', ' " '), '/', ' ` '), ')', ''),
+                       c.tot_prize / 1000000
+                from (
+                    select * from exp011
+                    where rcity = %s and rdate = %s and rno = %s
+                ) b
+                left join (
+                    select host, count(*) rcnt,
+                           sum(if(r_pop = 1, 1, 0)) r1,
+                           sum(if(r_pop = 2, 1, 0)) r2,
+                           sum(if(r_pop = 3, 1, 0)) r3,
+                           sum(if(r_pop = 4, 1, 0)) r4,
+                           sum(if(r_pop = 5, 1, 0)) r5,
+                           sum(if(r_pop = 6, 1, 0)) r6,
+                           sum(if(r_pop = 7, 1, 0)) r7,
+                           sum(if(r_pop = 8, 1, 0)) r8,
+                           sum(if(r_pop = 9, 1, 0)) r9,
+                           sum(if(r_pop = 10, 1, 0)) r10,
+                           sum(if(r_pop = 11, 1, 0)) r11,
+                           sum(if(r_pop >= 12, 1, 0)) r12,
+                           sum(if(r_rank > 0, 1, 0)) rrcnt,
+                           sum(if(r_rank = 1, 1, 0)) rr1,
+                           sum(if(r_rank = 2, 1, 0)) rr2,
+                           sum(if(r_rank = 3, 1, 0)) rr3,
+                           sum(if(r_rank = 4, 1, 0)) rr4,
+                           sum(if(r_rank = 5, 1, 0)) rr5,
+                           sum(if(r_rank = 6, 1, 0)) rr6,
+                           sum(if(r_rank = 7, 1, 0)) rr7,
+                           sum(if(r_rank = 8, 1, 0)) rr8,
+                           sum(if(r_rank = 9, 1, 0)) rr9,
+                           sum(if(r_rank = 10, 1, 0)) rr10,
+                           sum(if(r_rank = 11, 1, 0)) rr11,
+                           sum(if(r_rank >= 12, 1, 0)) rr12
+                    from exp011
+                    where rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d')
+                                   and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
+                      and rno < 80
+                    group by host
+                ) a on a.host = b.host
+                left join (
+                    select distinct bb.rcity, aa.host,
+                           aa.h_total, aa.h_cancel, aa.h_current, aa.debut,
+                           aa.year_race, aa.tot_race, aa.year_prize, aa.tot_prize
+                    from host aa
+                    join horse bb on aa.rcity = bb.rcity and aa.host = bb.host
+                    where bb.rcity = %s
+                      and bb.horse in (
+                          select horse from exp011 where rcity = %s and rdate = %s and rno = %s
+                      )
+                ) c on c.host = b.host and c.rcity = b.rcity
+                order by b.r_pop, b.gate;
+            """
+            cursor.execute(
+                strSql,
+                (
+                    i_rcity,
+                    i_rdate,
+                    i_rno,
+                    i_rdate,
+                    i_rdate,
+                    i_rcity,
+                    i_rcity,
+                    i_rdate,
+                    i_rno,
+                ),
+            )
+            award_h = cursor.fetchall()
+    except Exception:
+        logger.exception(
+            "Failed selecting in Award_h (rcity=%s, rdate=%s, rno=%s)",
+            i_rcity,
+            i_rdate,
+            i_rno,
+        )
 
-    except:
-        print("Failed selecting in expect : 경주별 Detail(약식)) ")
-    finally:
-        cursor.close()
+    try:
+        with connection.cursor() as cursor:
+            strSql = """
+                select b.rcity,
+                       b.jockey awardee,
+                       b.rdate,
+                       a.rday,
+                       b.rno,
+                       a.grade,
+                       dividing,
+                       b.gate,
+                       b.r_pop as rank,
+                       b.r_rank,
+                       b.horse,
+                       b.remark,
+                       b.jockey j_name,
+                       b.trainer t_name, b.host h_name,
+                       r_pop,
+                       a.distance,
+                       handycap,
+                       jt_per,
+                       jt_cnt,
+                       remark,
+                       s1f_rank,
+                       replace(corners, ' ', '') corners,
+                       g3f_rank,
+                       g1f_rank,
+                       alloc3r,
+                       jockey_old,
+                       reason
+                from exp010 a
+                join exp011 b
+                  on a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
+                where a.rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d')
+                                  and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
+                  and a.rno < 80
+                order by a.rdate, a.rtime, gate;
+            """
+            cursor.execute(strSql, (i_rdate, i_rdate))
+            race_detail = cursor.fetchall()
+    except Exception:
+        logger.exception(
+            "Failed selecting in race_detail (rcity=%s, rdate=%s, rno=%s)",
+            i_rcity,
+            i_rdate,
+            i_rno,
+        )
 
     return award_j, award_t, award_h, race_detail
 
@@ -3084,7 +3124,7 @@ def get_popularity_rate_j(i_rcity, i_rdate, i_rno):
             + """', INTERVAL - 3 DAY), '%Y%m%d')
                           and grade != '주행검사'
                           group by jockey , distance	
-                          ) a  right outer join  expect b  on a.jockey = b.jockey and a.distance = b.distance
+                          ) a  right outer join  exp011 b  on a.jockey = b.jockey and a.distance = b.distance
                         where b.rcity =  '"""
             + i_rcity
             + """'
@@ -3173,7 +3213,7 @@ def get_popularity_rate_j(i_rcity, i_rdate, i_rno):
                         sum(if(r_rank = 6, 1, 0)) rr6,
                         sum(if(r_rank = 7, 1, 0)) rr7,
                         sum(if(r_rank >= 8, 1, 0)) rr8
-                from expect a
+                from exp011 a
                 where rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
@@ -3248,7 +3288,7 @@ def get_popularity_rate_t(i_rcity, i_rdate, i_rno):
             + """', INTERVAL - 3 DAY), '%Y%m%d')
                           and grade != '주행검사'
                           group by trainer , distance	
-                          ) a  right outer join  expect b  on a.trainer = b.trainer and a.distance = b.distance
+                          ) a  right outer join  exp011 b  on a.trainer = b.trainer and a.distance = b.distance
                         where b.rcity =  '"""
             + i_rcity
             + """'
@@ -3337,7 +3377,7 @@ def get_popularity_rate_t(i_rcity, i_rdate, i_rno):
                         sum(if(r_rank = 6, 1, 0)) rr6,
                         sum(if(r_rank = 7, 1, 0)) rr7,
                         sum(if(r_rank >= 8, 1, 0)) rr8
-                from expect a
+                from exp011 a
                 where rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
@@ -3488,7 +3528,7 @@ def get_popularity_rate_h(i_rcity, i_rdate, i_rno):
                         sum(if(r_rank = 6, 1, 0)) rr6,
                         sum(if(r_rank = 7, 1, 0)) rr7,
                         sum(if(r_rank >= 8, 1, 0)) rr8
-                from expect a
+                from exp011 a
                 where rdate between date_format(DATE_ADD('"""
             + i_rdate
             + """', INTERVAL - 3 DAY), '%Y%m%d') and date_format(DATE_ADD('"""
