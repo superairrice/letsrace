@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from datetime import date, datetime
 from email.message import EmailMessage
+import ipaddress
 import logging
 import os
 from urllib.parse import unquote, urlsplit, urlunsplit
@@ -130,13 +131,30 @@ def get_client_ip(request):
     cf_connecting_ip = (request.META.get("HTTP_CF_CONNECTING_IP") or "").strip()
     is_trusted_proxy = remote_addr in TRUSTED_PROXY_IPS
     is_local_fallback = (not remote_addr) or (remote_addr in ("127.0.0.1", "::1"))
+
+    def _is_private_proxy_addr(value):
+        if not value:
+            return False
+        try:
+            addr = ipaddress.ip_address(value.strip())
+        except ValueError:
+            return False
+        return (
+            addr.is_private
+            or addr.is_loopback
+            or addr.is_link_local
+            or addr.is_reserved
+        )
+
+    is_proxy_hop = is_trusted_proxy or is_local_fallback or _is_private_proxy_addr(remote_addr)
+
     # 신뢰 프록시에서 전달된 경우에만 X-Forwarded-For를 사용한다.
-    if x_forwarded_for and (is_trusted_proxy or is_local_fallback):
-        ip = x_forwarded_for.split(",")[0].strip()
-    elif x_real_ip and (is_trusted_proxy or is_local_fallback):
-        ip = x_real_ip
-    elif cf_connecting_ip and (is_trusted_proxy or is_local_fallback):
+    if cf_connecting_ip and is_proxy_hop:
         ip = cf_connecting_ip
+    elif x_forwarded_for and is_proxy_hop:
+        ip = x_forwarded_for.split(",")[0].strip()
+    elif x_real_ip and is_proxy_hop:
+        ip = x_real_ip
     else:
         ip = remote_addr.strip()
     return ip or "unknown"

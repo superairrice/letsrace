@@ -945,12 +945,14 @@ def raceRelatedInfo(request, rcity, rdate, rno):
     # award_j, award_t, award_h, race_detail = get_race_related(rcity, rdate, rno)
 
     paternal = cache.get(f"{cache_prefix}:paternal")
-    if paternal is None:
+    if paternal is None or (hasattr(paternal, "__len__") and len(paternal) == 0):
         paternal = get_paternal(rcity, rdate, rno, r_condition.distance)  # 부마 3착 성적
         cache.set(f"{cache_prefix}:paternal", paternal, RACE_PREDICTION_CACHE_TTL)
 
     paternal_dist = cache.get(f"{cache_prefix}:paternal_dist")
-    if paternal_dist is None:
+    if paternal_dist is None or (
+        hasattr(paternal_dist, "__len__") and len(paternal_dist) == 0
+    ):
         paternal_dist = get_paternal_dist(rcity, rdate, rno)  # 부마 거리별 3착 성적
         cache.set(
             f"{cache_prefix}:paternal_dist",
@@ -974,12 +976,16 @@ def raceRelatedInfo(request, rcity, rdate, rno):
             strSql = """ 
                 select host, horse, trainer, birthplace, sex, age, grade, tot_race, tot_1st, tot_2nd, tot_3rd, year_race, year_1st, year_2nd, year_3rd, tot_prize/1000, rating, price/1000
                 from horse_w
-                where wdate = ( select max(wdate) from The1.horse_w where wdate < %s )  
+                where wdate = COALESCE(
+                    (select max(wdate) from The1.horse_w where wdate < %s),
+                    (select max(wdate) from The1.horse_w where wdate <= %s)
+                )
                 and host in  ( select host from exp011 where rcity =  %s and rdate = %s and rno =  %s )
                 order by host, trainer, horse
             """
             # 안전한 SQL 파라미터 바인딩
             params = (
+                rdate,
                 rdate,
                 rcity,
                 rdate,
@@ -1068,6 +1074,21 @@ def statusStable(request, rcity, rdate, rno):
     stable, stable_g, stable_h = get_status_stable(rcity, rdate, rno)
     stable_list = stable.values.tolist()
     stable_list_g = stable_g.values.tolist()
+
+    # 월별 피벗 결과가 일부 월 누락으로 가변 길이가 될 수 있어 템플릿 고정 언팩 길이에 맞춘다.
+    def _pad_rows(rows, expected_len):
+        padded = []
+        for row in rows or []:
+            row_list = list(row)
+            if len(row_list) < expected_len:
+                row_list.extend([0] * (expected_len - len(row_list)))
+            elif len(row_list) > expected_len:
+                row_list = row_list[:expected_len]
+            padded.append(row_list)
+        return padded
+
+    stable_list = _pad_rows(stable_list, 35)
+    stable_list_g = _pad_rows(stable_list_g, 36)
     stable_title = stable.columns.tolist() 
 
     try:

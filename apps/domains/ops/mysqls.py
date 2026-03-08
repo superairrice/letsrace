@@ -72,11 +72,14 @@ def get_paternal(rcity, rdate, rno, distance):
                         d.tot_prize/1000000
                         
                 FROM exp011 a
-                JOIN (
-                    SELECT horse, paternal, price, tot_prize 
-                    FROM horse_w 
-                    WHERE wdate = (SELECT MAX(wdate) FROM horse_w WHERE wdate < %s)
-                ) b ON a.horse = b.horse
+                LEFT JOIN horse_w b
+                    ON b.horse = a.horse
+                    AND b.wdate = (
+                        SELECT MAX(hw.wdate)
+                        FROM horse_w hw
+                        WHERE hw.horse = a.horse
+                          AND hw.wdate <= %s
+                    )
                 LEFT JOIN paternal c ON b.paternal = c.paternal 
                 LEFT JOIN 
                 ( select distinct bb.rcity, aa.host, 
@@ -2865,6 +2868,10 @@ def get_race_related(i_rcity, i_rdate, i_rno):
                 ) d on d.jockey = b.jockey
                 order by b.r_pop, b.gate;
             """
+            print (
+                strSql%
+                (i_rcity, i_rdate, i_rno, i_rdate, i_rdate, i_rdate, i_rdate),
+            )
             cursor.execute(
                 strSql,
                 (i_rcity, i_rdate, i_rno, i_rdate, i_rdate, i_rdate, i_rdate),

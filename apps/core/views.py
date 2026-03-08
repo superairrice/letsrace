@@ -169,10 +169,12 @@ def _build_admin_summary_payload(i_rdate):
 
     method_columns = [
         ("1축 2~4 5~7", "1축_2~4_5~7_베팅액", "1축_2~4_5~7_환수액", "r_pop1_축_2~4_5~7_적중"),
+        ("1축 5~7 2~4", "1축_5~7_2~4_베팅액", "1축_5~7_2~4_환수액", "r_pop1_축_5~7_2~4_적중"),
         ("1축 2~4", "1축_2~4_베팅액", "1축_2~4_환수액", "r_pop1_축_2~4_적중"),
         ("1축 2~6 삼복", "1축_2~6_삼복_베팅액", "1축_2~6_삼복_환수액", "r_pop1_축_2~6_삼복_적중"),
-        ("1~2복조 3~8 삼복", "1~2복조_3~8_삼복_베팅액", "1~2복조_3~8_삼복_환수액", "r_pop1~2_복조_3~8_삼복_적중"),
+        ("1~2복조 3~12 삼복", "1~2복조_3~12_삼복_베팅액", "1~2복조_3~12_삼복_환수액", "r_pop1~2_복조_3~12_삼복_적중"),
         ("BOX4 삼복", "BOX4_삼복_베팅액", "BOX4_삼복_환수액", "r_pop1~4_BOX4_삼복_적중"),
+        ("r_pop 1~6 삼복승식", "r_pop1~6_BOX6_삼복_베팅액", "r_pop1~6_BOX6_삼복_환수액", "r_pop1~6_BOX6_삼복_적중"),
     ]
 
     if race_df is not None and hasattr(race_df, "columns") and not race_df.empty:
@@ -979,10 +981,15 @@ def home(request):
         pass
     perf_rows = []
     gate_perf_rows = []
+    active_perf_rows = []
     perf_cache_key = f"home:top3_perf:{i_rdate}:{right_city_top3_window_days}:{right_city_top3_future_days}"
     gate_perf_cache_key = f"home:top3_gate_perf:{right_city_top3_gate_from}:{right_city_top3_gate_to}"
+    active_perf_cache_key = (
+        f"home:top3_active_perf:{right_city_top3_gate_from}:{right_city_top3_gate_to}"
+    )
     cached_perf_rows = _cache_copy_get(perf_cache_key)
     cached_gate_perf_rows = _cache_copy_get(gate_perf_cache_key)
+    cached_active_perf_rows = _cache_copy_get(active_perf_cache_key)
     if cached_perf_rows is not None:
         perf_rows = cached_perf_rows
     else:
@@ -1044,6 +1051,34 @@ def home(request):
         finally:
             if cursor:
                 cursor.close()
+    if cached_active_perf_rows is not None:
+        active_perf_rows = cached_active_perf_rows
+    else:
+        cursor = None
+        try:
+            cursor = connection.cursor()
+            str_sql_active = """
+                SELECT
+                    rcity,
+                    jockey,
+                    trainer
+                FROM exp011
+                WHERE rdate BETWEEN %s AND %s
+                  AND rno < 80
+                ORDER BY rcity, rdate, rno, gate
+            """
+            cursor.execute(
+                str_sql_active,
+                (right_city_top3_gate_from, right_city_top3_gate_to),
+            )
+            active_perf_rows = cursor.fetchall()
+            _cache_copy_set(active_perf_cache_key, active_perf_rows, HOME_RACE_CACHE_TTL)
+        except Exception as exc:
+            print(f"Failed selecting top3 active perf rows: {exc}")
+            active_perf_rows = []
+        finally:
+            if cursor:
+                cursor.close()
 
     # 기수/마방 데이터가 비어 있으면 기존 expects로 fallback
     if not perf_rows:
@@ -1051,6 +1086,29 @@ def home(request):
     # 마번 데이터가 비어 있으면 기대데이터로 fallback(집계는 동일 키: gate/r_rank 사용)
     if not gate_perf_rows:
         gate_perf_rows = expects
+
+    active_name_map = {}
+    for row in active_perf_rows:
+        try:
+            if hasattr(row, "rcity"):
+                active_city = str(getattr(row, "rcity", "") or "").strip()
+                active_jockey = str(getattr(row, "jockey", "") or "").strip()
+                active_trainer = str(getattr(row, "trainer", "") or "").strip()
+            else:
+                active_city = str(row[0] or "").strip()
+                active_jockey = str(row[1] or "").strip()
+                active_trainer = str(row[2] or "").strip()
+            if not active_city:
+                continue
+            city_active = active_name_map.setdefault(
+                active_city, {"jockeys": set(), "trainers": set()}
+            )
+            if active_jockey:
+                city_active["jockeys"].add(active_jockey)
+            if active_trainer:
+                city_active["trainers"].add(active_trainer)
+        except Exception:
+            continue
 
     city_perf_map = {}
 
@@ -1115,8 +1173,13 @@ def home(request):
             city_bucket = city_perf_map.setdefault(
                 e_rcity, {"gate": {}, "jockey": {}, "trainer": {}}
             )
-            _acc_perf(city_bucket["jockey"], e_jockey, rank_int)
-            _acc_perf(city_bucket["trainer"], e_trainer, rank_int)
+            city_active = active_name_map.get(
+                e_rcity, {"jockeys": set(), "trainers": set()}
+            )
+            if str(e_jockey or "").strip() in city_active["jockeys"]:
+                _acc_perf(city_bucket["jockey"], e_jockey, rank_int)
+            if str(e_trainer or "").strip() in city_active["trainers"]:
+                _acc_perf(city_bucket["trainer"], e_trainer, rank_int)
         except Exception:
             continue
 
