@@ -1,17 +1,237 @@
 from apps.common import *
 import re
 import threading
+import time
 import traceback
 import uuid
 from contextlib import redirect_stderr, redirect_stdout
 from html import unescape
+from html.parser import HTMLParser
+from urllib.parse import urlencode
+
+import requests
 from django.http import JsonResponse
 from django.core.cache import cache
 from apps.domains.race.race import resultOfRace
 from django.db import close_old_connections
+from apps.domains.ops.kra_change_sync import (
+    KRA_CHANGE_PRESETS as SERVICE_KRA_CHANGE_PRESETS,
+    sync_latest_kra_change_entries,
+)
 
 # Prediction views
 RACE_PREDICTION_CACHE_TTL = 30
+
+
+KRA_SCRAPER_PRESETS = {
+    "change": {
+        "label": "KRA 출전표 변경",
+        "url": "https://race.kra.co.kr/thisweekrace/ThisWeekChulmapyoChange.do",
+    },
+    "weight": {
+        "label": "KRA 출주마 체중",
+        "url": "https://race.kra.co.kr/thisweekrace/ThisWeekWeight.do",
+    },
+    "score": {
+        "label": "KRA 요약성적표",
+        "url": "https://race.kra.co.kr/thisweekrace/ThisWeekScoretableDailyScoretable.do",
+    },
+}
+
+
+def _strip_html_to_text(raw_html):
+    text = raw_html or ""
+    text = re.sub(r"(?is)<script.*?>.*?</script>", " ", text)
+    text = re.sub(r"(?is)<style.*?>.*?</style>", " ", text)
+    text = re.sub(r"(?i)<br\\s*/?>", "\n", text)
+    text = re.sub(r"(?i)</p>|</div>|</li>|</tr>|</td>|</th>|</h[1-6]>", "\n", text)
+    text = re.sub(r"(?s)<[^>]+>", " ", text)
+    text = unescape(text)
+    text = re.sub(r"\r\n?", "\n", text)
+    text = re.sub(r"[ \t\f\v]+", " ", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
+def _build_kra_scrape_url(preset_key, custom_url):
+    custom_url = (custom_url or "").strip()
+    if custom_url:
+        return custom_url
+
+    preset = KRA_SCRAPER_PRESETS.get(preset_key) or KRA_SCRAPER_PRESETS["change"]
+    return preset["url"]
+
+
+class _SimpleHtmlTableParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.tables = []
+        self._table = None
+        self._row = None
+        self._cell = None
+        self._cell_tag = None
+        self._capture_depth = 0
+
+    def handle_starttag(self, tag, attrs):
+        tag = tag.lower()
+        if tag == "table":
+            self._table = {"rows": []}
+        elif tag == "tr" and self._table is not None:
+            self._row = []
+        elif tag in {"th", "td"} and self._row is not None:
+            attr_map = dict(attrs)
+            self._cell_tag = tag
+            self._cell = {
+                "text": "",
+                "is_header": tag == "th",
+                "colspan": int(attr_map.get("colspan", "1") or "1"),
+                "rowspan": int(attr_map.get("rowspan", "1") or "1"),
+            }
+            self._capture_depth = 1
+        elif self._cell is not None:
+            if tag == "br":
+                self._cell["text"] += "\n"
+            else:
+                self._capture_depth += 1
+
+    def handle_endtag(self, tag):
+        tag = tag.lower()
+        if tag == "table":
+            if self._table and self._table["rows"]:
+                self.tables.append(self._table)
+            self._table = None
+        elif tag == "tr":
+            if self._table is not None and self._row:
+                self._table["rows"].append(self._row)
+            self._row = None
+        elif tag in {"th", "td"}:
+            if self._row is not None and self._cell is not None:
+                self._cell["text"] = re.sub(r"\s*\n\s*", "\n", self._cell["text"]).strip()
+                self._row.append(self._cell)
+            self._cell = None
+            self._cell_tag = None
+            self._capture_depth = 0
+        elif self._cell is not None and self._capture_depth > 0:
+            self._capture_depth -= 1
+
+    def handle_data(self, data):
+        if self._cell is not None:
+            self._cell["text"] += data
+
+
+def _parse_html_tables(raw_html):
+    parser = _SimpleHtmlTableParser()
+    parser.feed(raw_html or "")
+    parsed_tables = []
+    for index, table in enumerate(parser.tables, start=1):
+        rows = [row for row in table["rows"] if any((cell.get("text") or "").strip() for cell in row)]
+        if not rows:
+            continue
+        header_row = None
+        body_rows = rows
+        if rows and all(cell.get("is_header") for cell in rows[0]):
+            header_row = rows[0]
+            body_rows = rows[1:]
+        parsed_tables.append(
+            {
+                "index": index,
+                "headers": header_row or [],
+                "rows": body_rows,
+            }
+        )
+    return parsed_tables
+
+
+def _normalize_kra_header(text):
+    return re.sub(r"[\s\n\r\t()\-_/]", "", (text or "").strip()).lower()
+
+
+def _match_header_index(headers, candidates):
+    normalized = [_normalize_kra_header(h.get("text", "")) for h in headers]
+    candidate_keys = [_normalize_kra_header(c) for c in candidates]
+    for idx, header in enumerate(normalized):
+        if any(key and key in header for key in candidate_keys):
+            return idx
+    return -1
+
+
+def _table_row_to_cells(row):
+    return [str(cell.get("text", "") or "").strip() for cell in row]
+
+
+def _extract_cancel_content_from_tables(scraped_tables):
+    lines = []
+    for table in scraped_tables or []:
+        headers = table.get("headers") or []
+        if not headers:
+            continue
+        idx_date = _match_header_index(headers, ["일자", "경주일", "시행일자"])
+        idx_rno = _match_header_index(headers, ["경주번호", "경주"])
+        idx_horse = _match_header_index(headers, ["마명", "경주마"])
+        idx_reason = _match_header_index(headers, ["사유", "변경사유", "취소사유"])
+        if min(idx_date, idx_rno, idx_horse, idx_reason) < 0:
+            continue
+
+        for row in table.get("rows") or []:
+            cells = _table_row_to_cells(row)
+            if max(idx_date, idx_rno, idx_horse, idx_reason) >= len(cells):
+                continue
+            date_text = cells[idx_date]
+            horse_text = cells[idx_horse]
+            if not date_text or not horse_text:
+                continue
+            line_items = [
+                "취소",
+                date_text,
+                cells[idx_rno],
+                "",
+                horse_text,
+                "",
+                "",
+                cells[idx_reason],
+            ]
+            lines.append("\t".join(line_items))
+    return "\n".join(lines)
+
+
+def _extract_jockey_change_content_from_tables(scraped_tables):
+    lines = []
+    for table in scraped_tables or []:
+        headers = table.get("headers") or []
+        if not headers:
+            continue
+        idx_date = _match_header_index(headers, ["일자", "경주일", "시행일자"])
+        idx_rno = _match_header_index(headers, ["경주번호", "경주"])
+        idx_horse = _match_header_index(headers, ["마명", "경주마"])
+        idx_old_jockey = _match_header_index(headers, ["기수", "변경전기수", "당초기수"])
+        idx_old_handy = _match_header_index(headers, ["부담중량", "변경전부담중량", "당초부담중량"])
+        idx_new_jockey = _match_header_index(headers, ["변경기수", "변경후기수", "기수변경"])
+        idx_new_handy = _match_header_index(headers, ["변경후부담중량", "변경부담중량", "신부담중량"])
+        idx_reason = _match_header_index(headers, ["사유", "변경사유"])
+        if min(idx_date, idx_rno, idx_horse, idx_old_jockey, idx_old_handy, idx_new_jockey, idx_new_handy, idx_reason) < 0:
+            continue
+
+        for row in table.get("rows") or []:
+            cells = _table_row_to_cells(row)
+            if max(idx_date, idx_rno, idx_horse, idx_old_jockey, idx_old_handy, idx_new_jockey, idx_new_handy, idx_reason) >= len(cells):
+                continue
+            date_text = cells[idx_date]
+            horse_text = cells[idx_horse]
+            if not date_text or not horse_text:
+                continue
+            line_items = [
+                date_text,
+                cells[idx_rno],
+                "",
+                horse_text,
+                cells[idx_old_jockey],
+                cells[idx_old_handy],
+                cells[idx_new_jockey],
+                cells[idx_new_handy],
+                cells[idx_reason],
+            ]
+            lines.append("\t".join(line_items))
+    return "\n".join(lines)
 
 def racePrediction(request, rcity, rdate, rno, hname, awardee):
 
@@ -2450,6 +2670,99 @@ def raceBreakingNews(request):
     return render(request, "base/race_breakingnews.html", context)
 
 
+@login_required
+def kraScraper(request):
+    if not (request.user.username == "admin" or request.user.is_superuser):
+        return HttpResponse(status=403)
+
+    preset = (request.POST.get("preset") if request.method == "POST" else request.GET.get("preset")) or "change"
+    preset = preset if preset in SERVICE_KRA_CHANGE_PRESETS else "change"
+    custom_url = (request.POST.get("custom_url") if request.method == "POST" else request.GET.get("custom_url")) or ""
+    scraped_url = (custom_url or "").strip() or SERVICE_KRA_CHANGE_PRESETS[preset]["url"]
+    scraped_text = ""
+    processed_text = ""
+    cancel_content = ""
+    jockey_content = ""
+    raw_html = ""
+    page_title = ""
+    fetch_error = ""
+    fetched = False
+    status_code = None
+    action = (request.POST.get("action") if request.method == "POST" else "") or "scrape"
+    db_result = {"mode": "", "count": 0, "error": ""}
+    cancel_count = 0
+    jockey_count = 0
+
+    if request.method == "POST":
+        fetched = True
+        try:
+            sync_result = sync_latest_kra_change_entries(
+                url=scraped_url,
+                commit=action in {"save_cancel", "save_jockey", "sync_all"},
+                apply_cancel=action in {"save_cancel", "sync_all"},
+                apply_jockey=action in {"save_jockey", "sync_all"},
+            )
+            scraped_url = sync_result.get("resolved_url") or scraped_url
+            scraped_text = sync_result.get("text", "")
+            cancel_content = (sync_result.get("cancel_content") or "").strip()
+            jockey_content = (sync_result.get("jockey_content") or "").strip()
+            cancel_count = int(sync_result.get("cancel_lines", 0) or 0)
+            jockey_count = int(sync_result.get("jockey_lines", 0) or 0)
+            processed_chunks = []
+            if cancel_content:
+                processed_chunks.append("[말취소]\n" + cancel_content)
+            if jockey_content:
+                processed_chunks.append("[기수변경]\n" + jockey_content)
+            processed_text = "\n\n".join(processed_chunks).strip()
+            raw_html = sync_result.get("html", "")
+            page_title = (
+                re.sub(r"\s+", " ", unescape(re.search(r"(?is)<title[^>]*>(.*?)</title>", raw_html).group(1))).strip()
+                if raw_html and re.search(r"(?is)<title[^>]*>(.*?)</title>", raw_html)
+                else ""
+            )
+            status_code = 200
+            if not scraped_text and not raw_html:
+                fetch_error = "본문 텍스트를 추출하지 못했습니다."
+            if action == "save_cancel":
+                if sync_result.get("cancel_lines", 0) <= 0:
+                    db_result["error"] = "말취소 데이터로 변환할 행을 찾지 못했습니다."
+                else:
+                    db_result["count"] = int(sync_result.get("cancel_applied", 0) or 0)
+                    db_result["mode"] = "말취소"
+            elif action == "save_jockey":
+                if sync_result.get("jockey_lines", 0) <= 0:
+                    db_result["error"] = "기수변경 데이터로 변환할 행을 찾지 못했습니다."
+                else:
+                    db_result["count"] = int(sync_result.get("jockey_applied", 0) or 0)
+                    db_result["mode"] = "기수변경"
+            elif action == "sync_all":
+                db_result["mode"] = "자동반영"
+                db_result["count"] = int(sync_result.get("cancel_applied", 0) or 0) + int(sync_result.get("jockey_applied", 0) or 0)
+        except Exception as e:
+            fetch_error = str(e)
+
+    context = {
+        "preset": preset,
+        "preset_items": SERVICE_KRA_CHANGE_PRESETS,
+        "custom_url": custom_url,
+        "scraped_url": scraped_url,
+        "processed_text": processed_text,
+        "cancel_content": cancel_content,
+        "cancel_count": cancel_count,
+        "jockey_content": jockey_content,
+        "jockey_count": jockey_count,
+        "scraped_text": scraped_text,
+        "raw_html": raw_html,
+        "page_title": page_title,
+        "fetch_error": fetch_error,
+        "fetched": fetched,
+        "status_code": status_code,
+        "action": action,
+        "db_result": db_result,
+    }
+    return render(request, "base/kra_scraper.html", context)
+
+
 # record calculation 기준정보 Setup
 
 RACE_CALC_JOB_TTL = 60 * 60
@@ -2495,6 +2808,10 @@ def _race_calc_job_log(job_id, message):
     _race_calc_job_set(job_id, state)
 
 
+def _race_calc_elapsed_ms(start_ts):
+    return (time.perf_counter() - start_ts) * 1000.0
+
+
 class _RaceCalcJobLogStream:
     def __init__(self, job_id):
         self.job_id = job_id
@@ -2520,17 +2837,26 @@ class _RaceCalcJobLogStream:
 
 
 def _run_race_calculation_job(job_id, payload):
-    from apps.ops.views import execChatGPT
+    from apps.ops.views import execChatGPT, execChatGPTv2, execChatGPTv5
 
     close_old_connections()
     _stdout_stream = _RaceCalcJobLogStream(job_id)
     _stderr_stream = _RaceCalcJobLogStream(job_id)
+    job_started_ts = time.perf_counter()
     try:
         with redirect_stdout(_stdout_stream), redirect_stderr(_stderr_stream):
             rdate1 = payload.get("rdate1", "")
             rdate2 = payload.get("rdate2", "")
             selected_exp010s = payload.get("selected_exp010s", [])
             do_baseline = bool(payload.get("rcheck1"))
+            prediction_profile = str(payload.get("prediction_profile") or "v2").strip().lower()
+            if prediction_profile == "v1":
+                run_prediction = execChatGPT
+            elif prediction_profile == "v2":
+                run_prediction = execChatGPTv2
+            else:
+                prediction_profile = "v0"
+                run_prediction = execChatGPTv5
 
             _race_calc_job_update(
                 job_id,
@@ -2543,12 +2869,13 @@ def _run_race_calculation_job(job_id, payload):
             )
             _race_calc_job_log(
                 job_id,
-                f"집계 시작 / 기간 {rdate1}~{rdate2} / 대상 {len(selected_exp010s)}건",
+                f"집계 시작 / 기간 {rdate1}~{rdate2} / 대상 {len(selected_exp010s)}건 / 프로파일 {prediction_profile.upper()}",
             )
 
             baseline_errors = 0
             if do_baseline:
                 try:
+                    baseline_started_ts = time.perf_counter()
                     # 누수 방지 목적: 기준정보 집계 기준일을 기간 시작일의 전일로 맞춘다.
                     try:
                         baseline_rdate = (
@@ -2557,9 +2884,37 @@ def _run_race_calculation_job(job_id, payload):
                     except Exception:
                         baseline_rdate = rdate1
 
-                    ret = baseline_compute(connection, baseline_rdate)
-                    if ret == 1:
-                        _race_calc_job_log(job_id, f"기준정보 계산 완료: {baseline_rdate}")
+                    for pass_idx in (1, 2):
+                        pass_started_ts = time.perf_counter()
+                        _race_calc_job_log(
+                            job_id,
+                            f"기준정보 {pass_idx}차 계산 시작: {baseline_rdate}",
+                        )
+                        ret = baseline_compute(connection, baseline_rdate)
+                        if ret != 1:
+                            baseline_errors += 1
+                            _race_calc_job_update(job_id, errors=baseline_errors)
+                            _race_calc_job_log(
+                                job_id,
+                                (
+                                    f"기준정보 {pass_idx}차 계산 오류: {baseline_rdate} "
+                                    f"({_race_calc_elapsed_ms(pass_started_ts):.1f}ms)"
+                                ),
+                            )
+                            _race_calc_job_log(
+                                job_id,
+                                f"기준정보 {pass_idx}차 실패로 이후 기준정보 갱신 단계를 중단",
+                            )
+                            break
+
+                        _race_calc_job_log(
+                            job_id,
+                            (
+                                f"기준정보 {pass_idx}차 계산 완료: {baseline_rdate} "
+                                f"({_race_calc_elapsed_ms(pass_started_ts):.1f}ms)"
+                            ),
+                        )
+                        renew_started_ts = time.perf_counter()
                         renew_stats = renewal_record_s(connection, baseline_rdate) or {}
                         renew_errors = int(renew_stats.get("errors", 0) or 0)
                         if renew_errors > 0:
@@ -2568,33 +2923,34 @@ def _run_race_calculation_job(job_id, payload):
                             _race_calc_job_log(
                                 job_id,
                                 (
-                                    f"기준정보 갱신 부분실패: {baseline_rdate} "
+                                    f"기준정보 {pass_idx}차 갱신 부분실패: {baseline_rdate} "
                                     f"(clear={renew_stats.get('clear_xyz', 0)}, "
                                     f"x={renew_stats.get('set_x', 0)}, y={renew_stats.get('set_y', 0)}, "
                                     f"z={renew_stats.get('set_z', 0)}, "
                                     f"insert={renew_stats.get('insert_record_s', 0)}, "
-                                    f"errors={renew_errors})"
+                                    f"errors={renew_errors}, "
+                                    f"elapsed={_race_calc_elapsed_ms(renew_started_ts):.1f}ms)"
                                 ),
                             )
                         else:
                             _race_calc_job_log(
                                 job_id,
                                 (
-                                    f"기준정보 갱신 완료: {baseline_rdate} "
+                                    f"기준정보 {pass_idx}차 갱신 완료: {baseline_rdate} "
                                     f"(clear={renew_stats.get('clear_xyz', 0)}, "
                                     f"x={renew_stats.get('set_x', 0)}, y={renew_stats.get('set_y', 0)}, "
                                     f"z={renew_stats.get('set_z', 0)}, "
-                                    f"insert={renew_stats.get('insert_record_s', 0)})"
+                                    f"insert={renew_stats.get('insert_record_s', 0)}, "
+                                    f"elapsed={_race_calc_elapsed_ms(renew_started_ts):.1f}ms)"
                                 ),
                             )
-                    else:
-                        baseline_errors += 1
-                        _race_calc_job_update(job_id, errors=baseline_errors)
-                        _race_calc_job_log(job_id, f"기준정보 계산 오류: {baseline_rdate}")
-                        _race_calc_job_log(
-                            job_id,
-                            "기준정보 계산 실패로 기준정보 갱신 단계를 건너뜀",
-                        )
+                    _race_calc_job_log(
+                        job_id,
+                        (
+                            f"기준정보 단계 소요: {_race_calc_elapsed_ms(baseline_started_ts):.1f}ms "
+                            f"/ errors={baseline_errors}"
+                        ),
+                    )
                 except Exception as e:
                     baseline_errors += 1
                     _race_calc_job_update(job_id, errors=baseline_errors)
@@ -2605,6 +2961,7 @@ def _run_race_calculation_job(job_id, payload):
             else:
                 weight = []
                 try:
+                    weight_started_ts = time.perf_counter()
                     with connection.cursor() as cursor:
                         cursor.execute(
                             """
@@ -2614,6 +2971,13 @@ def _run_race_calculation_job(job_id, payload):
                             """
                         )
                         weight = cursor.fetchall()
+                    _race_calc_job_log(
+                        job_id,
+                        (
+                            f"가중치 조회 완료: rows={len(weight)} "
+                            f"({_race_calc_elapsed_ms(weight_started_ts):.1f}ms)"
+                        ),
+                    )
                 except Exception as e:
                     _race_calc_job_log(job_id, f"가중치 조회 실패: {e}")
 
@@ -2625,10 +2989,13 @@ def _run_race_calculation_job(job_id, payload):
                     done = 0
                     errors = baseline_errors
                     total = len(selected_exp010s)
+                    loop_started_ts = time.perf_counter()
                     for exp010 in selected_exp010s:
+                        race_started_ts = time.perf_counter()
                         rcity, rdate, rno = exp010[0], exp010[1], exp010[2]
                         _race_calc_job_log(job_id, f"[시작] {rcity} {rdate} {rno}경주")
                         try:
+                            condition_started_ts = time.perf_counter()
                             r_condition = Exp010.objects.filter(
                                 rcity=rcity, rdate=rdate, rno=rno
                             ).first()
@@ -2638,15 +3005,36 @@ def _run_race_calculation_job(job_id, payload):
                                     job_id, f"[실패] {rcity} {rdate} {rno}경주 - 조건 데이터 없음"
                                 )
                             else:
-                                print(f"Calculating record for {rcity} {rdate} {rno} with weight {weight}")
+                                condition_elapsed_ms = _race_calc_elapsed_ms(condition_started_ts)
+                                create_record_started_ts = time.perf_counter()
                                 create_record(connection, r_condition, weight)
-                                execChatGPT(None, rcity=rcity, rdate=rdate, rno=rno)
+                                create_record_elapsed_ms = _race_calc_elapsed_ms(
+                                    create_record_started_ts
+                                )
+                                prediction_started_ts = time.perf_counter()
+                                run_prediction(None, rcity=rcity, rdate=rdate, rno=rno)
+                                prediction_elapsed_ms = _race_calc_elapsed_ms(
+                                    prediction_started_ts
+                                )
                                 done += 1
-                                _race_calc_job_log(job_id, f"[완료] {rcity} {rdate} {rno}경주")
+                                _race_calc_job_log(
+                                    job_id,
+                                    (
+                                        f"[완료] {rcity} {rdate} {rno}경주 "
+                                        f"(condition={condition_elapsed_ms:.1f}ms, "
+                                        f"record={create_record_elapsed_ms:.1f}ms, "
+                                        f"prediction={prediction_elapsed_ms:.1f}ms, "
+                                        f"total={_race_calc_elapsed_ms(race_started_ts):.1f}ms)"
+                                    ),
+                                )
                         except Exception as e:
                             errors += 1
                             _race_calc_job_log(
-                                job_id, f"[실패] {rcity} {rdate} {rno}경주 - {e}"
+                                job_id,
+                                (
+                                    f"[실패] {rcity} {rdate} {rno}경주 - {e} "
+                                    f"(elapsed={_race_calc_elapsed_ms(race_started_ts):.1f}ms)"
+                                ),
                             )
 
                         progress = int(((done + errors) / total) * 100) if total > 0 else 100
@@ -2657,6 +3045,13 @@ def _run_race_calculation_job(job_id, payload):
                             total=total,
                             progress=progress,
                         )
+                    _race_calc_job_log(
+                        job_id,
+                        (
+                            f"경주별 집계 단계 소요: {_race_calc_elapsed_ms(loop_started_ts):.1f}ms "
+                            f"/ success={done} / errors={errors}"
+                        ),
+                    )
 
                     # try:
                     #     update_m_rank_score_for_period(
@@ -2696,14 +3091,22 @@ def _run_race_calculation_job(job_id, payload):
                 errors=final_errors,
                 progress=100,
                 finished_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                elapsed_ms=round(_race_calc_elapsed_ms(job_started_ts), 1),
             )
-            _race_calc_job_log(job_id, "집계 작업 종료")
+            _race_calc_job_log(
+                job_id,
+                (
+                    f"집계 작업 종료 / status={final_status} / done={final_done} "
+                    f"/ errors={final_errors} / elapsed={_race_calc_elapsed_ms(job_started_ts):.1f}ms"
+                ),
+            )
     except Exception as e:
         _race_calc_job_update(
             job_id,
             status="failed",
             progress=100,
             finished_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            elapsed_ms=round(_race_calc_elapsed_ms(job_started_ts), 1),
         )
         _race_calc_job_log(job_id, f"치명적 오류: {e}")
         _race_calc_job_log(job_id, traceback.format_exc())
@@ -2734,7 +3137,23 @@ def raceCalculation(request):
 
     q1 = request.GET.get("q1", "") if request.method == "GET" else request.POST.get("q1", "")
     q2 = request.GET.get("q2", "") if request.method == "GET" else request.POST.get("q2", "")
+    selected_rcity = (
+        request.GET.get("rcity", "") if request.method == "GET" else request.POST.get("rcity", "")
+    ).strip()
     job_id = (request.GET.get("job_id", "") if request.method == "GET" else "").strip()
+    prediction_profile = (
+        request.GET.get("prediction_profile", "")
+        if request.method == "GET"
+        else request.POST.get("prediction_profile", "")
+    ).strip().lower() or "v2"
+    if prediction_profile == "v5":
+        prediction_profile = "v0"
+    elif prediction_profile not in {"v0", "v1", "v2"}:
+        prediction_profile = "v2"
+    if request.method == "POST":
+        baseline_checked = bool(request.POST.get("rcheck1"))
+    else:
+        baseline_checked = request.GET.get("baseline", "1").strip() != "0"
     calc_logs = []
 
     rdate1 = _to_ymd(q1)
@@ -2752,6 +3171,8 @@ def raceCalculation(request):
                 "rdate2": "",
                 "fdate1": "",
                 "fdate2": "",
+                "selected_rcity": selected_rcity,
+                "available_rcities": [],
                 "exp010s": [],
                 "calc_logs": calc_logs,
             }
@@ -2765,16 +3186,32 @@ def raceCalculation(request):
     fdate1 = _to_date_dash(rdate1)
     fdate2 = _to_date_dash(rdate2)
 
+    available_rcities = []
     exp010s = []
     try:
         with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT DISTINCT rcity
+                FROM exp010
+                WHERE rdate BETWEEN %s AND %s
+                ORDER BY rcity;
+                """,
+                (rdate1, rdate2),
+            )
+            available_rcities = [row[0] for row in cursor.fetchall() if row and row[0]]
+
             query = """
                 SELECT rcity, rdate, rno, grade, rname, distance, dividing, rcount
                 FROM exp010
-                WHERE rdate between %s and %s
-                ORDER BY rcity, rdate, rno;
+                WHERE rdate BETWEEN %s AND %s
             """
-            cursor.execute(query, (rdate1, rdate2))
+            params = [rdate1, rdate2]
+            if selected_rcity:
+                query += " AND rcity = %s"
+                params.append(selected_rcity)
+            query += " ORDER BY rcity, rdate, rno;"
+            cursor.execute(query, params)
             exp010s = cursor.fetchall()
     except Exception as e:
         print(f"❌ Failed selecting in 경주 메모: {e}")
@@ -2804,13 +3241,14 @@ def raceCalculation(request):
         _race_calc_job_set(job_id, initial_state)
         _race_calc_job_log(
             job_id,
-            f"집계 요청 수신 / 기간 {rdate1}~{rdate2} / 대상 {len(selected_exp010s)}건",
+            f"집계 요청 수신 / 기간 {rdate1}~{rdate2} / 대상 {len(selected_exp010s)}건 / 프로파일 {prediction_profile.upper()}",
         )
 
         payload = {
             "rdate1": rdate1,
             "rdate2": rdate2,
             "rcheck1": bool(request.POST.get("rcheck1")),
+            "prediction_profile": prediction_profile,
             "selected_exp010s": selected_exp010s,
         }
         try:
@@ -2825,7 +3263,17 @@ def raceCalculation(request):
             _race_calc_job_update(job_id, status="failed", progress=100)
             _race_calc_job_log(job_id, f"작업 스레드 시작 실패: {e}")
             messages.error(request, "집계 작업 시작에 실패했습니다.")
-        return redirect(f"{request.path}?q1={fdate1}&q2={fdate2}&job_id={job_id}")
+        query_string = urlencode(
+            {
+                "q1": fdate1,
+                "q2": fdate2,
+                "job_id": job_id,
+                "prediction_profile": prediction_profile,
+                "rcity": selected_rcity,
+                "baseline": "1" if baseline_checked else "0",
+            }
+        )
+        return redirect(f"{request.path}?{query_string}")
 
     if job_id:
         state = _race_calc_job_get(job_id) or {}
@@ -2840,9 +3288,13 @@ def raceCalculation(request):
         "rdate2": rdate2,
         "fdate1": fdate1,
         "fdate2": fdate2,
+        "selected_rcity": selected_rcity,
+        "available_rcities": available_rcities,
         "exp010s": exp010s,
         "calc_logs": calc_logs,
         "job_id": job_id,
+        "prediction_profile": prediction_profile,
+        "baseline_checked": baseline_checked,
         "today": datetime.now().strftime("%Y%m%d"),
     }
     return render(request, "base/race_calculation.html", context)

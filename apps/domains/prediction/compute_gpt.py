@@ -786,6 +786,342 @@ def compute_connection_scores(rows: List[Tuple[Any, ...]]) -> Dict[int, float]:
     return result
 
 
+def compute_connection_scores_v2(rows: List[Tuple[Any, ...]]) -> Dict[int, float]:
+    """
+    연결 점수 보수형 버전.
+    - jt_per는 표본수 부족 시 더 강하게 shrink
+    - 경주 내 min-max를 쓰되 20~80 구간으로만 압축해 과대 변별을 줄임
+    """
+    raw_base: Dict[int, float] = {}
+
+    for row in rows:
+        gate = int(row[IDX_GATE])
+        j_per = to_optional_float(row[IDX_J_PER])
+        t_per = to_optional_float(row[IDX_T_PER])
+        jt_per = to_optional_float(row[IDX_JT_PER])
+        jt_cnt = safe_float(row[IDX_JT_CNT], 0.0)
+
+        j_per = to_percent(j_per)
+        t_per = to_percent(t_per)
+        jt_per = to_percent(jt_per)
+
+        vals = []
+        weights = []
+
+        if j_per is not None and j_per >= 0:
+            vals.append(max(0.0, min(100.0, j_per)))
+            weights.append(0.45)
+        if t_per is not None and t_per >= 0:
+            vals.append(max(0.0, min(100.0, t_per)))
+            weights.append(0.35)
+        if jt_per is not None and jt_per >= 0:
+            # 표본 부족 시 50 쪽으로 더 강하게 수축
+            reliability = min(1.0, jt_cnt / 50.0)
+            jt_shrunk = 50.0 + reliability * (jt_per - 50.0)
+            vals.append(max(0.0, min(100.0, jt_shrunk)))
+            weights.append(0.20)
+
+        if not vals and jt_cnt > 0:
+            jt_1 = safe_float(row[IDX_JT_1ST], 0.0)
+            jt_2 = safe_float(row[IDX_JT_2ND], 0.0)
+            jt_3 = safe_float(row[IDX_JT_3RD], 0.0)
+            raw_place = ((jt_1 + jt_2 + jt_3) / jt_cnt) * 100.0
+            base = shrink(max(0.0, min(100.0, raw_place)), jt_cnt, scale=50.0)
+        elif vals:
+            wsum = sum(weights)
+            base = sum(v * w for v, w in zip(vals, weights)) / wsum
+        else:
+            base = 50.0
+
+        raw_base[gate] = max(0.0, min(100.0, base))
+
+    if not raw_base:
+        return {}
+
+    min_b = min(raw_base.values())
+    max_b = max(raw_base.values())
+    if max_b == min_b or (max_b - min_b) < 3.0:
+        return {gate: 50.0 for gate in raw_base}
+
+    result: Dict[int, float] = {}
+    for gate, base in raw_base.items():
+        norm = (base - min_b) / (max_b - min_b)
+        result[gate] = 20.0 + (norm * 60.0)
+    return result
+
+
+def compute_connection_scores_v3(rows: List[Tuple[Any, ...]]) -> Dict[int, float]:
+    """
+    연결 점수 중간형 버전.
+    - v1보다 보수적, v2보다는 변별력을 남김
+    """
+    raw_base: Dict[int, float] = {}
+
+    for row in rows:
+        gate = int(row[IDX_GATE])
+        j_per = to_percent(to_optional_float(row[IDX_J_PER]))
+        t_per = to_percent(to_optional_float(row[IDX_T_PER]))
+        jt_per = to_percent(to_optional_float(row[IDX_JT_PER]))
+        jt_cnt = safe_float(row[IDX_JT_CNT], 0.0)
+
+        vals = []
+        weights = []
+
+        if j_per is not None and j_per >= 0:
+            vals.append(max(0.0, min(100.0, j_per)))
+            weights.append(0.42)
+        if t_per is not None and t_per >= 0:
+            vals.append(max(0.0, min(100.0, t_per)))
+            weights.append(0.33)
+        if jt_per is not None and jt_per >= 0:
+            reliability = min(1.0, jt_cnt / 40.0)
+            jt_shrunk = 50.0 + reliability * (jt_per - 50.0)
+            vals.append(max(0.0, min(100.0, jt_shrunk)))
+            weights.append(0.25)
+
+        if not vals and jt_cnt > 0:
+            jt_1 = safe_float(row[IDX_JT_1ST], 0.0)
+            jt_2 = safe_float(row[IDX_JT_2ND], 0.0)
+            jt_3 = safe_float(row[IDX_JT_3RD], 0.0)
+            raw_place = ((jt_1 + jt_2 + jt_3) / jt_cnt) * 100.0
+            base = shrink(max(0.0, min(100.0, raw_place)), jt_cnt, scale=40.0)
+        elif vals:
+            wsum = sum(weights)
+            base = sum(v * w for v, w in zip(vals, weights)) / wsum
+        else:
+            base = 50.0
+
+        raw_base[gate] = max(0.0, min(100.0, base))
+
+    if not raw_base:
+        return {}
+
+    min_b = min(raw_base.values())
+    max_b = max(raw_base.values())
+    if max_b == min_b or (max_b - min_b) < 3.0:
+        return {gate: 50.0 for gate in raw_base}
+
+    result: Dict[int, float] = {}
+    for gate, base in raw_base.items():
+        norm = (base - min_b) / (max_b - min_b)
+        result[gate] = 10.0 + (norm * 80.0)
+    return result
+
+
+def compute_connection_scores_v4(rows: List[Tuple[Any, ...]]) -> Dict[int, float]:
+    """
+    jt_per 완전 제외 버전.
+    - j_per, t_per 만 사용
+    - jt_per / jt_cnt / jt_1st~3rd 는 연결점수 계산에 반영하지 않음
+    """
+    raw_base: Dict[int, float] = {}
+
+    for row in rows:
+        gate = int(row[IDX_GATE])
+        j_per = to_percent(to_optional_float(row[IDX_J_PER]))
+        t_per = to_percent(to_optional_float(row[IDX_T_PER]))
+
+        vals = []
+        weights = []
+
+        if j_per is not None and j_per >= 0:
+            vals.append(max(0.0, min(100.0, j_per)))
+            weights.append(0.55)
+        if t_per is not None and t_per >= 0:
+            vals.append(max(0.0, min(100.0, t_per)))
+            weights.append(0.45)
+
+        if vals:
+            wsum = sum(weights)
+            base = sum(v * w for v, w in zip(vals, weights)) / wsum
+        else:
+            base = 50.0
+
+        raw_base[gate] = max(0.0, min(100.0, base))
+
+    if not raw_base:
+        return {}
+
+    min_b = min(raw_base.values())
+    max_b = max(raw_base.values())
+    if max_b == min_b or (max_b - min_b) < 3.0:
+        return {gate: 50.0 for gate in raw_base}
+
+    result: Dict[int, float] = {}
+    for gate, base in raw_base.items():
+        norm = (base - min_b) / (max_b - min_b)
+        result[gate] = 10.0 + (norm * 80.0)
+    return result
+
+
+def _get_distance_weights(
+    distance: float,
+    profile: str = "v1",
+    rcity: Optional[str] = None,
+) -> Dict[str, float]:
+    if profile == "v2":
+        track = str(rcity or "").strip()
+        if track == "서울":
+            if 1200 <= distance <= 1300:
+                return {
+                    "W_EARLY": 0.31,
+                    "W_LATE": 0.13,
+                    "W_SPEED": 0.36,
+                    "W_FORM": 0.15,
+                    "W_CONN": 0.05,
+                }
+            if distance == 1400:
+                return {
+                    "W_EARLY": 0.24,
+                    "W_LATE": 0.22,
+                    "W_SPEED": 0.32,
+                    "W_FORM": 0.17,
+                    "W_CONN": 0.05,
+                }
+            if distance == 1600:
+                return {
+                    "W_EARLY": 0.21,
+                    "W_LATE": 0.25,
+                    "W_SPEED": 0.28,
+                    "W_FORM": 0.21,
+                    "W_CONN": 0.05,
+                }
+            if 1700 <= distance <= 1800:
+                return {
+                    "W_EARLY": 0.15,
+                    "W_LATE": 0.31,
+                    "W_SPEED": 0.25,
+                    "W_FORM": 0.24,
+                    "W_CONN": 0.05,
+                }
+            return {
+                "W_EARLY": 0.09,
+                "W_LATE": 0.33,
+                "W_SPEED": 0.24,
+                "W_FORM": 0.26,
+                "W_CONN": 0.08,
+            }
+        if distance <= 1200:
+            return {
+                "W_EARLY": 0.3372,
+                "W_LATE": 0.1279,
+                "W_SPEED": 0.3721,
+                "W_FORM": 0.1628,
+                "W_CONN": 0.0,
+            }
+        if 1300 <= distance <= 1700:
+            return {
+                "W_EARLY": 0.2235,
+                "W_LATE": 0.2471,
+                "W_SPEED": 0.2824,
+                "W_FORM": 0.2471,
+                "W_CONN": 0.0,
+            }
+        return {
+            "W_EARLY": 0.1047,
+            "W_LATE": 0.3488,
+            "W_SPEED": 0.3605,
+            "W_FORM": 0.1860,
+            "W_CONN": 0.0,
+        }
+    if profile == "v3":
+        if distance <= 1200:
+            return {
+                "W_EARLY": 0.29,
+                "W_LATE": 0.11,
+                "W_SPEED": 0.32,
+                "W_FORM": 0.14,
+                "W_CONN": 0.14,
+            }
+        if 1300 <= distance <= 1700:
+            return {
+                "W_EARLY": 0.19,
+                "W_LATE": 0.21,
+                "W_SPEED": 0.24,
+                "W_FORM": 0.21,
+                "W_CONN": 0.15,
+            }
+        return {
+            "W_EARLY": 0.09,
+            "W_LATE": 0.30,
+            "W_SPEED": 0.31,
+            "W_FORM": 0.16,
+            "W_CONN": 0.14,
+        }
+    if profile == "v5":
+        if distance <= 1200:
+            return {
+                "W_EARLY": 0.3372,
+                "W_LATE": 0.1279,
+                "W_SPEED": 0.3721,
+                "W_FORM": 0.1628,
+                "W_CONN": 0.0,
+            }
+        if 1300 <= distance <= 1700:
+            return {
+                "W_EARLY": 0.2235,
+                "W_LATE": 0.2471,
+                "W_SPEED": 0.2824,
+                "W_FORM": 0.2471,
+                "W_CONN": 0.0,
+            }
+        return {
+            "W_EARLY": 0.1047,
+            "W_LATE": 0.3488,
+            "W_SPEED": 0.3605,
+            "W_FORM": 0.1860,
+            "W_CONN": 0.0,
+        }
+    if profile == "v6":
+        if distance <= 1200:
+            return {
+                "W_EARLY": 0.20,
+                "W_LATE": 0.10,
+                "W_SPEED": 0.20,
+                "W_FORM": 0.30,
+                "W_CONN": 0.20,
+            }
+        if 1300 <= distance <= 1700:
+            return {
+                "W_EARLY": 0.20,
+                "W_LATE": 0.20,
+                "W_SPEED": 0.20,
+                "W_FORM": 0.20,
+                "W_CONN": 0.20,
+            }
+        return {
+            "W_EARLY": 0.20,
+            "W_LATE": 0.30,
+            "W_SPEED": 0.20,
+            "W_FORM": 0.10,
+            "W_CONN": 0.20,
+        }
+
+    if distance <= 1200:
+        return {
+            "W_EARLY": 0.30,
+            "W_LATE": 0.10,
+            "W_SPEED": 0.30,
+            "W_FORM": 0.10,
+            "W_CONN": 0.20,
+        }
+    if 1300 <= distance <= 1700:
+        return {
+            "W_EARLY": 0.20,
+            "W_LATE": 0.20,
+            "W_SPEED": 0.20,
+            "W_FORM": 0.20,
+            "W_CONN": 0.20,
+        }
+    return {
+        "W_EARLY": 0.10,
+        "W_LATE": 0.30,
+        "W_SPEED": 0.30,
+        "W_FORM": 0.10,
+        "W_CONN": 0.20,
+    }
+
+
 def compute_front_run_prob(
     rows: List[Tuple[Any, ...]],
     early_scores: Dict[int, float],
@@ -1006,27 +1342,12 @@ def process_race(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
     distance = to_optional_float(exp011_rows[0][IDX_DISTANCE])
     if distance is None:
         distance = 1400.0  # fallback to mid-distance weights if data missing
-
-    if distance <= 1200:
-        W_EARLY = 0.30
-        W_LATE = 0.10
-        W_SPEED = 0.30
-        W_FORM = 0.10
-        W_CONN = 0.20
-
-    elif 1300 <= distance <= 1700:
-        W_EARLY = 0.20
-        W_LATE = 0.20
-        W_SPEED = 0.20
-        W_FORM = 0.20
-        W_CONN = 0.20
-
-    elif distance >= 1800:
-        W_EARLY = 0.10
-        W_LATE = 0.30
-        W_SPEED = 0.30
-        W_FORM = 0.10
-        W_CONN = 0.20
+    weights = _get_distance_weights(distance, profile="v1")
+    W_EARLY = weights["W_EARLY"]
+    W_LATE = weights["W_LATE"]
+    W_SPEED = weights["W_SPEED"]
+    W_FORM = weights["W_FORM"]
+    W_CONN = weights["W_CONN"]
 
     # if distance <= 1200:
     #     return dict(W_EARLY=0.40, W_LATE=0.20, W_SPEED=0.25, W_FORM=0.10, W_CONN=0.05)
@@ -1169,6 +1490,825 @@ def process_race(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
         else:
             reason = f"[{gate}번 {horse}] 신마(데뷔전급) — 데이터 부족으로 평가 제외"
 
+        final_results.append(
+            {
+                "rcity": row[IDX_RCITY],
+                "rdate": row[IDX_RDATE],
+                "rno": int(row[IDX_RNO]),
+                "gate": gate,
+                "horse": horse,
+                "expected_rank": 99,
+                "score": None,
+                "front_run_place_prob": 0.0,
+                "reason": reason,
+                "one_line_comment": None,
+                "early_score": None,
+                "late_score": None,
+                "late200_score": None,
+                "speed_score": None,
+                "form_score": None,
+                "s1f_trend": None,
+                "g2f_trend": None,
+                "conn_score": None,
+            }
+        )
+
+    return final_results
+
+
+def process_race_v2(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
+    """
+    보수형 v2 엔진.
+    - 기존 process_race 는 유지
+    - 연결 점수 영향 축소
+    - 거리/최근기록/폼 비중 강화
+    """
+    if not exp011_rows:
+        return []
+
+    new_type_by_gate: Dict[int, Optional[str]] = {}
+    normal_rows: List[Tuple[Any, ...]] = []
+    for row in exp011_rows:
+        gate = int(row[IDX_GATE])
+        new_type = classify_new_horse(row)
+        new_type_by_gate[gate] = new_type
+        if new_type is None:
+            normal_rows.append(row)
+
+    if not normal_rows:
+        return process_race(exp011_rows)
+
+    early_scores = compute_early_scores(normal_rows)
+    late_scores = compute_late_scores(normal_rows)
+    late200_scores = compute_late200_scores(normal_rows)
+    speed_scores = compute_speed_scores(normal_rows)
+    form_scores = compute_form_scores(normal_rows)
+    trend_scores = compute_trend_scores(normal_rows, early_scores, late_scores)
+    conn_scores = compute_connection_scores_v2(normal_rows)
+
+    distance = to_optional_float(exp011_rows[0][IDX_DISTANCE])
+    if distance is None:
+        distance = 1400.0
+    weights = _get_distance_weights(
+        distance,
+        profile="v2",
+        rcity=exp011_rows[0][IDX_RCITY],
+    )
+    W_EARLY = weights["W_EARLY"]
+    W_LATE = weights["W_LATE"]
+    W_SPEED = weights["W_SPEED"]
+    W_FORM = weights["W_FORM"]
+    W_CONN = weights["W_CONN"]
+
+    total_scores: Dict[int, float] = {}
+    tmp_results = []
+    for row in normal_rows:
+        gate = int(row[IDX_GATE])
+        total = (
+            W_EARLY * early_scores[gate]
+            + W_LATE * late_scores[gate]
+            + W_SPEED * speed_scores[gate]
+            + W_FORM * form_scores[gate]
+            + W_CONN * conn_scores[gate]
+        )
+        total = max(0.0, min(100.0, total))
+        total_scores[gate] = total
+        tmp_results.append(
+            {
+                "rcity": row[IDX_RCITY],
+                "rdate": row[IDX_RDATE],
+                "rno": int(row[IDX_RNO]),
+                "gate": gate,
+                "horse": row[IDX_HORSE],
+                "score": total,
+                "early_score": early_scores[gate],
+                "late_score": late_scores[gate],
+                "late200_score": late200_scores[gate],
+                "speed_score": speed_scores[gate],
+                "form_score": form_scores[gate],
+                "s1f_trend": trend_scores[gate]["s1f_trend"],
+                "g2f_trend": trend_scores[gate]["g2f_trend"],
+                "conn_score": conn_scores[gate],
+            }
+        )
+
+    front_probs = compute_front_run_prob(normal_rows, early_scores, total_scores)
+    tmp_results.sort(key=lambda x: x["score"], reverse=True)
+
+    final_results: List[Dict[str, Any]] = []
+    for idx, item in enumerate(tmp_results, start=1):
+        gate = item["gate"]
+        early = round(item["early_score"], 2)
+        late = round(item["late_score"], 2)
+        late200 = round(item["late200_score"], 2)
+        speed = round(item["speed_score"], 2)
+        form = round(item["form_score"], 2)
+        conn = round(item["conn_score"], 2)
+        front_prob = front_probs.get(gate, 50.0)
+
+        reason = build_reason(
+            gate=gate,
+            horse=item["horse"],
+            expected_rank=idx,
+            early_score=early,
+            late_score=late,
+            late200_score=late200,
+            speed_score=speed,
+            form_score=form,
+            conn_score=conn,
+            front_prob=front_prob,
+        ) + "\n- v2 프로파일: 연결점수 비중 축소, 기록/폼 비중 강화"
+
+        final_results.append(
+            {
+                "rcity": item["rcity"],
+                "rdate": item["rdate"],
+                "rno": item["rno"],
+                "gate": gate,
+                "horse": item["horse"],
+                "expected_rank": idx,
+                "score": round(item["score"], 2),
+                "front_run_place_prob": front_prob,
+                "reason": reason,
+                "one_line_comment": build_one_line_comment(
+                    early_score=early,
+                    late_score=late,
+                    speed_score=speed,
+                    form_score=form,
+                ),
+                "early_score": early,
+                "late_score": late,
+                "late200_score": late200,
+                "speed_score": speed,
+                "form_score": form,
+                "s1f_trend": round(item["s1f_trend"], 2),
+                "g2f_trend": round(item["g2f_trend"], 2),
+                "conn_score": conn,
+            }
+        )
+
+    for row in exp011_rows:
+        gate = int(row[IDX_GATE])
+        if new_type_by_gate.get(gate) is None:
+            continue
+        horse = row[IDX_HORSE]
+        new_type = new_type_by_gate[gate]
+        reason = (
+            f"[{gate}번 {horse}] 신마(데뷔전) — 데이터 부족으로 평가 제외"
+            if new_type == "debut"
+            else f"[{gate}번 {horse}] 신마(데뷔전급) — 데이터 부족으로 평가 제외"
+        )
+        final_results.append(
+            {
+                "rcity": row[IDX_RCITY],
+                "rdate": row[IDX_RDATE],
+                "rno": int(row[IDX_RNO]),
+                "gate": gate,
+                "horse": horse,
+                "expected_rank": 99,
+                "score": None,
+                "front_run_place_prob": 0.0,
+                "reason": reason,
+                "one_line_comment": None,
+                "early_score": None,
+                "late_score": None,
+                "late200_score": None,
+                "speed_score": None,
+                "form_score": None,
+                "s1f_trend": None,
+                "g2f_trend": None,
+                "conn_score": None,
+            }
+        )
+
+    return final_results
+
+
+def process_race_v3(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
+    """
+    중간형 v3 엔진.
+    - v1과 v2 사이의 연결점수/거리 가중치
+    """
+    if not exp011_rows:
+        return []
+
+    new_type_by_gate: Dict[int, Optional[str]] = {}
+    normal_rows: List[Tuple[Any, ...]] = []
+    for row in exp011_rows:
+        gate = int(row[IDX_GATE])
+        new_type = classify_new_horse(row)
+        new_type_by_gate[gate] = new_type
+        if new_type is None:
+            normal_rows.append(row)
+
+    if not normal_rows:
+        return process_race(exp011_rows)
+
+    early_scores = compute_early_scores(normal_rows)
+    late_scores = compute_late_scores(normal_rows)
+    late200_scores = compute_late200_scores(normal_rows)
+    speed_scores = compute_speed_scores(normal_rows)
+    form_scores = compute_form_scores(normal_rows)
+    trend_scores = compute_trend_scores(normal_rows, early_scores, late_scores)
+    conn_scores = compute_connection_scores_v3(normal_rows)
+
+    distance = to_optional_float(exp011_rows[0][IDX_DISTANCE])
+    if distance is None:
+        distance = 1400.0
+    weights = _get_distance_weights(distance, profile="v3")
+    W_EARLY = weights["W_EARLY"]
+    W_LATE = weights["W_LATE"]
+    W_SPEED = weights["W_SPEED"]
+    W_FORM = weights["W_FORM"]
+    W_CONN = weights["W_CONN"]
+
+    total_scores: Dict[int, float] = {}
+    tmp_results = []
+    for row in normal_rows:
+        gate = int(row[IDX_GATE])
+        total = (
+            W_EARLY * early_scores[gate]
+            + W_LATE * late_scores[gate]
+            + W_SPEED * speed_scores[gate]
+            + W_FORM * form_scores[gate]
+            + W_CONN * conn_scores[gate]
+        )
+        total = max(0.0, min(100.0, total))
+        total_scores[gate] = total
+        tmp_results.append(
+            {
+                "rcity": row[IDX_RCITY],
+                "rdate": row[IDX_RDATE],
+                "rno": int(row[IDX_RNO]),
+                "gate": gate,
+                "horse": row[IDX_HORSE],
+                "score": total,
+                "early_score": early_scores[gate],
+                "late_score": late_scores[gate],
+                "late200_score": late200_scores[gate],
+                "speed_score": speed_scores[gate],
+                "form_score": form_scores[gate],
+                "s1f_trend": trend_scores[gate]["s1f_trend"],
+                "g2f_trend": trend_scores[gate]["g2f_trend"],
+                "conn_score": conn_scores[gate],
+            }
+        )
+
+    front_probs = compute_front_run_prob(normal_rows, early_scores, total_scores)
+    tmp_results.sort(key=lambda x: x["score"], reverse=True)
+
+    final_results: List[Dict[str, Any]] = []
+    for idx, item in enumerate(tmp_results, start=1):
+        gate = item["gate"]
+        early = round(item["early_score"], 2)
+        late = round(item["late_score"], 2)
+        late200 = round(item["late200_score"], 2)
+        speed = round(item["speed_score"], 2)
+        form = round(item["form_score"], 2)
+        conn = round(item["conn_score"], 2)
+        front_prob = front_probs.get(gate, 50.0)
+
+        reason = build_reason(
+            gate=gate,
+            horse=item["horse"],
+            expected_rank=idx,
+            early_score=early,
+            late_score=late,
+            late200_score=late200,
+            speed_score=speed,
+            form_score=form,
+            conn_score=conn,
+            front_prob=front_prob,
+        ) + "\n- v3 프로파일: 연결점수 비중 중간, 기록/폼 비중 균형형"
+
+        final_results.append(
+            {
+                "rcity": item["rcity"],
+                "rdate": item["rdate"],
+                "rno": item["rno"],
+                "gate": gate,
+                "horse": item["horse"],
+                "expected_rank": idx,
+                "score": round(item["score"], 2),
+                "front_run_place_prob": front_prob,
+                "reason": reason,
+                "one_line_comment": build_one_line_comment(
+                    early_score=early,
+                    late_score=late,
+                    speed_score=speed,
+                    form_score=form,
+                ),
+                "early_score": early,
+                "late_score": late,
+                "late200_score": late200,
+                "speed_score": speed,
+                "form_score": form,
+                "s1f_trend": round(item["s1f_trend"], 2),
+                "g2f_trend": round(item["g2f_trend"], 2),
+                "conn_score": conn,
+            }
+        )
+
+    for row in exp011_rows:
+        gate = int(row[IDX_GATE])
+        if new_type_by_gate.get(gate) is None:
+            continue
+        horse = row[IDX_HORSE]
+        new_type = new_type_by_gate[gate]
+        reason = (
+            f"[{gate}번 {horse}] 신마(데뷔전) — 데이터 부족으로 평가 제외"
+            if new_type == "debut"
+            else f"[{gate}번 {horse}] 신마(데뷔전급) — 데이터 부족으로 평가 제외"
+        )
+        final_results.append(
+            {
+                "rcity": row[IDX_RCITY],
+                "rdate": row[IDX_RDATE],
+                "rno": int(row[IDX_RNO]),
+                "gate": gate,
+                "horse": horse,
+                "expected_rank": 99,
+                "score": None,
+                "front_run_place_prob": 0.0,
+                "reason": reason,
+                "one_line_comment": None,
+                "early_score": None,
+                "late_score": None,
+                "late200_score": None,
+                "speed_score": None,
+                "form_score": None,
+                "s1f_trend": None,
+                "g2f_trend": None,
+                "conn_score": None,
+            }
+        )
+
+    return final_results
+
+
+def process_race_v4(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
+    """
+    v4 엔진.
+    - v3와 동일한 거리 가중치
+    - 단, conn_score 계산에서 jt_per는 완전히 제외
+    """
+    if not exp011_rows:
+        return []
+
+    new_type_by_gate: Dict[int, Optional[str]] = {}
+    normal_rows: List[Tuple[Any, ...]] = []
+    for row in exp011_rows:
+        gate = int(row[IDX_GATE])
+        new_type = classify_new_horse(row)
+        new_type_by_gate[gate] = new_type
+        if new_type is None:
+            normal_rows.append(row)
+
+    if not normal_rows:
+        return process_race(exp011_rows)
+
+    early_scores = compute_early_scores(normal_rows)
+    late_scores = compute_late_scores(normal_rows)
+    late200_scores = compute_late200_scores(normal_rows)
+    speed_scores = compute_speed_scores(normal_rows)
+    form_scores = compute_form_scores(normal_rows)
+    trend_scores = compute_trend_scores(normal_rows, early_scores, late_scores)
+    conn_scores = compute_connection_scores_v4(normal_rows)
+
+    distance = to_optional_float(exp011_rows[0][IDX_DISTANCE])
+    if distance is None:
+        distance = 1400.0
+    weights = _get_distance_weights(distance, profile="v3")
+    W_EARLY = weights["W_EARLY"]
+    W_LATE = weights["W_LATE"]
+    W_SPEED = weights["W_SPEED"]
+    W_FORM = weights["W_FORM"]
+    W_CONN = weights["W_CONN"]
+
+    total_scores: Dict[int, float] = {}
+    tmp_results = []
+    for row in normal_rows:
+        gate = int(row[IDX_GATE])
+        total = (
+            W_EARLY * early_scores[gate]
+            + W_LATE * late_scores[gate]
+            + W_SPEED * speed_scores[gate]
+            + W_FORM * form_scores[gate]
+            + W_CONN * conn_scores[gate]
+        )
+        total = max(0.0, min(100.0, total))
+        total_scores[gate] = total
+        tmp_results.append(
+            {
+                "rcity": row[IDX_RCITY],
+                "rdate": row[IDX_RDATE],
+                "rno": int(row[IDX_RNO]),
+                "gate": gate,
+                "horse": row[IDX_HORSE],
+                "score": total,
+                "early_score": early_scores[gate],
+                "late_score": late_scores[gate],
+                "late200_score": late200_scores[gate],
+                "speed_score": speed_scores[gate],
+                "form_score": form_scores[gate],
+                "s1f_trend": trend_scores[gate]["s1f_trend"],
+                "g2f_trend": trend_scores[gate]["g2f_trend"],
+                "conn_score": conn_scores[gate],
+            }
+        )
+
+    front_probs = compute_front_run_prob(normal_rows, early_scores, total_scores)
+    tmp_results.sort(key=lambda x: x["score"], reverse=True)
+
+    final_results: List[Dict[str, Any]] = []
+    for idx, item in enumerate(tmp_results, start=1):
+        gate = item["gate"]
+        early = round(item["early_score"], 2)
+        late = round(item["late_score"], 2)
+        late200 = round(item["late200_score"], 2)
+        speed = round(item["speed_score"], 2)
+        form = round(item["form_score"], 2)
+        conn = round(item["conn_score"], 2)
+        front_prob = front_probs.get(gate, 50.0)
+
+        reason = build_reason(
+            gate=gate,
+            horse=item["horse"],
+            expected_rank=idx,
+            early_score=early,
+            late_score=late,
+            late200_score=late200,
+            speed_score=speed,
+            form_score=form,
+            conn_score=conn,
+            front_prob=front_prob,
+        ) + "\n- v4 프로파일: jt_per 제외, j_per/t_per만 반영"
+
+        final_results.append(
+            {
+                "rcity": item["rcity"],
+                "rdate": item["rdate"],
+                "rno": item["rno"],
+                "gate": gate,
+                "horse": item["horse"],
+                "expected_rank": idx,
+                "score": round(item["score"], 2),
+                "front_run_place_prob": front_prob,
+                "reason": reason,
+                "one_line_comment": build_one_line_comment(
+                    early_score=early,
+                    late_score=late,
+                    speed_score=speed,
+                    form_score=form,
+                ),
+                "early_score": early,
+                "late_score": late,
+                "late200_score": late200,
+                "speed_score": speed,
+                "form_score": form,
+                "s1f_trend": round(item["s1f_trend"], 2),
+                "g2f_trend": round(item["g2f_trend"], 2),
+                "conn_score": conn,
+            }
+        )
+
+    for row in exp011_rows:
+        gate = int(row[IDX_GATE])
+        if new_type_by_gate.get(gate) is None:
+            continue
+        horse = row[IDX_HORSE]
+        new_type = new_type_by_gate[gate]
+        reason = (
+            f"[{gate}번 {horse}] 신마(데뷔전) — 데이터 부족으로 평가 제외"
+            if new_type == "debut"
+            else f"[{gate}번 {horse}] 신마(데뷔전급) — 데이터 부족으로 평가 제외"
+        )
+        final_results.append(
+            {
+                "rcity": row[IDX_RCITY],
+                "rdate": row[IDX_RDATE],
+                "rno": int(row[IDX_RNO]),
+                "gate": gate,
+                "horse": horse,
+                "expected_rank": 99,
+                "score": None,
+                "front_run_place_prob": 0.0,
+                "reason": reason,
+                "one_line_comment": None,
+                "early_score": None,
+                "late_score": None,
+                "late200_score": None,
+                "speed_score": None,
+                "form_score": None,
+                "s1f_trend": None,
+                "g2f_trend": None,
+                "conn_score": None,
+            }
+        )
+
+    return final_results
+
+
+def process_race_v5(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
+    """
+    v5 엔진.
+    - conn_score는 산출/저장만 유지
+    - 최종 total score 합산에서는 conn_score 가중치를 완전히 0으로 제외
+    """
+    if not exp011_rows:
+        return []
+
+    new_type_by_gate: Dict[int, Optional[str]] = {}
+    normal_rows: List[Tuple[Any, ...]] = []
+    for row in exp011_rows:
+        gate = int(row[IDX_GATE])
+        new_type = classify_new_horse(row)
+        new_type_by_gate[gate] = new_type
+        if new_type is None:
+            normal_rows.append(row)
+
+    if not normal_rows:
+        return process_race(exp011_rows)
+
+    early_scores = compute_early_scores(normal_rows)
+    late_scores = compute_late_scores(normal_rows)
+    late200_scores = compute_late200_scores(normal_rows)
+    speed_scores = compute_speed_scores(normal_rows)
+    form_scores = compute_form_scores(normal_rows)
+    trend_scores = compute_trend_scores(normal_rows, early_scores, late_scores)
+    conn_scores = compute_connection_scores_v4(normal_rows)
+
+    distance = to_optional_float(exp011_rows[0][IDX_DISTANCE])
+    if distance is None:
+        distance = 1400.0
+    weights = _get_distance_weights(distance, profile="v5")
+    W_EARLY = weights["W_EARLY"]
+    W_LATE = weights["W_LATE"]
+    W_SPEED = weights["W_SPEED"]
+    W_FORM = weights["W_FORM"]
+    W_CONN = weights["W_CONN"]
+
+    total_scores: Dict[int, float] = {}
+    tmp_results = []
+    for row in normal_rows:
+        gate = int(row[IDX_GATE])
+        total = (
+            W_EARLY * early_scores[gate]
+            + W_LATE * late_scores[gate]
+            + W_SPEED * speed_scores[gate]
+            + W_FORM * form_scores[gate]
+            + W_CONN * conn_scores[gate]
+        )
+        total = max(0.0, min(100.0, total))
+        total_scores[gate] = total
+        tmp_results.append(
+            {
+                "rcity": row[IDX_RCITY],
+                "rdate": row[IDX_RDATE],
+                "rno": int(row[IDX_RNO]),
+                "gate": gate,
+                "horse": row[IDX_HORSE],
+                "score": total,
+                "early_score": early_scores[gate],
+                "late_score": late_scores[gate],
+                "late200_score": late200_scores[gate],
+                "speed_score": speed_scores[gate],
+                "form_score": form_scores[gate],
+                "s1f_trend": trend_scores[gate]["s1f_trend"],
+                "g2f_trend": trend_scores[gate]["g2f_trend"],
+                "conn_score": conn_scores[gate],
+            }
+        )
+
+    front_probs = compute_front_run_prob(normal_rows, early_scores, total_scores)
+    tmp_results.sort(key=lambda x: x["score"], reverse=True)
+
+    final_results: List[Dict[str, Any]] = []
+    for idx, item in enumerate(tmp_results, start=1):
+        gate = item["gate"]
+        early = round(item["early_score"], 2)
+        late = round(item["late_score"], 2)
+        late200 = round(item["late200_score"], 2)
+        speed = round(item["speed_score"], 2)
+        form = round(item["form_score"], 2)
+        conn = round(item["conn_score"], 2)
+        front_prob = front_probs.get(gate, 50.0)
+
+        reason = build_reason(
+            gate=gate,
+            horse=item["horse"],
+            expected_rank=idx,
+            early_score=early,
+            late_score=late,
+            late200_score=late200,
+            speed_score=speed,
+            form_score=form,
+            conn_score=conn,
+            front_prob=front_prob,
+        ) + "\n- v5 프로파일: conn_score 가중치 완전 제외"
+
+        final_results.append(
+            {
+                "rcity": item["rcity"],
+                "rdate": item["rdate"],
+                "rno": item["rno"],
+                "gate": gate,
+                "horse": item["horse"],
+                "expected_rank": idx,
+                "score": round(item["score"], 2),
+                "front_run_place_prob": front_prob,
+                "reason": reason,
+                "one_line_comment": build_one_line_comment(
+                    early_score=early,
+                    late_score=late,
+                    speed_score=speed,
+                    form_score=form,
+                ),
+                "early_score": early,
+                "late_score": late,
+                "late200_score": late200,
+                "speed_score": speed,
+                "form_score": form,
+                "s1f_trend": round(item["s1f_trend"], 2),
+                "g2f_trend": round(item["g2f_trend"], 2),
+                "conn_score": conn,
+            }
+        )
+
+    for row in exp011_rows:
+        gate = int(row[IDX_GATE])
+        if new_type_by_gate.get(gate) is None:
+            continue
+        horse = row[IDX_HORSE]
+        new_type = new_type_by_gate[gate]
+        reason = (
+            f"[{gate}번 {horse}] 신마(데뷔전) — 데이터 부족으로 평가 제외"
+            if new_type == "debut"
+            else f"[{gate}번 {horse}] 신마(데뷔전급) — 데이터 부족으로 평가 제외"
+        )
+        final_results.append(
+            {
+                "rcity": row[IDX_RCITY],
+                "rdate": row[IDX_RDATE],
+                "rno": int(row[IDX_RNO]),
+                "gate": gate,
+                "horse": horse,
+                "expected_rank": 99,
+                "score": None,
+                "front_run_place_prob": 0.0,
+                "reason": reason,
+                "one_line_comment": None,
+                "early_score": None,
+                "late_score": None,
+                "late200_score": None,
+                "speed_score": None,
+                "form_score": None,
+                "s1f_trend": None,
+                "g2f_trend": None,
+                "conn_score": None,
+            }
+        )
+
+    return final_results
+
+
+def process_race_v6(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
+    """
+    v6 엔진.
+    - conn_score 계산식은 v1 유지
+    - 거리별 가중치는 v6 전용 기준 사용
+    """
+    if not exp011_rows:
+        return []
+
+    new_type_by_gate: Dict[int, Optional[str]] = {}
+    normal_rows: List[Tuple[Any, ...]] = []
+    for row in exp011_rows:
+        gate = int(row[IDX_GATE])
+        new_type = classify_new_horse(row)
+        new_type_by_gate[gate] = new_type
+        if new_type is None:
+            normal_rows.append(row)
+
+    if not normal_rows:
+        return process_race(exp011_rows)
+
+    early_scores = compute_early_scores(normal_rows)
+    late_scores = compute_late_scores(normal_rows)
+    late200_scores = compute_late200_scores(normal_rows)
+    speed_scores = compute_speed_scores(normal_rows)
+    form_scores = compute_form_scores(normal_rows)
+    trend_scores = compute_trend_scores(normal_rows, early_scores, late_scores)
+    conn_scores = compute_connection_scores(normal_rows)
+
+    distance = to_optional_float(exp011_rows[0][IDX_DISTANCE])
+    if distance is None:
+        distance = 1400.0
+    weights = _get_distance_weights(distance, profile="v6")
+    W_EARLY = weights["W_EARLY"]
+    W_LATE = weights["W_LATE"]
+    W_SPEED = weights["W_SPEED"]
+    W_FORM = weights["W_FORM"]
+    W_CONN = weights["W_CONN"]
+
+    total_scores: Dict[int, float] = {}
+    tmp_results = []
+    for row in normal_rows:
+        gate = int(row[IDX_GATE])
+        total = (
+            W_EARLY * early_scores[gate]
+            + W_LATE * late_scores[gate]
+            + W_SPEED * speed_scores[gate]
+            + W_FORM * form_scores[gate]
+            + W_CONN * conn_scores[gate]
+        )
+        total = max(0.0, min(100.0, total))
+        total_scores[gate] = total
+        tmp_results.append(
+            {
+                "rcity": row[IDX_RCITY],
+                "rdate": row[IDX_RDATE],
+                "rno": int(row[IDX_RNO]),
+                "gate": gate,
+                "horse": row[IDX_HORSE],
+                "score": total,
+                "early_score": early_scores[gate],
+                "late_score": late_scores[gate],
+                "late200_score": late200_scores[gate],
+                "speed_score": speed_scores[gate],
+                "form_score": form_scores[gate],
+                "s1f_trend": trend_scores[gate]["s1f_trend"],
+                "g2f_trend": trend_scores[gate]["g2f_trend"],
+                "conn_score": conn_scores[gate],
+            }
+        )
+
+    front_probs = compute_front_run_prob(normal_rows, early_scores, total_scores)
+    tmp_results.sort(key=lambda x: x["score"], reverse=True)
+
+    final_results: List[Dict[str, Any]] = []
+    for idx, item in enumerate(tmp_results, start=1):
+        gate = item["gate"]
+        early = round(item["early_score"], 2)
+        late = round(item["late_score"], 2)
+        late200 = round(item["late200_score"], 2)
+        speed = round(item["speed_score"], 2)
+        form = round(item["form_score"], 2)
+        conn = round(item["conn_score"], 2)
+        front_prob = front_probs.get(gate, 50.0)
+
+        reason = build_reason(
+            gate=gate,
+            horse=item["horse"],
+            expected_rank=idx,
+            early_score=early,
+            late_score=late,
+            late200_score=late200,
+            speed_score=speed,
+            form_score=form,
+            conn_score=conn,
+            front_prob=front_prob,
+        ) + "\n- v6 프로파일: 거리별 전용 가중치 적용"
+
+        final_results.append(
+            {
+                "rcity": item["rcity"],
+                "rdate": item["rdate"],
+                "rno": item["rno"],
+                "gate": gate,
+                "horse": item["horse"],
+                "expected_rank": idx,
+                "score": round(item["score"], 2),
+                "front_run_place_prob": front_prob,
+                "reason": reason,
+                "one_line_comment": build_one_line_comment(
+                    early_score=early,
+                    late_score=late,
+                    speed_score=speed,
+                    form_score=form,
+                ),
+                "early_score": early,
+                "late_score": late,
+                "late200_score": late200,
+                "speed_score": speed,
+                "form_score": form,
+                "s1f_trend": round(item["s1f_trend"], 2),
+                "g2f_trend": round(item["g2f_trend"], 2),
+                "conn_score": conn,
+            }
+        )
+
+    for row in exp011_rows:
+        gate = int(row[IDX_GATE])
+        if new_type_by_gate.get(gate) is None:
+            continue
+        horse = row[IDX_HORSE]
+        new_type = new_type_by_gate[gate]
+        reason = (
+            f"[{gate}번 {horse}] 신마(데뷔전) — 데이터 부족으로 평가 제외"
+            if new_type == "debut"
+            else f"[{gate}번 {horse}] 신마(데뷔전급) — 데이터 부족으로 평가 제외"
+        )
         final_results.append(
             {
                 "rcity": row[IDX_RCITY],

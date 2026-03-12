@@ -1210,7 +1210,7 @@ def set_record(connection, rcity, rdate, distance, horse, i_jockey, weight, i_av
                 where  (a.rcity,a.rdate,a.rno) in (
                                     select rcity, rdate,rno
                                     from rec010
-                                    where rdate between date_format(DATE_ADD( %s, INTERVAL - 372 DAY), '%%Y%%m%%d') 
+                                    where rdate between date_format(DATE_ADD( %s, INTERVAL - 368 DAY), '%%Y%%m%%d') 
                                     and date_format(DATE_ADD( %s, INTERVAL - 3 DAY), '%%Y%%m%%d')
                                     and grade <> '주행검사'
                                 )

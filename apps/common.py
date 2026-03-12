@@ -19,7 +19,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
 from apps.domains.ops.g2f_update import g2f_update
-from apps.domains.prediction.compute_gpt import process_race
+from apps.domains.prediction.compute_gpt import process_race, process_race_v2, process_race_v3, process_race_v4, process_race_v5, process_race_v6
 from apps.domains.ops.data_management import (
     get_krafile,
     krafile_convert,

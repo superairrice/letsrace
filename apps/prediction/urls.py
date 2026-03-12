@@ -11,6 +11,7 @@ urlpatterns = [
     path("award_status_week/", views.awardStatusWeek, name="award_status_week"),
     path("data_management/", views.dataManagement, name="data_management"),
     path("race_breakingnews/", views.raceBreakingNews, name="race_breakingnews"),
+    path("kra_scraper/", views.kraScraper, name="kra_scraper"),
     path("race_calculation", views.raceCalculation, name="race_calculation"),
     path(
         "race_calculation/job-status/<str:job_id>",

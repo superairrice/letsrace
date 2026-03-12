@@ -14,6 +14,11 @@ urlpatterns = [
         name="mock_accept",
     ),
     path("exec_chatGPT/<str:rcity>/<str:rdate>/<int:rno>/", views.execChatGPT, name="exec_chatGPT"),
+    path("exec_chatGPT_v2/<str:rcity>/<str:rdate>/<int:rno>/", views.execChatGPTv2, name="exec_chatGPT_v2"),
+    path("exec_chatGPT_v3/<str:rcity>/<str:rdate>/<int:rno>/", views.execChatGPTv3, name="exec_chatGPT_v3"),
+    path("exec_chatGPT_v4/<str:rcity>/<str:rdate>/<int:rno>/", views.execChatGPTv4, name="exec_chatGPT_v4"),
+    path("exec_chatGPT_v5/<str:rcity>/<str:rdate>/<int:rno>/", views.execChatGPTv5, name="exec_chatGPT_v5"),
+    path("exec_chatGPT_v6/<str:rcity>/<str:rdate>/<int:rno>/", views.execChatGPTv6, name="exec_chatGPT_v6"),
     path(
         "update_popularity/<str:rcity>/<str:rdate>/<int:rno>",
         views.updatePopularity,

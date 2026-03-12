@@ -877,89 +877,48 @@ def execChatGPT(request, rcity, rdate, rno):
 
         # ✅ 안전한 파라미터 바인딩 사용
         strSql = """
-            SELECT
-                rcity,
-                rdate,
-                rno,
-                gate,
-                horse,
-                birthplace,
-                h_sex,
-                h_age,
-                handycap,
-                joc_adv,
-                jockey,
-                trainer,
-                host,
-                rating,
-                prize_tot,
-                prize_year,
-                prize_half,
-                tot_1st,
-                tot_2nd,
-                tot_3rd,
-                tot_race,
-                year_1st,
-                year_2nd,
-                year_3rd,
-                year_race,
-                
-                if(f_s2t(recent3) = 0,f_s2t(recent5),f_s2t(recent3)) AS recent3,
-                f_s2t(recent5) AS recent5,
-                if(f_s2t(fast_r) = 0,f_s2t(recent5),f_s2t(fast_r)) AS fast_r,
-                if(f_s2t(slow_r) = 0,f_s2t(recent5),f_s2t(slow_r)) AS slow_r,
-                if(f_s2t(avg_r) = 0,f_s2t(recent5),f_s2t(avg_r)) AS avg_r,
-
-                rs1f,
-                r1c,
-                r2c,
-                r3c,
-                r4c,
-                rg3f,
-                rg2f,
-                rg1f,
-
-                cs1f,
-                cg3f,
-                cg2f,
-                cg1f,
-                rank,
-                i_s1f,
-                i_g3f,
-                i_g2f,
-                i_g1f,
-
-                i_jockey,
-                i_cycle,
-                i_prehandy,
-
-                remark,
-                s1f_rank,
-                g2f_rank,
-
-                h_weight,
-                j_per,
-                t_per,
-                jt_per,
-                jt_cnt,
-                jt_1st,
-                jt_2nd,
-                jt_3rd,
-                ( select distance from exp010 where rcity = The1.exp011.rcity and rdate = The1.exp011.rdate and rno = The1.exp011.rno ) as distance
-            FROM The1.exp011
-            WHERE rcity = %s
-            AND rdate = %s
-            AND rno   = %s
-            AND rank < 98
-        ORDER BY gate ASC
+            SELECT  e.rcity,    e.rdate,    e.rno,    e.gate,    e.horse,    e.birthplace,    e.h_sex,    e.h_age,
+                    e.handycap,    e.joc_adv,    e.jockey,    e.trainer,    e.host,    e.rating,    e.prize_tot,
+                    e.prize_year,    e.prize_half,    e.tot_1st,    e.tot_2nd,    e.tot_3rd,    e.tot_race,    e.year_1st,
+                    e.year_2nd,    e.year_3rd,    e.year_race,
+                    CASE
+                        WHEN f_s2t(e.recent3) = 0 THEN f_s2t(e.recent5)
+                        ELSE f_s2t(e.recent3)
+                    END AS recent3,
+                    f_s2t(e.recent5) AS recent5,
+                    CASE
+                        WHEN f_s2t(e.fast_r) = 0 THEN f_s2t(e.recent5)
+                        ELSE f_s2t(e.fast_r)
+                    END AS fast_r,
+                    CASE
+                        WHEN f_s2t(e.slow_r) = 0 THEN f_s2t(e.recent5)
+                        ELSE f_s2t(e.slow_r)
+                    END AS slow_r,
+                    CASE
+                        WHEN f_s2t(e.avg_r) = 0 THEN f_s2t(e.recent5)
+                        ELSE f_s2t(e.avg_r)
+                    END AS avg_r,
+                    e.rs1f,    e.r1c,    e.r2c,    e.r3c,    e.r4c,    e.rg3f,    e.rg2f,    e.rg1f,
+                    e.cs1f,    e.cg3f,    e.cg2f,    e.cg1f,    e.rank,    e.i_s1f,    e.i_g3f,    e.i_g2f,    e.i_g1f,
+                    e.i_jockey,    e.i_cycle,    e.i_prehandy,    e.remark,    e.s1f_rank,    e.g2f_rank,
+                    e.h_weight,    e.j_per,    e.t_per,    e.jt_per,    e.jt_cnt,    e.jt_1st,    e.jt_2nd,    e.jt_3rd,    x.distance
+            FROM The1.exp011 e
+            LEFT JOIN The1.exp010 x
+                ON x.rcity = e.rcity
+            AND x.rdate = e.rdate
+            AND x.rno   = e.rno
+            WHERE e.rcity = %s
+            AND e.rdate = %s
+            AND e.rno   = %s
+            AND e.rank < 98
+            ORDER BY e.gate ASC;
         """
-        
+
         # print(strSql % (rcity, rdate, rno))  # 디버깅용 출력
 
         cursor.execute(strSql, [rcity, rdate, rno])
         exp011s = cursor.fetchall()   # 튜플 리스트
-        
-        
+
         """       # ✅ g2f_update 함수 호출"""
         # for e in exp011s:
         #     rcity = e[0]
@@ -971,8 +930,6 @@ def execChatGPT(request, rcity, rdate, rno):
         #         g2f_update(rcity, rdate, horse, distance, connection,)
         #     except Exception as e:
         #         print("g2f_update 실패:", rcity, rdate, horse, distance, e)
-            
-            
 
         # ✅ compute_gpt.py 에서 만든 메인 함수 호출
         predictions = process_race(exp011s)
@@ -1101,7 +1058,7 @@ def execChatGPT(request, rcity, rdate, rno):
                 rno
             ),
         )
-        
+
         connection.commit()
     except Exception as e:
         print(f"Failed to update exp011: {e}")
@@ -1153,6 +1110,681 @@ def execChatGPT(request, rcity, rdate, rno):
             "status": "success",
             "message": f"Exec chatGPT 실행 완료 ({rcity}, {rdate}, {rno})",
             "predictions": predictions,   # gate, horse, expected_rank, reason 등
+        }
+    )
+
+
+def execChatGPTv2(request, rcity, rdate, rno):
+    """
+    기존 execChatGPT는 유지하고, 연결점수 비중을 낮춘 v2 엔진을 별도 제공.
+    """
+    cursor = None
+    try:
+        cursor = connection.cursor()
+        strSql = """
+            SELECT
+                rcity, rdate, rno, gate, horse, birthplace, h_sex, h_age, handycap,
+                joc_adv, jockey, trainer, host, rating, prize_tot, prize_year, prize_half,
+                tot_1st, tot_2nd, tot_3rd, tot_race, year_1st, year_2nd, year_3rd, year_race,
+                if(f_s2t(recent3) = 0,f_s2t(recent5),f_s2t(recent3)) AS recent3,
+                f_s2t(recent5) AS recent5,
+                if(f_s2t(fast_r) = 0,f_s2t(recent5),f_s2t(fast_r)) AS fast_r,
+                if(f_s2t(slow_r) = 0,f_s2t(recent5),f_s2t(slow_r)) AS slow_r,
+                if(f_s2t(avg_r) = 0,f_s2t(recent5),f_s2t(avg_r)) AS avg_r,
+                rs1f, r1c, r2c, r3c, r4c, rg3f, rg2f, rg1f,
+                cs1f, cg3f, cg2f, cg1f, rank, i_s1f, i_g3f, i_g2f, i_g1f,
+                i_jockey, i_cycle, i_prehandy, remark, s1f_rank, g2f_rank,
+                h_weight, j_per, t_per, jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd,
+                (select distance from exp010 where rcity = The1.exp011.rcity and rdate = The1.exp011.rdate and rno = The1.exp011.rno) as distance
+            FROM The1.exp011
+            WHERE rcity = %s AND rdate = %s AND rno = %s AND rank < 98
+            ORDER BY gate ASC
+        """
+        cursor.execute(strSql, [rcity, rdate, rno])
+        exp011s = cursor.fetchall()
+        predictions = process_race_v2(exp011s)
+
+        for p in predictions:
+            try:
+                cursor = connection.cursor()
+                update_sql = """
+                    UPDATE exp011
+                    SET r_pop = %s,
+                        tot_score = %s,
+                        s1f_per = %s,
+                        g3f_per = %s,
+                        g1f_per = %s,
+                        rec_per = %s,
+                        rec8_trend = %s,
+                        jt_score = %s,
+                        start_score = %s,
+                        comment_one = %s,
+                        comment_all = %s
+                    WHERE rcity = %s AND rdate = %s AND rno = %s AND gate = %s
+                """
+                cursor.execute(
+                    update_sql,
+                    (
+                        p["expected_rank"],
+                        p["score"],
+                        p["early_score"],
+                        p["late_score"],
+                        p["late200_score"],
+                        p["speed_score"],
+                        p["form_score"],
+                        p["conn_score"],
+                        p["front_run_place_prob"],
+                        p["one_line_comment"],
+                        p["reason"],
+                        rcity,
+                        rdate,
+                        rno,
+                        p["gate"],
+                    ),
+                )
+                connection.commit()
+            except Exception as e:
+                print(f"Failed to update exp011(v2): {e}")
+            finally:
+                if cursor:
+                    cursor.close()
+
+    except Exception as e:
+        return JsonResponse(
+            {
+                "status": "error",
+                "message": f"Failed Select exp011 / process_race_v2: {e}",
+            },
+            status=500,
+        )
+    finally:
+        if cursor:
+            cursor.close()
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            UPDATE exp011
+            SET r_pop = rank
+            WHERE rcity = %s AND rdate = %s AND rno = %s AND rank >= 98
+            """,
+            (rcity, rdate, rno),
+        )
+        connection.commit()
+    except Exception as e:
+        print(f"Failed to update exp011(v2) rank>=98: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+
+    try:
+        update_m_rank_score_for_race(
+            rcity, rdate, rno, model_name=f"sb_top3_roll12_{rdate[0:6]}"
+        )
+    except Exception as e:
+        print(f"⚠️ update_m_rank_score_for_race(v2) skipped: {e}")
+
+    try:
+        update_exp011_for_race(rcity, rdate, int(rno))
+    except Exception as e:
+        print(f"⚠️ update_exp011_for_race(v2) skipped: {e}")
+
+    try:
+        run_rguide_update(
+            rcity=rcity,
+            rdate=rdate,
+            rno=int(rno),
+            dry_run=False,
+        )
+    except Exception as e:
+        print(f"⚠️ r_guide update(v2) skipped: {e}")
+
+    return JsonResponse(
+        {
+            "status": "success",
+            "message": f"Exec chatGPT v2 실행 완료 ({rcity}, {rdate}, {rno})",
+            "predictions": predictions,
+        }
+    )
+
+
+def execChatGPTv3(request, rcity, rdate, rno):
+    """
+    기존 v1/v2는 유지하고, 중간 가중치 프로파일 v3를 별도 제공.
+    """
+    cursor = None
+    try:
+        cursor = connection.cursor()
+        strSql = """
+            SELECT
+                rcity, rdate, rno, gate, horse, birthplace, h_sex, h_age, handycap,
+                joc_adv, jockey, trainer, host, rating, prize_tot, prize_year, prize_half,
+                tot_1st, tot_2nd, tot_3rd, tot_race, year_1st, year_2nd, year_3rd, year_race,
+                if(f_s2t(recent3) = 0,f_s2t(recent5),f_s2t(recent3)) AS recent3,
+                f_s2t(recent5) AS recent5,
+                if(f_s2t(fast_r) = 0,f_s2t(recent5),f_s2t(fast_r)) AS fast_r,
+                if(f_s2t(slow_r) = 0,f_s2t(recent5),f_s2t(slow_r)) AS slow_r,
+                if(f_s2t(avg_r) = 0,f_s2t(recent5),f_s2t(avg_r)) AS avg_r,
+                rs1f, r1c, r2c, r3c, r4c, rg3f, rg2f, rg1f,
+                cs1f, cg3f, cg2f, cg1f, rank, i_s1f, i_g3f, i_g2f, i_g1f,
+                i_jockey, i_cycle, i_prehandy, remark, s1f_rank, g2f_rank,
+                h_weight, j_per, t_per, jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd,
+                (select distance from exp010 where rcity = The1.exp011.rcity and rdate = The1.exp011.rdate and rno = The1.exp011.rno) as distance
+            FROM The1.exp011
+            WHERE rcity = %s AND rdate = %s AND rno = %s AND rank < 98
+            ORDER BY gate ASC
+        """
+        cursor.execute(strSql, [rcity, rdate, rno])
+        exp011s = cursor.fetchall()
+        predictions = process_race_v3(exp011s)
+
+        for p in predictions:
+            try:
+                cursor = connection.cursor()
+                update_sql = """
+                    UPDATE exp011
+                    SET r_pop = %s,
+                        tot_score = %s,
+                        s1f_per = %s,
+                        g3f_per = %s,
+                        g1f_per = %s,
+                        rec_per = %s,
+                        rec8_trend = %s,
+                        jt_score = %s,
+                        start_score = %s,
+                        comment_one = %s,
+                        comment_all = %s
+                    WHERE rcity = %s AND rdate = %s AND rno = %s AND gate = %s
+                """
+                cursor.execute(
+                    update_sql,
+                    (
+                        p["expected_rank"],
+                        p["score"],
+                        p["early_score"],
+                        p["late_score"],
+                        p["late200_score"],
+                        p["speed_score"],
+                        p["form_score"],
+                        p["conn_score"],
+                        p["front_run_place_prob"],
+                        p["one_line_comment"],
+                        p["reason"],
+                        rcity,
+                        rdate,
+                        rno,
+                        p["gate"],
+                    ),
+                )
+                connection.commit()
+            except Exception as e:
+                print(f"Failed to update exp011(v3): {e}")
+            finally:
+                if cursor:
+                    cursor.close()
+
+    except Exception as e:
+        return JsonResponse(
+            {
+                "status": "error",
+                "message": f"Failed Select exp011 / process_race_v3: {e}",
+            },
+            status=500,
+        )
+    finally:
+        if cursor:
+            cursor.close()
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            UPDATE exp011
+            SET r_pop = rank
+            WHERE rcity = %s AND rdate = %s AND rno = %s AND rank >= 98
+            """,
+            (rcity, rdate, rno),
+        )
+        connection.commit()
+    except Exception as e:
+        print(f"Failed to update exp011(v3) rank>=98: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+
+    try:
+        update_m_rank_score_for_race(
+            rcity, rdate, rno, model_name=f"sb_top3_roll12_{rdate[0:6]}"
+        )
+    except Exception as e:
+        print(f"⚠️ update_m_rank_score_for_race(v3) skipped: {e}")
+
+    try:
+        update_exp011_for_race(rcity, rdate, int(rno))
+    except Exception as e:
+        print(f"⚠️ update_exp011_for_race(v3) skipped: {e}")
+
+    try:
+        run_rguide_update(
+            rcity=rcity,
+            rdate=rdate,
+            rno=int(rno),
+            dry_run=False,
+        )
+    except Exception as e:
+        print(f"⚠️ r_guide update(v3) skipped: {e}")
+
+    return JsonResponse(
+        {
+            "status": "success",
+            "message": f"Exec chatGPT v3 실행 완료 ({rcity}, {rdate}, {rno})",
+            "predictions": predictions,
+        }
+    )
+
+
+def execChatGPTv4(request, rcity, rdate, rno):
+    """
+    jt_per 를 완전히 제외한 v4 프로파일.
+    """
+    cursor = None
+    try:
+        cursor = connection.cursor()
+        strSql = """
+            SELECT
+                rcity, rdate, rno, gate, horse, birthplace, h_sex, h_age, handycap,
+                joc_adv, jockey, trainer, host, rating, prize_tot, prize_year, prize_half,
+                tot_1st, tot_2nd, tot_3rd, tot_race, year_1st, year_2nd, year_3rd, year_race,
+                if(f_s2t(recent3) = 0,f_s2t(recent5),f_s2t(recent3)) AS recent3,
+                f_s2t(recent5) AS recent5,
+                if(f_s2t(fast_r) = 0,f_s2t(recent5),f_s2t(fast_r)) AS fast_r,
+                if(f_s2t(slow_r) = 0,f_s2t(recent5),f_s2t(slow_r)) AS slow_r,
+                if(f_s2t(avg_r) = 0,f_s2t(recent5),f_s2t(avg_r)) AS avg_r,
+                rs1f, r1c, r2c, r3c, r4c, rg3f, rg2f, rg1f,
+                cs1f, cg3f, cg2f, cg1f, rank, i_s1f, i_g3f, i_g2f, i_g1f,
+                i_jockey, i_cycle, i_prehandy, remark, s1f_rank, g2f_rank,
+                h_weight, j_per, t_per, jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd,
+                (select distance from exp010 where rcity = The1.exp011.rcity and rdate = The1.exp011.rdate and rno = The1.exp011.rno) as distance
+            FROM The1.exp011
+            WHERE rcity = %s AND rdate = %s AND rno = %s AND rank < 98
+            ORDER BY gate ASC
+        """
+        cursor.execute(strSql, [rcity, rdate, rno])
+        exp011s = cursor.fetchall()
+        predictions = process_race_v4(exp011s)
+
+        for p in predictions:
+            try:
+                cursor = connection.cursor()
+                update_sql = """
+                    UPDATE exp011
+                    SET r_pop = %s,
+                        tot_score = %s,
+                        s1f_per = %s,
+                        g3f_per = %s,
+                        g1f_per = %s,
+                        rec_per = %s,
+                        rec8_trend = %s,
+                        jt_score = %s,
+                        start_score = %s,
+                        comment_one = %s,
+                        comment_all = %s
+                    WHERE rcity = %s AND rdate = %s AND rno = %s AND gate = %s
+                """
+                cursor.execute(
+                    update_sql,
+                    (
+                        p["expected_rank"],
+                        p["score"],
+                        p["early_score"],
+                        p["late_score"],
+                        p["late200_score"],
+                        p["speed_score"],
+                        p["form_score"],
+                        p["conn_score"],
+                        p["front_run_place_prob"],
+                        p["one_line_comment"],
+                        p["reason"],
+                        rcity,
+                        rdate,
+                        rno,
+                        p["gate"],
+                    ),
+                )
+                connection.commit()
+            except Exception as e:
+                print(f"Failed to update exp011(v4): {e}")
+            finally:
+                if cursor:
+                    cursor.close()
+
+    except Exception as e:
+        return JsonResponse(
+            {
+                "status": "error",
+                "message": f"Failed Select exp011 / process_race_v4: {e}",
+            },
+            status=500,
+        )
+    finally:
+        if cursor:
+            cursor.close()
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            UPDATE exp011
+            SET r_pop = rank
+            WHERE rcity = %s AND rdate = %s AND rno = %s AND rank >= 98
+            """,
+            (rcity, rdate, rno),
+        )
+        connection.commit()
+    except Exception as e:
+        print(f"Failed to update exp011(v4) rank>=98: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+
+    try:
+        update_m_rank_score_for_race(
+            rcity, rdate, rno, model_name=f"sb_top3_roll12_{rdate[0:6]}"
+        )
+    except Exception as e:
+        print(f"⚠️ update_m_rank_score_for_race(v4) skipped: {e}")
+
+    try:
+        update_exp011_for_race(rcity, rdate, int(rno))
+    except Exception as e:
+        print(f"⚠️ update_exp011_for_race(v4) skipped: {e}")
+
+    try:
+        run_rguide_update(
+            rcity=rcity,
+            rdate=rdate,
+            rno=int(rno),
+            dry_run=False,
+        )
+    except Exception as e:
+        print(f"⚠️ r_guide update(v4) skipped: {e}")
+
+    return JsonResponse(
+        {
+            "status": "success",
+            "message": f"Exec chatGPT v4 실행 완료 ({rcity}, {rdate}, {rno})",
+            "predictions": predictions,
+        }
+    )
+
+
+def execChatGPTv5(request, rcity, rdate, rno):
+    """
+    conn_score 가중치를 완전히 제외한 v5 프로파일.
+    """
+    cursor = None
+    try:
+        cursor = connection.cursor()
+        strSql = """
+            SELECT
+                rcity, rdate, rno, gate, horse, birthplace, h_sex, h_age, handycap,
+                joc_adv, jockey, trainer, host, rating, prize_tot, prize_year, prize_half,
+                tot_1st, tot_2nd, tot_3rd, tot_race, year_1st, year_2nd, year_3rd, year_race,
+                if(f_s2t(recent3) = 0,f_s2t(recent5),f_s2t(recent3)) AS recent3,
+                f_s2t(recent5) AS recent5,
+                if(f_s2t(fast_r) = 0,f_s2t(recent5),f_s2t(fast_r)) AS fast_r,
+                if(f_s2t(slow_r) = 0,f_s2t(recent5),f_s2t(slow_r)) AS slow_r,
+                if(f_s2t(avg_r) = 0,f_s2t(recent5),f_s2t(avg_r)) AS avg_r,
+                rs1f, r1c, r2c, r3c, r4c, rg3f, rg2f, rg1f,
+                cs1f, cg3f, cg2f, cg1f, rank, i_s1f, i_g3f, i_g2f, i_g1f,
+                i_jockey, i_cycle, i_prehandy, remark, s1f_rank, g2f_rank,
+                h_weight, j_per, t_per, jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd,
+                (select distance from exp010 where rcity = The1.exp011.rcity and rdate = The1.exp011.rdate and rno = The1.exp011.rno) as distance
+            FROM The1.exp011
+            WHERE rcity = %s AND rdate = %s AND rno = %s AND rank < 98
+            ORDER BY gate ASC
+        """
+        cursor.execute(strSql, [rcity, rdate, rno])
+        exp011s = cursor.fetchall()
+        predictions = process_race_v5(exp011s)
+
+        for p in predictions:
+            try:
+                cursor = connection.cursor()
+                update_sql = """
+                    UPDATE exp011
+                    SET r_pop = %s,
+                        tot_score = %s,
+                        s1f_per = %s,
+                        g3f_per = %s,
+                        g1f_per = %s,
+                        rec_per = %s,
+                        rec8_trend = %s,
+                        jt_score = %s,
+                        start_score = %s,
+                        comment_one = %s,
+                        comment_all = %s
+                    WHERE rcity = %s AND rdate = %s AND rno = %s AND gate = %s
+                """
+                cursor.execute(
+                    update_sql,
+                    (
+                        p["expected_rank"],
+                        p["score"],
+                        p["early_score"],
+                        p["late_score"],
+                        p["late200_score"],
+                        p["speed_score"],
+                        p["form_score"],
+                        p["conn_score"],
+                        p["front_run_place_prob"],
+                        p["one_line_comment"],
+                        p["reason"],
+                        rcity,
+                        rdate,
+                        rno,
+                        p["gate"],
+                    ),
+                )
+                connection.commit()
+            except Exception as e:
+                print(f"Failed to update exp011(v5): {e}")
+            finally:
+                if cursor:
+                    cursor.close()
+
+    except Exception as e:
+        return JsonResponse(
+            {
+                "status": "error",
+                "message": f"Failed Select exp011 / process_race_v5: {e}",
+            },
+            status=500,
+        )
+    finally:
+        if cursor:
+            cursor.close()
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            UPDATE exp011
+            SET r_pop = rank
+            WHERE rcity = %s AND rdate = %s AND rno = %s AND rank >= 98
+            """,
+            (rcity, rdate, rno),
+        )
+        connection.commit()
+    except Exception as e:
+        print(f"Failed to update exp011(v5) rank>=98: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+
+    try:
+        update_m_rank_score_for_race(
+            rcity, rdate, rno, model_name=f"sb_top3_roll12_{rdate[0:6]}"
+        )
+    except Exception as e:
+        print(f"⚠️ update_m_rank_score_for_race(v5) skipped: {e}")
+
+    try:
+        update_exp011_for_race(rcity, rdate, int(rno))
+    except Exception as e:
+        print(f"⚠️ update_exp011_for_race(v5) skipped: {e}")
+
+    try:
+        run_rguide_update(
+            rcity=rcity,
+            rdate=rdate,
+            rno=int(rno),
+            dry_run=False,
+        )
+    except Exception as e:
+        print(f"⚠️ r_guide update(v5) skipped: {e}")
+
+    return JsonResponse(
+        {
+            "status": "success",
+            "message": f"Exec chatGPT v5 실행 완료 ({rcity}, {rdate}, {rno})",
+            "predictions": predictions,
+        }
+    )
+
+
+def execChatGPTv6(request, rcity, rdate, rno):
+    """
+    거리별 v6 전용 가중치를 적용하는 프로파일.
+    """
+    cursor = None
+    try:
+        cursor = connection.cursor()
+        strSql = """
+            SELECT
+                rcity, rdate, rno, gate, horse, birthplace, h_sex, h_age, handycap,
+                joc_adv, jockey, trainer, host, rating, prize_tot, prize_year, prize_half,
+                tot_1st, tot_2nd, tot_3rd, tot_race, year_1st, year_2nd, year_3rd, year_race,
+                if(f_s2t(recent3) = 0,f_s2t(recent5),f_s2t(recent3)) AS recent3,
+                f_s2t(recent5) AS recent5,
+                if(f_s2t(fast_r) = 0,f_s2t(recent5),f_s2t(fast_r)) AS fast_r,
+                if(f_s2t(slow_r) = 0,f_s2t(recent5),f_s2t(slow_r)) AS slow_r,
+                if(f_s2t(avg_r) = 0,f_s2t(recent5),f_s2t(avg_r)) AS avg_r,
+                rs1f, r1c, r2c, r3c, r4c, rg3f, rg2f, rg1f,
+                cs1f, cg3f, cg2f, cg1f, rank, i_s1f, i_g3f, i_g2f, i_g1f,
+                i_jockey, i_cycle, i_prehandy, remark, s1f_rank, g2f_rank,
+                h_weight, j_per, t_per, jt_per, jt_cnt, jt_1st, jt_2nd, jt_3rd,
+                (select distance from exp010 where rcity = The1.exp011.rcity and rdate = The1.exp011.rdate and rno = The1.exp011.rno) as distance
+            FROM The1.exp011
+            WHERE rcity = %s AND rdate = %s AND rno = %s AND rank < 98
+            ORDER BY gate ASC
+        """
+        cursor.execute(strSql, [rcity, rdate, rno])
+        exp011s = cursor.fetchall()
+        predictions = process_race_v6(exp011s)
+
+        for p in predictions:
+            try:
+                cursor = connection.cursor()
+                update_sql = """
+                    UPDATE exp011
+                    SET r_pop = %s,
+                        tot_score = %s,
+                        s1f_per = %s,
+                        g3f_per = %s,
+                        g1f_per = %s,
+                        rec_per = %s,
+                        rec8_trend = %s,
+                        jt_score = %s,
+                        start_score = %s,
+                        comment_one = %s,
+                        comment_all = %s
+                    WHERE rcity = %s AND rdate = %s AND rno = %s AND gate = %s
+                """
+                cursor.execute(
+                    update_sql,
+                    (
+                        p["expected_rank"],
+                        p["score"],
+                        p["early_score"],
+                        p["late_score"],
+                        p["late200_score"],
+                        p["speed_score"],
+                        p["form_score"],
+                        p["conn_score"],
+                        p["front_run_place_prob"],
+                        p["one_line_comment"],
+                        p["reason"],
+                        rcity,
+                        rdate,
+                        rno,
+                        p["gate"],
+                    ),
+                )
+                connection.commit()
+            except Exception as e:
+                print(f"Failed to update exp011(v6): {e}")
+            finally:
+                if cursor:
+                    cursor.close()
+
+    except Exception as e:
+        return JsonResponse(
+            {
+                "status": "error",
+                "message": f"Failed Select exp011 / process_race_v6: {e}",
+            },
+            status=500,
+        )
+    finally:
+        if cursor:
+            cursor.close()
+
+    try:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            UPDATE exp011
+            SET r_pop = rank
+            WHERE rcity = %s AND rdate = %s AND rno = %s AND rank >= 98
+            """,
+            (rcity, rdate, rno),
+        )
+        connection.commit()
+    except Exception as e:
+        print(f"Failed to update exp011(v6) rank>=98: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+
+    try:
+        update_m_rank_score_for_race(
+            rcity, rdate, rno, model_name=f"sb_top3_roll12_{rdate[0:6]}"
+        )
+    except Exception as e:
+        print(f"⚠️ update_m_rank_score_for_race(v6) skipped: {e}")
+
+    try:
+        update_exp011_for_race(rcity, rdate, int(rno))
+    except Exception as e:
+        print(f"⚠️ update_exp011_for_race(v6) skipped: {e}")
+
+    try:
+        run_rguide_update(
+            rcity=rcity,
+            rdate=rdate,
+            rno=int(rno),
+            dry_run=False,
+        )
+    except Exception as e:
+        print(f"⚠️ r_guide update(v6) skipped: {e}")
+
+    return JsonResponse(
+        {
+            "status": "success",
+            "message": f"Exec chatGPT v6 실행 완료 ({rcity}, {rdate}, {rno})",
+            "predictions": predictions,
         }
     )
 
@@ -1324,5 +1956,3 @@ def writeSignificant(request, rdate, horse):
         "h_memo": h_memo,
     }
     return render(request, "base/write_significant.html", context)
-
-

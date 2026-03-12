@@ -519,8 +519,8 @@ def calc_rpop_a4_box4_trifecta(
 
 
 if __name__ == "__main__":
-    from_date = "20260109"
-    to_date = "20260111"
+    from_date = "20250101"
+    to_date = "20260331"
 
     race_df, summary = calc_rpop_a4_box4_trifecta(
         from_date=from_date,

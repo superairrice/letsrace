@@ -187,6 +187,17 @@
       font-size: 1.2rem;
     }
 
+    .calc-search__inner select {
+      min-width: 7.2rem;
+      min-height: 2.2rem;
+      border-radius: 8px;
+      border: 1px solid rgba(127, 149, 182, 0.48);
+      background: rgba(18, 25, 41, 0.65);
+      color: #e1ebfb;
+      padding: 0.2rem 0.5rem;
+      font-size: 1.2rem;
+    }
+
     .calc-card {
       width: min(600px, 100%);
       margin-top: 0.35rem;
@@ -214,6 +225,113 @@
       color: #bdcee7;
       font-size: 1.2rem;
       font-weight: 600;
+    }
+
+    .calc-profile {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      flex-wrap: wrap;
+      color: #d2def2;
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    .calc-profile__label {
+      color: #9db1d3;
+      font-weight: 700;
+    }
+
+    .calc-profile__option {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 999px;
+      background: rgba(18, 25, 41, 0.34);
+      border: 1px solid rgba(127, 149, 182, 0.22);
+      position: relative;
+      cursor: help;
+    }
+
+    .calc-profile__tooltip {
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 0.45rem);
+      transform: translateX(-50%);
+      min-width: 19rem;
+      max-width: 24rem;
+      padding: 0.55rem 0.7rem;
+      border-radius: 10px;
+      border: 1px solid rgba(131, 170, 224, 0.38);
+      background: rgba(12, 18, 31, 0.96);
+      color: #d7e5fb;
+      font-size: 1.05rem;
+      line-height: 1.45;
+      white-space: normal;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.32);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.14s ease, visibility 0.14s ease;
+      z-index: 12;
+    }
+
+    .calc-profile__tooltip strong {
+      color: #9fdcff;
+      font-weight: 700;
+    }
+
+    .calc-profile__tooltip--wide {
+      left: auto;
+      right: 0;
+      transform: none;
+      min-width: 28rem;
+      max-width: min(32rem, calc(100vw - 3rem));
+      padding: 0.7rem 0.8rem;
+    }
+
+    .calc-profile__tooltip-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.65rem;
+      margin-top: 0.45rem;
+    }
+
+    .calc-profile__tooltip-section {
+      border-radius: 8px;
+      border: 1px solid rgba(127, 149, 182, 0.22);
+      background: rgba(24, 33, 52, 0.72);
+      padding: 0.5rem 0.58rem;
+    }
+
+    .calc-profile__tooltip-title {
+      display: block;
+      margin-bottom: 0.28rem;
+      color: #8fe2ff;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+    }
+
+    .calc-profile__tooltip-line {
+      display: block;
+      font-size: 0.96rem;
+      line-height: 1.42;
+      color: #d7e5fb;
+    }
+
+    .calc-profile__tooltip-note {
+      display: block;
+      margin-top: 0.28rem;
+      font-size: 0.92rem;
+      color: #9db1d3;
+    }
+
+    .calc-profile__option:hover .calc-profile__tooltip,
+    .calc-profile__option:focus-within .calc-profile__tooltip {
+      opacity: 1;
+      visibility: visible;
     }
 
     .calc-btn {
@@ -349,6 +467,23 @@
     }
 
     @media (max-width: 768px) {
+      .calc-profile__tooltip {
+        left: 0;
+        right: auto;
+        transform: none;
+        min-width: 16rem;
+        max-width: min(22rem, calc(100vw - 2.5rem));
+      }
+
+      .calc-profile__tooltip--wide {
+        min-width: 18rem;
+        max-width: min(24rem, calc(100vw - 2.5rem));
+      }
+
+      .calc-profile__tooltip-grid {
+        grid-template-columns: 1fr;
+      }
+
       .calc-log__body {
         min-height: 220px;
         height: min(44vh, 520px);
@@ -378,6 +513,13 @@
 
         <input type="date" value="{{ fdate1 }}" name="q1" />
         <input type="date" value="{{ fdate2 }}" name="q2" />
+        <select name="rcity">
+          <option value="">전체 경마장</option>
+          {% for rcity in available_rcities %}
+          <option value="{{ rcity }}" {% if selected_rcity == rcity %}selected{% endif %}>{{ rcity }}</option>
+          {% endfor %}
+        </select>
+        <input type="hidden" name="prediction_profile" value="{{ prediction_profile|default:'v2' }}" />
 
         <button class="calc-btn" type="submit">Search</button>
 
@@ -397,15 +539,64 @@
         {% csrf_token %}
         <div class="calc-form__top">
           <label class="calc-check">
-            <input type="checkbox" name="rcheck1" value="ON" checked />
+            <input type="checkbox" name="rcheck1" value="ON" {% if baseline_checked %}checked{% endif %} />
             기준정보 집계여부
           </label>
+          <div class="calc-profile">
+            <span class="calc-profile__label">예측 프로파일</span>
+            <label class="calc-profile__option">
+              <input type="radio" name="prediction_profile" value="v0" {% if prediction_profile == 'v0' %}checked{% endif %} />
+              V0
+              <span class="calc-profile__tooltip">
+                <strong>V0 연결 0%</strong><br>
+                1200m 이하: 초반 33.72 / 막판 12.79 / 기록 37.21 / 폼 16.28 / 연결 0<br>
+                1300~1700m: 초반 22.35 / 막판 24.71 / 기록 28.24 / 폼 24.71 / 연결 0<br>
+                1800m 이상: 초반 10.47 / 막판 34.88 / 기록 36.05 / 폼 18.60 / 연결 0
+              </span>
+            </label>
+            <label class="calc-profile__option">
+              <input type="radio" name="prediction_profile" value="v1" {% if prediction_profile == 'v1' %}checked{% endif %} />
+              V1
+              <span class="calc-profile__tooltip">
+                <strong>V1 기본형</strong><br>
+                1200m 이하: 초반 30 / 막판 10 / 기록 30 / 폼 10 / 연결 20<br>
+                1300~1700m: 초반 20 / 막판 20 / 기록 20 / 폼 20 / 연결 20<br>
+                1800m 이상: 초반 10 / 막판 30 / 기록 30 / 폼 10 / 연결 20
+              </span>
+            </label>
+            <label class="calc-profile__option">
+              <input type="radio" name="prediction_profile" value="v2" {% if prediction_profile == 'v2' %}checked{% endif %} />
+              V2
+              <span class="calc-profile__tooltip calc-profile__tooltip--wide">
+                <strong>V2</strong><br>
+                서울/부산 경마장별 가중치 적용
+                <span class="calc-profile__tooltip-grid">
+                  <span class="calc-profile__tooltip-section">
+                    <span class="calc-profile__tooltip-title">서울</span>
+                    <span class="calc-profile__tooltip-line">1200~1300m: 초반 31 / 막판 13 / 기록 36 / 폼 15 / 연결 5</span>
+                    <span class="calc-profile__tooltip-line">1400m: 초반 24 / 막판 22 / 기록 32 / 폼 17 / 연결 5</span>
+                    <span class="calc-profile__tooltip-line">1600m: 초반 21 / 막판 25 / 기록 28 / 폼 21 / 연결 5</span>
+                    <span class="calc-profile__tooltip-line">1700~1800m: 초반 15 / 막판 31 / 기록 25 / 폼 24 / 연결 5</span>
+                    <span class="calc-profile__tooltip-line">그 외: 초반 9 / 막판 33 / 기록 24 / 폼 26 / 연결 8</span>
+                  </span>
+                  <span class="calc-profile__tooltip-section">
+                    <span class="calc-profile__tooltip-title">부산</span>
+                    <span class="calc-profile__tooltip-line">1200m 이하: 초반 33.72 / 막판 12.79 / 기록 37.21 / 폼 16.28 / 연결 0</span>
+                    <span class="calc-profile__tooltip-line">1300~1700m: 초반 22.35 / 막판 24.71 / 기록 28.24 / 폼 24.71 / 연결 0</span>
+                    <span class="calc-profile__tooltip-line">1800m 이상: 초반 10.47 / 막판 34.88 / 기록 36.05 / 폼 18.60 / 연결 0</span>
+                  </span>
+                </span>
+                <span class="calc-profile__tooltip-note">V2는 서울/부산 경마장별 분리 비중을 사용합니다.</span>
+              </span>
+            </label>
+          </div>
           <button class="calc-btn" type="submit">경주 집계</button>
         </div>
 
         <!-- ✅ GET으로 검색한 q1, q2 값을 hidden input으로 넘김 -->
         <input type="hidden" name="rdate1" value="{{ rdate1 }}">
         <input type="hidden" name="rdate2" value="{{ rdate2 }}">
+        <input type="hidden" name="rcity" value="{{ selected_rcity }}">
 
         <input type="hidden" name="q1" value="{{ fdate1 }}">
         <input type="hidden" name="q2" value="{{ fdate2 }}">

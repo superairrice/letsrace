@@ -20,6 +20,18 @@ from django.core.exceptions import ImproperlyConfigured
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+def show_debug_toolbar(request):
+    """Hide the debug toolbar on compact popup views where it obscures content."""
+    popup_paths = {
+        "/admin-summary-popup/",
+        "/admin-summary-gate-popup/",
+        "/admin-summary-special-popup/",
+    }
+    if request.path in popup_paths:
+        return False
+    return bool(DEBUG) and request.META.get("REMOTE_ADDR") in INTERNAL_IPS
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
@@ -116,6 +128,12 @@ ALLOWED_HOSTS = [
     "localhost",
     "0.0.0.0",
 ]
+
+# race_calculation can submit a large number of per-race checkbox fields in one POST.
+# Raise the parser cap above Django's default (1000) to avoid TooManyFieldsSent.
+DATA_UPLOAD_MAX_NUMBER_FIELDS = int(
+    os.getenv("DATA_UPLOAD_MAX_NUMBER_FIELDS", "5000")
+)
 
 
 # Application definition
@@ -222,6 +240,10 @@ MIDDLEWARE = [
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
+
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": "letsrace.settings.show_debug_toolbar",
+}
 
 ROOT_URLCONF = "letsrace.urls"
 

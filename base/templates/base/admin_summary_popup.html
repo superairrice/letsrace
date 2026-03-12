@@ -10,7 +10,7 @@
   <link rel="shortcut icon" type="image/x-icon" href="{% static '/images/number-9.png' %}" />
   <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
   <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
-  <title>관리자 요약</title>
+  <title>{{ popup_title|default:"관리자 요약" }}</title>
   <style>
     body.admin-summary-page {
       margin: 0;
@@ -58,9 +58,41 @@
       font-weight: 700;
     }
 
+    .admin-summary__meta-form {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.42rem;
+      margin-top: 0.45rem;
+      flex-wrap: wrap;
+    }
+
+    .admin-summary__date-input {
+      min-height: 2rem;
+      border-radius: 8px;
+      border: 1px solid rgba(122, 143, 175, 0.48);
+      background: rgba(12, 18, 31, 0.82);
+      color: #dff0ff;
+      padding: 0.18rem 0.45rem;
+      font-size: 1.2rem;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .admin-summary__date-btn {
+      min-height: 2rem;
+      border-radius: 8px;
+      border: 1px solid rgba(111, 206, 239, 0.62);
+      background: linear-gradient(180deg, rgba(116, 214, 240, 0.92) 0%, rgba(73, 172, 204, 0.92) 100%);
+      color: #102032;
+      padding: 0.18rem 0.68rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
     .admin-summary__kpis {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 0.66rem;
       margin-bottom: 0.8rem;
     }
@@ -74,9 +106,9 @@
 
     .admin-summary__kpi-label {
       display: block;
-      font-size: 1.52rem;
+      font-size: 1.22rem;
       color: #8ca5c2;
-      margin-bottom: 0.24rem;
+      margin-bottom: 0.2rem;
     }
 
     .admin-summary__kpi-value {
@@ -92,39 +124,31 @@
     .admin-summary__kpi-value.is-profit-plus { color: #41db8c; }
     .admin-summary__kpi-value.is-profit-minus { color: #ff6f6f; }
 
-    .admin-summary__ops {
+    .admin-summary__kpi-split {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 0.5rem;
-      margin-bottom: 0.8rem;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.38rem;
     }
 
-    .admin-summary__ops-item {
-      border: 1px solid rgba(105, 133, 171, 0.46);
-      border-radius: 8px;
-      background: rgba(14, 24, 40, 0.65);
-      padding: 0.36rem 0.5rem;
+    .admin-summary__kpi-split-item {
+      min-width: 0;
     }
 
-    .admin-summary__ops-label {
+    .admin-summary__kpi-split-label {
       display: block;
-      font-size: 1.14rem;
+      font-size: 1.22rem;
       color: #8ca5c2;
-      margin-bottom: 0.08rem;
+      margin-bottom: 0.2rem;
     }
 
-    .admin-summary__ops-value {
+    .admin-summary__kpi-split-value {
       display: block;
       text-align: right;
       font-family: Arial, Helvetica, sans-serif;
-      font-size: 1.34rem;
-      color: #dff0ff;
       font-variant-numeric: tabular-nums;
-      line-height: 1.2;
+      color: #e7f2ff;
+      font-weight: 400;
     }
-
-    .admin-summary__ops-value.is-good { color: #47d78c; }
-    .admin-summary__ops-value.is-bad { color: #ff6f6f; }
 
     .admin-summary__track {
       border: 1px solid rgba(117, 140, 171, 0.4);
@@ -154,6 +178,7 @@
       display: inline-flex;
       align-items: baseline;
       gap: 0.72rem;
+      flex-wrap: wrap;
     }
 
     .admin-summary__track-roi {
@@ -193,6 +218,123 @@
     .admin-summary__track-total.is-profit-plus { color: #47d78c; }
     .admin-summary__track-total.is-profit-minus { color: #ff6f6f; }
 
+    .admin-summary__track-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.38rem;
+      margin-bottom: 0.42rem;
+    }
+
+    .admin-summary__track-stat {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(98, 124, 158, 0.34);
+      border-radius: 8px;
+      background: rgba(13, 20, 34, 0.56);
+      padding: 0.34rem 0.46rem 0.38rem;
+    }
+
+    .admin-summary__track-stat::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: rgba(116, 145, 184, 0.32);
+    }
+
+    .admin-summary__track-stat-title {
+      display: block;
+      margin-bottom: 0.16rem;
+      color: #8ca5c2;
+      font-size: 0.98rem;
+      font-weight: 700;
+      letter-spacing: 0.015em;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .admin-summary__track-stat-line {
+      display: flex;
+      justify-content: stretch;
+      align-items: flex-start;
+      gap: 0;
+      color: #c7dcf6;
+      font-size: 1.02rem;
+      font-family: Arial, Helvetica, sans-serif;
+      font-variant-numeric: tabular-nums;
+      padding: 0.04rem 0;
+    }
+
+    .admin-summary__track-stat-line.is-good {
+      color: #47d78c;
+    }
+
+    .admin-summary__track-stat-line.is-mid {
+      color: #71d6f0;
+    }
+
+    .admin-summary__track-stat-line.is-bad {
+      color: #94a8c4;
+    }
+
+    .admin-summary__track-stat-line.is-good + .admin-summary__track-stat-line {
+      margin-top: 0.08rem;
+    }
+
+    .admin-summary__track-stat.is-good::before {
+      background: linear-gradient(90deg, rgba(71, 215, 140, 0.95) 0%, rgba(71, 215, 140, 0.18) 100%);
+    }
+
+    .admin-summary__track-stat.is-mid::before {
+      background: linear-gradient(90deg, rgba(113, 214, 240, 0.95) 0%, rgba(113, 214, 240, 0.18) 100%);
+    }
+
+    .admin-summary__track-stat.is-bad::before {
+      background: linear-gradient(90deg, rgba(148, 168, 196, 0.9) 0%, rgba(148, 168, 196, 0.14) 100%);
+    }
+
+    .admin-summary__track-stat-value {
+      display: inline-flex;
+      flex-direction: row;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.3rem;
+      width: 100%;
+      min-width: 0;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    .admin-summary__track-stat-hits {
+      font-size: 1.18rem;
+      font-weight: 400;
+      color: inherit;
+      letter-spacing: 0.01em;
+      text-align: left;
+    }
+
+    .admin-summary__track-stat-pct {
+      font-size: 1.02rem;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      color: rgba(217, 228, 242, 0.72);
+      text-align: right;
+    }
+
+    .admin-summary__track-stat-line.is-good .admin-summary__track-stat-pct {
+      color: rgba(152, 245, 193, 0.88);
+    }
+
+    .admin-summary__track-stat-line.is-mid .admin-summary__track-stat-pct {
+      color: rgba(173, 233, 246, 0.86);
+    }
+
+    .admin-summary__track-stat-line.is-bad .admin-summary__track-stat-pct {
+      color: rgba(183, 198, 219, 0.78);
+    }
+
     .admin-summary__head-row,
     .admin-summary__row {
       display: grid;
@@ -216,6 +358,14 @@
 
     .admin-summary__row + .admin-summary__row {
       border-top: 1px dotted rgba(109, 129, 156, 0.24);
+    }
+
+    .admin-summary__row.is-total {
+      margin-top: 0.14rem;
+      padding-top: 0.36rem;
+      border-top: 1px solid rgba(116, 138, 168, 0.46);
+      font-weight: 700;
+      background: rgba(14, 24, 40, 0.42);
     }
 
     .admin-summary__method { color: #d0ddee; }
@@ -408,69 +558,61 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 0.5rem;
     }
+
+    @media (max-width: 900px) {
+      .admin-summary__kpis {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
   </style>
 </head>
 
 <body class="admin-summary-page">
   <section class="admin-summary">
     <div class="admin-summary__head">
-      <div class="admin-summary__title">관리자 요약</div>
+        <div class="admin-summary__title">{{ popup_title|default:"관리자 요약" }}</div>
       <div class="admin-summary__meta">
-        기준일 <strong>{{ fdate }}</strong><br>
-        자동갱신 {{ refresh_sec }}초
+        기준일 <strong>{{ fdate }}</strong> / 자동갱신 {{ refresh_sec }}초
+        <form class="admin-summary__meta-form" method="GET" action="">
+          <input class="admin-summary__date-input" type="date" name="q" value="{{ fdate }}">
+          <input type="hidden" name="refresh" value="{{ refresh_sec }}">
+          <button class="admin-summary__date-btn" type="submit">조회</button>
+        </form>
       </div>
     </div>
 
     {% if summary_total %}
     <div class="admin-summary__kpis">
       <div class="admin-summary__kpi">
-        <span class="admin-summary__kpi-label">총 베팅</span>
+        <div class="admin-summary__kpi-split">
+          <div class="admin-summary__kpi-split-item">
+            <span class="admin-summary__kpi-split-label">경주수</span>
+            <span class="admin-summary__kpi-value admin-summary__kpi-split-value">{{ summary_total.races|default:0|intcomma }}</span>
+          </div>
+          <div class="admin-summary__kpi-split-item">
+            <span class="admin-summary__kpi-split-label">적중경주</span>
+            <span class="admin-summary__kpi-value admin-summary__kpi-split-value">{{ summary_total.hits|default:0|intcomma }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="admin-summary__kpi">
+        <span class="admin-summary__kpi-label">총베팅</span>
         <span class="admin-summary__kpi-value">{{ summary_total.total_bet|floatformat:0|intcomma }}</span>
       </div>
       <div class="admin-summary__kpi">
-        <span class="admin-summary__kpi-label">총 환수</span>
-        <span class="admin-summary__kpi-value">{{ summary_total.total_refund|floatformat:0|intcomma }}</span>
-      </div>
-      <div class="admin-summary__kpi">
-        <span class="admin-summary__kpi-label">손익</span>
+        <span class="admin-summary__kpi-label">Profit</span>
         <span class="admin-summary__kpi-value {% if summary_total.profit >= 0 %}is-profit-plus{% else %}is-profit-minus{% endif %}">
           {{ summary_total.profit|floatformat:0|intcomma }}
         </span>
       </div>
-    </div>
-    {% endif %}
-    <div class="admin-summary__ops">
-      <div class="admin-summary__ops-item">
-        <span class="admin-summary__ops-label">ROI</span>
-        <span class="admin-summary__ops-value {% if metrics.roi >= 1 %}is-good{% else %}is-bad{% endif %}">
+      <div class="admin-summary__kpi">
+        <span class="admin-summary__kpi-label">ROI</span>
+        <span class="admin-summary__kpi-value {% if metrics.roi >= 1 %}is-profit-plus{% else %}is-profit-minus{% endif %}">
           {{ metrics.roi_pct|floatformat:1 }}%
         </span>
       </div>
-      <div class="admin-summary__ops-item">
-        <span class="admin-summary__ops-label">적중률</span>
-        <span class="admin-summary__ops-value {% if metrics.hit_rate >= 0.3 %}is-good{% else %}is-bad{% endif %}">
-          {{ metrics.hit_rate_pct|floatformat:1 }}%
-        </span>
-      </div>
-      <div class="admin-summary__ops-item">
-        <span class="admin-summary__ops-label">MDD</span>
-        <span class="admin-summary__ops-value {% if metrics.mdd < 0 %}is-bad{% endif %}">
-          {{ metrics.mdd|floatformat:0|intcomma }}
-        </span>
-      </div>
-      <div class="admin-summary__ops-item">
-        <span class="admin-summary__ops-label">r_pop1 3착내</span>
-        <span class="admin-summary__ops-value {% if metrics.r_pop1_top3_rate >= 0.5 %}is-good{% endif %}">
-          {{ metrics.r_pop1_top3_rate_pct|floatformat:1 }}%
-        </span>
-      </div>
-      <div class="admin-summary__ops-item">
-        <span class="admin-summary__ops-label">r_pop1 1위</span>
-        <span class="admin-summary__ops-value {% if metrics.r_pop1_top1_rate >= 0.25 %}is-good{% endif %}">
-          {{ metrics.r_pop1_top1_rate_pct|floatformat:1 }}%
-        </span>
-      </div>
     </div>
+    {% endif %}
 
     {% if method_bet_by_track %}
       {% for t in method_bet_by_track %}
@@ -479,19 +621,73 @@
           <span class="admin-summary__track-name">{{ t.track }}</span>
           <span class="admin-summary__track-right">
             <span class="admin-summary__track-races">경주수 {{ t.total_races|default:0 }}</span>
-            <span class="admin-summary__track-pop {% if t.r_pop1_top3_rate >= 0.5 %}is-good{% endif %}">
-              r1 3착 {{ t.r_pop1_top3_rate_pct|floatformat:1 }}%
-            </span>
-            <span class="admin-summary__track-pop {% if t.r_pop1_top1_rate >= 0.25 %}is-good{% endif %}">
-              r1 1위 {{ t.r_pop1_top1_rate_pct|floatformat:1 }}%
-            </span>
+            <span class="admin-summary__track-races">적중경주 {{ t.hit_races|default:0 }}</span>
             <span class="admin-summary__track-roi {% if t.roi >= 1 %}is-good{% else %}is-bad{% endif %}">
               ROI {{ t.roi_pct|floatformat:1 }}%
             </span>
-            <span class="admin-summary__track-total {% if t.total_profit >= 0 %}is-profit-plus{% else %}is-profit-minus{% endif %}">
-              합계 {{ t.total_profit|floatformat:0|intcomma }}
-            </span>
           </span>
+        </div>
+        <div class="admin-summary__track-stats">
+          <div class="admin-summary__track-stat {% if t.r_pop1_top1_rate >= 0.30 or t.r_pop1_top3_rate >= 0.60 %}is-good{% elif t.r_pop1_top1_rate >= 0.15 or t.r_pop1_top3_rate >= 0.35 %}is-mid{% else %}is-bad{% endif %}">
+            <span class="admin-summary__track-stat-title">r_pop1</span>
+            <span class="admin-summary__track-stat-line {% if t.r_pop1_top1_rate >= 0.30 %}is-good{% elif t.r_pop1_top1_rate >= 0.15 %}is-mid{% else %}is-bad{% endif %}">
+              <span class="admin-summary__track-stat-value">
+                <span class="admin-summary__track-stat-hits">{{ t.r_pop1_top1_hits }}건</span>
+                <span class="admin-summary__track-stat-pct">{{ t.r_pop1_top1_rate_pct|floatformat:1 }}%</span>
+              </span>
+            </span>
+            <span class="admin-summary__track-stat-line {% if t.r_pop1_top3_rate >= 0.60 %}is-good{% elif t.r_pop1_top3_rate >= 0.35 %}is-mid{% else %}is-bad{% endif %}">
+              <span class="admin-summary__track-stat-value">
+                <span class="admin-summary__track-stat-hits">{{ t.r_pop1_top3_hits }}건</span>
+                <span class="admin-summary__track-stat-pct">{{ t.r_pop1_top3_rate_pct|floatformat:1 }}%</span>
+              </span>
+            </span>
+          </div>
+          <div class="admin-summary__track-stat {% if t.r_pop2_top1_rate >= 0.30 or t.r_pop2_top3_rate >= 0.60 %}is-good{% elif t.r_pop2_top1_rate >= 0.07 or t.r_pop2_top3_rate >= 0.22 %}is-mid{% else %}is-bad{% endif %}">
+            <span class="admin-summary__track-stat-title">r_pop2</span>
+            <span class="admin-summary__track-stat-line {% if t.r_pop2_top1_rate >= 0.30 %}is-good{% elif t.r_pop2_top1_rate >= 0.07 %}is-mid{% else %}is-bad{% endif %}">
+              <span class="admin-summary__track-stat-value">
+                <span class="admin-summary__track-stat-hits">{{ t.r_pop2_top1_hits }}건</span>
+                <span class="admin-summary__track-stat-pct">{{ t.r_pop2_top1_rate_pct|floatformat:1 }}%</span>
+              </span>
+            </span>
+            <span class="admin-summary__track-stat-line {% if t.r_pop2_top3_rate >= 0.60 %}is-good{% elif t.r_pop2_top3_rate >= 0.22 %}is-mid{% else %}is-bad{% endif %}">
+              <span class="admin-summary__track-stat-value">
+                <span class="admin-summary__track-stat-hits">{{ t.r_pop2_top3_hits }}건</span>
+                <span class="admin-summary__track-stat-pct">{{ t.r_pop2_top3_rate_pct|floatformat:1 }}%</span>
+              </span>
+            </span>
+          </div>
+          <div class="admin-summary__track-stat {% if t.r_pop3_top1_rate >= 0.30 or t.r_pop3_top3_rate >= 0.60 %}is-good{% elif t.r_pop3_top1_rate >= 0.04 or t.r_pop3_top3_rate >= 0.15 %}is-mid{% else %}is-bad{% endif %}">
+            <span class="admin-summary__track-stat-title">r_pop3</span>
+            <span class="admin-summary__track-stat-line {% if t.r_pop3_top1_rate >= 0.30 %}is-good{% elif t.r_pop3_top1_rate >= 0.04 %}is-mid{% else %}is-bad{% endif %}">
+              <span class="admin-summary__track-stat-value">
+                <span class="admin-summary__track-stat-hits">{{ t.r_pop3_top1_hits }}건</span>
+                <span class="admin-summary__track-stat-pct">{{ t.r_pop3_top1_rate_pct|floatformat:1 }}%</span>
+              </span>
+            </span>
+            <span class="admin-summary__track-stat-line {% if t.r_pop3_top3_rate >= 0.60 %}is-good{% elif t.r_pop3_top3_rate >= 0.15 %}is-mid{% else %}is-bad{% endif %}">
+              <span class="admin-summary__track-stat-value">
+                <span class="admin-summary__track-stat-hits">{{ t.r_pop3_top3_hits }}건</span>
+                <span class="admin-summary__track-stat-pct">{{ t.r_pop3_top3_rate_pct|floatformat:1 }}%</span>
+              </span>
+            </span>
+          </div>
+          <div class="admin-summary__track-stat {% if t.r_pop4_top1_rate >= 0.30 or t.r_pop4_top3_rate >= 0.60 %}is-good{% elif t.r_pop4_top1_rate >= 0.02 or t.r_pop4_top3_rate >= 0.10 %}is-mid{% else %}is-bad{% endif %}">
+            <span class="admin-summary__track-stat-title">r_pop4</span>
+            <span class="admin-summary__track-stat-line {% if t.r_pop4_top1_rate >= 0.30 %}is-good{% elif t.r_pop4_top1_rate >= 0.02 %}is-mid{% else %}is-bad{% endif %}">
+              <span class="admin-summary__track-stat-value">
+                <span class="admin-summary__track-stat-hits">{{ t.r_pop4_top1_hits }}건</span>
+                <span class="admin-summary__track-stat-pct">{{ t.r_pop4_top1_rate_pct|floatformat:1 }}%</span>
+              </span>
+            </span>
+            <span class="admin-summary__track-stat-line {% if t.r_pop4_top3_rate >= 0.60 %}is-good{% elif t.r_pop4_top3_rate >= 0.10 %}is-mid{% else %}is-bad{% endif %}">
+              <span class="admin-summary__track-stat-value">
+                <span class="admin-summary__track-stat-hits">{{ t.r_pop4_top3_hits }}건</span>
+                <span class="admin-summary__track-stat-pct">{{ t.r_pop4_top3_rate_pct|floatformat:1 }}%</span>
+              </span>
+            </span>
+          </div>
         </div>
         <div class="admin-summary__head-row">
           <span>방법</span><span style="text-align:center;">적중</span><span style="text-align:right;">베팅</span><span style="text-align:right;">환수</span><span style="text-align:right;">이익</span>
@@ -505,6 +701,13 @@
           <span class="admin-summary__num {% if m.profit >= 0 %}is-profit-plus{% else %}is-profit-minus{% endif %}">{{ m.profit|floatformat:0|intcomma }}</span>
         </div>
         {% endfor %}
+        <div class="admin-summary__row is-total">
+          <span class="admin-summary__method">총계</span>
+          <span class="admin-summary__hit"><span class="admin-summary__hit-badge {% if t.hit_races|default:0 > 0 %}is-hit{% endif %}">{{ t.hit_races|default:0 }}</span></span>
+          <span class="admin-summary__num">{{ t.total_bet|floatformat:0|intcomma }}</span>
+          <span class="admin-summary__num">{{ t.total_refund|floatformat:0|intcomma }}</span>
+          <span class="admin-summary__num {% if t.total_profit >= 0 %}is-profit-plus{% else %}is-profit-minus{% endif %}">{{ t.total_profit|floatformat:0|intcomma }}</span>
+        </div>
       </article>
       {% endfor %}
     {% elif method_bet_totals %}
@@ -536,6 +739,13 @@
           type="button"
           data-popup-url="{% url 'admin_summary_gate_popup' %}?q={{ i_rdate }}&refresh={{ refresh_sec }}"
         >마번 TOP5</button>
+        {% if show_special_popup_button %}
+        <button
+          id="open-special-popup"
+          type="button"
+          data-popup-url="{% url 'admin_summary_special_popup' %}?q={{ i_rdate }}&refresh={{ refresh_sec }}"
+        >BOX 요약</button>
+        {% endif %}
         <button type="button" id="manual-refresh">새로고침</button>
         <button type="button" onclick="window.close()">닫기</button>
       </div>
@@ -548,6 +758,7 @@
       var timer = Math.max(10, Number(refreshSec) || 30) * 1000;
       var manualRefreshBtn = document.getElementById('manual-refresh');
       var openGatePopupBtn = document.getElementById('open-gate-popup');
+      var openSpecialPopupBtn = document.getElementById('open-special-popup');
       if (openGatePopupBtn) {
         openGatePopupBtn.addEventListener('click', function () {
           var popupUrl = openGatePopupBtn.getAttribute('data-popup-url');
@@ -556,6 +767,17 @@
             popupUrl,
             'w_admin_summary_gate_popup',
             'width=490,height=680,top=20,left=20,toolbars=no,scrollbars=yes'
+          );
+        });
+      }
+      if (openSpecialPopupBtn) {
+        openSpecialPopupBtn.addEventListener('click', function () {
+          var popupUrl = openSpecialPopupBtn.getAttribute('data-popup-url');
+          if (!popupUrl) return;
+          window.open(
+            popupUrl,
+            'w_admin_summary_special_popup',
+            'width=450,height=740,top=20,left=20,toolbars=no,scrollbars=yes'
           );
         });
       }
