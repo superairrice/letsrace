@@ -926,7 +926,8 @@ def calc_rpop_anchor_26_trifecta(
         distance = g["경주거리"].iloc[0]
         grade = g["등급"].iloc[0]
 
-        g_sorted = g.sort_values("r_pop", ascending=True)
+        # rank 기준 집계: 축마/상대군/복조군을 exp011.rank 순서로 구성한다.
+        g_sorted = g.sort_values("rank", ascending=True)
         top3 = g_sorted.head(3)["마번"].tolist()
         top4 = g_sorted.head(4)["마번"].tolist()
         top5 = g_sorted.head(5)["마번"].tolist()

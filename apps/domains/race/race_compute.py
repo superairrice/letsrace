@@ -306,6 +306,120 @@ def baseline_compute(connection, as_rdate):
         print(f"Inserted {r_cnt} rows INSERT INTO adv_furlong table.")
         connection.commit()
 
+        print(f"{ls_to} adv_furlong Completed! record_track Computing...")
+
+        # ✅ 8. record_track
+        cursor.execute("TRUNCATE TABLE The1.record_track")
+        connection.commit()
+
+        sql_record_track = """
+        INSERT INTO The1.record_track
+        SELECT rcity, distance, grade,
+            ROUND((adv_track) / 10, 0) track,
+            AVG(i_record) rec_avg,
+            MAX(i_record) rec_max,
+            MIN(i_record) rec_min,
+            AVG(i_convert) con_avg,
+            MAX(i_convert) con_max,
+            MIN(i_convert) con_min,
+            COUNT(*) cnt
+        FROM The1.record
+        WHERE rdate >= '20180101'
+          AND rdate < %s
+          AND rank BETWEEN 1 AND 5
+          AND alloc1r IS NOT NULL
+        GROUP BY rcity, distance, grade, ROUND((adv_track) / 10, 0)
+        ORDER BY distance, ROUND((adv_track) / 10, 0), rcity
+        """
+        r_cnt = cursor.execute(sql_record_track, (ls_to,))
+        print(f"Inserted {r_cnt} rows INSERT INTO The1.record_track table.")
+        connection.commit()
+
+        print(f"{ls_to} record_track Completed! rec010_track Computing...")
+
+        # ✅ 9. rec010_track
+        cursor.execute("TRUNCATE TABLE The1.rec010_track")
+        connection.commit()
+
+        sql_rec010_track = """
+        INSERT INTO The1.rec010_track
+        SELECT rcity, rdate, rno, distance, grade, ROUND((adv_track) / 10, 0) track,
+            AVG(i_record) rec_avg,
+            MAX(i_record) rec_max,
+            MIN(i_record) rec_min,
+            AVG(i_convert) con_avg,
+            MAX(i_convert) con_max,
+            MIN(i_convert) con_min,
+            COUNT(*) cnt
+        FROM The1.record
+        WHERE rdate >= '20180101'
+          AND rdate < %s
+          AND rank BETWEEN 1 AND 5
+          AND alloc1r IS NOT NULL
+        GROUP BY rcity, rdate, rno, distance, grade, ROUND((adv_track) / 10, 0)
+        """
+        r_cnt = cursor.execute(sql_rec010_track, (ls_to,))
+        print(f"Inserted {r_cnt} rows INSERT INTO The1.rec010_track table.")
+        connection.commit()
+
+        print(f"{ls_to} rec010_track Completed! rec010 r_judge Updating...")
+
+        # ✅ 10. rec010 r_judge
+        sql_clear_rec010_judge = """
+        UPDATE The1.rec010
+        SET r_judge = NULL
+        WHERE rdate >= '20250101'
+          AND rdate < %s
+        """
+        r_cnt = cursor.execute(sql_clear_rec010_judge, (ls_to,))
+        print(f"Cleared {r_cnt} rows UPDATE The1.rec010 r_judge = NULL.")
+        connection.commit()
+
+        sql_update_rec010_judge = """
+        UPDATE The1.rec010 k
+        JOIN The1.rec010_track a
+          ON a.rcity = k.rcity
+         AND a.rdate = k.rdate
+         AND a.rno   = k.rno
+        JOIN The1.record_track b
+          ON b.rcity    = a.rcity
+         AND b.distance = a.distance
+         AND b.grade    = a.grade
+         AND b.track    = a.track
+        SET k.r_judge = ROUND(b.con_avg - a.con_avg, 0)
+        WHERE k.rdate >= '20250101'
+          AND k.rdate < %s
+        """
+        r_cnt = cursor.execute(sql_update_rec010_judge, (ls_to,))
+        print(f"Updated {r_cnt} rows UPDATE The1.rec010 r_judge.")
+        connection.commit()
+
+        print(f"{ls_to} rec010 r_judge Completed! exp010_track Computing...")
+
+        # ✅ 11. exp010_track
+        cursor.execute("TRUNCATE TABLE The1.exp010_track")
+        connection.commit()
+
+        sql_exp010_track = """
+        INSERT INTO The1.exp010_track
+        SELECT rcity, rdate, rno, distance, grade,
+            AVG(ir_record) rec_avg,
+            MAX(ir_record) rec_max,
+            MIN(ir_record) rec_min,
+            AVG(i_complex) con_avg,
+            MAX(i_complex) con_max,
+            MIN(i_complex) con_min,
+            COUNT(*) cnt
+        FROM The1.expect
+        WHERE rdate >= '20240101'
+          AND rdate < %s
+          AND rank BETWEEN 1 AND 5
+        GROUP BY rcity, rdate, rno, distance, grade
+        """
+        r_cnt = cursor.execute(sql_exp010_track, (ls_to,))
+        print(f"Inserted {r_cnt} rows INSERT INTO The1.exp010_track table.")
+        connection.commit()
+
         print("✅ All Computation Completed Successfully!")
         return 1
 
@@ -316,6 +430,9 @@ def baseline_compute(connection, as_rdate):
 
     finally:
         cursor.close()
+        
+        
+    
 
 
 def renewal_record_s(connection, as_rdate):
@@ -1224,7 +1341,7 @@ def set_record(connection, rcity, rdate, distance, horse, i_jockey, weight, i_av
         # -- date_format(DATE_ADD( %s, INTERVAL - 3 DAY), '%%Y%%m%%d')
         # print(
         #     "Executing SQL (jockey/trainer 1y stats):",
-        #     strSql,
+        #     strSql %
         #     (rdate, rdate, rdate, horse, rdate, horse),
         # )
 

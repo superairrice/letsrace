@@ -26,7 +26,11 @@
         
         
         <th rowspan="2" style="vertical-align:middle">
-          <a href="{% url 'jt_analysis_multi' row_rcity row_rdate|mul:1|sub:10000 row_rdate row_jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' row_rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% if row_jockey %}
+          <a href="/jt_analysis_multi/{{ row_rcity }}/{{ row_rdate|mul:1|sub:10000 }}/{{ row_rdate }}/{{ row_jockey }}/%/%/%/1/99/1/99/0/0/0/{{ row_rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% else %}
+          <a href="/jt_analysis_multi/{{ row_rcity }}/{{ row_rdate|mul:1|sub:10000 }}/{{ row_rdate }}/%/%/%/%/1/99/1/99/0/0/0/{{ row_rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% endif %}
             <span class="tooltip" style="font-size:1.2rem; color:var(--color-r5);">⚖️
               <span class="tooltip-text" style="font-size:1.1rem; text-align: left;">
                 ⚖️&nbsp;마체중 증감<br>🏇[
@@ -39,7 +43,11 @@
           </a>
         </th>
         <th rowspan="2" style="vertical-align:middle">
-          <a href="{% url 'jt_analysis_multi' row_rcity row_rdate|mul:1|sub:10000 row_rdate row_jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' row_handycap  row_rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% if row_jockey %}
+          <a href="/jt_analysis_multi/{{ row_rcity }}/{{ row_rdate|mul:1|sub:10000 }}/{{ row_rdate }}/{{ row_jockey }}/%/%/%/1/99/1/99/0/0/{{ row_handycap }}/{{ row_rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% else %}
+          <a href="/jt_analysis_multi/{{ row_rcity }}/{{ row_rdate|mul:1|sub:10000 }}/{{ row_rdate }}/%/%/%/%/1/99/1/99/0/0/{{ row_handycap }}/{{ row_rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% endif %}
             <span class="tooltip" style="font-size:1.2rem; color:var(--color-r5);">🚛
               <span class="tooltip-text" style="font-size:1.1rem; text-align: left;">
                 🚛&nbsp;기수 부담중량<br>🏇[
@@ -53,7 +61,11 @@
         </th>
 
         <th width="5.5%">
-            <a href="{% url 'jt_analysis_multi' row_rcity row_rdate|mul:1|sub:10000 row_rdate row_jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' row_rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+            {% if row_jockey %}
+            <a href="/jt_analysis_multi/{{ row_rcity }}/{{ row_rdate|mul:1|sub:10000 }}/{{ row_rdate }}/{{ row_jockey }}/%/%/%/1/99/1/99/0/0/0/{{ row_rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+            {% else %}
+            <a href="/jt_analysis_multi/{{ row_rcity }}/{{ row_rdate|mul:1|sub:10000 }}/{{ row_rdate }}/%/%/%/%/1/99/1/99/0/0/0/{{ row_rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+            {% endif %}
             <span class="tooltip" style="font-size:1.2rem; color:var(--color-r5);">
               🏇<span class="tooltip-text" style="font-size:1.1rem;">🏇&nbsp;[<span style="color:var(--color-r3);"><span style="color:var(--color-r3);">{{row_jockey}}</span></span>]&nbsp;기수 최근 1년 경주성적</span>
             </span>
@@ -61,7 +73,7 @@
         </th>
 
         <th width="5.9%">
-          <a href="{% url 'jt_analysis_multi' row_rno row_rdate|mul:1|sub:10000 row_rdate '%' '%' row_host '%' '1' '99' '1' '99' '0' '0' '0' row_rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          <a href="/jt_analysis_multi/{{ row_rcity }}/{{ row_rdate|mul:1|sub:10000 }}/{{ row_rdate }}/%/%/{{ row_host }}/%/1/99/1/99/0/0/0/{{ row_rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
             <span class="tooltip" style="font-size:1.0rem; color:var(--color-r5);">
               🤠<span class="tooltip-text" style="font-size:1.1rem;">🤠&nbsp;[<span style="color:var(--color-r3);">{{row_host}}</span>]&nbsp;마주 최근 1년 경주성적</span>
             </span>
@@ -103,14 +115,22 @@
           <span style="font-size:1.2rem; text-transform: capitalize;">Race Info.</span>
           &nbsp;&nbsp;
           
+          {% if row_jockey %}
           <a href="{% url 'jt_collaboration' row_rcity row_rdate row_rno row_jockey 'jockey' %}" 
+          {% else %}
+          <a href="{% url 'jt_collaboration' row_rcity row_rdate row_rno '%' 'jockey' %}" 
+          {% endif %}
                     onclick="window.open(this.href, 'w_jt_collaboration', 'top=' + (window.screen.availHeight / 2 ) + ', left=' + window.screenX + ', width=550, height=300, toolbars=no, scrollbars=yes'); return false;">
                     🎵
           </a>
         </th>
         
         <th>
-          <a href="{% url 'jt_analysis_multi' row_rno row_rdate|mul:1|sub:10000 row_rdate '%' row_trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' row_rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% if row_trainer %}
+          <a href="/jt_analysis_multi/{{ row_rcity }}/{{ row_rdate|mul:1|sub:10000 }}/{{ row_rdate }}/%/{{ row_trainer }}/%/%/1/99/1/99/0/0/0/{{ row_rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% else %}
+          <a href="/jt_analysis_multi/{{ row_rcity }}/{{ row_rdate|mul:1|sub:10000 }}/{{ row_rdate }}/%/%/%/%/1/99/1/99/0/0/0/{{ row_rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% endif %}
             <span class="tooltip" style="font-size:1.0rem; color:var(--color-r5);">
               🛖<span class="tooltip-text" style="font-size:1.1rem;">🛖&nbsp;[<span style="color:var(--color-r3);">{{row_trainer}}</span>]&nbsp;마방 최근 1년 경주성적</span>
             </span>
@@ -118,7 +138,15 @@
         </th>
           
         <th>
-          <a href="{% url 'jt_analysis_multi' row_rcity row_rdate|mul:1|sub:10000 row_rdate row_jockey row_trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' row_rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% if row_jockey and row_trainer %}
+          <a href="/jt_analysis_multi/{{ row_rcity }}/{{ row_rdate|mul:1|sub:10000 }}/{{ row_rdate }}/{{ row_jockey }}/{{ row_trainer }}/%/%/1/99/1/99/0/0/0/{{ row_rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% elif row_jockey %}
+          <a href="/jt_analysis_multi/{{ row_rcity }}/{{ row_rdate|mul:1|sub:10000 }}/{{ row_rdate }}/{{ row_jockey }}/%/%/%/1/99/1/99/0/0/0/{{ row_rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% elif row_trainer %}
+          <a href="/jt_analysis_multi/{{ row_rcity }}/{{ row_rdate|mul:1|sub:10000 }}/{{ row_rdate }}/%/{{ row_trainer }}/%/%/1/99/1/99/0/0/0/{{ row_rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% else %}
+          <a href="/jt_analysis_multi/{{ row_rcity }}/{{ row_rdate|mul:1|sub:10000 }}/{{ row_rdate }}/%/%/%/%/1/99/1/99/0/0/0/{{ row_rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% endif %}
             <span class="tooltip" style="font-size:1.2rem; color:var(--color-r5);">J&T<sup style="font-size: 0.7rem;">%</sup>
               <span class="tooltip-text" style="font-size:1.1rem;">🏇🛖&nbsp;[<span style="color:var(--color-r3);">{{row_jockey}}</span>]&nbsp;&&nbsp;[<span style="color:var(--color-r3);">{{r.trainer}}</span>] 최근 1년 경주성적</span>
             </span>
@@ -359,7 +387,11 @@
 
         {# 기수 / 마방 #}
         <td align="left" style="font-size: 1.2rem">
-          <a href="{% url 'jt_analysis_multi' rcity rdate|mul:1|sub:10000 rdate jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% if jockey %}
+          <a href="/jt_analysis_multi/{{ rcity }}/{{ rdate|mul:1|sub:10000 }}/{{ rdate }}/{{ jockey }}/%/%/%/1/99/1/99/0/0/0/{{ rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% else %}
+          <a href="/jt_analysis_multi/{{ rcity }}/{{ rdate|mul:1|sub:10000 }}/{{ rdate }}/%/%/%/%/1/99/1/99/0/0/0/{{ rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% endif %}
           {% if jockey %}
           
             {% if jockey_old %}  {# 기수변경 #}
@@ -385,7 +417,11 @@
           {%endif%}
           </a>
 
-          <a href="{% url 'jt_analysis_multi' rcity rdate|mul:1|sub:10000 rdate '%' trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% if trainer %}
+          <a href="/jt_analysis_multi/{{ rcity }}/{{ rdate|mul:1|sub:10000 }}/{{ rdate }}/%/{{ trainer }}/%/%/1/99/1/99/0/0/0/{{ rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% else %}
+          <a href="/jt_analysis_multi/{{ rcity }}/{{ rdate|mul:1|sub:10000 }}/{{ rdate }}/%/%/%/%/1/99/1/99/0/0/0/{{ rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% endif %}
           {% if row_trainer == trainer %}
             <div style="text-align: right; font-size: 1.15rem;">
                 <span style="color:var(--color-r5); border-bottom: 1px solid var(--color-r5); font-size: 1.15rem;">{{trainer}}</span>

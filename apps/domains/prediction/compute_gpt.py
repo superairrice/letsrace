@@ -1025,28 +1025,198 @@ def _get_distance_weights(
             "W_CONN": 0.0,
         }
     if profile == "v3":
+        track = str(rcity or "").strip()
+        if track == "서울":
+            if distance <= 1100:
+                return {
+                    "W_EARLY": 0.32,
+                    "W_LATE": 0.09,
+                    "W_SPEED": 0.35,
+                    "W_FORM": 0.19,
+                    "W_CONN": 0.05,
+                }
+            if 1200 <= distance <= 1400:
+                return {
+                    "W_EARLY": 0.25,
+                    "W_LATE": 0.15,
+                    "W_SPEED": 0.34,
+                    "W_FORM": 0.21,
+                    "W_CONN": 0.05,
+                }
+            if 1500 <= distance <= 1600:
+                return {
+                    "W_EARLY": 0.18,
+                    "W_LATE": 0.24,
+                    "W_SPEED": 0.28,
+                    "W_FORM": 0.25,
+                    "W_CONN": 0.05,
+                }
+            if distance >= 1700:
+                return {
+                    "W_EARLY": 0.12,
+                    "W_LATE": 0.29,
+                    "W_SPEED": 0.27,
+                    "W_FORM": 0.27,
+                    "W_CONN": 0.05,
+                }
+            return {
+                "W_EARLY": 0.25,
+                "W_LATE": 0.15,
+                "W_SPEED": 0.34,
+                "W_FORM": 0.21,
+                "W_CONN": 0.05,
+            }
+        if track:
+            if distance <= 1200:
+                return {
+                    "W_EARLY": 0.36,
+                    "W_LATE": 0.09,
+                    "W_SPEED": 0.37,
+                    "W_FORM": 0.16,
+                    "W_CONN": 0.02,
+                }
+            if 1300 <= distance <= 1400:
+                return {
+                    "W_EARLY": 0.30,
+                    "W_LATE": 0.16,
+                    "W_SPEED": 0.32,
+                    "W_FORM": 0.17,
+                    "W_CONN": 0.05,
+                }
+            if 1500 <= distance < 1800:
+                return {
+                    "W_EARLY": 0.24,
+                    "W_LATE": 0.20,
+                    "W_SPEED": 0.30,
+                    "W_FORM": 0.21,
+                    "W_CONN": 0.05,
+                }
+            return {
+                "W_EARLY": 0.16,
+                "W_LATE": 0.26,
+                "W_SPEED": 0.30,
+                "W_FORM": 0.23,
+                "W_CONN": 0.05,
+            }
         if distance <= 1200:
             return {
-                "W_EARLY": 0.29,
-                "W_LATE": 0.11,
-                "W_SPEED": 0.32,
-                "W_FORM": 0.14,
-                "W_CONN": 0.14,
+                "W_EARLY": 0.32,
+                "W_LATE": 0.10,
+                "W_SPEED": 0.34,
+                "W_FORM": 0.19,
+                "W_CONN": 0.05,
             }
-        if 1300 <= distance <= 1700:
+        if 1300 <= distance <= 1600:
             return {
-                "W_EARLY": 0.19,
-                "W_LATE": 0.21,
-                "W_SPEED": 0.24,
-                "W_FORM": 0.21,
-                "W_CONN": 0.15,
+                "W_EARLY": 0.24,
+                "W_LATE": 0.18,
+                "W_SPEED": 0.30,
+                "W_FORM": 0.23,
+                "W_CONN": 0.05,
             }
         return {
-            "W_EARLY": 0.09,
-            "W_LATE": 0.30,
-            "W_SPEED": 0.31,
-            "W_FORM": 0.16,
-            "W_CONN": 0.14,
+            "W_EARLY": 0.14,
+            "W_LATE": 0.29,
+            "W_SPEED": 0.26,
+            "W_FORM": 0.26,
+            "W_CONN": 0.05,
+        }
+    if profile == "v4":
+        track = str(rcity or "").strip()
+        if track == "서울":
+            if distance <= 1100:
+                return {
+                    "W_EARLY": 0.3125,
+                    "W_LATE": 0.1035,
+                    "W_SPEED": 0.3380,
+                    "W_FORM": 0.1960,
+                    "W_CONN": 0.05,
+                }
+            if 1200 <= distance <= 1400:
+                return {
+                    "W_EARLY": 0.2440,
+                    "W_LATE": 0.1635,
+                    "W_SPEED": 0.3250,
+                    "W_FORM": 0.2175,
+                    "W_CONN": 0.05,
+                }
+            if 1500 <= distance <= 1600:
+                return {
+                    "W_EARLY": 0.1755,
+                    "W_LATE": 0.2490,
+                    "W_SPEED": 0.2695,
+                    "W_FORM": 0.2560,
+                    "W_CONN": 0.05,
+                }
+            if distance >= 1700:
+                return {
+                    "W_EARLY": 0.1155,
+                    "W_LATE": 0.2990,
+                    "W_SPEED": 0.2565,
+                    "W_FORM": 0.2790,
+                    "W_CONN": 0.05,
+                }
+            return {
+                "W_EARLY": 0.2440,
+                "W_LATE": 0.1635,
+                "W_SPEED": 0.3250,
+                "W_FORM": 0.2175,
+                "W_CONN": 0.05,
+            }
+        if track:
+            if distance <= 1200:
+                return {
+                    "W_EARLY": 0.36,
+                    "W_LATE": 0.09,
+                    "W_SPEED": 0.37,
+                    "W_FORM": 0.16,
+                    "W_CONN": 0.02,
+                }
+            if 1300 <= distance <= 1400:
+                return {
+                    "W_EARLY": 0.30,
+                    "W_LATE": 0.16,
+                    "W_SPEED": 0.32,
+                    "W_FORM": 0.17,
+                    "W_CONN": 0.05,
+                }
+            if 1500 <= distance < 1800:
+                return {
+                    "W_EARLY": 0.24,
+                    "W_LATE": 0.20,
+                    "W_SPEED": 0.30,
+                    "W_FORM": 0.21,
+                    "W_CONN": 0.05,
+                }
+            return {
+                "W_EARLY": 0.16,
+                "W_LATE": 0.26,
+                "W_SPEED": 0.30,
+                "W_FORM": 0.23,
+                "W_CONN": 0.05,
+            }
+        if distance <= 1200:
+            return {
+                "W_EARLY": 0.32,
+                "W_LATE": 0.10,
+                "W_SPEED": 0.34,
+                "W_FORM": 0.19,
+                "W_CONN": 0.05,
+            }
+        if 1300 <= distance <= 1600:
+            return {
+                "W_EARLY": 0.24,
+                "W_LATE": 0.18,
+                "W_SPEED": 0.30,
+                "W_FORM": 0.23,
+                "W_CONN": 0.05,
+            }
+        return {
+            "W_EARLY": 0.14,
+            "W_LATE": 0.29,
+            "W_SPEED": 0.26,
+            "W_FORM": 0.26,
+            "W_CONN": 0.05,
         }
     if profile == "v5":
         if distance <= 1200:
@@ -1120,6 +1290,17 @@ def _get_distance_weights(
         "W_FORM": 0.10,
         "W_CONN": 0.20,
     }
+
+
+def _blend_late_component(
+    late600_score: float,
+    late200_score: float,
+    profile: str = "v1",
+    rcity: Optional[str] = None,
+) -> float:
+    """프로파일별 결승 탄력 합성 점수."""
+    del late200_score, rcity
+    return float(late600_score)
 
 
 def compute_front_run_prob(
@@ -1687,7 +1868,7 @@ def process_race_v2(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
 def process_race_v3(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
     """
     중간형 v3 엔진.
-    - v1과 v2 사이의 연결점수/거리 가중치
+    - 서울/부산 트랙 구조를 반영한 거리별 가중치
     """
     if not exp011_rows:
         return []
@@ -1715,7 +1896,8 @@ def process_race_v3(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
     distance = to_optional_float(exp011_rows[0][IDX_DISTANCE])
     if distance is None:
         distance = 1400.0
-    weights = _get_distance_weights(distance, profile="v3")
+    rcity = str(exp011_rows[0][IDX_RCITY] or "").strip()
+    weights = _get_distance_weights(distance, profile="v3", rcity=rcity)
     W_EARLY = weights["W_EARLY"]
     W_LATE = weights["W_LATE"]
     W_SPEED = weights["W_SPEED"]
@@ -1849,8 +2031,10 @@ def process_race_v3(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
 def process_race_v4(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
     """
     v4 엔진.
-    - v3와 동일한 거리 가중치
-    - 단, conn_score 계산에서 jt_per는 완전히 제외
+    - 서울은 v3 대비 15% 수준으로만 구조 가중치를 강화
+    - 부산은 v3 수준의 안정 가중치를 유지
+    - 결승 200m는 별도 지표로 유지하고 총점 late 성분에는 직접 합성하지 않음
+    - conn_score 계산에서 jt_per는 완전히 제외
     """
     if not exp011_rows:
         return []
@@ -1878,7 +2062,8 @@ def process_race_v4(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
     distance = to_optional_float(exp011_rows[0][IDX_DISTANCE])
     if distance is None:
         distance = 1400.0
-    weights = _get_distance_weights(distance, profile="v3")
+    rcity = str(exp011_rows[0][IDX_RCITY] or "").strip()
+    weights = _get_distance_weights(distance, profile="v4", rcity=rcity)
     W_EARLY = weights["W_EARLY"]
     W_LATE = weights["W_LATE"]
     W_SPEED = weights["W_SPEED"]
@@ -1889,9 +2074,15 @@ def process_race_v4(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
     tmp_results = []
     for row in normal_rows:
         gate = int(row[IDX_GATE])
+        late_blend = _blend_late_component(
+            late_scores[gate],
+            late200_scores[gate],
+            profile="v4",
+            rcity=rcity,
+        )
         total = (
             W_EARLY * early_scores[gate]
-            + W_LATE * late_scores[gate]
+            + W_LATE * late_blend
             + W_SPEED * speed_scores[gate]
             + W_FORM * form_scores[gate]
             + W_CONN * conn_scores[gate]
@@ -1908,6 +2099,7 @@ def process_race_v4(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
                 "score": total,
                 "early_score": early_scores[gate],
                 "late_score": late_scores[gate],
+                "late_blend_score": late_blend,
                 "late200_score": late200_scores[gate],
                 "speed_score": speed_scores[gate],
                 "form_score": form_scores[gate],
@@ -1942,7 +2134,7 @@ def process_race_v4(exp011_rows: List[Tuple[Any, ...]]) -> List[Dict[str, Any]]:
             form_score=form,
             conn_score=conn,
             front_prob=front_prob,
-        ) + "\n- v4 프로파일: jt_per 제외, j_per/t_per만 반영"
+        ) + "\n- v4 프로파일: jt_per 제외, 서울 가중치 미세 강화 반영"
 
         final_results.append(
             {

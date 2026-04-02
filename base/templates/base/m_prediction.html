@@ -605,7 +605,11 @@
       {# 기수 조교사 #}
       <td align="center">
         <div style="font-size: 1.2rem; text-align: left; ">
-          <a href="{% url 'jt_analysis_multi' r.rcity r.rdate|mul:1|sub:10000 r.rdate r.jockey '%' '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% if r.jockey %}
+          <a href="/jt_analysis_multi/{{ r.rcity }}/{{ r.rdate|mul:1|sub:10000 }}/{{ r.rdate }}/{{ r.jockey }}/%/%/%/1/99/1/99/0/0/0/{{ r.rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% else %}
+          <a href="/jt_analysis_multi/{{ r.rcity }}/{{ r.rdate|mul:1|sub:10000 }}/{{ r.rdate }}/%/%/%/%/1/99/1/99/0/0/0/{{ r.rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1600, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% endif %}
             <span style="color:var(--color-r2); font-size:0.9rem">
             </span>
             {% if r.jockey_old %}   {# 기수변경 #}
@@ -640,21 +644,21 @@
 
             {% if r.training_cnt %}
               {% if r.training_cnt|mul:1 <= 4 %}
-              <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-bg);">{{r.training_cnt}}</span>
+              <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-bg);">{{r.training_cnt}}</span>
               {% elif r.training_cnt|mul:1 == 5 %}
-              <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r5);">{{r.training_cnt}}</span>
+              <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r5);">{{r.training_cnt}}</span>
               {% elif r.training_cnt|mul:1 == 6 %}
-              <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r4);">{{r.training_cnt}}</span>
+              <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r4);">{{r.training_cnt}}</span>
               {% elif r.training_cnt|mul:1 == 7 %}
-              <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r3);">{{r.training_cnt}}</span>
+              <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r3);">{{r.training_cnt}}</span>
               {% elif r.training_cnt|mul:1 == 8 %}
-              <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r2);">{{r.training_cnt}}</span>
+              <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r2);">{{r.training_cnt}}</span>
               {% elif r.training_cnt|mul:1 == 9 %}
-              <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r2);">{{r.training_cnt}}</span>
+              <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-bg); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r2);">{{r.training_cnt}}</span>
               {% elif r.training_cnt|mul:1 >= 10 %}
-              <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:2px 2px; background-color: var(--color-r1);">{{r.training_cnt}}</span>
+              <span style="font-family: Arial; font-size: 0.9rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:2px 2px; background-color: var(--color-r1);">{{r.training_cnt}}</span>
               {% else %}
-              <span style="font-family: Arial; font-size: 1.1rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r1);">{{r.training_cnt}}</span>
+              <span style="font-family: Arial; font-size: 1.0rem; text-align: right; color:var(--color-light); border-radius: 10px; border: 1px solid var(--color-light); padding:1px 4px; background-color: var(--color-r1);">{{r.training_cnt}}</span>
               {% endif %}
             {% endif %}
           </a>
@@ -663,12 +667,16 @@
         
         {% if r.trainer in trainer_double_check %}
         <div style="font-size: 1.2rem; text-align: right;">
-          <a href="{% url 'jt_analysis_multi' r.rno r.rdate|mul:1|sub:10000 r.rdate '%' r.trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% if r.trainer %}
+          <a href="/jt_analysis_multi/{{ r.rcity }}/{{ r.rdate|mul:1|sub:10000 }}/{{ r.rdate }}/%/{{ r.trainer }}/%/%/1/99/1/99/0/0/0/{{ r.rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% else %}
+          <a href="/jt_analysis_multi/{{ r.rcity }}/{{ r.rdate|mul:1|sub:10000 }}/{{ r.rdate }}/%/%/%/%/1/99/1/99/0/0/0/{{ r.rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% endif %}
           {% if r.disease_cnt %}
             {% if r.disease_cnt >= 10 %}
             <span style="font-family: Arial; font-size: 0.9rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 2px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{r.disease_cnt}}</span>
             {% else %}
-            <span style="font-family: Arial; font-size: 1.1rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 4px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{r.disease_cnt}}</span>
+            <span style="font-family: Arial; font-size: 1.0rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 4px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{r.disease_cnt}}</span>
             {% endif %}
           {% endif %}
           
@@ -677,12 +685,16 @@
         </div>
         {% else %}
         <div style="font-size: 1.2rem; text-align: right;">
-          <a href="{% url 'jt_analysis_multi' r.rno r.rdate|mul:1|sub:10000 r.rdate '%' r.trainer '%' '%' '1' '99' '1' '99' '0' '0' '0' r.rno '%' %}" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% if r.trainer %}
+          <a href="/jt_analysis_multi/{{ r.rcity }}/{{ r.rdate|mul:1|sub:10000 }}/{{ r.rdate }}/%/{{ r.trainer }}/%/%/1/99/1/99/0/0/0/{{ r.rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% else %}
+          <a href="/jt_analysis_multi/{{ r.rcity }}/{{ r.rdate|mul:1|sub:10000 }}/{{ r.rdate }}/%/%/%/%/1/99/1/99/0/0/0/{{ r.rno }}/%" onclick="window.open(this.href, 'w_jt_analysis_multi', 'width=1250, height=1000, toolbars=no, scrollbars=yes'); return false;">
+          {% endif %}
           {% if r.disease_cnt %}
             {% if r.disease_cnt >= 10 %}
             <span style="font-family: Arial; font-size: 0.9rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 2px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{r.disease_cnt}}</span>
             {% else %}
-            <span style="font-family: Arial; font-size: 1.1rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 4px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{r.disease_cnt}}</span>
+            <span style="font-family: Arial; font-size: 1.0rem; border-radius: 10px; background-color: var(--color-bg); padding:1px 4px; color:var(--color-r5); border: 1px solid var(--color-r5);">{{r.disease_cnt}}</span>
             {% endif %}
           {% endif %}
           <span style="color:var(--color-gray); border-bottom:1px solid var(--color-gray);">{{r.trainer}}</span>
@@ -695,7 +707,11 @@
       {# 복승률 #}
       <td align="right" style="font-size: 1.2rem ">
 
+        {% if r.jockey %}
         <a href="{% url 'jt_collaboration' r.rcity r.rdate r.rno r.jockey 'jockey' %}" 
+        {% else %}
+        <a href="{% url 'jt_collaboration' r.rcity r.rdate r.rno '%' 'jockey' %}" 
+        {% endif %}
               onclick="window.open(this.href, 'w_jt_collaboration', 'top=' + (window.screen.availHeight / 2 ) + ', left=' + window.screenX + ', width=550, height=300, toolbars=no, scrollbars=yes'); return false;">
         {% if r.jockey_old %}
         <div style="font-family: Arial; font-size: 1.2rem; color:var(--color-r1); text-decoration:line-through;">{{r.j_per}}</div>
@@ -714,14 +730,22 @@
         {% if r.t_per %}
           {% if compare_r.t_per__max == r.t_per %}
           <div style="color:var(--color-r1); font-family: Arial; font-size: 1.2rem;">
+            {% if r.trainer %}
             <a href="{% url 'jt_collaboration' r.rcity r.rdate r.rno r.trainer 'trainer' %}" 
+            {% else %}
+            <a href="{% url 'jt_collaboration' r.rcity r.rdate r.rno '%' 'trainer' %}" 
+            {% endif %}
               onclick="window.open(this.href, 'w_jt_collaboration', 'top=' + (window.screen.availHeight / 2 ) + ', left=' + window.screenX + ', width=550, height=300, toolbars=no, scrollbars=yes'); return false;">
               <span style="color:var(--color-r1); font-family: Arial; font-size: 1.2rem; border-bottom:1px solid var(--color-gray);">{{r.t_per}}</span>
             </a>
           </div>
           {%else%}
           <div style="color: var(--color-gray); font-family: Arial; font-size: 1.2rem;">
+            {% if r.trainer %}
             <a href="{% url 'jt_collaboration' r.rcity r.rdate r.rno r.trainer 'trainer' %}" 
+            {% else %}
+            <a href="{% url 'jt_collaboration' r.rcity r.rdate r.rno '%' 'trainer' %}" 
+            {% endif %}
               onclick="window.open(this.href, 'w_jt_collaboration', 'top=' + (window.screen.availHeight / 2 ) + ', left=' + window.screenX + ', width=550, height=300, toolbars=no, scrollbars=yes'); return false;">
               <div style="color: var(--color-gray); font-family: Arial; font-size: 1.2rem; border-bottom:1px solid var(--color-gray);">{{r.t_per}}</div>
             </a>

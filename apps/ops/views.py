@@ -1386,7 +1386,7 @@ def execChatGPTv3(request, rcity, rdate, rno):
 
 def execChatGPTv4(request, rcity, rdate, rno):
     """
-    jt_per 를 완전히 제외한 v4 프로파일.
+    jt_per 를 제외하고 서울 가중치를 미세 강화한 안정형 v4 프로파일.
     """
     cursor = None
     try:

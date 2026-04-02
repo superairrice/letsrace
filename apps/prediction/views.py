@@ -2837,7 +2837,13 @@ class _RaceCalcJobLogStream:
 
 
 def _run_race_calculation_job(job_id, payload):
-    from apps.ops.views import execChatGPT, execChatGPTv2, execChatGPTv5
+    from apps.ops.views import (
+        execChatGPT,
+        execChatGPTv2,
+        execChatGPTv3,
+        execChatGPTv4,
+        execChatGPTv5,
+    )
 
     close_old_connections()
     _stdout_stream = _RaceCalcJobLogStream(job_id)
@@ -2854,6 +2860,10 @@ def _run_race_calculation_job(job_id, payload):
                 run_prediction = execChatGPT
             elif prediction_profile == "v2":
                 run_prediction = execChatGPTv2
+            elif prediction_profile == "v3":
+                run_prediction = execChatGPTv3
+            elif prediction_profile == "v4":
+                run_prediction = execChatGPTv4
             else:
                 prediction_profile = "v0"
                 run_prediction = execChatGPTv5
@@ -3148,7 +3158,7 @@ def raceCalculation(request):
     ).strip().lower() or "v2"
     if prediction_profile == "v5":
         prediction_profile = "v0"
-    elif prediction_profile not in {"v0", "v1", "v2"}:
+    elif prediction_profile not in {"v0", "v1", "v2", "v3", "v4"}:
         prediction_profile = "v2"
     if request.method == "POST":
         baseline_checked = bool(request.POST.get("rcheck1"))
