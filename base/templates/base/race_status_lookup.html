@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+{% load static %}
+{% load humanize %}
+{% load mathfilters %}
+{% load custom_filters %}
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" type="image/x-icon" href="{% static '/images/number-9.png' %}" />
+  <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
+  <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
+  <script src="{% static 'js/jquery-3.6.1.js' %}"></script>
+  <title>경주별 현황 조회</title>
+  <style>
+    body.lookup-page {
+      margin: 0;
+      padding: 1.2rem;
+      background:
+        radial-gradient(circle at top right, rgba(63, 132, 196, 0.18), transparent 28%),
+        linear-gradient(135deg, #141b2a 0%, #0d111a 56%, #161c2a 100%);
+      color: var(--color-light);
+      min-width: 1180px;
+    }
+
+    .lookup-shell {
+      width: min(1760px, 100%);
+      margin: 0 auto;
+    }
+
+    .lookup-count {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 2.6rem;
+      padding: 0.45rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 197, 97, 0.34);
+      background: rgba(71, 48, 16, 0.34);
+      font-size: 0.98rem;
+      color: #ffd58a;
+      white-space: nowrap;
+      font-weight: 700;
+    }
+
+    .lookup-form-shell {
+      margin-bottom: 1rem;
+    }
+
+    .lookup-form {
+      display: grid;
+      grid-template-columns: repeat(9, minmax(0, 1fr)) auto;
+      gap: 0.8rem;
+      padding: 1.05rem 1.15rem;
+    }
+
+    .lookup-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .lookup-label {
+      font-size: 0.98rem;
+      color: #9eb2ca;
+    }
+
+    .lookup-input {
+      width: 100%;
+      box-sizing: border-box;
+      height: 2.9rem;
+      padding: 0 0.8rem;
+      border: 1px solid rgba(131, 161, 196, 0.3);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(18, 26, 41, 0.98), rgba(15, 21, 33, 0.96));
+      color: var(--color-light);
+      font-size: 1.02rem;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .lookup-input:focus {
+      outline: none;
+      border-color: rgba(109, 190, 255, 0.76);
+      box-shadow: 0 0 0 3px rgba(74, 159, 228, 0.16);
+    }
+
+    .lookup-submit {
+      align-self: end;
+      height: 2.9rem;
+      padding: 0 1.3rem;
+      border: 0;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #33a0e2, #65d4ff);
+      color: #07111d;
+      font-size: 1.02rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 22px rgba(45, 140, 205, 0.28);
+    }
+
+    .lookup-submit:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+    }
+
+    .lookup-message {
+      margin-bottom: 1rem;
+      padding: 0.9rem 1rem;
+      border-radius: 12px;
+      font-size: 1rem;
+    }
+
+    .lookup-message--error {
+      border: 1px solid rgba(255, 126, 126, 0.35);
+      background: rgba(90, 25, 25, 0.46);
+      color: #ffd3d3;
+    }
+
+    .lookup-message--empty {
+      border: 1px solid rgba(128, 156, 194, 0.24);
+      background: rgba(14, 18, 28, 0.78);
+      color: #c2cede;
+    }
+
+    .lookup-overview {
+      display: flex;
+      align-items: stretch;
+      gap: 0.85rem;
+      margin-bottom: 0.95rem;
+    }
+
+    .lookup-section {
+      border-radius: 16px;
+      border: 1px solid rgba(126, 151, 187, 0.24);
+      background: linear-gradient(180deg, rgba(12, 18, 30, 0.9), rgba(11, 16, 27, 0.82));
+      box-shadow: 0 12px 26px rgba(0, 0, 0, 0.18);
+      overflow: hidden;
+    }
+
+    .lookup-section__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.8rem;
+      padding: 0.78rem 1rem 0.72rem;
+      border-bottom: 1px solid rgba(146, 170, 205, 0.14);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .lookup-section__title {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #a9e3ff;
+    }
+
+    .lookup-section__meta {
+      font-size: 0.82rem;
+      color: #aac0d7;
+    }
+
+    .lookup-form-section {
+      flex: 0 0 65%;
+    }
+
+    .home-left-table tbody td.lookup-match {
+      position: relative;
+      box-shadow: none;
+      overflow: hidden;
+    }
+
+    .home-left-table tbody td.lookup-match::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      pointer-events: none;
+      border: 0 solid transparent;
+    }
+
+    .home-left-table tbody td.lookup-match--jockey::after {
+      border-color: rgba(109, 190, 255, 0.92);
+    }
+
+    .home-left-table tbody td.lookup-match--trainer::after {
+      border-color: rgba(104, 224, 163, 0.92);
+    }
+
+    .home-left-table tbody td.lookup-match--host::after {
+      border-color: rgba(255, 201, 103, 0.95);
+    }
+
+    .home-left-table tbody td.lookup-match-rank-1::after {
+      border-color: var(--color-r1);
+    }
+
+    .home-left-table tbody td.lookup-match-rank-2::after {
+      border-color: var(--color-r2);
+    }
+
+    .home-left-table tbody td.lookup-match-rank-3::after {
+      border-color: var(--color-r3);
+    }
+
+    .home-left-table tbody td.lookup-match-fill--jockey {
+      background-color: rgba(47, 120, 205, 0.22) !important;
+    }
+
+    .home-left-table tbody td.lookup-match-fill--trainer {
+      background-color: rgba(45, 153, 101, 0.2) !important;
+    }
+
+    .home-left-table tbody td.lookup-match-fill--host {
+      background-color: rgba(181, 122, 44, 0.22) !important;
+    }
+
+    .home-left-table tbody td.lookup-match-start::after {
+      border-left-width: 1px;
+      border-top-width: 1px;
+      border-bottom-width: 1px;
+      border-top-left-radius: 12px;
+      border-bottom-left-radius: 12px;
+      right: 0;
+    }
+
+    .home-left-table tbody td.lookup-match-end::after {
+      border-right-width: 1px;
+      border-top-width: 1px;
+      border-bottom-width: 1px;
+      border-top-right-radius: 12px;
+      border-bottom-right-radius: 12px;
+      left: 0;
+    }
+
+    .home-left-table tbody td.lookup-match-start.lookup-match-end::after {
+      border-width: 1px;
+      border-radius: 12px;
+    }
+
+    .home-left-table,
+    .home-left-sticky-rday {
+      font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Segoe UI", sans-serif;
+      text-rendering: optimizeLegibility;
+    }
+
+    .home-left-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      border: 1px solid rgba(116, 138, 175, 0.3);
+      border-radius: 16px;
+      overflow: hidden;
+      background: linear-gradient(180deg, rgba(11, 17, 28, 0.88), rgba(9, 14, 23, 0.84));
+      box-shadow: 0 22px 40px rgba(0, 0, 0, 0.24);
+    }
+
+    .home-left-table thead th {
+      background: linear-gradient(180deg, rgba(43, 55, 81, 0.98), rgba(31, 41, 64, 0.98));
+      color: var(--color-light);
+      border-bottom: 1px solid rgba(146, 171, 212, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .home-left-table tbody td {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .home-left-table tbody tr.home-left-sub2-row td {
+      transition: background-color .18s ease, filter .18s ease;
+    }
+
+    .home-left-table tbody tr.home-left-sub2-row:hover td {
+      background-color: rgba(255,255,255,0.11) !important;
+    }
+
+    .home-left-table tbody tr.home-left-sub2-row:hover {
+      filter: brightness(1.05);
+    }
+
+    .lookup-result .jockey-badge {
+      font-size: 70% !important;
+    }
+
+    .lookup-result {
+      margin-top: 0.8rem;
+      border-radius: 16px;
+      overflow: auto;
+    }
+
+    .lookup-result::-webkit-scrollbar {
+      height: 11px;
+      width: 11px;
+    }
+
+    .lookup-result::-webkit-scrollbar-thumb {
+      background: rgba(118, 150, 192, 0.36);
+      border-radius: 999px;
+    }
+
+    .lookup-result::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.04);
+    }
+
+    .lookup-stats {
+      flex: 0 0 35%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .lookup-stats-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.55rem;
+      padding: 0.9rem 1rem 1rem;
+    }
+
+    .lookup-stat-card {
+      padding: 0.68rem 0.78rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .lookup-stat-card--doubleline {
+      grid-column: span 1;
+    }
+
+    .lookup-stat-card__head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.32rem;
+    }
+
+    .lookup-stat-card__title {
+      font-size: 1.23rem;
+      font-weight: 800;
+      color: #a9e3ff;
+    }
+
+    .lookup-stat-card__count {
+      font-size: 1rem;
+      color: #b8c9dd;
+    }
+
+    .lookup-stat-card__ranks {
+      display: flex;
+      gap: 0.24rem;
+      flex-wrap: wrap;
+      margin-top: 0.1rem;
+    }
+
+    .lookup-rank-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      min-height: 1.55rem;
+      padding: 0.1rem 0.42rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(146, 170, 205, 0.16);
+      color: #dbe8f6;
+      font-size: 1.04rem;
+      font-family: Arial, sans-serif;
+    }
+
+    .lookup-rank-pill strong {
+      color: #ffd58a;
+      font-weight: 800;
+    }
+
+    .lookup-rate-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.34rem;
+      min-height: 1.55rem;
+      padding: 0.1rem 0.42rem;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(146, 170, 205, 0.14);
+    }
+
+    .lookup-rate-box__label {
+      font-size: 1rem;
+      color: #a6bad1;
+    }
+
+    .lookup-rate-box__value {
+      font-size: 1.12rem;
+      font-weight: 800;
+      color: #f6fbff;
+      font-family: Arial, sans-serif;
+    }
+
+    @media (max-width: 1480px) {
+      .lookup-overview {
+        flex-direction: column;
+      }
+
+      .lookup-stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .lookup-stat-card--doubleline {
+        grid-column: span 1;
+      }
+    }
+
+  </style>
+</head>
+<body class="lookup-page">
+  <div class="lookup-shell">
+    <div class="lookup-overview">
+      {% if searched and not error_message and lookup_stats %}
+      <section class="lookup-section lookup-stats">
+        <div class="lookup-section__head">
+          <div class="lookup-section__title">대시보드</div>
+          <div class="lookup-section__meta">
+            {% if searched and not error_message %}
+            경주 {{result_count}}건 · 말 {{row_count}}건
+            {% else %}
+            조회기간 성적 요약
+            {% endif %}
+          </div>
+        </div>
+        <div class="lookup-stats-grid">
+          {% for stat in lookup_stats %}
+          <section class="lookup-stat-card{% if stat.label == '기수' %} lookup-stat-card--doubleline{% endif %}">
+            <div class="lookup-stat-card__head">
+              <div class="lookup-stat-card__title">{{stat.label}} 성적</div>
+              <div class="lookup-stat-card__count">출전 {{stat.total}}건</div>
+            </div>
+            <div class="lookup-stat-card__ranks">
+              <span class="lookup-rank-pill"><strong>1위</strong>{{stat.rank1}}</span>
+              <span class="lookup-rank-pill"><strong>2위</strong>{{stat.rank2}}</span>
+              <span class="lookup-rank-pill"><strong>3위</strong>{{stat.rank3}}</span>
+              <div class="lookup-rate-box">
+                <div class="lookup-rate-box__label">승율</div>
+                <div class="lookup-rate-box__value">{{stat.win_rate}}%</div>
+              </div>
+              <div class="lookup-rate-box">
+                <div class="lookup-rate-box__label">복승률</div>
+                <div class="lookup-rate-box__value">{{stat.exacta_rate}}%</div>
+              </div>
+              <div class="lookup-rate-box">
+                <div class="lookup-rate-box__label">연승률</div>
+                <div class="lookup-rate-box__value">{{stat.place_rate}}%</div>
+              </div>
+            </div>
+          </section>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+
+      <section class="lookup-section lookup-form-section">
+        <div class="lookup-section__head">
+          <div class="lookup-section__title">조회조건</div>
+          <div class="lookup-section__meta">기수 · 조교사 · 마주 · 기간</div>
+        </div>
+        <form method="get" class="lookup-form">
+          <div class="lookup-field">
+            <label class="lookup-label" for="lookup-jockey">기수</label>
+            <input class="lookup-input" id="lookup-jockey" name="jockey" value="{{jockey}}" placeholder="예: 문세영" />
+          </div>
+          <div class="lookup-field">
+            <label class="lookup-label" for="lookup-trainer">조교사</label>
+            <input class="lookup-input" id="lookup-trainer" name="trainer" value="{{trainer}}" placeholder="예: 김영관" />
+          </div>
+          <div class="lookup-field">
+            <label class="lookup-label" for="lookup-host">마주</label>
+            <input class="lookup-input" id="lookup-host" name="host" value="{{host}}" placeholder="예: 김태성" />
+          </div>
+          <div class="lookup-field">
+            <label class="lookup-label" for="lookup-r-rank-from">r_rank From</label>
+            <select class="lookup-input" id="lookup-r-rank-from" name="r_rank_from">
+              <option value="">전체</option>
+              {% for option in rank_options %}
+              <option value="{{option}}"{% if r_rank_from == option|stringformat:"s" %} selected{% endif %}>{{option}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="lookup-field">
+            <label class="lookup-label" for="lookup-r-rank-to">r_rank To</label>
+            <select class="lookup-input" id="lookup-r-rank-to" name="r_rank_to">
+              <option value="">전체</option>
+              {% for option in rank_options %}
+              <option value="{{option}}"{% if r_rank_to == option|stringformat:"s" %} selected{% endif %}>{{option}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="lookup-field">
+            <label class="lookup-label" for="lookup-r-pop-from">r_pop From</label>
+            <select class="lookup-input" id="lookup-r-pop-from" name="r_pop_from">
+              <option value="">전체</option>
+              {% for option in rank_options %}
+              <option value="{{option}}"{% if r_pop_from == option|stringformat:"s" %} selected{% endif %}>{{option}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="lookup-field">
+            <label class="lookup-label" for="lookup-r-pop-to">r_pop To</label>
+            <select class="lookup-input" id="lookup-r-pop-to" name="r_pop_to">
+              <option value="">전체</option>
+              {% for option in rank_options %}
+              <option value="{{option}}"{% if r_pop_to == option|stringformat:"s" %} selected{% endif %}>{{option}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="lookup-field">
+            <label class="lookup-label" for="lookup-from">경주일 From</label>
+            <input class="lookup-input" id="lookup-from" type="date" name="from_date" value="{{from_date}}" />
+          </div>
+          <div class="lookup-field">
+            <label class="lookup-label" for="lookup-to">경주일 To</label>
+            <input class="lookup-input" id="lookup-to" type="date" name="to_date" value="{{to_date}}" />
+          </div>
+          <button type="submit" class="lookup-submit">조회</button>
+        </form>
+      </section>
+    </div>
+
+    {% if error_message %}
+    <div class="lookup-message lookup-message--error">{{error_message}}</div>
+    {% elif searched and not race %}
+    <div class="lookup-message lookup-message--empty">조회 조건에 해당하는 경주가 없습니다.</div>
+    {% elif not searched %}
+    <div class="lookup-message lookup-message--empty">기수, 조교사, 마주, r_rank 범위, r_pop 범위 중 하나 이상과 기간을 입력해 조회하세요.</div>
+    {% endif %}
+
+    {% if race %}
+    <div class="lookup-result">
+      <table class="rwd-table home-left-table" style="background-color: var(--color-dark);">
+        <thead>
+          {% include 'base/home_left_sub1.html' %}
+        </thead>
+        <tbody>
+          {% for r_rcity, r_rdate, r_rday, r_rno, rtime, distance, r2alloc, r333alloc, r123alloc, grade, dividing, r1award, r_overview, r_guide in race %}
+            {% with by_city=expects_grouped|get_item:r_rcity %}
+              {% with by_date=by_city|get_item:r_rdate %}
+                {% with expects_for_race=by_date|get_item:r_rno %}
+                  {% include 'base/home_left_sub2.html' %}
+                {% endwith %}
+              {% endwith %}
+            {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>

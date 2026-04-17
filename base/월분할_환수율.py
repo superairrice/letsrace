@@ -15,7 +15,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 
 PROFILE_NAME = "균형주력_ROI보조"
-DEFAULT_FROM_DATE = "20260101"
+DEFAULT_FROM_DATE = "20250401"
 DEFAULT_TO_DATE = "20261231"
 DEFAULT_OUTPUT_PATH = "/Users/Super007/Documents/r_pop_total_new_균형주력_ROI보조.csv"
 ALLOWED_METHOD_KEYS = {

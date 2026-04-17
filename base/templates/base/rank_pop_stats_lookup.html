@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="shortcut icon" type="image/x-icon" href="{% static '/images/number-9.png' %}" />
+  <link rel="stylesheet" href="{% static 'styles/style.css' %}" />
+  <link rel="stylesheet" href="{% static 'styles/styles.css' %}" />
+  <title>기수·조교사 집계</title>
+  <style>
+    body.lookup-page {
+      margin: 0;
+      padding: 1.2rem;
+      background:
+        radial-gradient(circle at top right, rgba(63, 132, 196, 0.18), transparent 28%),
+        linear-gradient(135deg, #141b2a 0%, #0d111a 56%, #161c2a 100%);
+      color: var(--color-light);
+      min-width: 880px;
+    }
+
+    .stats-shell {
+      width: min(100%, 1400px);
+      margin: 0 auto;
+    }
+
+    .stats-panel {
+      border-radius: 16px;
+      border: 1px solid rgba(126, 151, 187, 0.24);
+      background: linear-gradient(180deg, rgba(12, 18, 30, 0.9), rgba(11, 16, 27, 0.82));
+      box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
+      overflow: hidden;
+    }
+
+    .stats-panel__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.95rem 1.1rem 0.85rem;
+      border-bottom: 1px solid rgba(146, 170, 205, 0.14);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .stats-panel__title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #a9e3ff;
+    }
+
+    .stats-panel__meta {
+      font-size: 0.95rem;
+      color: #b8c9dd;
+    }
+
+    .stats-form {
+      display: grid;
+      grid-template-columns: 1fr 1fr 0.62fr 0.62fr 0.96fr 0.72fr 0.58fr;
+      gap: 0.42rem;
+      align-items: end;
+      padding: 0.82rem 0.82rem 0.88rem;
+    }
+
+    .stats-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .stats-label {
+      font-size: 0.9rem;
+      color: #9eb2ca;
+      white-space: nowrap;
+    }
+
+    .stats-input,
+    .stats-select {
+      width: 100%;
+      box-sizing: border-box;
+      height: 2.34rem;
+      padding: 0 0.44rem;
+      border: 1px solid rgba(131, 161, 196, 0.3);
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(18, 26, 41, 0.98), rgba(15, 21, 33, 0.96));
+      color: var(--color-light);
+      font-size: 0.95rem;
+    }
+
+    .stats-radio-group {
+      display: flex;
+      gap: 0.24rem;
+      align-items: center;
+      height: 2.34rem;
+      padding: 0;
+      white-space: nowrap;
+    }
+
+    .stats-radio {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.14rem;
+      font-size: 0.92rem;
+      color: #dce8f5;
+    }
+
+    .stats-radio input {
+      margin: 0;
+      transform: scale(0.92);
+    }
+
+    .stats-submit {
+      align-self: end;
+      height: 2.34rem;
+      padding: 0 0.4rem;
+      border: 0;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #33a0e2, #65d4ff);
+      color: #07111d;
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .stats-message {
+      margin-top: 0.9rem;
+      padding: 0.9rem 1rem;
+      border-radius: 12px;
+      font-size: 1rem;
+    }
+
+    .stats-message--error {
+      border: 1px solid rgba(255, 126, 126, 0.35);
+      background: rgba(90, 25, 25, 0.46);
+      color: #ffd3d3;
+    }
+
+    .stats-message--empty {
+      border: 1px solid rgba(128, 156, 194, 0.24);
+      background: rgba(14, 18, 28, 0.78);
+      color: #c2cede;
+    }
+
+    .stats-table-wrap {
+      margin-top: 1rem;
+      border-radius: 16px;
+      overflow: auto;
+      border: 1px solid rgba(116, 138, 175, 0.3);
+      background: linear-gradient(180deg, rgba(11, 17, 28, 0.88), rgba(9, 14, 23, 0.84));
+      box-shadow: 0 22px 40px rgba(0, 0, 0, 0.24);
+    }
+
+    .stats-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .stats-table th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      padding: 0.82rem 0.7rem;
+      background: linear-gradient(180deg, rgba(43, 55, 81, 0.98), rgba(31, 41, 64, 0.98));
+      color: var(--color-light);
+      text-align: center;
+      font-size: 1.02rem;
+      border-bottom: 1px solid rgba(146, 171, 212, 0.2);
+    }
+
+    .stats-table td {
+      padding: 0.72rem 0.68rem;
+      text-align: center;
+      color: #e6f0fb;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 1.08rem;
+      font-family: Arial, sans-serif;
+    }
+
+    .stats-table td:first-child,
+    .stats-table th:first-child {
+      text-align: left;
+      padding-left: 1rem;
+      font-family: "Pretendard", "Noto Sans KR", sans-serif;
+    }
+
+    .stats-table tbody tr:hover td {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .stats-table tr.stats-summary-row td {
+      background: rgba(108, 150, 211, 0.12);
+      font-weight: 800;
+    }
+
+    .stats-rate-hit--win {
+      color: var(--color-r1) !important;
+      font-weight: 800;
+    }
+
+    .stats-rate-hit--exacta {
+      color: var(--color-r2) !important;
+      font-weight: 800;
+    }
+
+    .stats-rate-hit--place {
+      color: var(--color-r3) !important;
+      font-weight: 800;
+    }
+
+    body.lookup-page,
+    .stats-shell,
+    .stats-panel {
+      overflow-x: hidden;
+    }
+  </style>
+</head>
+<body class="lookup-page">
+  <div class="stats-shell">
+    <section class="stats-panel">
+      <div class="stats-panel__head">
+        <div class="stats-panel__title">{{entity_label}}별 r_pop 집계</div>
+        <div class="stats-panel__meta">
+          {% if searched and not error_message %}
+          {{rows|length}}건
+          {% else %}
+          조건 입력 후 조회
+          {% endif %}
+        </div>
+      </div>
+      <form method="get" class="stats-form">
+        <div class="stats-field">
+          <label class="stats-label" for="from-date">집계기간 From</label>
+          <input class="stats-input" id="from-date" type="date" name="from_date" value="{{from_date}}" />
+        </div>
+        <div class="stats-field">
+          <label class="stats-label" for="to-date">집계기간 To</label>
+          <input class="stats-input" id="to-date" type="date" name="to_date" value="{{to_date}}" />
+        </div>
+        <div class="stats-field">
+          <label class="stats-label" for="r-pop-from">r_pop From</label>
+          <select class="stats-select" id="r-pop-from" name="r_pop_from">
+            {% for option in rank_options %}
+            <option value="{{option}}"{% if r_pop_from == option|stringformat:"s" %} selected{% endif %}>{{option}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="stats-field">
+          <label class="stats-label" for="r-pop-to">r_pop To</label>
+          <select class="stats-select" id="r-pop-to" name="r_pop_to">
+            {% for option in rank_options %}
+            <option value="{{option}}"{% if r_pop_to == option|stringformat:"s" %} selected{% endif %}>{{option}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="stats-field">
+          <label class="stats-label">집계대상</label>
+          <div class="stats-radio-group">
+            <label class="stats-radio"><input type="radio" name="entity_type" value="jockey"{% if entity_type == "jockey" %} checked{% endif %}> 기수</label>
+            <label class="stats-radio"><input type="radio" name="entity_type" value="trainer"{% if entity_type == "trainer" %} checked{% endif %}> 조교사</label>
+          </div>
+        </div>
+        <div class="stats-field">
+          <label class="stats-label" for="rcity">경마장</label>
+          <select class="stats-select" id="rcity" name="rcity">
+            {% for option in city_options %}
+            <option value="{{option}}"{% if rcity == option %} selected{% endif %}>{{option}}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="stats-submit">조회</button>
+      </form>
+    </section>
+
+    {% if error_message %}
+    <div class="stats-message stats-message--error">{{error_message}}</div>
+    {% elif searched and not rows %}
+    <div class="stats-message stats-message--empty">조회 결과가 없습니다.</div>
+    {% endif %}
+
+    {% if rows %}
+    <div class="stats-table-wrap">
+      <table class="stats-table">
+        <thead>
+          <tr>
+            <th>{{entity_label}}</th>
+            <th>출주횟수</th>
+            <th>실제 1위</th>
+            <th>실제 2위</th>
+            <th>실제 3위</th>
+            <th>승률</th>
+            <th>복승률</th>
+            <th>연승률</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if summary_row %}
+          <tr class="stats-summary-row">
+            <td>{{summary_row.entity_name}}</td>
+            <td>{{summary_row.starts}}</td>
+            <td>{{summary_row.rank1}}</td>
+            <td>{{summary_row.rank2}}</td>
+            <td>{{summary_row.rank3}}</td>
+            <td{% if summary_row.win_rate >= 40 %} class="stats-rate-hit--win"{% endif %}>{{summary_row.win_rate}}%</td>
+            <td{% if summary_row.exacta_rate >= 50 %} class="stats-rate-hit--exacta"{% endif %}>{{summary_row.exacta_rate}}%</td>
+            <td{% if summary_row.place_rate >= 60 %} class="stats-rate-hit--place"{% endif %}>{{summary_row.place_rate}}%</td>
+          </tr>
+          {% endif %}
+          {% for row in rows %}
+          <tr>
+            <td>{{row.entity_name}}</td>
+            <td>{{row.starts}}</td>
+            <td>{{row.rank1}}</td>
+            <td>{{row.rank2}}</td>
+            <td>{{row.rank3}}</td>
+            <td{% if row.win_rate >= 40 %} class="stats-rate-hit--win"{% endif %}>{{row.win_rate}}%</td>
+            <td{% if row.exacta_rate >= 50 %} class="stats-rate-hit--exacta"{% endif %}>{{row.exacta_rate}}%</td>
+            <td{% if row.place_rate >= 60 %} class="stats-rate-hit--place"{% endif %}>{{row.place_rate}}%</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+  </div>
+</body>
+</html>

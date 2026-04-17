@@ -2811,7 +2811,7 @@ def get_race_related(i_rcity, i_rdate, i_rno):
     try:
         with connection.cursor() as cursor:
             strSql = """
-                select b.m_rank as rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5,
+                select b.r_pop as rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5,
                        a.rcnt, a.r1, a.r2, a.r3, a.r4, a.r5, a.r6, a.r7, a.r8, a.r9, a.r10, a.r11, a.r12,
                        a.rrcnt, a.rr1, a.rr2, a.rr3, a.rr4, a.rr5, a.rr6, a.rr7, a.rr8, a.rr9, a.rr10, a.rr11, a.rr12,
                        c.wrace, c.w1st, c.w2nd, c.w3rd, c.tot_1st, c.year_1st, c.year_per, c.year_3per,
@@ -2868,10 +2868,10 @@ def get_race_related(i_rcity, i_rdate, i_rno):
                 ) d on d.jockey = b.jockey
                 order by b.r_pop, b.gate;
             """
-            print (
-                strSql%
-                (i_rcity, i_rdate, i_rno, i_rdate, i_rdate, i_rdate, i_rdate),
-            )
+            # print (
+            #     strSql%
+            #     (i_rcity, i_rdate, i_rno, i_rdate, i_rdate, i_rdate, i_rdate),
+            # )
             cursor.execute(
                 strSql,
                 (i_rcity, i_rdate, i_rno, i_rdate, i_rdate, i_rdate, i_rdate),
@@ -2888,7 +2888,7 @@ def get_race_related(i_rcity, i_rdate, i_rno):
     try:
         with connection.cursor() as cursor:
             strSql = """
-                select b.m_rank as rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5,
+                select b.r_pop as rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5,
                        a.rcnt, a.r1, a.r2, a.r3, a.r4, a.r5, a.r6, a.r7, a.r8, a.r9, a.r10, a.r11, a.r12,
                        a.rrcnt, a.rr1, a.rr2, a.rr3, a.rr4, a.rr5, a.rr6, a.rr7, a.rr8, a.rr9, a.rr10, a.rr11, a.rr12,
                        c.wrace, c.w1st, c.w2nd, c.w3rd, c.tot_1st, c.year_1st, c.year_per, c.year_3per,
@@ -2961,7 +2961,7 @@ def get_race_related(i_rcity, i_rdate, i_rno):
     try:
         with connection.cursor() as cursor:
             strSql = """
-                select b.m_rank as rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5,
+                select b.r_pop as rank, b.gate, b.r_rank, b.jockey, b.trainer, b.host, b.horse, b.rating, b.r_pop, b.complex, b.complex5,
                        a.rcnt, a.r1, a.r2, a.r3, a.r4, a.r5, a.r6, a.r7, a.r8, a.r9, a.r10, a.r11, a.r12,
                        a.rrcnt, a.rr1, a.rr2, a.rr3, a.rr4, a.rr5, a.rr6, a.rr7, a.rr8, a.rr9, a.rr10, a.rr11, a.rr12,
                        c.h_total, c.h_cancel, c.h_current, c.debut,
@@ -3065,20 +3065,20 @@ def get_race_related(i_rcity, i_rdate, i_rno):
                        jt_per,
                        jt_cnt,
                        remark,
-                       s1f_rank,
+                       s1f_per,
                        replace(corners, ' ', '') corners,
-                       g3f_rank,
-                       g1f_rank,
+                       g3f_per,
+                       g1f_per,
                        alloc3r,
                        jockey_old,
                        reason
                 from exp010 a
                 join exp011 b
                   on a.rcity = b.rcity and a.rdate = b.rdate and a.rno = b.rno
-                where a.rdate between date_format(DATE_ADD(%s, INTERVAL - 3 DAY), '%%Y%%m%%d')
+                where a.rdate between date_format(DATE_ADD(%s, INTERVAL - 10 DAY), '%%Y%%m%%d')
                                   and date_format(DATE_ADD(%s, INTERVAL + 3 DAY), '%%Y%%m%%d')
                   and a.rno < 80
-                order by a.rdate, a.rtime, gate;
+                order by a.rdate desc, a.rtime desc, gate;
             """
             cursor.execute(strSql, (i_rdate, i_rdate))
             race_detail = cursor.fetchall()

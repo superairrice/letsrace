@@ -15,7 +15,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 
 PROFILE_NAME = "균형주력_ROI보조"
-DEFAULT_FROM_DATE = "20260301"
+DEFAULT_FROM_DATE = "20250101"
 DEFAULT_TO_DATE = "20261231"
 DEFAULT_OUTPUT_PATH = "/Users/Super007/Documents/r_pop_total_new_균형주력_ROI보조.csv"
 
@@ -25,6 +25,8 @@ def _calc_hit_rate(hits, races) -> float:
         hits_value = int(hits or 0)
         races_value = int(races or 0)
     except Exception:
+        
+        
         return 0.0
     return (hits_value / races_value) if races_value > 0 else 0.0
 
@@ -3010,6 +3012,256 @@ def _augment_anchor12_3_8_trifecta(
     return df
 
 
+def _augment_anchor3_23_48_trifecta(
+    race_df: pd.DataFrame, bet_unit: int = 100
+) -> pd.DataFrame:
+    if race_df is None or race_df.empty:
+        return race_df
+    if "r_pop3_1축_r_pop1~2_2축_4~8_적중" in race_df.columns:
+        return race_df
+
+    df = race_df.copy()
+
+    def _calc_row(row: pd.Series) -> pd.Series:
+        top1_3 = _parse_gate_list(row.get("r_pop_top3_마번"))
+        top3_8_12 = _parse_gate_list(row.get("3~8,12_마번"))
+        actual_top3 = _parse_gate_list(row.get("실제_top3_마번"))
+        odds = pd.to_numeric(row.get("삼쌍승식배당율"), errors="coerce")
+
+        anchor1_gate = top1_3[2] if len(top1_3) >= 3 else None
+        second_anchor_candidates = [gate for gate in top1_3[:2] if gate != anchor1_gate]
+        top4_8 = top3_8_12[:5]
+        top4_8_set = set(top4_8)
+        second_anchor_set = set(second_anchor_candidates)
+        valid = (
+            anchor1_gate is not None
+            and len(second_anchor_candidates) >= 1
+            and len(top4_8) == 5
+        )
+        hit = int(
+            valid
+            and len(actual_top3) == 3
+            and actual_top3[0] == anchor1_gate
+            and actual_top3[1] in second_anchor_set
+            and actual_top3[2] in top4_8_set
+        )
+        refund = float(odds) * bet_unit if hit == 1 and pd.notna(odds) else 0.0
+        bet = float(len(second_anchor_candidates) * len(top4_8) * bet_unit) if valid else 0.0
+        return pd.Series(
+            {
+                "r_pop3_1축_r_pop1~2_2축_4~8_적중": hit,
+                "r_pop3_1축_r_pop1~2_2축_4~8_환수액": refund,
+                "3을1축_1~2복조_4~8_베팅액": bet,
+                "3을1축_1~2복조_4~8_환수액": refund,
+            }
+        )
+
+    added = df.apply(_calc_row, axis=1)
+    for col in added.columns:
+        df[col] = added[col]
+    return df
+
+
+def _augment_pair24_anchor1_58_trifecta(
+    race_df: pd.DataFrame, bet_unit: int = 100
+) -> pd.DataFrame:
+    if race_df is None or race_df.empty:
+        return race_df
+    if "r_pop2~4_1축_r_pop1_2축_5~8_적중" in race_df.columns:
+        return race_df
+
+    df = race_df.copy()
+
+    def _calc_row(row: pd.Series) -> pd.Series:
+        top4 = _parse_gate_list(row.get("r_pop_top4_마번"))
+        top1_3 = _parse_gate_list(row.get("r_pop_top3_마번"))
+        top5_8 = _parse_gate_list(row.get("5~8_마번"))
+        actual_top3 = _parse_gate_list(row.get("실제_top3_마번"))
+        odds = pd.to_numeric(row.get("삼쌍승식배당율"), errors="coerce")
+
+        anchor2_gate = top1_3[0] if top1_3 else None
+        anchor1_candidates = [gate for gate in top4 if gate != anchor2_gate][:3]
+        anchor1_set = set(anchor1_candidates)
+        top5_8_set = set(top5_8)
+        valid = (
+            anchor2_gate is not None
+            and len(anchor1_candidates) == 3
+            and len(top5_8) == 4
+        )
+        hit = int(
+            valid
+            and len(actual_top3) == 3
+            and actual_top3[0] in anchor1_set
+            and actual_top3[1] == anchor2_gate
+            and actual_top3[2] in top5_8_set
+        )
+        refund = float(odds) * bet_unit if hit == 1 and pd.notna(odds) else 0.0
+        bet = float(len(anchor1_candidates) * len(top5_8) * bet_unit) if valid else 0.0
+        return pd.Series(
+            {
+                "r_pop2~4_1축_r_pop1_2축_5~8_적중": hit,
+                "r_pop2~4_1축_r_pop1_2축_5~8_환수액": refund,
+                "2~4를1축_1을2축_5~8_베팅액": bet,
+                "2~4를1축_1을2축_5~8_환수액": refund,
+            }
+        )
+
+    added = df.apply(_calc_row, axis=1)
+    for col in added.columns:
+        df[col] = added[col]
+    return df
+
+
+def _augment_pair24_58_anchor1_trifecta(
+    race_df: pd.DataFrame, bet_unit: int = 100
+) -> pd.DataFrame:
+    if race_df is None or race_df.empty:
+        return race_df
+    if "r_pop2~4_1축_r_pop5~8_2축_r_pop1_3축_적중" in race_df.columns:
+        return race_df
+
+    df = race_df.copy()
+
+    def _calc_row(row: pd.Series) -> pd.Series:
+        top4 = _parse_gate_list(row.get("r_pop_top4_마번"))
+        top1_3 = _parse_gate_list(row.get("r_pop_top3_마번"))
+        top5_8 = _parse_gate_list(row.get("5~8_마번"))
+        actual_top3 = _parse_gate_list(row.get("실제_top3_마번"))
+        odds = pd.to_numeric(row.get("삼쌍승식배당율"), errors="coerce")
+
+        anchor3_gate = top1_3[0] if top1_3 else None
+        anchor1_candidates = [gate for gate in top4 if gate != anchor3_gate][:3]
+        anchor1_set = set(anchor1_candidates)
+        top5_8_set = set(top5_8)
+        valid = (
+            anchor3_gate is not None
+            and len(anchor1_candidates) == 3
+            and len(top5_8) == 4
+        )
+        hit = int(
+            valid
+            and len(actual_top3) == 3
+            and actual_top3[0] in anchor1_set
+            and actual_top3[1] in top5_8_set
+            and actual_top3[2] == anchor3_gate
+        )
+        refund = float(odds) * bet_unit if hit == 1 and pd.notna(odds) else 0.0
+        bet = float(len(anchor1_candidates) * len(top5_8) * bet_unit) if valid else 0.0
+        return pd.Series(
+            {
+                "r_pop2~4_1축_r_pop5~8_2축_r_pop1_3축_적중": hit,
+                "r_pop2~4_1축_r_pop5~8_2축_r_pop1_3축_환수액": refund,
+                "2~4를1축_5~8을2축_1을3축_베팅액": bet,
+                "2~4를1축_5~8을2축_1을3축_환수액": refund,
+            }
+        )
+
+    added = df.apply(_calc_row, axis=1)
+    for col in added.columns:
+        df[col] = added[col]
+    return df
+
+
+def _augment_pair58_24_anchor1_trifecta(
+    race_df: pd.DataFrame, bet_unit: int = 100
+) -> pd.DataFrame:
+    if race_df is None or race_df.empty:
+        return race_df
+    if "r_pop5~8_1축_r_pop2~4_2축_r_pop1_3축_적중" in race_df.columns:
+        return race_df
+
+    df = race_df.copy()
+
+    def _calc_row(row: pd.Series) -> pd.Series:
+        top4 = _parse_gate_list(row.get("r_pop_top4_마번"))
+        top1_3 = _parse_gate_list(row.get("r_pop_top3_마번"))
+        top5_8 = _parse_gate_list(row.get("5~8_마번"))
+        actual_top3 = _parse_gate_list(row.get("실제_top3_마번"))
+        odds = pd.to_numeric(row.get("삼쌍승식배당율"), errors="coerce")
+
+        anchor3_gate = top1_3[0] if top1_3 else None
+        anchor2_candidates = [gate for gate in top4 if gate != anchor3_gate][:3]
+        anchor2_set = set(anchor2_candidates)
+        top5_8_set = set(top5_8)
+        valid = (
+            anchor3_gate is not None
+            and len(anchor2_candidates) == 3
+            and len(top5_8) == 4
+        )
+        hit = int(
+            valid
+            and len(actual_top3) == 3
+            and actual_top3[0] in top5_8_set
+            and actual_top3[1] in anchor2_set
+            and actual_top3[2] == anchor3_gate
+        )
+        refund = float(odds) * bet_unit if hit == 1 and pd.notna(odds) else 0.0
+        bet = float(len(anchor2_candidates) * len(top5_8) * bet_unit) if valid else 0.0
+        return pd.Series(
+            {
+                "r_pop5~8_1축_r_pop2~4_2축_r_pop1_3축_적중": hit,
+                "r_pop5~8_1축_r_pop2~4_2축_r_pop1_3축_환수액": refund,
+                "5~8를1축_2~4를2축_1을3축_베팅액": bet,
+                "5~8를1축_2~4를2축_1을3축_환수액": refund,
+            }
+        )
+
+    added = df.apply(_calc_row, axis=1)
+    for col in added.columns:
+        df[col] = added[col]
+    return df
+
+
+def _augment_pair58_anchor1_24_trifecta(
+    race_df: pd.DataFrame, bet_unit: int = 100
+) -> pd.DataFrame:
+    if race_df is None or race_df.empty:
+        return race_df
+    if "r_pop5~8_1축_r_pop1_2축_r_pop2~4_3축_적중" in race_df.columns:
+        return race_df
+
+    df = race_df.copy()
+
+    def _calc_row(row: pd.Series) -> pd.Series:
+        top4 = _parse_gate_list(row.get("r_pop_top4_마번"))
+        top1_3 = _parse_gate_list(row.get("r_pop_top3_마번"))
+        top5_8 = _parse_gate_list(row.get("5~8_마번"))
+        actual_top3 = _parse_gate_list(row.get("실제_top3_마번"))
+        odds = pd.to_numeric(row.get("삼쌍승식배당율"), errors="coerce")
+
+        anchor2_gate = top1_3[0] if top1_3 else None
+        anchor3_candidates = [gate for gate in top4 if gate != anchor2_gate][:3]
+        anchor3_set = set(anchor3_candidates)
+        top5_8_set = set(top5_8)
+        valid = (
+            anchor2_gate is not None
+            and len(anchor3_candidates) == 3
+            and len(top5_8) == 4
+        )
+        hit = int(
+            valid
+            and len(actual_top3) == 3
+            and actual_top3[0] in top5_8_set
+            and actual_top3[1] == anchor2_gate
+            and actual_top3[2] in anchor3_set
+        )
+        refund = float(odds) * bet_unit if hit == 1 and pd.notna(odds) else 0.0
+        bet = float(len(anchor3_candidates) * len(top5_8) * bet_unit) if valid else 0.0
+        return pd.Series(
+            {
+                "r_pop5~8_1축_r_pop1_2축_r_pop2~4_3축_적중": hit,
+                "r_pop5~8_1축_r_pop1_2축_r_pop2~4_3축_환수액": refund,
+                "5~8를1축_1을2축_2~4를3축_베팅액": bet,
+                "5~8를1축_1을2축_2~4를3축_환수액": refund,
+            }
+        )
+
+    added = df.apply(_calc_row, axis=1)
+    for col in added.columns:
+        df[col] = added[col]
+    return df
+
+
 def _augment_top4pair_56_trifecta(
     race_df: pd.DataFrame, bet_unit: int = 100
 ) -> pd.DataFrame:
@@ -3990,6 +4242,41 @@ def build_admin_profit_analysis_payload_for_range(from_date: str, to_date: str) 
         "holes_per_race": 6,
     }
     admin_profit_strategy_labels["anchor12_3_8_trifecta"] = "1축 2축 / 3~8 삼쌍"
+    admin_profit_strategy_result_columns["anchor3_23_48_trifecta"] = {
+        "bet": "3을1축_1~2복조_4~8_베팅액",
+        "refund": "3을1축_1~2복조_4~8_환수액",
+        "hit": "r_pop3_1축_r_pop1~2_2축_4~8_적중",
+        "holes_per_race": 10,
+    }
+    admin_profit_strategy_labels["anchor3_23_48_trifecta"] = "3을1축 / 1~2 복조 / 4~8 삼쌍"
+    admin_profit_strategy_result_columns["pair24_anchor1_58_trifecta"] = {
+        "bet": "2~4를1축_1을2축_5~8_베팅액",
+        "refund": "2~4를1축_1을2축_5~8_환수액",
+        "hit": "r_pop2~4_1축_r_pop1_2축_5~8_적중",
+        "holes_per_race": 12,
+    }
+    admin_profit_strategy_labels["pair24_anchor1_58_trifecta"] = "2~4를1축 / 1을2축 / 5~8 삼쌍"
+    admin_profit_strategy_result_columns["pair24_58_anchor1_trifecta"] = {
+        "bet": "2~4를1축_5~8을2축_1을3축_베팅액",
+        "refund": "2~4를1축_5~8을2축_1을3축_환수액",
+        "hit": "r_pop2~4_1축_r_pop5~8_2축_r_pop1_3축_적중",
+        "holes_per_race": 12,
+    }
+    admin_profit_strategy_labels["pair24_58_anchor1_trifecta"] = "2~4를1축 / 5~8 2축 / 1을 3축 삼쌍"
+    admin_profit_strategy_result_columns["pair58_24_anchor1_trifecta"] = {
+        "bet": "5~8를1축_2~4를2축_1을3축_베팅액",
+        "refund": "5~8를1축_2~4를2축_1을3축_환수액",
+        "hit": "r_pop5~8_1축_r_pop2~4_2축_r_pop1_3축_적중",
+        "holes_per_race": 12,
+    }
+    admin_profit_strategy_labels["pair58_24_anchor1_trifecta"] = "5~8를1축 / 2~4 2축 / 1을 3축 삼쌍"
+    admin_profit_strategy_result_columns["pair58_anchor1_24_trifecta"] = {
+        "bet": "5~8를1축_1을2축_2~4를3축_베팅액",
+        "refund": "5~8를1축_1을2축_2~4를3축_환수액",
+        "hit": "r_pop5~8_1축_r_pop1_2축_r_pop2~4_3축_적중",
+        "holes_per_race": 12,
+    }
+    admin_profit_strategy_labels["pair58_anchor1_24_trifecta"] = "5~8를1축 / 1을 2축 / 2~4 3축 삼쌍"
     admin_profit_strategy_result_columns["top4pair_56_trifecta"] = {
         "bet": "1~4복조_5~6_삼쌍_베팅액",
         "refund": "1~4복조_5~6_삼쌍_환수액",
@@ -4150,6 +4437,16 @@ def build_admin_profit_analysis_payload_for_range(from_date: str, to_date: str) 
             primary_keys.append("anchor12_3_10_trifecta")
         if "anchor12_3_8_trifecta" not in primary_keys:
             primary_keys.append("anchor12_3_8_trifecta")
+        if "anchor3_23_48_trifecta" not in primary_keys:
+            primary_keys.append("anchor3_23_48_trifecta")
+        if "pair24_anchor1_58_trifecta" not in primary_keys:
+            primary_keys.append("pair24_anchor1_58_trifecta")
+        if "pair24_58_anchor1_trifecta" not in primary_keys:
+            primary_keys.append("pair24_58_anchor1_trifecta")
+        if "pair58_24_anchor1_trifecta" not in primary_keys:
+            primary_keys.append("pair58_24_anchor1_trifecta")
+        if "pair58_anchor1_24_trifecta" not in primary_keys:
+            primary_keys.append("pair58_anchor1_24_trifecta")
         if "anchor1_23_47" not in primary_keys:
             primary_keys.append("anchor1_23_47")
         if "anchor1_24_57" not in primary_keys:
@@ -4254,6 +4551,11 @@ def build_admin_profit_analysis_payload_for_range(from_date: str, to_date: str) 
         race_df = _augment_anchor21_3_10_trifecta(race_df, bet_unit=100)
         race_df = _augment_anchor12_3_10_trifecta(race_df, bet_unit=100)
         race_df = _augment_anchor12_3_8_trifecta(race_df, bet_unit=100)
+        race_df = _augment_anchor3_23_48_trifecta(race_df, bet_unit=100)
+        race_df = _augment_pair24_anchor1_58_trifecta(race_df, bet_unit=100)
+        race_df = _augment_pair24_58_anchor1_trifecta(race_df, bet_unit=100)
+        race_df = _augment_pair58_24_anchor1_trifecta(race_df, bet_unit=100)
+        race_df = _augment_pair58_anchor1_24_trifecta(race_df, bet_unit=100)
         race_df = _augment_top4pair_56_trifecta(race_df, bet_unit=100)
         race_df = _augment_top4pair_57_trifecta(race_df, bet_unit=100)
         race_df = _augment_top4pair_57_trio(race_df, bet_unit=100)

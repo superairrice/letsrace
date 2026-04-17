@@ -8,6 +8,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from html import unescape
 from html.parser import HTMLParser
 from urllib.parse import urlencode
+from collections import OrderedDict
 
 import requests
 from django.http import JsonResponse
@@ -1275,6 +1276,474 @@ def raceRelatedInfo(request, rcity, rdate, rno):
     }
 
     return render(request, "base/race_related_info.html", context)
+
+
+def raceStatusLookup(request):
+    def _to_float(value, default=0.0):
+        try:
+            if value in ("", None):
+                return default
+            return float(value)
+        except Exception:
+            return default
+
+    def _trend_snapshot(row):
+        rec8_trend = _to_float(row[49], 0.0)
+        rec_per = _to_float(row[48], 0.0)
+        recent3 = _to_float(row[34], 0.0)
+        recent5 = _to_float(row[35], 0.0)
+        convert_r = _to_float(row[36], 0.0)
+        tot_score = _to_float(row[41], 0.0)
+        score = (
+            rec8_trend * 0.34
+            + rec_per * 0.22
+            + recent3 * 0.16
+            + recent5 * 0.12
+            + convert_r * 0.08
+            + tot_score * 0.08
+        )
+
+        return {
+            "trend_score_raw": score,
+            "trend_score": round(score, 1),
+            "rec8_trend": round(rec8_trend, 1),
+            "rec_per": round(rec_per, 1),
+            "recent3": round(recent3, 1),
+            "recent5": round(recent5, 1),
+            "convert_r": round(convert_r, 1),
+            "tot_score": round(tot_score, 1),
+        }
+
+    today = date.today()
+    default_from = (today - timedelta(days=30)).strftime("%Y-%m-%d")
+    default_to = today.strftime("%Y-%m-%d")
+
+    from_date = (request.GET.get("from_date") or default_from).strip()
+    to_date = (request.GET.get("to_date") or default_to).strip()
+    jockey = (request.GET.get("jockey") or "").strip()
+    trainer = (request.GET.get("trainer") or "").strip()
+    host = (request.GET.get("host") or "").strip()
+    r_rank_from = (request.GET.get("r_rank_from") or "").strip()
+    r_rank_to = (request.GET.get("r_rank_to") or "").strip()
+    r_pop_from = (request.GET.get("r_pop_from") or "").strip()
+    r_pop_to = (request.GET.get("r_pop_to") or "").strip()
+
+    race = []
+    expects = []
+    expects_grouped = {}
+    matched_entries = []
+    entity_rows = {"jockey": [], "trainer": [], "host": []}
+    searched = any([
+        jockey, trainer, host,
+        r_rank_from, r_rank_to, r_pop_from, r_pop_to,
+        request.GET.get("from_date"), request.GET.get("to_date")
+    ])
+    error_message = ""
+
+    from_date_db = from_date.replace("-", "") if from_date else ""
+    to_date_db = to_date.replace("-", "") if to_date else ""
+
+    if from_date_db and to_date_db and from_date_db > to_date_db:
+        error_message = "조회 시작일이 종료일보다 늦습니다."
+    elif searched and not any([jockey, trainer, host, r_rank_from, r_rank_to, r_pop_from, r_pop_to]):
+        error_message = "기수, 조교사, 마주, r_rank, r_pop 중 최소 한 개는 입력해야 합니다."
+    elif searched:
+        filter_params = []
+        entity_filters = []
+        rank_filters = []
+        r_rank_start = int(r_rank_from) if r_rank_from else None
+        r_rank_end = int(r_rank_to) if r_rank_to else None
+        r_pop_start = int(r_pop_from) if r_pop_from else None
+        r_pop_end = int(r_pop_to) if r_pop_to else None
+
+        if r_rank_start and not r_rank_end:
+            r_rank_end = r_rank_start
+        if r_rank_end and not r_rank_start:
+            r_rank_start = r_rank_end
+        if r_pop_start and not r_pop_end:
+            r_pop_end = r_pop_start
+        if r_pop_end and not r_pop_start:
+            r_pop_start = r_pop_end
+
+        if r_rank_start and r_rank_end and r_rank_start > r_rank_end:
+            r_rank_start, r_rank_end = r_rank_end, r_rank_start
+        if r_pop_start and r_pop_end and r_pop_start > r_pop_end:
+            r_pop_start, r_pop_end = r_pop_end, r_pop_start
+
+        if jockey:
+            entity_filters.append("b.jockey = %s")
+            filter_params.append(jockey)
+        if trainer:
+            entity_filters.append("b.trainer = %s")
+            filter_params.append(trainer)
+        if host:
+            entity_filters.append("b.host = %s")
+            filter_params.append(host)
+        if r_rank_start and r_rank_end:
+            rank_filters.append("b.r_rank BETWEEN %s AND %s")
+            filter_params.extend([r_rank_start, r_rank_end])
+        if r_pop_start and r_pop_end:
+            rank_filters.append("b.r_pop BETWEEN %s AND %s")
+            filter_params.extend([r_pop_start, r_pop_end])
+        params = [from_date_db, to_date_db, *filter_params]
+
+        race_match_parts = []
+        if entity_filters:
+            race_match_parts.append(
+                "(" + " OR ".join(clause.replace("b.", "m.") for clause in entity_filters) + ")"
+            )
+        if rank_filters:
+            race_match_parts.append(
+                "(" + " AND ".join(clause.replace("b.", "m.") for clause in rank_filters) + ")"
+            )
+        race_match_clause = " AND ".join(race_match_parts)
+
+        sql = f"""
+            SELECT
+                a.rcity,
+                a.rdate,
+                a.rday,
+                a.rno,
+                a.rtime,
+                a.distance,
+                c.r2alloc,
+                c.r333alloc,
+                c.r123alloc,
+                a.grade,
+                a.dividing,
+                a.r1award,
+                '' AS r_overview,
+                '' AS r_guide,
+                b.gate,
+                b.rank,
+                b.r_rank,
+                b.horse,
+                b.remark,
+                b.jockey,
+                b.trainer,
+                b.host,
+                b.r_pop,
+                b.handycap,
+                b.i_prehandy,
+                b.complex,
+                b.complex5,
+                b.gap_back,
+                b.jt_per,
+                b.jt_cnt,
+                b.jt_3rd,
+                b.s1f_rank,
+                b.i_cycle,
+                a.rcount,
+                b.recent3,
+                b.recent5,
+                b.convert_r,
+                b.jockey_old,
+                b.reason,
+                b.alloc3r * 1,
+                b.m_rank,
+                b.tot_score,
+                b.s1f_per,
+                b.g3f_per,
+                b.g1f_per,
+                b.start_score,
+                b.comment_one,
+                b.g2f_rank,
+                b.rec_per,
+                b.rec8_trend,
+                b.h_weight
+            FROM exp010 a
+            JOIN exp011 b
+              ON a.rcity = b.rcity
+             AND a.rdate = b.rdate
+             AND a.rno = b.rno
+            LEFT JOIN rec010 c
+              ON a.rcity = c.rcity
+             AND a.rdate = c.rdate
+             AND a.rno = c.rno
+            WHERE a.rdate BETWEEN %s AND %s
+              AND b.rank IN (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 97, 98, 99)
+              AND EXISTS (
+                  SELECT 1
+                  FROM exp011 m
+                  WHERE m.rcity = a.rcity
+                    AND m.rdate = a.rdate
+                    AND m.rno = a.rno
+                    AND ({race_match_clause})
+              )
+            ORDER BY a.rdate DESC, a.rcity, a.rno DESC, b.r_pop, b.gate
+        """
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(sql, params)
+                fetched = cursor.fetchall()
+                race_seen = set()
+                for row in fetched:
+                    race_key = (row[0], row[1], row[3])
+                    if race_key not in race_seen:
+                        race_seen.add(race_key)
+                        race.append(row[:14])
+                    expects.append(
+                        (
+                            row[0], row[1], row[2], row[3], row[14], row[15], row[16], row[17], row[18], row[19],
+                            row[20], row[21], row[22], row[5], row[23], row[24], row[25], row[26], row[27], row[28],
+                            row[29], row[30], row[31], row[32], row[33], row[34], row[35], row[36], row[37], row[38],
+                            row[39], row[40], row[41], row[42], row[43], row[44], row[45], row[46], row[47], row[48],
+                            row[49], row[50]
+                        )
+                    )
+
+                    matched_types = []
+                    if jockey and row[19] == jockey:
+                        matched_types.append("기수")
+                        entity_rows["jockey"].append(row)
+                    if trainer and row[20] == trainer:
+                        matched_types.append("조교사")
+                        entity_rows["trainer"].append(row)
+                    if host and row[21] == host:
+                        matched_types.append("마주")
+                        entity_rows["host"].append(row)
+
+                    if matched_types:
+                        snapshot = _trend_snapshot(row)
+                        matched_entries.append(
+                            {
+                                "rcity": row[0],
+                                "rdate": row[1],
+                                "rday": row[2],
+                                "rno": row[3],
+                                "gate": row[14],
+                                "horse": row[17],
+                                "jockey": row[19],
+                                "trainer": row[20],
+                                "host": row[21],
+                                "matched_types": matched_types,
+                                **snapshot,
+                            }
+                        )
+        except Exception as exc:
+            logger.exception(
+                "Failed raceStatusLookup (from=%s, to=%s, jockey=%s, trainer=%s, host=%s)",
+                from_date_db,
+                to_date_db,
+                jockey,
+                trainer,
+                host,
+            )
+            error_message = f"조회 중 오류가 발생했습니다: {exc}"
+
+    for e in expects:
+        try:
+            e_rcity = e[0]
+            e_rdate = e[1]
+            e_rno = int(e[3])
+            by_city = expects_grouped.setdefault(e_rcity, {})
+            by_date = by_city.setdefault(e_rdate, {})
+            by_date.setdefault(e_rno, []).append(e)
+        except Exception:
+            continue
+
+    home_default_city_tab = "서울"
+    if race:
+        home_default_city_tab = "부산" if all(r[0] == "부산" for r in race) else "서울"
+
+    def _build_period_stats(label, name, rows):
+        if not rows:
+            return None
+
+        total = len(rows)
+        rank1 = sum(1 for row in rows if row[16] == 1)
+        rank2 = sum(1 for row in rows if row[16] == 2)
+        rank3 = sum(1 for row in rows if row[16] == 3)
+        exacta_hits = rank1 + rank2
+        place_hits = exacta_hits + rank3
+
+        return {
+            "label": label,
+            "name": name,
+            "total": total,
+            "rank1": rank1,
+            "rank2": rank2,
+            "rank3": rank3,
+            "win_rate": round((rank1 / total) * 100, 1) if total else 0.0,
+            "exacta_rate": round((exacta_hits / total) * 100, 1) if total else 0.0,
+            "place_rate": round((place_hits / total) * 100, 1) if total else 0.0,
+        }
+
+    lookup_stats = [
+        stat
+        for stat in [
+            _build_period_stats("기수", jockey, entity_rows["jockey"]) if jockey else None,
+            _build_period_stats("조교사", trainer, entity_rows["trainer"]) if trainer else None,
+            _build_period_stats("마주", host, entity_rows["host"]) if host else None,
+        ]
+        if stat is not None
+    ]
+
+    context = {
+        "from_date": from_date,
+        "to_date": to_date,
+        "jockey": jockey,
+        "trainer": trainer,
+        "host": host,
+        "r_rank_from": str(r_rank_start) if 'r_rank_start' in locals() and r_rank_start else "",
+        "r_rank_to": str(r_rank_end) if 'r_rank_end' in locals() and r_rank_end else "",
+        "r_pop_from": str(r_pop_start) if 'r_pop_start' in locals() and r_pop_start else "",
+        "r_pop_to": str(r_pop_end) if 'r_pop_end' in locals() and r_pop_end else "",
+        "query_jockey": jockey,
+        "query_trainer": trainer,
+        "query_host": host,
+        "rank_options": range(1, 17),
+        "searched": searched,
+        "error_message": error_message,
+        "race": race,
+        "expects_grouped": expects_grouped,
+        "result_count": len(race),
+        "row_count": len(expects),
+        "home_default_city_tab": home_default_city_tab,
+        "view_type": "2",
+        "lookup_mode": True,
+        "lookup_stats": lookup_stats,
+    }
+    return render(request, "base/race_status_lookup.html", context)
+
+
+def rankPopStatsLookup(request):
+    today = date.today()
+    default_from = (today - timedelta(days=30)).strftime("%Y-%m-%d")
+    default_to = today.strftime("%Y-%m-%d")
+
+    from_date = (request.GET.get("from_date") or default_from).strip()
+    to_date = (request.GET.get("to_date") or default_to).strip()
+    r_pop_from = (request.GET.get("r_pop_from") or "1").strip()
+    r_pop_to = (request.GET.get("r_pop_to") or "1").strip()
+    entity_type = (request.GET.get("entity_type") or "jockey").strip()
+    rcity = (request.GET.get("rcity") or "전체").strip()
+
+    searched = any(request.GET)
+    error_message = ""
+    rows = []
+    summary_row = None
+
+    from_date_db = from_date.replace("-", "") if from_date else ""
+    to_date_db = to_date.replace("-", "") if to_date else ""
+
+    try:
+        r_pop_start = int(r_pop_from) if r_pop_from else 1
+        r_pop_end = int(r_pop_to) if r_pop_to else 1
+    except ValueError:
+        r_pop_start = 1
+        r_pop_end = 1
+
+    if r_pop_start > r_pop_end:
+        r_pop_start, r_pop_end = r_pop_end, r_pop_start
+
+    if entity_type not in {"jockey", "trainer"}:
+        entity_type = "jockey"
+
+    if from_date_db and to_date_db and from_date_db > to_date_db:
+        error_message = "조회 시작일이 종료일보다 늦습니다."
+    elif searched:
+        entity_label = "기수" if entity_type == "jockey" else "조교사"
+        entity_column = "jockey" if entity_type == "jockey" else "trainer"
+        params = [from_date_db, to_date_db, r_pop_start, r_pop_end]
+        city_clause = ""
+        if rcity and rcity != "전체":
+            city_clause = " AND rcity = %s"
+            params.append(rcity)
+
+        sql = f"""
+            SELECT
+                {entity_column} AS entity_name,
+                COUNT(*) AS starts,
+                SUM(CASE WHEN r_rank = 1 THEN 1 ELSE 0 END) AS rank1,
+                SUM(CASE WHEN r_rank = 2 THEN 1 ELSE 0 END) AS rank2,
+                SUM(CASE WHEN r_rank = 3 THEN 1 ELSE 0 END) AS rank3,
+                ROUND(SUM(CASE WHEN r_rank = 1 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) AS win_rate,
+                ROUND(SUM(CASE WHEN r_rank IN (1, 2) THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) AS exacta_rate,
+                ROUND(SUM(CASE WHEN r_rank IN (1, 2, 3) THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) AS place_rate
+            FROM exp011
+            WHERE rdate BETWEEN %s AND %s
+              AND r_pop BETWEEN %s AND %s
+              AND r_rank BETWEEN 1 AND 99
+              AND {entity_column} IS NOT NULL
+              AND {entity_column} <> ''
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM exp011 x
+                  WHERE x.rcity = exp011.rcity
+                    AND x.rdate = exp011.rdate
+                    AND x.rno = exp011.rno
+                  GROUP BY x.rcity, x.rdate, x.rno
+                  HAVING SUM(CASE WHEN x.i_cycle IS NULL OR x.i_cycle = 0 THEN 1 ELSE 0 END) >= 3
+                     OR COUNT(*) >= 13
+              )
+              {city_clause}
+            GROUP BY {entity_column}
+            ORDER BY starts DESC, win_rate DESC, entity_name
+        """
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(sql, params)
+                fetched = cursor.fetchall()
+                rows = [
+                    {
+                        "entity_name": row[0],
+                        "starts": int(row[1] or 0),
+                        "rank1": int(row[2] or 0),
+                        "rank2": int(row[3] or 0),
+                        "rank3": int(row[4] or 0),
+                        "win_rate": row[5] or 0,
+                        "exacta_rate": row[6] or 0,
+                        "place_rate": row[7] or 0,
+                    }
+                    for row in fetched
+                ]
+
+                if rows:
+                    total_starts = sum(row["starts"] for row in rows)
+                    total_rank1 = sum(row["rank1"] for row in rows)
+                    total_rank2 = sum(row["rank2"] for row in rows)
+                    total_rank3 = sum(row["rank3"] for row in rows)
+                    summary_row = {
+                        "entity_name": "전체",
+                        "starts": total_starts,
+                        "rank1": total_rank1,
+                        "rank2": total_rank2,
+                        "rank3": total_rank3,
+                        "win_rate": round((total_rank1 * 100.0 / total_starts), 1) if total_starts else 0.0,
+                        "exacta_rate": round(((total_rank1 + total_rank2) * 100.0 / total_starts), 1) if total_starts else 0.0,
+                        "place_rate": round(((total_rank1 + total_rank2 + total_rank3) * 100.0 / total_starts), 1) if total_starts else 0.0,
+                    }
+        except Exception as exc:
+            logger.exception(
+                "Failed rankPopStatsLookup (from=%s, to=%s, r_pop_from=%s, r_pop_to=%s, entity_type=%s, rcity=%s)",
+                from_date_db,
+                to_date_db,
+                r_pop_start,
+                r_pop_end,
+                entity_type,
+                rcity,
+            )
+            error_message = f"조회 중 오류가 발생했습니다: {exc}"
+
+    context = {
+        "from_date": from_date,
+        "to_date": to_date,
+        "r_pop_from": str(r_pop_start),
+        "r_pop_to": str(r_pop_end),
+        "entity_type": entity_type,
+        "entity_label": "기수" if entity_type == "jockey" else "조교사",
+        "rcity": rcity,
+        "searched": searched,
+        "error_message": error_message,
+        "rows": rows,
+        "summary_row": summary_row,
+        "rank_options": range(1, 17),
+        "city_options": ["전체", "서울", "부산", "제주"],
+    }
+    return render(request, "base/rank_pop_stats_lookup.html", context)
 
 def statusStable(request, rcity, rdate, rno):
 
@@ -3062,28 +3531,28 @@ def _run_race_calculation_job(job_id, payload):
                             f"/ success={done} / errors={errors}"
                         ),
                     )
-
-                    # try:
-                    #     update_m_rank_score_for_period(
-                    #         rdate1,
-                    #         rdate2,
-                    #         model_name=f"sb_top3_roll12_{rdate1[0:6]}",
-                    #     )
-                    #     _race_calc_job_log(job_id, "m_rank/m_score 갱신 완료")
-                    # except Exception as e:
-                    #     _race_calc_job_log(job_id, f"m_rank/m_score 갱신 실패: {e}")
+#일괄집계 제외구간
+                    try:
+                        update_m_rank_score_for_period(
+                            rdate1,
+                            rdate2,
+                            model_name=f"sb_top3_roll12_{rdate1[0:6]}",
+                        )
+                        _race_calc_job_log(job_id, "m_rank/m_score 갱신 완료")
+                    except Exception as e:
+                        _race_calc_job_log(job_id, f"m_rank/m_score 갱신 실패: {e}")
                         
                         
-                    # try:
-                    #     update_exp011_for_period(rdate1, rdate2)
-                    #     _race_calc_job_log(job_id, "exp011 점수 갱신 완료")
-                    # except Exception as e:
-                    #     _race_calc_job_log(job_id, f"exp011 점수 갱신 실패: {e}")
-                    # try:
-                    #     run_rguide_update(from_date=rdate1, to_date=rdate2, dry_run=False)
-                    #     _race_calc_job_log(job_id, "r_guide 업데이트 완료")
-                    # except Exception as e:
-                    #     _race_calc_job_log(job_id, f"r_guide 업데이트 실패: {e}")
+                    try:
+                        update_exp011_for_period(rdate1, rdate2)
+                        _race_calc_job_log(job_id, "exp011 점수 갱신 완료")
+                    except Exception as e:
+                        _race_calc_job_log(job_id, f"exp011 점수 갱신 실패: {e}")
+                    try:
+                        run_rguide_update(from_date=rdate1, to_date=rdate2, dry_run=False)
+                        _race_calc_job_log(job_id, "r_guide 업데이트 완료")
+                    except Exception as e:
+                        _race_calc_job_log(job_id, f"r_guide 업데이트 실패: {e}")
 
             state = _race_calc_job_get(job_id) or {}
             final_errors = int(state.get("errors", 0) or 0)

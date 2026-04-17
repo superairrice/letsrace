@@ -30,9 +30,15 @@
         <span style="text-align: right; font-weight: normal; font-size: 1.7rem; border-bottom:1px solid orange; border-radius: 5px;">
           {% if r_rno|mul:1 >= 10 %}{{r_rno}}<sup style="font-size: 1.0rem;">R</sup>{% else %}&nbsp;{{r_rno}}<sup style="font-size: 1.0rem;">R</sup>{% endif %}
         </span>
+        {% if lookup_mode %}
+        <div style="margin-top: 0.35rem; font-family: Arial; font-size: 0.95rem; color: var(--color-light-gray); text-align: center;">
+          {{r_rdate|slice:"2:4"}}.{{r_rdate|slice:"4:6"}}.{{r_rdate|slice:"6:8"}}
+        </div>
+        {% endif %}
 
       </div>
     </a>
+    {% if not lookup_mode %}
     <button
       type="button"
       class="race-comment-badge js-race-comment-open"
@@ -43,6 +49,7 @@
       aria-label="댓글달기">
       💬 <strong class="js-race-comment-count">0</strong>
     </button>
+    {% endif %}
   </td>
 
   <td align="right" style="background-color: var(--color-dark-mid);">
@@ -182,7 +189,7 @@
 
   {% for rcity, rdate, rday, rno, gate, rank, r_rank, horse, remark, jockey, trainer, host, r_pop, distance, handycap, i_prehandy, complex, complex5, i_complex, jt_per, jt_cnt, jt_3rd, s1f_rank, i_cycle, rcount, recent3, recent5, convert_r, jockey_old, reason, alloc3r, m_rank, tot_score,  s1f_per, g3f_per, g1f_per, start_score, comment_one, g2f_rank, rec_per, rec8_trend, h_weight in expects_for_race|default_if_none:'' %}
   
-  <td class="home-left-gate-td" align="center" {% if rank < 90 %} style="color: var(--color-main); background-color: var(--color-dark-mid);" {% else %} style="color: var(--color-main); background-color: var(--color-dark-light);" {% endif %}>
+  <td class="home-left-gate-td{% if jockey and jockey == query_jockey %} lookup-match lookup-match-start lookup-match--jockey{% if r_rank >= 1 and r_rank <= 3 %} lookup-match-fill--jockey lookup-match-rank-{{r_rank}}{% endif %}{% endif %}{% if trainer and trainer == query_trainer %} lookup-match lookup-match-start lookup-match--trainer{% if r_rank >= 1 and r_rank <= 3 %} lookup-match-fill--trainer lookup-match-rank-{{r_rank}}{% endif %}{% endif %}{% if host and host == query_host %} lookup-match lookup-match-start lookup-match--host{% if r_rank >= 1 and r_rank <= 3 %} lookup-match-fill--host lookup-match-rank-{{r_rank}}{% endif %}{% endif %}" align="center" {% if rank < 90 %} style="color: var(--color-main); background-color: var(--color-dark-mid);" {% else %} style="color: var(--color-main); background-color: var(--color-dark-light);" {% endif %}>
 
     {# 마번 #}
     {% if r_rank > 90 %}
@@ -330,6 +337,9 @@
       <span class="jockey-badge">{{jockey|slice:"-2:"}}</span>
       {% endif %}
     </a>
+    {% if lookup_mode %}
+    <span style="display:inline-block; margin-left:0.18rem; font-size:0.72rem; color:var(--color-light-gray); vertical-align:middle;">{{trainer|slice:"-3:"}}</span>
+    {% endif %}
     </div>
 
     <div style="text-align:center; font-size:0.95rem;">
@@ -357,7 +367,7 @@
     
   </td>
   
-  <td align="center" {% if rank < 90 %} style="font-family: Arial; color: var(--color-main); background-color: var(--color-dark-mid);" {% else %} style="font-family: Arial; color: var(--color-main); background-color: var(--color-dark-light);" {% endif %}>
+  <td class="{% if jockey and jockey == query_jockey %}lookup-match lookup-match-end lookup-match--jockey{% if r_rank >= 1 and r_rank <= 3 %} lookup-match-fill--jockey lookup-match-rank-{{r_rank}}{% endif %} {% endif %}{% if trainer and trainer == query_trainer %}lookup-match lookup-match-end lookup-match--trainer{% if r_rank >= 1 and r_rank <= 3 %} lookup-match-fill--trainer lookup-match-rank-{{r_rank}}{% endif %} {% endif %}{% if host and host == query_host %}lookup-match lookup-match-end lookup-match--host{% if r_rank >= 1 and r_rank <= 3 %} lookup-match-fill--host lookup-match-rank-{{r_rank}}{% endif %}{% endif %}" align="center" {% if rank < 90 %} style="font-family: Arial; color: var(--color-main); background-color: var(--color-dark-mid);" {% else %} style="font-family: Arial; color: var(--color-main); background-color: var(--color-dark-light);" {% endif %}>
 
     <div style="text-align:right; font-size:0.9rem;">
       <span style="font-weight: normal;">

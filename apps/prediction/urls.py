@@ -124,6 +124,16 @@ urlpatterns = [
         name="jt_analysis_multi",
     ),
     path(
+        "race_status_lookup/",
+        views.raceStatusLookup,
+        name="race_status_lookup",
+    ),
+    path(
+        "rank_pop_stats_lookup/",
+        views.rankPopStatsLookup,
+        name="rank_pop_stats_lookup",
+    ),
+    path(
         "race_prediction/<str:rcity>/<str:rdate>/<int:rno>/<str:hname>/<str:awardee>",
         views.racePrediction,
         name="race_prediction",

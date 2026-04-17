@@ -101,11 +101,17 @@
   }
 
   .header-search-submit.header-search-action {
-    padding: 0.45rem 1.35rem;
+    width: 3.4rem;
+    min-width: 3.4rem;
+    padding: 0;
     background: linear-gradient(180deg, #74d8f5 0%, #5bc3e4 100%);
     color: #0f2235;
     border-color: rgba(128, 217, 242, 0.92);
     font-weight: 760;
+  }
+
+  .header-search-submit.header-search-action span {
+    display: none;
   }
 
   .header-search-admin {
@@ -120,6 +126,26 @@
   .header-search-admin:hover {
     background: linear-gradient(180deg, rgba(109, 125, 164, 0.98), rgba(81, 93, 126, 0.95));
     border-color: rgba(191, 211, 250, 0.82);
+  }
+
+  .header-search-lookup {
+    width: 3.4rem;
+    min-width: 3.4rem;
+    padding: 0;
+    background: linear-gradient(180deg, rgba(78, 120, 168, 0.96), rgba(58, 92, 138, 0.94));
+    color: #e7f4ff;
+    border-color: rgba(146, 190, 231, 0.72);
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .header-search-lookup:hover {
+    color: #f4fbff;
+  }
+
+  .header-search-lookup.header-search-lookup--stats {
+    background: linear-gradient(180deg, rgba(67, 138, 116, 0.96), rgba(47, 104, 86, 0.94));
+    border-color: rgba(139, 217, 189, 0.72);
   }
 
   html[data-theme="light"] .header__search--compact {
@@ -727,14 +753,39 @@
       <input style="width: 15rem; color:var(--color-r1)" type="text" value='{{jname1}}' placeholder="세영" name="j1">
       &nbsp;&nbsp;&nbsp; -->
       
-      <button class="btn btn--main header-search-submit header-search-action" type="submit">
+      <button class="btn btn--main header-search-submit header-search-action" type="submit" aria-label="검색">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="11" cy="11" r="6.5"></circle>
           <path d="M16 16l4.5 4.5"></path>
         </svg>
         <span>검색</span>
       </button>
+      
       {% if request.user.username == 'admin' or request.user.is_superuser %}
+      <a class="btn header-search-action header-search-lookup"
+        href="{% url 'race_status_lookup' %}"
+        aria-label="경주별 현황 조회창 열기"
+        onclick="window.open(this.href, 'w_race_status_lookup', 'width=1500, height=980, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 5h16"></path>
+          <path d="M4 12h16"></path>
+          <path d="M4 19h16"></path>
+          <circle cx="8" cy="5" r="1.5"></circle>
+          <circle cx="16" cy="12" r="1.5"></circle>
+          <circle cx="11" cy="19" r="1.5"></circle>
+        </svg>
+      </a>
+      <a class="btn header-search-action header-search-lookup header-search-lookup--stats"
+        href="{% url 'rank_pop_stats_lookup' %}"
+        aria-label="기수 조교사 집계창 열기"
+        onclick="window.open(this.href, 'w_rank_pop_stats_lookup', 'width=900, height=980, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 19V9"></path>
+          <path d="M12 19V5"></path>
+          <path d="M19 19v-7"></path>
+          <path d="M4 19h16"></path>
+        </svg>
+      </a>
       <a class="btn btn--dark header-search-action header-search-admin"
         href="{% url 'admin_profit_analysis_popup' %}{% if fdate %}?q={{ fdate|cut:'-'|cut:'.' }}{% endif %}"
         aria-label="관리자 수익 분석 팝업 열기"

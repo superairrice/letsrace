@@ -694,16 +694,16 @@
                           <th><span class="visible-big" style="font-size: 1.1rem;">결<br>과</span></th>
                           <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">연승</span></th>
 
+                          <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">Corners</span></th>
 
                           <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">S1F</span></th>
-                          <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">Corners</span></th>
                           <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">G3F</span></th>
                           <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">G1F</span></th>
                           
                         </tr>
                       </thead>
                       <tbody>
-                        {% for rcity, awardee, rdate, rday, rno, grade, dividing, gate, rank, r_rank, horse_name, remark, j_name, t_name, h_name, r_pop, distance, handycap, jt_per, jt_cnt, remark, s1f_rank, corners, g3f_rank, g1f_rank, alloc3r, jockey_old, reason in race_detail_by_jockey|get_item:jockey %}
+                        {% for rcity, awardee, rdate, rday, rno, grade, dividing, gate, rank, r_rank, horse_name, remark, j_name, t_name, h_name, r_pop, distance, handycap, jt_per, jt_cnt, remark, s1f_per, corners, g3f_per, g1f_per, alloc3r, jockey_old, reason in race_detail_by_jockey|get_item:jockey %}
                         
                         <tr>
                           
@@ -926,10 +926,66 @@
                             {% endif %}
                           </td>
 
-                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">{% if s1f_rank %}{{s1f_rank}}{% endif %}</td>
                           <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-bg);">{% if corners %}{{corners}}{% endif %}</td>
-                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">{% if g3f_rank %}{{g3f_rank}}{% endif %}</td>
-                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">{% if g1f_rank %}{{g1f_rank}}{% endif %}</td>                          
+
+                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">
+                            {% if s1f_per == 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">🔥&nbsp;&nbsp;</span>
+                            {% elif s1f_per >= 90.0 and s1f_per < 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{s1f_per|floatformat:1}}</span>
+                            {% elif s1f_per >= 80.0 and s1f_per < 90 %}
+                            <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{s1f_per|floatformat:1}}</span>
+                            {% elif s1f_per >= 70 and s1f_per < 80 %}
+                            <span style="font-family: Arial; color: var(--color-r3);">{{s1f_per|floatformat:1}}</span>
+                            {% elif s1f_per >= 60 and s1f_per < 70 %}
+                            <span style="font-family: Arial; color: var(--color-r4);">{{s1f_per|floatformat:1}}</span>
+                            {% elif s1f_per >= 50 and s1f_per < 60 %}
+                            <span style="font-family: Arial; color: var(--color-r5);">{{s1f_per|floatformat:1}}</span>
+                            {% elif s1f_per == 0 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+                            {% else %}
+                            <span style="font-family: Arial; color: var(--color-gray);">{{s1f_per|floatformat:1}}</span>
+                            {% endif %}
+                          </td>
+                          
+                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">
+                            {% if g3f_per == 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">🔥&nbsp;&nbsp;</span>
+                            {% elif g3f_per >= 90.0 and g3f_per < 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{g3f_per|floatformat:1}}</span>
+                            {% elif g3f_per >= 80.0 and g3f_per < 90 %}
+                            <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{g3f_per|floatformat:1}}</span>
+                            {% elif g3f_per >= 70 and g3f_per < 80 %}
+                            <span style="font-family: Arial; color: var(--color-r3);">{{g3f_per|floatformat:1}}</span>
+                            {% elif g3f_per >= 60 and g3f_per < 70 %}
+                            <span style="font-family: Arial; color: var(--color-r4);">{{g3f_per|floatformat:1}}</span>
+                            {% elif g3f_per >= 50 and g3f_per < 60 %}
+                            <span style="font-family: Arial; color: var(--color-r5);">{{g3f_per|floatformat:1}}</span>
+                            {% elif g3f_per == 0 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+                            {% else %}
+                            <span style="font-family: Arial; color: var(--color-gray);">{{g3f_per|floatformat:1}}</span>
+                            {% endif %}
+                          </td>
+                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">
+                            {% if g1f_per == 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">🔥&nbsp;&nbsp;</span>
+                            {% elif g1f_per >= 90.0 and g1f_per < 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{g1f_per|floatformat:1}}</span>
+                            {% elif g1f_per >= 80.0 and g1f_per < 90 %}
+                            <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{g1f_per|floatformat:1}}</span>
+                            {% elif g1f_per >= 70 and g1f_per < 80 %}
+                            <span style="font-family: Arial; color: var(--color-r3);">{{g1f_per|floatformat:1}}</span>
+                            {% elif g1f_per >= 60 and g1f_per < 70 %}
+                            <span style="font-family: Arial; color: var(--color-r4);">{{g1f_per|floatformat:1}}</span>
+                            {% elif g1f_per >= 50 and g1f_per < 60 %}
+                            <span style="font-family: Arial; color: var(--color-r5);">{{g1f_per|floatformat:1}}</span>
+                            {% elif g1f_per == 0 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+                            {% else %}
+                            <span style="font-family: Arial; color: var(--color-gray);">{{g1f_per|floatformat:1}}</span>
+                            {% endif %}
+                          </td>                          
                           
                         </tr>
                         
@@ -1370,16 +1426,16 @@
                           <th><span class="visible-big" style="font-size: 1.1rem;">결<br>과</span></th>
                           <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">연승</span></th>
 
+                          <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">Corners</span></th>
 
                           <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">S1F</span></th>
-                          <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">Corners</span></th>
                           <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">G3F</span></th>
                           <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">G1F</span></th>
                           
                         </tr>
                       </thead>
                       <tbody>
-                        {% for rcity, awardee, rdate, rday, rno, grade, dividing, gate, rank, r_rank, horse_name, remark, j_name, t_name, h_name, r_pop, distance, handycap, jt_per, jt_cnt, remark, s1f_rank, corners, g3f_rank, g1f_rank, alloc3r, jockey_old, reason in race_detail_by_trainer|get_item:trainer %}
+                        {% for rcity, awardee, rdate, rday, rno, grade, dividing, gate, rank, r_rank, horse_name, remark, j_name, t_name, h_name, r_pop, distance, handycap, jt_per, jt_cnt, remark, s1f_per, corners, g3f_per, g1f_per, alloc3r, jockey_old, reason in race_detail_by_trainer|get_item:trainer %}
                         
                         <tr>
                           
@@ -1602,10 +1658,66 @@
                             {% endif %}
                           </td>
 
-                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">{% if s1f_rank %}{{s1f_rank}}{% endif %}</td>
                           <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-bg);">{% if corners %}{{corners}}{% endif %}</td>
-                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">{% if g3f_rank %}{{g3f_rank}}{% endif %}</td>
-                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">{% if g1f_rank %}{{g1f_rank}}{% endif %}</td>                          
+
+                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">
+                            {% if s1f_per == 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">🔥&nbsp;&nbsp;</span>
+                            {% elif s1f_per >= 90.0 and s1f_per < 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{s1f_per|floatformat:1}}</span>
+                            {% elif s1f_per >= 80.0 and s1f_per < 90 %}
+                            <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{s1f_per|floatformat:1}}</span>
+                            {% elif s1f_per >= 70 and s1f_per < 80 %}
+                            <span style="font-family: Arial; color: var(--color-r3);">{{s1f_per|floatformat:1}}</span>
+                            {% elif s1f_per >= 60 and s1f_per < 70 %}
+                            <span style="font-family: Arial; color: var(--color-r4);">{{s1f_per|floatformat:1}}</span>
+                            {% elif s1f_per >= 50 and s1f_per < 60 %}
+                            <span style="font-family: Arial; color: var(--color-r5);">{{s1f_per|floatformat:1}}</span>
+                            {% elif s1f_per == 0 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+                            {% else %}
+                            <span style="font-family: Arial; color: var(--color-gray);">{{s1f_per|floatformat:1}}</span>
+                            {% endif %}
+                          </td>
+                          
+                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">
+                            {% if g3f_per == 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">🔥&nbsp;&nbsp;</span>
+                            {% elif g3f_per >= 90.0 and g3f_per < 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{g3f_per|floatformat:1}}</span>
+                            {% elif g3f_per >= 80.0 and g3f_per < 90 %}
+                            <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{g3f_per|floatformat:1}}</span>
+                            {% elif g3f_per >= 70 and g3f_per < 80 %}
+                            <span style="font-family: Arial; color: var(--color-r3);">{{g3f_per|floatformat:1}}</span>
+                            {% elif g3f_per >= 60 and g3f_per < 70 %}
+                            <span style="font-family: Arial; color: var(--color-r4);">{{g3f_per|floatformat:1}}</span>
+                            {% elif g3f_per >= 50 and g3f_per < 60 %}
+                            <span style="font-family: Arial; color: var(--color-r5);">{{g3f_per|floatformat:1}}</span>
+                            {% elif g3f_per == 0 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+                            {% else %}
+                            <span style="font-family: Arial; color: var(--color-gray);">{{g3f_per|floatformat:1}}</span>
+                            {% endif %}
+                          </td>
+                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">
+                            {% if g1f_per == 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">🔥&nbsp;&nbsp;</span>
+                            {% elif g1f_per >= 90.0 and g1f_per < 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{g1f_per|floatformat:1}}</span>
+                            {% elif g1f_per >= 80.0 and g1f_per < 90 %}
+                            <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{g1f_per|floatformat:1}}</span>
+                            {% elif g1f_per >= 70 and g1f_per < 80 %}
+                            <span style="font-family: Arial; color: var(--color-r3);">{{g1f_per|floatformat:1}}</span>
+                            {% elif g1f_per >= 60 and g1f_per < 70 %}
+                            <span style="font-family: Arial; color: var(--color-r4);">{{g1f_per|floatformat:1}}</span>
+                            {% elif g1f_per >= 50 and g1f_per < 60 %}
+                            <span style="font-family: Arial; color: var(--color-r5);">{{g1f_per|floatformat:1}}</span>
+                            {% elif g1f_per == 0 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+                            {% else %}
+                            <span style="font-family: Arial; color: var(--color-gray);">{{g1f_per|floatformat:1}}</span>
+                            {% endif %}
+                          </td>                    
                           
                         </tr>
                         
@@ -1899,13 +2011,13 @@
                 {# 경주마 보유 현황 #}
                 <td align="center" style="font-size: 1.4rem; border-radius: 10px; border: 0.5px solid gray;">
                   <div style="font-size: 1.25rem; font-family: Arial;">
-                    <span style="font-family: Arial; padding: 2px 4px; color: var(--color-light);">{{h_total}}</span>
+                    <span style="font-family: Arial; padding: 2px 4px; color: var(--color-light);">{% if h_total %}{{h_total}}{% else %}⋅{% endif %}</span>
                   </div>
                 </td>
 
                 <td align="center">
                   <div style="font-size: 1.2rem;">
-                    <span style="font-family: Arial; border-radius: 10px; padding: 2px 4px; background-color: var(--color-bg); color:var(--color-r3);">{{h_current}}</span>
+                    <span style="font-family: Arial; border-radius: 10px; padding: 2px 4px; background-color: var(--color-bg); color:var(--color-r3);">{% if h_current %}{{h_current}}{% else %}⋅{% endif %}</span>
                   </div>
                 </td align="center">
 
@@ -1913,10 +2025,10 @@
                 {# 복승% 연승% #}
                 <td align="right">
                   <div style="font-size: 1.2rem; font-family: Arial;">
-                    <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-gray);">{{tot_race}}</span>
+                    <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-gray);">{% if tot_race %}{{tot_race}}{% else %}⋅{% endif %}</span>
                   </div>
                   <div style="font-size: 1.2rem; font-family: Arial;">
-                    <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-light-gray);">{{year_race}}</span>
+                    <span style="font-family: Arial, Helvetica, sans-serif; color:var(--color-light-gray);">{% if year_race %}{{year_race}}{% else %}⋅{% endif %}</span>
                   </div>
                 </td>
                 {# 직전 경마주간 #}
@@ -1969,15 +2081,16 @@
                           <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">연승</span></th>
 
 
-                          <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">S1F</span></th>
                           <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">Corners</span></th>
+
+                          <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">S1F</span></th>
                           <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">G3F</span></th>
                           <th style="vertical-align:middle"><span class="visible-big" style="font-size: 1.1rem;">G1F</span></th>
                           
                         </tr>
                       </thead>
                       <tbody>
-                        {% for rcity, awardee, rdate, rday, rno, grade, dividing, gate, rank, r_rank, horse_name, remark, j_name, t_name, h_name, r_pop, distance, handycap, jt_per, jt_cnt, remark, s1f_rank, corners, g3f_rank, g1f_rank, alloc3r, jockey_old, reason in race_detail_by_host|get_item:host %}
+                        {% for rcity, awardee, rdate, rday, rno, grade, dividing, gate, rank, r_rank, horse_name, remark, j_name, t_name, h_name, r_pop, distance, handycap, jt_per, jt_cnt, remark, s1f_per, corners, g3f_per, g1f_per, alloc3r, jockey_old, reason in race_detail_by_host|get_item:host %}
                         
                         <tr>
                           
@@ -2200,10 +2313,66 @@
                             {% endif %}
                           </td>
 
-                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">{% if s1f_rank %}{{s1f_rank}}{% endif %}</td>
                           <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-bg);">{% if corners %}{{corners}}{% endif %}</td>
-                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">{% if g3f_rank %}{{g3f_rank}}{% endif %}</td>
-                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">{% if g1f_rank %}{{g1f_rank}}{% endif %}</td>                          
+
+                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">
+                            {% if s1f_per == 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">🔥&nbsp;&nbsp;</span>
+                            {% elif s1f_per >= 90.0 and s1f_per < 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{s1f_per|floatformat:1}}</span>
+                            {% elif s1f_per >= 80.0 and s1f_per < 90 %}
+                            <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{s1f_per|floatformat:1}}</span>
+                            {% elif s1f_per >= 70 and s1f_per < 80 %}
+                            <span style="font-family: Arial; color: var(--color-r3);">{{s1f_per|floatformat:1}}</span>
+                            {% elif s1f_per >= 60 and s1f_per < 70 %}
+                            <span style="font-family: Arial; color: var(--color-r4);">{{s1f_per|floatformat:1}}</span>
+                            {% elif s1f_per >= 50 and s1f_per < 60 %}
+                            <span style="font-family: Arial; color: var(--color-r5);">{{s1f_per|floatformat:1}}</span>
+                            {% elif s1f_per == 0 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+                            {% else %}
+                            <span style="font-family: Arial; color: var(--color-gray);">{{s1f_per|floatformat:1}}</span>
+                            {% endif %}
+                          </td>
+                          
+                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">
+                            {% if g3f_per == 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">🔥&nbsp;&nbsp;</span>
+                            {% elif g3f_per >= 90.0 and g3f_per < 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{g3f_per|floatformat:1}}</span>
+                            {% elif g3f_per >= 80.0 and g3f_per < 90 %}
+                            <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{g3f_per|floatformat:1}}</span>
+                            {% elif g3f_per >= 70 and g3f_per < 80 %}
+                            <span style="font-family: Arial; color: var(--color-r3);">{{g3f_per|floatformat:1}}</span>
+                            {% elif g3f_per >= 60 and g3f_per < 70 %}
+                            <span style="font-family: Arial; color: var(--color-r4);">{{g3f_per|floatformat:1}}</span>
+                            {% elif g3f_per >= 50 and g3f_per < 60 %}
+                            <span style="font-family: Arial; color: var(--color-r5);">{{g3f_per|floatformat:1}}</span>
+                            {% elif g3f_per == 0 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+                            {% else %}
+                            <span style="font-family: Arial; color: var(--color-gray);">{{g3f_per|floatformat:1}}</span>
+                            {% endif %}
+                          </td>
+                          <td align="center" style="font-size: 1.1rem; font-family: Arial; color:var(--color-r5);">
+                            {% if g1f_per == 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 1.0rem;">🔥&nbsp;&nbsp;</span>
+                            {% elif g1f_per >= 90.0 and g1f_per < 100 %}
+                            <span style="font-family: Arial; color: var(--color-r1); border-bottom: 1px solid var(--color-r1); border-radius: 4px;">{{g1f_per|floatformat:1}}</span>
+                            {% elif g1f_per >= 80.0 and g1f_per < 90 %}
+                            <span style="font-family: Arial; color: var(--color-r2); border-bottom: 1px solid var(--color-r2); border-radius: 4px;">{{g1f_per|floatformat:1}}</span>
+                            {% elif g1f_per >= 70 and g1f_per < 80 %}
+                            <span style="font-family: Arial; color: var(--color-r3);">{{g1f_per|floatformat:1}}</span>
+                            {% elif g1f_per >= 60 and g1f_per < 70 %}
+                            <span style="font-family: Arial; color: var(--color-r4);">{{g1f_per|floatformat:1}}</span>
+                            {% elif g1f_per >= 50 and g1f_per < 60 %}
+                            <span style="font-family: Arial; color: var(--color-r5);">{{g1f_per|floatformat:1}}</span>
+                            {% elif g1f_per == 0 %}
+                            <span style="font-family: Arial; color: var(--color-r1); font-size: 0.8rem;">🔴&nbsp;&nbsp;</span>
+                            {% else %}
+                            <span style="font-family: Arial; color: var(--color-gray);">{{g1f_per|floatformat:1}}</span>
+                            {% endif %}
+                          </td>                       
                           
                         </tr>
                         
