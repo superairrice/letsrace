@@ -1,17 +1,19 @@
 from apps.common import *
+import logging
 import re
 import threading
 import time
 import traceback
 import uuid
 from contextlib import redirect_stderr, redirect_stdout
+from datetime import datetime
 from html import unescape
 from html.parser import HTMLParser
 from urllib.parse import urlencode
 from collections import OrderedDict
 
 import requests
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.core.cache import cache
 from apps.domains.race.race import resultOfRace
 from django.db import close_old_connections
@@ -22,6 +24,13 @@ from apps.domains.ops.kra_change_sync import (
 
 # Prediction views
 RACE_PREDICTION_CACHE_TTL = 30
+JT_ANALYSIS_GUARD_WINDOW = 60
+JT_ANALYSIS_GUARD_LIMIT = 20
+JT_ANALYSIS_GUARD_BROAD_LIMIT = 6
+JT_ANALYSIS_GUARD_DIRECT_BROAD_LIMIT = 3
+JT_ANALYSIS_GUARD_BLOCK_TTL = 600
+
+logger = logging.getLogger(__name__)
 
 
 KRA_SCRAPER_PRESETS = {
@@ -38,6 +47,164 @@ KRA_SCRAPER_PRESETS = {
         "url": "https://race.kra.co.kr/thisweekrace/ThisWeekScoretableDailyScoretable.do",
     },
 }
+
+
+def _jt_analysis_client_ip(request):
+    forwarded_for = (request.META.get("HTTP_X_FORWARDED_FOR") or "").strip()
+    if forwarded_for:
+        return forwarded_for.split(",")[0].strip()
+    return (request.META.get("REMOTE_ADDR") or "").strip() or "unknown"
+
+
+def _jt_analysis_parse_date(value):
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    normalized = raw.replace("-", "")
+    if len(normalized) != 8 or not normalized.isdigit():
+        return None
+    try:
+        return datetime.strptime(normalized, "%Y%m%d").date()
+    except ValueError:
+        return None
+
+
+def _jt_analysis_to_int(value, default=0):
+    try:
+        return int(str(value).strip())
+    except (TypeError, ValueError, AttributeError):
+        return default
+
+
+def _jt_analysis_is_wildcard(value):
+    normalized = str(value or "").strip()
+    return not normalized or normalized == "%" or "%" in normalized
+
+
+def _jt_analysis_broad_profile(
+    *,
+    rcity="",
+    fdate="",
+    tdate="",
+    jockey="",
+    trainer="",
+    host="",
+    horse="",
+    jockey_b="",
+    r1=0,
+    r2=0,
+    rr1=0,
+    rr2=0,
+    gate=0,
+    distance=0,
+    handycap="",
+    rno=0,
+    start="",
+):
+    text_values = [rcity, jockey, trainer, host, horse, jockey_b]
+    wildcard_count = sum(1 for value in text_values if _jt_analysis_is_wildcard(value))
+    date_from = _jt_analysis_parse_date(fdate)
+    date_to = _jt_analysis_parse_date(tdate)
+    date_span_days = 0
+    if date_from and date_to:
+        date_span_days = abs((date_to - date_from).days)
+
+    r1_value = _jt_analysis_to_int(r1)
+    r2_value = _jt_analysis_to_int(r2)
+    rr1_value = _jt_analysis_to_int(rr1)
+    rr2_value = _jt_analysis_to_int(rr2)
+    gate_value = _jt_analysis_to_int(gate)
+    distance_value = _jt_analysis_to_int(distance)
+    rno_value = _jt_analysis_to_int(rno)
+
+    broad_rank = (
+        r1_value <= 1
+        and r2_value >= 99
+        and rr1_value <= 1
+        and rr2_value >= 99
+    )
+    broad_filters = (
+        gate_value == 0
+        and distance_value == 0
+        and str(handycap or "").strip() in {"", "0", "00"}
+        and rno_value in {0, 99}
+    )
+    broad_query = (
+        wildcard_count >= 3
+        or date_span_days >= 365
+        or (broad_rank and broad_filters)
+    )
+    extreme_query = (
+        wildcard_count >= 4
+        and date_span_days >= 365
+        and broad_rank
+        and broad_filters
+    )
+    return {
+        "wildcard_count": wildcard_count,
+        "date_span_days": date_span_days,
+        "broad_query": broad_query,
+        "extreme_query": extreme_query,
+        "broad_rank": broad_rank,
+        "broad_filters": broad_filters,
+        "start": str(start or "").strip(),
+    }
+
+
+def _jt_analysis_guard(request, route_name, **params):
+    client_ip = _jt_analysis_client_ip(request)
+    referer = (request.META.get("HTTP_REFERER") or "").strip()
+    profile = _jt_analysis_broad_profile(**params)
+    broad_query = profile["broad_query"]
+    direct_access = not referer
+    block_key = f"jt_analysis:block:{route_name}:{client_ip}"
+
+    if cache.get(block_key):
+        response = HttpResponse("Too many jt_analysis requests.", status=429)
+        response["Retry-After"] = str(JT_ANALYSIS_GUARD_BLOCK_TTL)
+        return response
+
+    if direct_access and profile["extreme_query"]:
+        cache.set(block_key, True, JT_ANALYSIS_GUARD_BLOCK_TTL)
+        logger.warning(
+            "Blocked extreme jt_analysis query",
+            extra={
+                "route_name": route_name,
+                "client_ip": client_ip,
+                "profile": profile,
+                "path": request.get_full_path(),
+            },
+        )
+        return HttpResponse("Forbidden: broad jt_analysis query.", status=403)
+
+    request_key = f"jt_analysis:rate:{route_name}:{client_ip}"
+    request_count = cache.get(request_key, 0) + 1
+    cache.set(request_key, request_count, JT_ANALYSIS_GUARD_WINDOW)
+
+    request_limit = JT_ANALYSIS_GUARD_LIMIT
+    if broad_query and direct_access:
+        request_limit = JT_ANALYSIS_GUARD_DIRECT_BROAD_LIMIT
+    elif broad_query:
+        request_limit = JT_ANALYSIS_GUARD_BROAD_LIMIT
+
+    if request_count > request_limit:
+        cache.set(block_key, True, JT_ANALYSIS_GUARD_BLOCK_TTL)
+        logger.warning(
+            "Rate limited jt_analysis query",
+            extra={
+                "route_name": route_name,
+                "client_ip": client_ip,
+                "request_count": request_count,
+                "request_limit": request_limit,
+                "profile": profile,
+                "path": request.get_full_path(),
+            },
+        )
+        response = HttpResponse("Too many jt_analysis requests.", status=429)
+        response["Retry-After"] = str(JT_ANALYSIS_GUARD_BLOCK_TTL)
+        return response
+
+    return None
 
 
 def _strip_html_to_text(raw_html):
@@ -2149,6 +2316,27 @@ def jtAnalysis(
         request.GET.get("handycap") if request.GET.get("handycap") != None else handycap
     )
 
+    guard_response = _jt_analysis_guard(
+        request,
+        "jt_analysis",
+        rcity=rcity,
+        fdate=fdate,
+        tdate=tdate,
+        jockey=jockey,
+        trainer=trainer,
+        host=host,
+        horse=horse,
+        r1=r1,
+        r2=r2,
+        rr1=rr1,
+        rr2=rr2,
+        gate=gate,
+        distance=distance,
+        handycap=handycap,
+    )
+    if guard_response is not None:
+        return guard_response
+
     # print('2', fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2)
 
     # if fdate == "":
@@ -2280,6 +2468,28 @@ def jtAnalysisJockey(
         request.GET.get("handycap") if request.GET.get("handycap") != None else handycap
     )
     rno = request.GET.get("rno") if request.GET.get("rno") != None else rno
+
+    guard_response = _jt_analysis_guard(
+        request,
+        "jt_analysis_jockey",
+        rcity=rcity,
+        fdate=fdate,
+        tdate=tdate,
+        jockey=jockey,
+        trainer=trainer,
+        host=host,
+        jockey_b=jockey_b,
+        r1=r1,
+        r2=r2,
+        rr1=rr1,
+        rr2=rr2,
+        gate=gate,
+        distance=distance,
+        handycap=handycap,
+        rno=rno,
+    )
+    if guard_response is not None:
+        return guard_response
 
     # print('2', fdate, tdate, jockey, trainer, host, horse, r1, r2, rr1, rr2)
 
@@ -2446,6 +2656,29 @@ def jtAnalysisMulti(
     )
     rno = request.GET.get("rno") if request.GET.get("rno") != None else rno
     start = request.GET.get("start") if request.GET.get("start") != None else start
+
+    guard_response = _jt_analysis_guard(
+        request,
+        "jt_analysis_multi",
+        rcity=rcity,
+        fdate=fdate,
+        tdate=tdate,
+        jockey=jockey,
+        trainer=trainer,
+        host=host,
+        jockey_b=jockey_b,
+        r1=r1,
+        r2=r2,
+        rr1=rr1,
+        rr2=rr2,
+        gate=gate,
+        distance=distance,
+        handycap=handycap,
+        rno=rno,
+        start=start,
+    )
+    if guard_response is not None:
+        return guard_response
 
     # print('2', fdate, tdate, jockey, trainer, host, jockey_b, r1, r2, rr1, rr2)
     # print(tdate)

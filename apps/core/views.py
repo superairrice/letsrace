@@ -1247,9 +1247,20 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
     top146 = _dedupe_gate_values((([r_pop1] if r_pop1 else []) + top4_6))
     top378 = _dedupe_gate_values((([r_pop3] if r_pop3 else []) + top3_8_12[4:6]))
     top246 = _dedupe_gate_values((([r_pop2] if r_pop2 else []) + top4_6))
+    top246_exact = _dedupe_gate_values(
+        [r_pop2, r_pop4, top6_8[0] if len(top6_8) > 0 else None]
+    )
     top245 = _dedupe_gate_values(([r_pop2, r_pop4] + top5_8[:1]))
     top345 = _dedupe_gate_values(([r_pop3, r_pop4] + top5_8[:1]))
     top3578 = _dedupe_gate_values(([r_pop3] + list(top6_8)))
+    top3578_exact = _dedupe_gate_values(
+        [
+            r_pop3,
+            top5_8[0] if len(top5_8) > 0 else None,
+            top5_8[2] if len(top5_8) > 2 else None,
+            top5_8[3] if len(top5_8) > 3 else None,
+        ]
+    )
     top3678 = _dedupe_gate_values(([r_pop3] + list(top6_8)))
     top678 = _dedupe_gate_values(top6_8)
     top2356 = _dedupe_gate_values(([r_pop2, r_pop3] + list(top5_6)))
@@ -1331,6 +1342,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor1_24_58": {
             "bet_type": "삼쌍",
+            "anchor_group_index": 0,
+            "anchor_axis": 1,
             "groups": [
                 _gate_group("1", anchor),
                 _gate_group("2~4", top2_4),
@@ -1340,6 +1353,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor1_58_24": {
             "bet_type": "삼쌍",
+            "anchor_group_index": 0,
+            "anchor_axis": 1,
             "groups": [
                 _gate_group("1", anchor),
                 _gate_group("5~8", top5_8),
@@ -1349,6 +1364,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor1_23_46": {
             "bet_type": "삼복",
+            "anchor_group_index": 0,
+            "anchor_axis": 1,
             "groups": [
                 _gate_group("1", anchor),
                 _gate_group("2~3", top3[1:3]),
@@ -1358,6 +1375,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor1_47_23": {
             "bet_type": "삼쌍",
+            "anchor_group_index": 0,
+            "anchor_axis": 1,
             "groups": [
                 _gate_group("1", anchor),
                 _gate_group("4~7", top4_7),
@@ -1367,6 +1386,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor1_23_47": {
             "bet_type": "삼쌍",
+            "anchor_group_index": 0,
+            "anchor_axis": 1,
             "groups": [
                 _gate_group("1", anchor),
                 _gate_group("2~3", top3[1:3]),
@@ -1394,6 +1415,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor4_pair123_56_trifecta": {
             "bet_type": "삼쌍",
+            "anchor_group_index": 0,
+            "anchor_axis": 4,
             "groups": [
                 _gate_group("4", [r_pop4]),
                 _gate_group("1~3", top1_3),
@@ -1403,6 +1426,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor4_pair123_567_trifecta": {
             "bet_type": "삼쌍",
+            "anchor_group_index": 0,
+            "anchor_axis": 4,
             "groups": [
                 _gate_group("4", [r_pop4]),
                 _gate_group("1~3", top1_3),
@@ -1412,6 +1437,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor3_247": {
             "bet_type": "삼쌍",
+            "anchor_group_index": 0,
+            "anchor_axis": 3,
             "groups": [
                 _gate_group("3", [r_pop3]),
                 _gate_group("2,4~7", ([r_pop2] if r_pop2 else []) + top4_7),
@@ -1420,6 +1447,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor3_pair124_567_trifecta": {
             "bet_type": "삼쌍",
+            "anchor_group_index": 0,
+            "anchor_axis": 3,
             "groups": [
                 _gate_group("3", [r_pop3]),
                 _gate_group("1,2,4", top1_2_4),
@@ -1429,6 +1458,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor4_box2356_trifecta": {
             "bet_type": "삼쌍",
+            "anchor_group_index": 0,
+            "anchor_axis": 4,
             "groups": [
                 _gate_group("4", [r_pop4]),
                 _gate_group("2,3,5,6", top2356),
@@ -1437,6 +1468,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor2_37_trifecta": {
             "bet_type": "삼쌍",
+            "anchor_group_index": 0,
+            "anchor_axis": 2,
             "groups": [
                 _gate_group("2", second_anchor),
                 _gate_group("3~7", top3_7),
@@ -1445,6 +1478,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor2_pair146_378_trifecta": {
             "bet_type": "삼쌍",
+            "anchor_group_index": 0,
+            "anchor_axis": 2,
             "groups": [
                 _gate_group("2", second_anchor),
                 _gate_group("1,4~6", top146),
@@ -1454,15 +1489,19 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor1_second246_3578_trifecta": {
             "bet_type": "삼쌍",
+            "anchor_group_index": 0,
+            "anchor_axis": 1,
             "groups": [
-                _gate_group("2,4,6", top246),
+                _gate_group("2,4,6", top246_exact),
                 _gate_group("1", [r_pop1]),
-                _gate_group("3,5,7,8", top3578),
+                _gate_group("3,5,7,8", top3578_exact),
             ],
-            "tickets": ordered_product(top246, [r_pop1], top3578),
+            "tickets": ordered_product(top246_exact, [r_pop1], top3578_exact),
         },
         "anchor1_third245_3678_trifecta": {
             "bet_type": "삼쌍",
+            "anchor_group_index": 0,
+            "anchor_axis": 1,
             "groups": [
                 _gate_group("2,4,5", top245),
                 _gate_group("3,6,7,8", top3678),
@@ -1472,6 +1511,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor2_pair345_678_trifecta": {
             "bet_type": "삼쌍",
+            "anchor_group_index": 0,
+            "anchor_axis": 2,
             "groups": [
                 _gate_group("2", second_anchor),
                 _gate_group("3,4,5", top345),
@@ -1508,6 +1549,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor1_pair246_3_trio": {
             "bet_type": "삼복",
+            "anchor_group_index": 0,
+            "anchor_axis": 1,
             "groups": [
                 _gate_group("1", anchor),
                 _gate_group("2,4~6", top246),
@@ -1517,6 +1560,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         },
         "anchor1_3_47_trio": {
             "bet_type": "삼복",
+            "anchor_group_index": 0,
+            "anchor_axis": 1,
             "groups": [
                 _gate_group("1", anchor),
                 _gate_group("3", [r_pop3]),
@@ -1546,6 +1591,8 @@ def _build_admin_profit_strategy_combo_payload(row_map, strategy_key):
         "groups": groups,
         "tickets": tickets,
         "holes_per_race": len(tickets),
+        "anchor_group_index": int(payload.get("anchor_group_index", 0) or 0),
+        "anchor_axis": payload.get("anchor_axis"),
     }
 
 
@@ -5980,13 +6027,14 @@ def admin_profit_method_gates_popup(request):
                     {
                         "strategy_key": strategy_key,
                         "label": ADMIN_PROFIT_STRATEGY_LABELS.get(strategy_key, strategy_key),
-                        "anchor_axis": (
+                        "anchor_axis": combo_payload.get("anchor_axis") or (
                             1
                             if str(ADMIN_PROFIT_STRATEGY_LABELS.get(strategy_key, strategy_key)).strip().startswith("1 /")
                             else 2
                             if str(ADMIN_PROFIT_STRATEGY_LABELS.get(strategy_key, strategy_key)).strip().startswith("2 /")
                             else None
                         ),
+                        "anchor_group_index": int(combo_payload.get("anchor_group_index", 0) or 0),
                         "holes_per_race": holes_per_race,
                         "groups": combo_payload.get("groups", []),
                         "tickets": combo_payload.get("tickets", []),
