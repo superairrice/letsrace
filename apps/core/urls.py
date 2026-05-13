@@ -37,6 +37,8 @@ urlpatterns = [
     path("send_email/", views.send_email, name="send_email"),
     path("admin-summary-popup/", views.admin_summary_popup, name="admin_summary_popup"),
     path("admin-profit-analysis-popup/", views.admin_profit_analysis_popup, name="admin_profit_analysis_popup"),
+    path("admin-profit-method-hits-popup/", views.admin_profit_method_hits_popup, name="admin_profit_method_hits_popup"),
+    path("admin-profit-method-gates-popup/", views.admin_profit_method_gates_popup, name="admin_profit_method_gates_popup"),
     path("admin-summary-special-popup/", views.admin_summary_special_popup, name="admin_summary_special_popup"),
     path("admin-summary-gate-popup/", views.admin_summary_gate_popup, name="admin_summary_gate_popup"),
     # path(

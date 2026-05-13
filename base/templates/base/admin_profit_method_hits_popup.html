@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+{% load humanize %}
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>적중 경주 리스트</title>
+  <style>
+    :root {
+      --bg: #101927;
+      --panel: rgba(15, 24, 38, 0.94);
+      --panel-2: rgba(23, 35, 55, 0.94);
+      --line: rgba(103, 129, 164, 0.34);
+      --text: #e8f0fb;
+      --muted: #96abc6;
+      --accent: #69b8ff;
+      --good: #52d79a;
+      --badge: rgba(35, 50, 74, 0.9);
+    }
+
+    body {
+      margin: 0;
+      padding: 0.9rem;
+      background:
+        radial-gradient(circle at top left, rgba(63, 104, 171, 0.28), transparent 34%),
+        linear-gradient(180deg, #132033 0%, #0f1724 100%);
+      color: var(--text);
+      font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .hits-popup {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--panel);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+      overflow: hidden;
+    }
+
+    .hits-popup__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.8rem;
+      padding: 1rem 1rem 0.85rem;
+      border-bottom: 1px solid rgba(104, 130, 164, 0.24);
+      background: linear-gradient(180deg, rgba(22, 35, 55, 0.94) 0%, rgba(14, 22, 35, 0.94) 100%);
+    }
+
+    .hits-popup__title {
+      font-size: 1.02rem;
+      font-weight: 800;
+      color: #f6f9ff;
+      letter-spacing: 0.01em;
+    }
+    .hits-popup__strategy {
+      font-weight: 900;
+    }
+    .hits-popup__strategy.is-trio {
+      color: #f4f8ff;
+      text-shadow: 0 0 10px rgba(244, 248, 255, 0.12);
+    }
+    .hits-popup__strategy.is-trifecta {
+      color: #66d7c5;
+      text-shadow: 0 0 10px rgba(73, 212, 186, 0.13);
+    }
+
+    .hits-popup__meta {
+      margin-top: 0.22rem;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .hits-popup__summary {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      justify-content: flex-end;
+    }
+
+    .hits-popup__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.28rem;
+      padding: 0.28rem 0.56rem;
+      border-radius: 999px;
+      border: 1px solid rgba(112, 143, 181, 0.38);
+      background: var(--badge);
+      color: #d8e5f6;
+      font-size: 0.76rem;
+      font-weight: 800;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .hits-popup__list {
+      display: grid;
+      gap: 0.72rem;
+      padding: 0.9rem;
+    }
+
+    .hits-popup__card {
+      border: 1px solid rgba(101, 126, 160, 0.28);
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(21, 33, 52, 0.92) 0%, rgba(17, 27, 43, 0.96) 100%);
+      overflow: hidden;
+    }
+
+    .hits-popup__card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.8rem;
+      padding: 0.82rem 0.9rem 0.7rem;
+      border-bottom: 1px solid rgba(94, 120, 154, 0.22);
+    }
+
+    .hits-popup__race {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.42rem;
+      margin-bottom: 0.22rem;
+    }
+
+    .hits-popup__race-date {
+      color: #f3f7ff;
+      font-size: 0.92rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    .hits-popup__race-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.14rem 0.46rem;
+      border-radius: 999px;
+      background: rgba(39, 83, 143, 0.28);
+      color: #8fd0ff;
+      text-decoration: none;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+    .hits-popup__race-badge:hover {
+      background: rgba(52, 101, 170, 0.34);
+      color: #e7f4ff;
+    }
+
+    .hits-popup__condition {
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .hits-popup__numbers {
+      display: grid;
+      grid-template-columns: repeat(2, auto);
+      gap: 0.28rem 0.56rem;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .hits-popup__metric-label {
+      color: #84a2c6;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .hits-popup__metric-value {
+      color: #f1f6ff;
+      font-size: 0.94rem;
+      font-weight: 800;
+    }
+
+    .hits-popup__body {
+      padding: 0.8rem 0.9rem 0.95rem;
+    }
+
+    .hits-popup__actual {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.36rem;
+      margin-bottom: 0.72rem;
+      padding: 0.22rem 0.5rem;
+      border-radius: 999px;
+      background: rgba(28, 46, 74, 0.72);
+      color: #d9e7f9;
+      font-size: 0.76rem;
+      font-weight: 800;
+    }
+
+    .hits-popup__runners {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.52rem;
+    }
+
+    .hits-popup__runner {
+      border: 1px solid rgba(102, 128, 162, 0.22);
+      border-radius: 12px;
+      background: var(--panel-2);
+      padding: 0.62rem 0.68rem 0.66rem;
+    }
+
+    .hits-popup__runner-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.4rem;
+      margin-bottom: 0.38rem;
+    }
+
+    .hits-popup__runner-rank {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2rem;
+      height: 2rem;
+      border-radius: 999px;
+      background: rgba(80, 215, 154, 0.16);
+      color: var(--good);
+      font-size: 0.76rem;
+      font-weight: 900;
+    }
+
+    .hits-popup__runner-gate {
+      color: #8eb7e5;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .hits-popup__runner-pop {
+      color: #ffcc73;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .hits-popup__runner-horse {
+      color: #f5f9ff;
+      font-size: 0.92rem;
+      font-weight: 800;
+      margin-bottom: 0.34rem;
+      word-break: keep-all;
+    }
+
+    .hits-popup__runner-meta {
+      display: grid;
+      gap: 0.14rem;
+      color: #a9bfd9;
+      font-size: 0.72rem;
+    }
+
+    .hits-popup__runner-meta strong {
+      color: #d5e3f6;
+      font-weight: 700;
+    }
+
+    .hits-popup__empty {
+      padding: 1.1rem 0.9rem 0.95rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .hits-popup__footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0 0.9rem 0.9rem;
+    }
+
+    .hits-popup__updated {
+      color: #89a0be;
+      font-size: 0.72rem;
+    }
+
+    .hits-popup__close {
+      border: 0;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #4a95ff 0%, #2f77e8 100%);
+      color: #fff;
+      font-weight: 900;
+      padding: 0.5rem 0.88rem;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(33, 100, 196, 0.24);
+    }
+
+    @media (max-width: 740px) {
+      .hits-popup__head,
+      .hits-popup__card-head,
+      .hits-popup__footer {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .hits-popup__numbers {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        text-align: left;
+      }
+
+      .hits-popup__runners {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="hits-popup">
+    <div class="hits-popup__head">
+      <div>
+        <div class="hits-popup__title">{{ track_name }} | <span class="hits-popup__strategy {% if is_primary_strategy and '삼복' in strategy_label %}is-trio{% elif is_primary_strategy and '삼쌍' in strategy_label %}is-trifecta{% endif %}">{{ strategy_label }}</span></div>
+        <div class="hits-popup__meta">{{ from_date }} ~ {{ to_date }}</div>
+      </div>
+      <div class="hits-popup__summary">
+        <span class="hits-popup__badge">적중 {{ total_hits|intcomma }}</span>
+        <span class="hits-popup__badge">환수 {{ total_refund|floatformat:0|intcomma }}</span>
+      </div>
+    </div>
+
+    {% if hit_rows %}
+    <div class="hits-popup__list">
+      {% for row in hit_rows %}
+      <article class="hits-popup__card">
+        <div class="hits-popup__card-head">
+          <div>
+            <div class="hits-popup__race">
+              <span class="hits-popup__race-date">{{ row.rdate }}</span>
+              <a
+                href="{% url 'race_prediction' row.track row.rdate row.rno 0 'awardee' %}"
+                class="hits-popup__race-badge"
+                onclick="window.open(this.href, 'w_race_prediction', 'width=900, height=1000, top=0, left=0, toolbars=no, scrollbars=yes'); return false;"
+              >{{ row.track }} {{ row.rno }}경주</a>
+            </div>
+            <div class="hits-popup__condition">{{ row.condition }}</div>
+          </div>
+          <div class="hits-popup__numbers">
+            <div>
+              <div class="hits-popup__metric-label">배당</div>
+              <div class="hits-popup__metric-value">{{ row.odds|floatformat:1|intcomma }}</div>
+            </div>
+            <div>
+              <div class="hits-popup__metric-label">환수</div>
+              <div class="hits-popup__metric-value">{{ row.refund|floatformat:0|intcomma }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="hits-popup__body">
+          <div class="hits-popup__actual">실제 TOP3 {{ row.actual_top3 }}</div>
+          <div class="hits-popup__runners">
+            {% for runner in row.runners %}
+            <section class="hits-popup__runner">
+              <div class="hits-popup__runner-head">
+                <span class="hits-popup__runner-rank">{{ runner.rank }}착</span>
+                <span>
+                  <span class="hits-popup__runner-gate">{{ runner.gate }}번</span>
+                  {% if runner.r_pop %}
+                  <span class="hits-popup__runner-pop">· r_pop {{ runner.r_pop }}</span>
+                  {% endif %}
+                </span>
+              </div>
+              <div class="hits-popup__runner-horse">{{ runner.horse }}</div>
+              <div class="hits-popup__runner-meta">
+                <div><strong>기수</strong> {{ runner.jockey }}</div>
+                <div><strong>조교사</strong> {{ runner.trainer }}</div>
+                <div><strong>마주</strong> {{ runner.host }}</div>
+              </div>
+            </section>
+            {% endfor %}
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="hits-popup__empty">적중 경주가 없습니다.</div>
+    {% endif %}
+
+    <div class="hits-popup__footer">
+      <span class="hits-popup__updated">최근 갱신 {{ updated_at|date:"Y-m-d H:i:s" }}</span>
+      <button type="button" class="hits-popup__close" onclick="window.close()">닫기</button>
+    </div>
+  </section>
+</body>
+</html>

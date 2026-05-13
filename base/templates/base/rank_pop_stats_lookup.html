@@ -193,6 +193,18 @@
       font-weight: 800;
     }
 
+    .stats-entity-link {
+      color: #a9e3ff;
+      font-weight: 800;
+      text-decoration: none;
+      border-bottom: 1px dotted rgba(169, 227, 255, 0.72);
+    }
+
+    .stats-entity-link:hover {
+      color: #ffffff;
+      border-bottom-color: #ffffff;
+    }
+
     .stats-rate-hit--win {
       color: var(--color-r1) !important;
       font-weight: 800;
@@ -306,9 +318,20 @@
             <td{% if summary_row.place_rate >= 60 %} class="stats-rate-hit--place"{% endif %}>{{summary_row.place_rate}}%</td>
           </tr>
           {% endif %}
+          {% url 'race_status_lookup' as race_status_lookup_url %}
           {% for row in rows %}
           <tr>
-            <td>{{row.entity_name}}</td>
+            <td>
+              {% if entity_type == "trainer" %}
+              <a class="stats-entity-link"
+                 href="{{race_status_lookup_url}}?from_date={{from_date|urlencode}}&to_date={{to_date|urlencode}}&trainer={{row.entity_name|urlencode}}&r_pop_from={{r_pop_from|urlencode}}&r_pop_to={{r_pop_to|urlencode}}"
+                 onclick="window.open(this.href, 'w_race_status_lookup', 'width=1500, height=980, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">{{row.entity_name}}</a>
+              {% else %}
+              <a class="stats-entity-link"
+                 href="{{race_status_lookup_url}}?from_date={{from_date|urlencode}}&to_date={{to_date|urlencode}}&jockey={{row.entity_name|urlencode}}&r_pop_from={{r_pop_from|urlencode}}&r_pop_to={{r_pop_to|urlencode}}"
+                 onclick="window.open(this.href, 'w_race_status_lookup', 'width=1500, height=980, top=0, left=0, toolbars=no, scrollbars=yes'); return false;">{{row.entity_name}}</a>
+              {% endif %}
+            </td>
             <td>{{row.starts}}</td>
             <td>{{row.rank1}}</td>
             <td>{{row.rank2}}</td>

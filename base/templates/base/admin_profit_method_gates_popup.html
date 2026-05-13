@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+{% load humanize %}
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>관리자 수익분석 베팅방법</title>
+  <style>
+    :root {
+      --bg: #121926;
+      --panel: rgba(21, 29, 42, 0.97);
+      --panel-2: rgba(25, 34, 49, 0.96);
+      --line: rgba(126, 142, 166, 0.18);
+      --text: #e7edf7;
+      --muted: #97a4b8;
+      --accent: #8fb3d9;
+      --accent-2: #7db79a;
+      --danger: #caa07a;
+    }
+
+    body {
+      margin: 0;
+      padding: 0.55rem;
+      background:
+        radial-gradient(circle at top left, rgba(62, 82, 112, 0.18), transparent 32%),
+        linear-gradient(180deg, #161d2a 0%, #101723 100%);
+      color: var(--text);
+      font-family: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .method-popup {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--panel);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+      overflow: hidden;
+      width: 70%;
+      margin: 0 auto;
+    }
+
+    .method-popup__head {
+      padding: 0.64rem 0.72rem 0.56rem;
+      border-bottom: 1px solid rgba(126, 142, 166, 0.16);
+      background: linear-gradient(180deg, rgba(26, 35, 50, 0.96) 0%, rgba(19, 27, 39, 0.96) 100%);
+    }
+
+    .method-popup__head-row {
+      display: flex;
+      align-items: center;
+      gap: 0.42rem;
+      flex-wrap: wrap;
+    }
+
+    .method-popup__title-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.34rem;
+      flex-wrap: wrap;
+    }
+
+    .method-popup__title-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.16rem 0.46rem;
+      border-radius: 999px;
+      border: 1px solid rgba(196, 210, 231, 0.3);
+      background: rgba(36, 46, 62, 0.82);
+      font-size: 0.68rem;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+      color: #eef3fb;
+    }
+
+    .method-popup__title-badge.is-track {
+      background: linear-gradient(180deg, rgba(68, 101, 148, 0.88) 0%, rgba(52, 81, 121, 0.88) 100%);
+      border-color: rgba(197, 224, 255, 0.36);
+      color: #f6fbff;
+    }
+
+    .method-popup__title-badge.is-date {
+      background: linear-gradient(180deg, rgba(53, 68, 92, 0.9) 0%, rgba(41, 54, 74, 0.9) 100%);
+      border-color: rgba(206, 219, 238, 0.32);
+      color: #dde6f4;
+      letter-spacing: 0.01em;
+    }
+
+    .method-popup__title-badge.is-rno {
+      background: linear-gradient(180deg, rgba(86, 68, 128, 0.9) 0%, rgba(68, 54, 102, 0.9) 100%);
+      border-color: rgba(223, 210, 255, 0.34);
+      color: #f4ecff;
+      min-width: 3.2rem;
+    }
+
+    .method-popup__meta {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+    }
+
+    .method-popup__summary {
+      display: flex;
+      align-items: center;
+      gap: 0.42rem;
+      flex-wrap: wrap;
+    }
+
+    .method-popup__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.24rem;
+      padding: 0.28rem 0.62rem;
+      border-radius: 999px;
+      border: 1px solid rgba(124, 140, 164, 0.2);
+      background: rgba(37, 47, 63, 0.9);
+      color: #d7dfeb;
+      font-size: 0.76rem;
+      font-weight: 900;
+      letter-spacing: 0.01em;
+    }
+    .method-popup__badge-gates {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.28rem;
+      flex-wrap: wrap;
+    }
+    .method-popup__badge-gate {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.7rem;
+      padding: 0.22rem 0.42rem;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(232, 239, 250, 0.24) 0%, rgba(209, 222, 242, 0.2) 100%);
+      border: 1px solid rgba(194, 208, 230, 0.28);
+      color: #f7fbff;
+      font-size: 0.84rem;
+      font-weight: 900;
+      line-height: 1;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .method-popup__section {
+      position: relative;
+      padding: 0 0.34rem;
+      border-top: 1px solid rgba(126, 142, 166, 0.12);
+    }
+
+    .method-popup__section:first-of-type {
+      border-top: 0;
+    }
+
+    .method-popup__section.is-primary {
+      background: linear-gradient(180deg, rgba(18, 33, 56, 0.28) 0%, rgba(14, 24, 38, 0.04) 100%);
+    }
+
+    .method-popup__section.is-support {
+      background: linear-gradient(180deg, rgba(56, 34, 44, 0.2) 0%, rgba(24, 22, 28, 0.04) 100%);
+    }
+
+    .method-popup__section.is-primary::before,
+    .method-popup__section.is-support::before {
+      content: "";
+      position: absolute;
+      left: 0.38rem;
+      right: 0.38rem;
+      top: 0;
+      height: 2px;
+      border-radius: 999px;
+      opacity: 0.95;
+    }
+
+    .method-popup__section.is-primary::before {
+      background: linear-gradient(90deg, rgba(104, 166, 236, 0.92) 0%, rgba(104, 166, 236, 0.12) 100%);
+    }
+
+    .method-popup__section.is-support::before {
+      background: linear-gradient(90deg, rgba(198, 120, 152, 0.82) 0%, rgba(198, 120, 152, 0.12) 100%);
+    }
+
+    .method-popup__section.is-support.is-collapsed .method-popup__list {
+      display: none;
+    }
+
+    .method-popup__section.is-support.is-collapsed {
+      padding-bottom: 0;
+    }
+
+    .method-popup__section-title.is-support-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.2rem 0.58rem;
+      border-radius: 999px;
+      border: 1px solid rgba(198, 120, 152, 0.26);
+      background: linear-gradient(180deg, rgba(72, 42, 56, 0.82) 0%, rgba(54, 34, 44, 0.82) 100%);
+      color: #f3d9e5;
+      font-size: 0.66rem;
+      font-weight: 800;
+      line-height: 1;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .method-popup__section-title.is-support-toggle:hover {
+      border-color: rgba(214, 146, 176, 0.34);
+      color: #fff0f6;
+    }
+
+    .method-popup__section-title {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.1rem 0.42rem;
+      border-radius: 999px;
+      border: 1px solid rgba(126, 142, 166, 0.18);
+      background: rgba(28, 36, 50, 0.56);
+      margin: 0.12rem 0 0.14rem;
+      color: #9ab1cc;
+      font-size: 0.66rem;
+      font-weight: 800;
+    }
+
+    .method-popup__section.is-primary .method-popup__section-title {
+      color: #d7ebff;
+      border-color: rgba(104, 166, 236, 0.28);
+      background: rgba(33, 53, 80, 0.72);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .method-popup__section.is-support .method-popup__section-title {
+      color: #f3d9e5;
+      border-color: rgba(198, 120, 152, 0.24);
+      background: rgba(72, 42, 56, 0.62);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    }
+
+    .method-popup__list {
+      display: grid;
+      gap: 0.12rem;
+      margin-bottom: 0.14rem;
+    }
+
+    .method-popup__section.is-primary .method-popup__card {
+      background: linear-gradient(180deg, rgba(26, 39, 59, 0.98) 0%, rgba(22, 33, 50, 0.98) 100%);
+    }
+
+    .method-popup__section.is-support .method-popup__card {
+      background: linear-gradient(180deg, rgba(43, 33, 40, 0.98) 0%, rgba(32, 26, 32, 0.98) 100%);
+    }
+
+    .method-popup__section.is-support .method-popup__card-head {
+      background: linear-gradient(180deg, rgba(72, 48, 61, 0.72) 0%, rgba(54, 38, 47, 0.72) 100%);
+    }
+
+    .method-popup__section.is-support .method-popup__group {
+      background: linear-gradient(180deg, rgba(58, 45, 52, 0.72) 0%, rgba(45, 36, 42, 0.72) 100%);
+    }
+
+    .method-popup__card {
+      border: 0;
+      border-radius: 10px;
+      background: linear-gradient(180deg, rgba(28, 37, 52, 0.98) 0%, rgba(24, 33, 47, 0.98) 100%);
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    }
+
+    .method-popup__card.is-hit {
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.02),
+        inset 3px 0 0 rgba(125, 183, 154, 0.42);
+    }
+
+    .method-popup__card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.42rem;
+      padding: 0.18rem 0.28rem 0.14rem;
+      border-bottom: 1px solid rgba(126, 142, 166, 0.1);
+      background: linear-gradient(180deg, rgba(34, 45, 63, 0.78) 0%, rgba(29, 39, 55, 0.78) 100%);
+    }
+
+    .method-popup__card.is-hit .method-popup__card-head {
+      border-bottom-color: rgba(125, 183, 154, 0.18);
+    }
+
+    .method-popup__card-main {
+      display: grid;
+      gap: 0.02rem;
+      min-width: 0;
+      flex: 1 1 auto;
+    }
+
+    .method-popup__method-title {
+      color: #edf2f8;
+      font-size: 0.71rem;
+      font-weight: 800;
+      line-height: 1.12;
+    }
+    .method-popup__method-title.is-trio {
+      color: #f4f8ff;
+      text-shadow: 0 0 10px rgba(244, 248, 255, 0.12);
+    }
+    .method-popup__method-title.is-trifecta {
+      color: #66d7c5;
+      text-shadow: 0 0 10px rgba(73, 212, 186, 0.13);
+    }
+
+    .method-popup__method-title-row {
+      display: flex;
+      align-items: center;
+      gap: 0.18rem;
+      flex-wrap: wrap;
+      justify-content: space-between;
+    }
+
+    .method-popup__method-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.14rem;
+      flex: 1 1 auto;
+      min-width: 0;
+      flex-wrap: wrap;
+    }
+
+    .method-popup__meta-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.08rem 0.32rem;
+      border-radius: 999px;
+      border: 1px solid rgba(126, 142, 166, 0.16);
+      background: rgba(44, 52, 66, 0.7);
+      color: #dce5f2;
+      font-size: 0.54rem;
+      font-weight: 800;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+
+    .method-popup__meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.14rem;
+      color: var(--muted);
+      font-size: 0.54rem;
+      font-weight: 700;
+      line-height: 1.1;
+      white-space: nowrap;
+    }
+
+    .method-popup__meta-badge.is-holes {
+      background: rgba(58, 74, 98, 0.76);
+      border-color: rgba(151, 180, 214, 0.18);
+      color: #dcebff;
+    }
+
+    .method-popup__meta-badge.is-bet {
+      background: rgba(49, 60, 78, 0.74);
+      border-color: rgba(138, 160, 191, 0.16);
+      color: #d9e4f5;
+    }
+
+    .method-popup__meta-badge.is-refund {
+      background: rgba(59, 76, 67, 0.66);
+      border-color: rgba(125, 183, 154, 0.18);
+      color: #d7f0e3;
+    }
+
+    .method-popup__meta-badge.is-refund.is-zero {
+      background: rgba(66, 56, 48, 0.6);
+      border-color: rgba(160, 145, 130, 0.16);
+      color: #ddd1c6;
+    }
+
+    .method-popup__status {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.15rem 0.44rem;
+      border-radius: 999px;
+      font-size: 0.64rem;
+      font-weight: 900;
+      letter-spacing: 0.01em;
+      white-space: nowrap;
+      border: 1px solid transparent;
+      align-self: flex-start;
+    }
+
+    .method-popup__status.is-hit {
+      background: rgba(125, 183, 154, 0.26);
+      color: var(--accent-2);
+      border-color: rgba(212, 245, 229, 0.42);
+    }
+
+    .method-popup__status.is-miss {
+      background: rgba(92, 74, 55, 0.16);
+      color: var(--danger);
+      border-color: rgba(202, 160, 122, 0.14);
+    }
+
+    .method-popup__groups {
+      display: flex;
+      gap: 0.18rem;
+      padding: 0.16rem 0.28rem 0.18rem;
+      width: 100%;
+      margin: 0;
+      background:
+        linear-gradient(180deg, rgba(22, 30, 42, 0.42) 0%, rgba(20, 28, 40, 0.18) 100%);
+    }
+
+    .method-popup__card.is-hit .method-popup__groups {
+      background:
+        linear-gradient(180deg, rgba(32, 24, 34, 0.92) 0%, rgba(24, 20, 29, 0.9) 100%);
+      border-top: 1px solid rgba(158, 76, 90, 0.38);
+    }
+
+    .method-popup__group {
+      display: block;
+      flex: 1 1 0;
+      align-items: start;
+      min-width: 0;
+      padding: 0.14rem 0.18rem;
+      border: 1px solid rgba(126, 142, 166, 0.12);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(34, 43, 58, 0.74) 0%, rgba(29, 38, 53, 0.72) 100%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    }
+
+    .method-popup__card.is-hit .method-popup__group {
+      border-color: rgba(120, 73, 88, 0.26);
+      background:
+        linear-gradient(180deg, rgba(64, 35, 49, 0.96) 0%, rgba(49, 28, 38, 0.95) 52%, rgba(35, 23, 31, 0.94) 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.03),
+        inset 0 -1px 0 rgba(20, 12, 18, 0.42),
+        0 0 0 1px rgba(132, 76, 95, 0.08);
+    }
+
+    .method-popup__group.is-anchor {
+      background: linear-gradient(180deg, rgba(34, 43, 58, 0.74) 0%, rgba(29, 38, 53, 0.72) 100%);
+      border-color: transparent;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    }
+
+    .method-popup__card.is-hit .method-popup__group.is-anchor {
+      border-color: rgba(137, 84, 100, 0.3);
+      background:
+        linear-gradient(180deg, rgba(78, 42, 57, 0.98) 0%, rgba(60, 32, 43, 0.96) 48%, rgba(40, 24, 33, 0.95) 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        inset 0 -1px 0 rgba(24, 13, 20, 0.44),
+        0 0 0 1px rgba(144, 83, 104, 0.12);
+    }
+
+    .method-popup__group-anchor-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.18rem;
+      flex-wrap: wrap;
+    }
+
+    .method-popup__group-anchor-values {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.12rem;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+
+    .method-popup__group-anchor-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.7rem;
+      padding: 0.1rem 0.24rem;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(226, 235, 247, 0.24) 0%, rgba(201, 216, 236, 0.2) 100%);
+      border: 1px solid rgba(189, 205, 227, 0.32);
+      color: #ffffff;
+      font-size: 0.64rem;
+      font-weight: 900;
+      line-height: 1;
+      white-space: nowrap;
+      text-shadow:
+        0 1px 0 rgba(18, 24, 34, 0.22),
+        0 0 8px rgba(255, 255, 255, 0.12);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 0 0 1px rgba(189, 205, 227, 0.06);
+    }
+
+    .method-popup__group-anchor-pill.is-primary-trio {
+      color: #ffffff;
+      border-color: rgba(215, 226, 240, 0.38);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 0 0 1px rgba(205, 218, 234, 0.08);
+    }
+
+    .method-popup__group-anchor-pill.is-primary-trifecta {
+      color: var(--color-r1, oklch(79% 0.29 30.0));
+      border-color: rgba(103, 214, 197, 0.48);
+      text-shadow:
+        0 1px 0 rgba(34, 16, 12, 0.22),
+        0 0 10px color-mix(in srgb, var(--color-r1, oklch(79% 0.29 30.0)) 36%, transparent);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 0 0 1px rgba(84, 201, 183, 0.12);
+    }
+
+    .method-popup__card.is-hit .method-popup__group-anchor-pill {
+      background:
+        linear-gradient(180deg, rgba(241, 221, 226, 0.18) 0%, rgba(207, 151, 165, 0.14) 58%, rgba(133, 88, 102, 0.14) 100%);
+      border-color: rgba(191, 139, 152, 0.34);
+      color: #fff7f9;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        inset 0 -1px 0 rgba(67, 35, 46, 0.18),
+        0 0 0 1px rgba(173, 121, 135, 0.1);
+      text-shadow:
+        0 1px 0 rgba(28, 14, 20, 0.22),
+        0 0 8px rgba(255, 236, 241, 0.14);
+    }
+
+    .method-popup__card.is-hit .method-popup__group-anchor-pill.is-primary-trio {
+      color: #fff7f9;
+      border-color: rgba(245, 228, 234, 0.42);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -1px 0 rgba(67, 35, 46, 0.18),
+        0 0 0 1px rgba(215, 184, 194, 0.12);
+    }
+
+    .method-popup__card.is-hit .method-popup__group-anchor-pill.is-primary-trifecta {
+      color: var(--color-r1, oklch(79% 0.29 30.0));
+      border-color: rgba(98, 224, 202, 0.5);
+      text-shadow:
+        0 1px 0 rgba(28, 14, 20, 0.22),
+        0 0 12px color-mix(in srgb, var(--color-r1, oklch(79% 0.29 30.0)) 38%, transparent);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        inset 0 -1px 0 rgba(67, 35, 46, 0.18),
+        0 0 0 1px rgba(83, 210, 188, 0.16),
+        0 0 10px rgba(78, 193, 173, 0.14);
+    }
+
+    .method-popup__group-anchor-pill.is-axis1 {
+      color: #f7fbff;
+      text-shadow:
+        0 1px 0 rgba(18, 24, 34, 0.2),
+        0 0 10px rgba(232, 244, 255, 0.2);
+    }
+
+    .method-popup__group-anchor-pill.is-axis2 {
+      color: #ffd85f;
+      text-shadow:
+        0 1px 0 rgba(39, 28, 9, 0.22),
+        0 0 10px rgba(255, 216, 95, 0.2);
+    }
+
+    .method-popup__card.is-hit .method-popup__group-anchor-pill.is-axis1 {
+      color: #ffffff;
+      text-shadow:
+        0 1px 0 rgba(24, 14, 18, 0.2),
+        0 0 12px rgba(255, 250, 252, 0.22);
+    }
+
+    .method-popup__card.is-hit .method-popup__group-anchor-pill.is-axis2 {
+      color: #ffe57b;
+      text-shadow:
+        0 1px 0 rgba(46, 27, 10, 0.22),
+        0 0 12px rgba(255, 229, 123, 0.24);
+    }
+
+    .method-popup__group-gates {
+      color: #f4f7fc;
+      font-size: 0.66rem;
+      font-weight: 900;
+      word-break: break-word;
+      line-height: 1.04;
+      text-shadow: 0 1px 0 rgba(8, 12, 18, 0.18);
+    }
+
+    .method-popup__card.is-hit .method-popup__group-gates {
+      color: #f8ebf0;
+      text-shadow: 0 1px 0 rgba(20, 10, 15, 0.24);
+    }
+
+    .method-popup__empty {
+      padding: 1rem 0.9rem 1.1rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .method-popup__footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.8rem;
+      padding: 0.55rem 0.72rem 0.68rem;
+      color: #89a0be;
+      font-size: 0.65rem;
+    }
+
+    .method-popup__footer button {
+      border: 1px solid rgba(126, 142, 166, 0.24);
+      border-radius: 999px;
+      background: rgba(39, 48, 63, 0.9);
+      color: #dde5f0;
+      padding: 0.26rem 0.58rem;
+      font-size: 0.67rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .method-popup__combo-trigger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.9rem;
+      height: 1.45rem;
+      padding: 0 0.42rem;
+      border: 1px solid rgba(126, 142, 166, 0.24);
+      border-radius: 999px;
+      background: rgba(44, 57, 76, 0.9);
+      color: #b7c8dc;
+      font-size: 0.63rem;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .method-popup__combo-trigger:hover {
+      border-color: rgba(154, 176, 204, 0.42);
+      color: #e6edf6;
+    }
+
+    .method-popup__modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: rgba(8, 12, 18, 0.62);
+      backdrop-filter: blur(2px);
+    }
+
+    .method-popup__modal.is-open {
+      display: flex;
+    }
+
+    .method-popup__modal-panel {
+      width: min(780px, 96vw);
+      max-height: 88vh;
+      overflow: hidden;
+      border: 1px solid rgba(126, 142, 166, 0.2);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(23, 32, 45, 0.98) 0%, rgba(18, 25, 36, 0.99) 100%);
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.24);
+    }
+
+    .method-popup__modal-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1rem 0.82rem;
+      border-bottom: 1px solid rgba(126, 142, 166, 0.14);
+    }
+
+    .method-popup__modal-title {
+      font-size: 1rem;
+      font-weight: 800;
+      color: #edf2f8;
+    }
+
+    .method-popup__modal-meta {
+      margin-top: 0.22rem;
+      color: #94abc8;
+      font-size: 0.76rem;
+    }
+
+    .method-popup__modal-close {
+      border: 1px solid rgba(126, 142, 166, 0.22);
+      border-radius: 999px;
+      background: rgba(42, 50, 64, 0.9);
+      color: #dfe6ef;
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 0.34rem 0.72rem;
+      cursor: pointer;
+    }
+
+    .method-popup__modal-body {
+      max-height: calc(88vh - 78px);
+      overflow: auto;
+      padding: 0.72rem 0.78rem 0.82rem;
+    }
+
+    .method-popup__modal-tickets-title {
+      margin-bottom: 0.46rem;
+      color: #9ab1cc;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    .method-popup__modal-tickets {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(78px, 1fr));
+      gap: 0.32rem;
+    }
+
+    .method-popup__modal-ticket {
+      padding: 0.3rem 0.35rem;
+      border: 1px solid rgba(126, 142, 166, 0.14);
+      border-radius: 10px;
+      background: rgba(30, 38, 52, 0.84);
+      color: #e5ebf3;
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    @media (min-width: 860px) {
+      .method-popup__list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 640px) {
+      .method-popup {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="method-popup">
+    <div class="method-popup__head">
+      <div class="method-popup__head-row">
+        <div class="method-popup__title-group">
+          <span class="method-popup__title-badge is-track">{{ track_name }}</span>
+          <span class="method-popup__title-badge is-date">{{ rdate|slice:"2:4" }}.{{ rdate|slice:"4:6" }}.{{ rdate|slice:"6:8" }}</span>
+          <span class="method-popup__title-badge is-rno">{{ rno }}경주</span>
+        </div>
+        <div class="method-popup__meta">
+          주력 {{ section_totals.주력베팅.bet_amount|default:0|floatformat:0|intcomma }} / {{ section_totals.주력베팅.refund_amount|default:0|floatformat:0|intcomma }}
+          ·
+          보조 {{ section_totals.보조베팅.bet_amount|default:0|floatformat:0|intcomma }} / {{ section_totals.보조베팅.refund_amount|default:0|floatformat:0|intcomma }}
+        </div>
+        <div class="method-popup__summary">
+          <span class="method-popup__badge">실제 TOP3</span>
+          {% if actual_top3_gates %}
+          <span class="method-popup__badge-gates">
+            {% for gate in actual_top3_gates %}
+            <span class="method-popup__badge-gate">{{ gate }}</span>
+            {% endfor %}
+          </span>
+          {% else %}
+          <span class="method-popup__badge">{{ actual_top3 }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    {% if method_sections %}
+      {% for section in method_sections %}
+      <div class="method-popup__section{% if section.label == '주력베팅' %} is-primary{% elif section.label == '보조베팅' %} is-support is-collapsed{% endif %}">
+        <div
+          class="method-popup__section-title{% if section.label == '보조베팅' %} is-support-toggle{% endif %}"
+          {% if section.label == '보조베팅' %}id="method-popup-toggle-support" role="button" tabindex="0" aria-expanded="false"{% endif %}
+        >{{ section.label }}</div>
+        <div class="method-popup__list">
+          {% for method in section.methods %}
+          <article class="method-popup__card{% if method.is_hit %} is-hit{% endif %}">
+            <div class="method-popup__card-head">
+              <div class="method-popup__card-main">
+                <div class="method-popup__method-title-row">
+                  <div class="method-popup__method-title {% if section.label == '주력베팅' and '삼복' in method.label %}is-trio{% elif section.label == '주력베팅' and '삼쌍' in method.label %}is-trifecta{% endif %}">{{ method.label }}</div>
+                  <div class="method-popup__method-meta">
+                    <span class="method-popup__meta-item">구멍수<span class="method-popup__meta-badge is-holes">{{ method.holes_per_race|intcomma }}</span></span>
+                    <span class="method-popup__meta-item">베팅<span class="method-popup__meta-badge is-bet">{{ method.bet_amount|floatformat:0|intcomma }}</span></span>
+                    <span class="method-popup__meta-item">환수<span class="method-popup__meta-badge is-refund{% if method.refund_amount|default:0 <= 0 %} is-zero{% endif %}">{{ method.refund_amount|floatformat:0|intcomma }}</span></span>
+                  </div>
+                  {% if method.tickets %}
+                  <button
+                    type="button"
+                    class="method-popup__combo-trigger"
+                    data-method-label="{{ method.label }}"
+                    data-method-type="{{ method.bet_type }}"
+                    data-method-holes="{{ method.holes_per_race }}"
+                    data-method-groups='[{% for group in method.groups %}{"label":"{{ group.label|escapejs }}","text":"{{ group.text|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
+                    data-method-tickets='[{% for ticket in method.tickets %}"{{ ticket|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}]'
+                  >조합</button>
+                  {% endif %}
+                </div>
+              </div>
+              <span class="method-popup__status {% if method.is_hit %}is-hit{% else %}is-miss{% endif %}">
+                {% if method.is_hit %}적중{% else %}미적중{% endif %}
+              </span>
+            </div>
+            <div class="method-popup__groups">
+              {% for group in method.groups %}
+              <div class="method-popup__group{% if forloop.first %} is-anchor{% endif %}">
+                {% if forloop.first %}
+                <div class="method-popup__group-anchor-line">
+                  <div class="method-popup__group-anchor-values">
+                    {% for gate in group.gates %}
+                    <span class="method-popup__group-anchor-pill{% if section.label == '주력베팅' and '삼복' in method.label %} is-primary-trio{% elif section.label == '주력베팅' and '삼쌍' in method.label %} is-primary-trifecta{% endif %}{% if method.anchor_axis == 1 %} is-axis1{% elif method.anchor_axis == 2 %} is-axis2{% endif %}">{{ gate }}</span>
+                    {% endfor %}
+                  </div>
+                </div>
+                {% else %}
+                <div class="method-popup__group-gates">{{ group.text }}</div>
+                {% endif %}
+              </div>
+              {% endfor %}
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="method-popup__empty">이 경주의 관리자 수익분석 베팅방법 데이터를 찾지 못했습니다.</div>
+    {% endif %}
+
+    <div class="method-popup__footer">
+      <span>최근 갱신 {{ updated_at|date:"Y-m-d H:i:s" }}</span>
+      <button type="button" onclick="window.close()">닫기</button>
+    </div>
+  </section>
+
+  <div class="method-popup__modal" id="method-combo-modal" aria-hidden="true">
+    <div class="method-popup__modal-panel" role="dialog" aria-modal="true" aria-labelledby="method-combo-title">
+      <div class="method-popup__modal-head">
+        <div>
+          <div class="method-popup__modal-title" id="method-combo-title"></div>
+          <div class="method-popup__modal-meta" id="method-combo-meta"></div>
+        </div>
+        <button type="button" class="method-popup__modal-close" id="method-combo-close">닫기</button>
+      </div>
+      <div class="method-popup__modal-body">
+        <div class="method-popup__modal-tickets-title">현재경주 실제 마번 조합</div>
+        <div class="method-popup__modal-tickets" id="method-combo-tickets"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var modal = document.getElementById('method-combo-modal');
+      var closeBtn = document.getElementById('method-combo-close');
+      var titleEl = document.getElementById('method-combo-title');
+      var metaEl = document.getElementById('method-combo-meta');
+      var ticketsEl = document.getElementById('method-combo-tickets');
+      var supportToggleBtn = document.getElementById('method-popup-toggle-support');
+      var supportSection = document.querySelector('.method-popup__section.is-support');
+
+      function closeModal() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+      }
+
+      function openModal(button) {
+        var label = button.getAttribute('data-method-label') || '조합 보기';
+        var type = button.getAttribute('data-method-type') || '';
+        var holes = button.getAttribute('data-method-holes') || '0';
+        var groups = JSON.parse(button.getAttribute('data-method-groups') || '[]');
+        var tickets = JSON.parse(button.getAttribute('data-method-tickets') || '[]');
+
+        titleEl.textContent = label;
+        metaEl.textContent = type + ' · 조합수 ' + Number(holes).toLocaleString();
+        ticketsEl.innerHTML = '';
+
+        tickets.forEach(function (ticket) {
+          var el = document.createElement('div');
+          el.className = 'method-popup__modal-ticket';
+          el.textContent = ticket;
+          ticketsEl.appendChild(el);
+        });
+
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+      }
+
+      document.querySelectorAll('.method-popup__combo-trigger').forEach(function (button) {
+        button.addEventListener('click', function () {
+          openModal(button);
+        });
+      });
+
+      if (supportToggleBtn && supportSection) {
+        function toggleSupportSection() {
+          var isCollapsed = supportSection.classList.toggle('is-collapsed');
+          supportToggleBtn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+        }
+
+        supportToggleBtn.addEventListener('click', toggleSupportSection);
+        supportToggleBtn.addEventListener('keydown', function (event) {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            toggleSupportSection();
+          }
+        });
+      } else if (supportToggleBtn) {
+        supportToggleBtn.style.display = 'none';
+      }
+
+      closeBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', function (event) {
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+          closeModal();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
